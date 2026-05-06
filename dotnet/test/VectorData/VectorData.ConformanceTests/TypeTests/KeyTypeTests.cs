@@ -18,6 +18,19 @@ public abstract class KeyTypeTests(KeyTypeTests.Fixture fixture)
             new Guid("603840bf-cf91-4521-8b8e-8b6a2e75910a"),
             supportsAutoGeneration: true);
 
+    /// <summary>
+    /// Verifies that creating a collection with a TKey that doesn't match the key property type on the model throws.
+    /// </summary>
+    [ConditionalFact]
+    public virtual void MismatchedKeyTypeThrows()
+    {
+        // The definition says the key property is string (matching Record<string>.Key),
+        // but TKey is Guid - this mismatch should be detected during model building.
+        Assert.Throws<InvalidOperationException>(() =>
+            fixture.TestStore.CreateCollection<Guid, Record<string>>(
+                fixture.CollectionName, fixture.CreateRecordDefinition<string>(withAutoGeneration: false)));
+    }
+
     protected virtual Task Test<TKey>(TKey key, bool supportsAutoGeneration = false)
         where TKey : struct
         => this.Test<TKey>(key, default!, supportsAutoGeneration: supportsAutoGeneration);

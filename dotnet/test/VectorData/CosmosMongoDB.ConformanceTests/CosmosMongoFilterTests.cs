@@ -56,15 +56,6 @@ public class CosmosMongoFilterTests(CosmosMongoFilterTests.Fixture fixture)
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_List());
 
-    // AnyTagEqualTo not (currently) supported on SQLite
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_array()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_array());
-
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_List()
-        => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_List());
-
     public new class Fixture : FilterTests<string>.Fixture
     {
         public override TestStore TestStore => CosmosMongoTestStore.Instance;

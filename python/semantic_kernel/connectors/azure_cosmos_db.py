@@ -922,7 +922,7 @@ class CosmosNoSqlCollection(
             case ast.Constant():
                 # Quote strings, leave numbers as is
                 if isinstance(node.value, str):
-                    return f"'{node.value}'"
+                    return "'" + node.value.replace("'", "''") + "'"
                 if isinstance(node.value, (float, int)):
                     return str(node.value)
                 if node.value is None:

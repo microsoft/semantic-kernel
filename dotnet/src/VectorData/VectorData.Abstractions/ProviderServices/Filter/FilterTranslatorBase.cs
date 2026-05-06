@@ -348,10 +348,14 @@ public abstract class FilterTranslatorBase
             var visited = (NewExpression)base.VisitNew(node);
 
             // Recognize certain well-known constructors where we can evaluate immediately, converting the NewExpression to a ConstantExpression.
-            // This is particularly useful for converting inline instantiation of DateTime and DateTimeOffset to constants, which can then be easily translated.
+            // This is particularly useful for converting inline instantiation of DateTime, DateTimeOffset, DateOnly, and TimeOnly to constants, which can then be easily translated.
             switch (visited.Constructor)
             {
-                case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset) || constructor.DeclaringType == typeof(DateTime):
+                case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset) || constructor.DeclaringType == typeof(DateTime)
+#if NET
+                    || constructor.DeclaringType == typeof(DateOnly) || constructor.DeclaringType == typeof(TimeOnly)
+#endif
+                    :
                     var constantArguments = new object?[visited.Arguments.Count];
 
                     // We first do a fast path to check if all arguments are constants; this catches the common case of e.g. new DateTime(2023, 10, 1).

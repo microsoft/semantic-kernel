@@ -27,17 +27,14 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         UsesExternalSerializer = true,
     };
 
-    [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected override void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
+    protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty, Type? type)
     {
-        base.ProcessTypeProperties(type, definition);
+        base.ProcessProperty(clrProperty, definitionProperty, type);
 
-        foreach (var property in this.Properties)
+        if (clrProperty?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute
+            && this.PropertyMap.TryGetValue(clrProperty.Name, out var property))
         {
-            if (property.PropertyInfo?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute)
-            {
-                property.StorageName = bsonElementAttribute.ElementName;
-            }
+            property.StorageName = bsonElementAttribute.ElementName;
         }
     }
 
@@ -46,6 +43,8 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(int) && type != typeof(long) && type != typeof(Guid) && type != typeof(ObjectId))
@@ -57,7 +56,11 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -76,7 +79,12 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
                 type == typeof(float) ||
                 type == typeof(double) ||
                 type == typeof(decimal) ||
-                type == typeof(DateTime);
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+#endif
+                false;
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

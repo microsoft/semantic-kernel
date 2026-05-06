@@ -22,6 +22,8 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))
@@ -39,7 +41,11 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
 
     internal static bool IsDataPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -57,6 +63,10 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
                type == typeof(double) ||
                type == typeof(float) ||
                type == typeof(bool) ||
+               type == typeof(DateTime) ||
+#if NET
+               type == typeof(DateOnly) ||
+#endif
                type == typeof(DateTimeOffset);
     }
 

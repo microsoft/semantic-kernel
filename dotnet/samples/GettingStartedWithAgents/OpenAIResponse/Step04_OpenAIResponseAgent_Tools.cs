@@ -22,7 +22,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
     public async Task InvokeAgentWithFunctionToolsAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -53,7 +53,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
     public async Task InvokeAgentWithWebSearchAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -89,7 +89,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
             });
 
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -131,7 +131,7 @@ public class Step04_OpenAIResponseAgent_Tools(ITestOutputHelper output) : BaseRe
     public async Task InvokeAgentWithMultipleToolsAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };

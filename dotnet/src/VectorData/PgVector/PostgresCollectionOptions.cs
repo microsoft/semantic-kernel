@@ -20,11 +20,11 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
 
     internal PostgresCollectionOptions(PostgresCollectionOptions? source) : base(source)
     {
-        this.Schema = source?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        this.Schema = source?.Schema;
     }
 
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; set; } = PostgresVectorStoreOptions.Default.Schema;
+    public string? Schema { get; set; }
 }

@@ -90,7 +90,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(QdrantDynamicCollection)))
-                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -491,16 +491,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
-            {
-                generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await task.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
+            generatedEmbeddings[i] = (GeneratedEmbeddings<Embedding<float>>)await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         // Create points from records.
@@ -549,16 +541,10 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
-            _ => new Filter()
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        var filter = options.Filter is not null
+            ? new QdrantFilterTranslator().Translate(options.Filter, this._model)
+            : new Filter();
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };
@@ -606,8 +592,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             ReadOnlyMemory<float> r => r,
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), QdrantModelBuilder.SupportedVectorTypes))
@@ -691,16 +677,9 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
-#pragma warning disable CS0618 // Type or member is obsolete
-        // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
-            _ => new Filter()
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        var filter = options.Filter is not null
+            ? new QdrantFilterTranslator().Translate(options.Filter, this._model)
+            : new Filter();
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };

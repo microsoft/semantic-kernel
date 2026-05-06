@@ -18,7 +18,8 @@ public class DocumentPluginTests
     {
         // Arrange
         var expectedText = Guid.NewGuid().ToString();
-        var anyFilePath = Guid.NewGuid().ToString();
+        var folderPath = Path.GetTempPath();
+        var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
@@ -31,7 +32,10 @@ public class DocumentPluginTests
             .Setup(mock => mock.ReadText(It.IsAny<Stream>()))
             .Returns(expectedText);
 
-        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [folderPath]
+        };
 
         // Act
         string actual = await target.ReadTextAsync(anyFilePath);
@@ -47,7 +51,8 @@ public class DocumentPluginTests
     {
         // Arrange
         var anyText = Guid.NewGuid().ToString();
-        var anyFilePath = Guid.NewGuid().ToString();
+        var folderPath = Path.GetTempPath();
+        var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
@@ -63,7 +68,10 @@ public class DocumentPluginTests
         documentConnectorMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [folderPath]
+        };
 
         // Act
         await target.AppendTextAsync(anyText, anyFilePath);
@@ -78,7 +86,8 @@ public class DocumentPluginTests
     {
         // Arrange
         var anyText = Guid.NewGuid().ToString();
-        var anyFilePath = Guid.NewGuid().ToString();
+        var folderPath = Path.GetTempPath();
+        var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
@@ -96,7 +105,10 @@ public class DocumentPluginTests
         documentConnectorMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [folderPath]
+        };
 
         // Act
         await target.AppendTextAsync(anyText, anyFilePath);
@@ -124,5 +136,118 @@ public class DocumentPluginTests
         // Assert
         fileSystemConnectorMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         documentConnectorMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ItDeniesAllPathsWithDefaultConfigAsync()
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+
+        var filePath = Path.Combine(Path.GetTempPath(), "test.docx");
+
+        // Act & Assert — default config denies all paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(filePath));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", filePath));
+    }
+
+    [Fact]
+    public async Task ItDeniesPathTraversalAsync()
+    {
+        // Arrange
+        var folderPath = Path.Combine(Path.GetTempPath(), "allowed-folder");
+        var traversalPath = Path.Combine(folderPath, "..", "outside-folder", "secret.docx");
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [folderPath]
+        };
+
+        // Act & Assert — traversal path is canonicalized and rejected
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(traversalPath));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", traversalPath));
+    }
+
+    [Fact]
+    public async Task ItDeniesUncPathsAsync()
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — UNC paths are rejected
+        await Assert.ThrowsAnyAsync<Exception>(async () => await target.ReadTextAsync("\\\\UNC\\server\\folder\\file.docx"));
+        await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "\\\\UNC\\server\\folder\\file.docx"));
+    }
+
+    [Fact]
+    public async Task ItDeniesDisallowedFoldersAsync()
+    {
+        // Arrange
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "allowed");
+        var disallowedPath = Path.Combine(Path.GetTempPath(), "disallowed", "file.docx");
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [allowedFolder]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(disallowedPath));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", disallowedPath));
+    }
+
+    [Fact]
+    public async Task ItAllowsSubdirectoriesOfAllowedFoldersAsync()
+    {
+        // Arrange
+        var allowedFolder = Path.GetTempPath();
+        var subDirPath = Path.Combine(allowedFolder, "subdir", "nested", "file.docx");
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        fileSystemConnectorMock
+            .Setup(mock => mock.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Stream.Null);
+
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        documentConnectorMock
+            .Setup(mock => mock.ReadText(It.IsAny<Stream>()))
+            .Returns("content");
+
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [allowedFolder]
+        };
+
+        // Act — subdirectory of allowed folder should succeed
+        string result = await target.ReadTextAsync(subDirPath);
+
+        // Assert
+        Assert.Equal("content", result);
+    }
+
+    [Fact]
+    public async Task ItDeniesRelativePathsAsync()
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — relative paths are caught by the "fully qualified" check
+        await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync("myfile.docx"));
     }
 }

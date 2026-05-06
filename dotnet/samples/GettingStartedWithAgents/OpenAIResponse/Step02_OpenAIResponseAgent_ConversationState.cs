@@ -18,7 +18,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task ManuallyConstructPastConversationAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -46,7 +46,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task ManuallyConstructPastConversationStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -75,7 +75,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task ManageConversationStateWithResponseIdAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -106,7 +106,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task ManageConversationStateWithResponseIdStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = false,
         };
@@ -138,7 +138,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task StoreConversationStateAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = true,
         };
@@ -186,7 +186,7 @@ public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper outp
     public async Task StoreConversationStateWithStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             StoreEnabled = true,
         };

@@ -61,6 +61,11 @@ internal static class PostgresPropertyMapping
             Type t when t == typeof(DateTime) && property.IsTimestampWithoutTimezone() => NpgsqlDbType.Timestamp,
             Type t when t == typeof(DateTime) => NpgsqlDbType.TimestampTz,
 
+#if NET
+            Type t when t == typeof(DateOnly) => NpgsqlDbType.Date,
+            Type t when t == typeof(TimeOnly) => NpgsqlDbType.Time,
+#endif
+
             _ => null
         };
 
@@ -84,6 +89,10 @@ internal static class PostgresPropertyMapping
                 Type t when t == typeof(byte[]) => "BYTEA",
                 Type t when t == typeof(DateTime) => "TIMESTAMPTZ",
                 Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
+#if NET
+                Type t when t == typeof(DateOnly) => "DATE",
+                Type t when t == typeof(TimeOnly) => "TIME",
+#endif
                 Type t when t == typeof(Guid) => "UUID",
                 _ => null
             };
@@ -93,19 +102,17 @@ internal static class PostgresPropertyMapping
 
         var propertyType = property.Type;
 
-        // TODO: Handle NRTs properly via NullabilityInfoContext
-
         (string PgType, bool IsNullable) result;
 
         if (TryGetBaseType(propertyType, out string? pgType))
         {
-            result = (pgType, !propertyType.IsValueType);
+            result = (pgType, property.IsNullable);
         }
         // Handle nullable types (e.g. Nullable<int>)
         else if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
             && TryGetBaseType(unwrappedType, out string? underlyingPgType))
         {
-            result = (underlyingPgType, true);
+            result = (underlyingPgType, property.IsNullable);
         }
         // Handle collections
         else if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
@@ -113,7 +120,7 @@ internal static class PostgresPropertyMapping
                 && propertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
         {
-            result = (elementPgType + "[]", true);
+            result = (elementPgType + "[]", property.IsNullable);
         }
         else
         {
@@ -160,7 +167,7 @@ internal static class PostgresPropertyMapping
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };
 
-        return ($"{pgType}({vectorProperty.Dimensions})", unwrappedEmbeddingType != vectorProperty.EmbeddingType);
+        return ($"{pgType}({vectorProperty.Dimensions})", vectorProperty.IsNullable);
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)

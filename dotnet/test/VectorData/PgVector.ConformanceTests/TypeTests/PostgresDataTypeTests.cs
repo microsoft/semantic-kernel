@@ -40,10 +40,6 @@ public class PostgresDataTypeTests(PostgresDataTypeTests.Fixture fixture)
         public override Type[] UnsupportedDefaultTypes { get; } =
         [
             typeof(byte),
-#if NET
-            typeof(DateOnly),
-            typeof(TimeOnly),
-#endif
         ];
     }
 }

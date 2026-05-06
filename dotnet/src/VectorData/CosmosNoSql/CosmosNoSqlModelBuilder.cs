@@ -22,6 +22,13 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        // CosmosNoSqlKey is a composite key type (document ID + partition key) that doesn't correspond to any single key property type;
+        // skip the base TKey-to-key-property validation when it's used.
+        if (this.KeyType != typeof(CosmosNoSqlKey))
+        {
+            base.ValidateKeyProperty(keyProperty);
+        }
+
         // Note that the key property in Cosmos NoSQL refers to the document ID, not to the CosmosNoSqlKey structure which includes both
         // the document ID and the partition key (and which is the generic TKey type parameter of the collection).
         var type = keyProperty.Type;
@@ -35,7 +42,11 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -53,20 +64,23 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
                type == typeof(long) ||
                type == typeof(float) ||
                type == typeof(double) ||
+               type == typeof(DateTime) ||
+#if NET
+               type == typeof(DateOnly) ||
+#endif
                type == typeof(DateTimeOffset);
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
         => IsVectorPropertyTypeValidCore(type, out supportedTypes);
 
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        // Resolve embedding type for float, byte, and sbyte embedding generators.
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-           ?? vectorProperty.ResolveEmbeddingType<Embedding<byte>>(embeddingGenerator, userRequestedEmbeddingType)
-           ?? vectorProperty.ResolveEmbeddingType<Embedding<sbyte>>(embeddingGenerator, userRequestedEmbeddingType);
+    /// <inheritdoc />
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<byte>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<sbyte>>()
+    ];
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

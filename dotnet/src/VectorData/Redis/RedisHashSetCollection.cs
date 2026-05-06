@@ -76,7 +76,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisHashSetDynamicCollection)))
-                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -352,15 +352,14 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // float64
             ReadOnlyMemory<double> r => r,
             double[] f => new ReadOnlyMemory<double>(f),
             Embedding<double> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<double>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), RedisModelBuilder.SupportedVectorTypes))

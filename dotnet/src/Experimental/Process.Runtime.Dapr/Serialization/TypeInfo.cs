@@ -39,6 +39,11 @@ internal static class TypeInfo
         }
 
         Type? valueType = Type.GetType(assemblyQualifiedTypeName);
-        return ((JsonElement)value).Deserialize(valueType!);
+        if (valueType is null)
+        {
+            throw new KernelException($"Could not load type '{assemblyQualifiedTypeName}'.");
+        }
+
+        return ((JsonElement)value).Deserialize(valueType);
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
 
@@ -21,7 +22,7 @@ async Task SKAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient();
     OpenAIResponseAgent agent = new(responseClient)
     {
         Name = "Joker",
@@ -51,7 +52,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     Console.WriteLine("\n=== SK Agent Converted as an AF Agent ===\n");
 
-    var responseClient = new OpenAIClient(apiKey).GetResponsesClient(model);
+    var responseClient = new OpenAIClient(apiKey).GetResponsesClient();
 
     OpenAIResponseAgent skAgent = new(responseClient)
     {
@@ -79,7 +80,7 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var agent = new OpenAIClient(apiKey).GetResponsesClient(model)
+    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsIChatClient(model)
         .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
     var thread = agent.GetNewThread();

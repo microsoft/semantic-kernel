@@ -19,8 +19,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item>Must be one of <c>256x256, 512x512, or 1024x1024</c> for <c>dall-e-2</c> model.</item>
-    /// <item>Must be one of <c>1024x1024, 1792x1024, 1024x1792</c> for <c>dall-e-3</c> model.</item>
+    /// <item>Must be one of <c>1024x1024, 1536x1024, 1024x1536, auto</c> for <c>gpt-image-1</c> model.</item>
     /// </list>
     /// </remarks>
     public (int Width, int Height)? Size
@@ -38,12 +37,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// The quality of the image that will be generated.
     /// </summary>
     /// <remarks>
-    /// Must be one of <c>standard</c> or <c>hd</c> or <c>high</c>.
     /// <list type="bullet">
     /// <item><c>standard</c>: creates images with standard quality. This is the default.</item>
     /// <item><c>hd</c> OR <c>high</c>: creates images with finer details and greater consistency.</item>
+    /// <item><c>medium</c>: creates images with medium quality (supported by <c>gpt-image-1</c>).</item>
+    /// <item><c>low</c>: creates images with lower quality for faster generation (supported by <c>gpt-image-1</c>).</item>
     /// </list>
-    /// This param is only supported for <c>dall-e-3</c> model.
     /// </remarks>
     [JsonPropertyName("quality")]
     public string? Quality
@@ -66,7 +65,7 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// <item><c>vivid</c>: causes the model to lean towards generating hyper-real and dramatic images.</item>
     /// <item><c>natural</c>: causes the model to produce more natural, less hyper-real looking images.</item>
     /// </list>
-    /// This param is only supported for <c>dall-e-3</c> model.
+    /// This param is not supported for <c>gpt-image-1</c> model.
     /// </remarks>
     [JsonPropertyName("style")]
     public string? Style

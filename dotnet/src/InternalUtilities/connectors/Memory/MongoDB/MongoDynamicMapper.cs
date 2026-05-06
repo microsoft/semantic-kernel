@@ -160,7 +160,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(int?) => value.AsNullableInt32,
             Type t when t == typeof(long) => value.AsInt64,
             Type t when t == typeof(long?) => value.AsNullableInt64,
-            Type t when t == typeof(float) => ((float)value.AsDouble),
+            Type t when t == typeof(float) => (float)value.AsDouble,
             Type t when t == typeof(float?) => ((float?)value.AsNullableDouble),
             Type t when t == typeof(double) => value.AsDouble,
             Type t when t == typeof(double?) => value.AsNullableDouble,
@@ -168,6 +168,16 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(decimal?) => value.AsNullableDecimal,
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
+            Type t when t == typeof(DateTimeOffset) => new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero),
+            Type t when t == typeof(DateTimeOffset?) => value.ToNullableUniversalTime() is DateTime dateTime
+                ? new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero)
+                : null,
+#if NET
+            Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.ToUniversalTime()),
+            Type t when t == typeof(DateOnly?) => value.ToNullableUniversalTime() is DateTime dateTime
+                ? DateOnly.FromDateTime(dateTime)
+                : null,
+#endif
 
             _ => (object?)null
         };

@@ -478,38 +478,6 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
 
     #endregion Miscellaneous
 
-    #region Legacy filter support
-
-    [ConditionalFact]
-    [Obsolete("Legacy filter support")]
-    public virtual Task Legacy_equality()
-        => this.TestLegacyFilterAsync(
-            new VectorSearchFilter().EqualTo("Int", 8),
-            r => r.Int == 8);
-
-    [ConditionalFact]
-    [Obsolete("Legacy filter support")]
-    public virtual Task Legacy_And()
-        => this.TestLegacyFilterAsync(
-            new VectorSearchFilter().EqualTo("Int", 8).EqualTo("String", "foo"),
-            r => r.Int == 8);
-
-    [ConditionalFact]
-    [Obsolete("Legacy filter support")]
-    public virtual Task Legacy_AnyTagEqualTo_array()
-        => this.TestLegacyFilterAsync(
-            new VectorSearchFilter().AnyTagEqualTo("StringArray", "x"),
-            r => r.StringArray.Contains("x"));
-
-    [ConditionalFact]
-    [Obsolete("Legacy filter support")]
-    public virtual Task Legacy_AnyTagEqualTo_List()
-        => this.TestLegacyFilterAsync(
-            new VectorSearchFilter().AnyTagEqualTo("StringList", "x"),
-            r => r.StringArray.Contains("x"));
-
-    #endregion Legacy filter support
-
     protected virtual async Task TestFilterAsync(
         Expression<Func<FilterRecord, bool>> filter,
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter,
@@ -575,40 +543,6 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
             {
                 fixture.AssertEqualDynamic(e, a);
             }
-        }
-    }
-
-    [Obsolete("Legacy filter support")]
-    protected virtual async Task TestLegacyFilterAsync(
-        VectorSearchFilter legacyFilter,
-        Expression<Func<FilterRecord, bool>> expectedFilter,
-        bool expectZeroResults = false,
-        bool expectAllResults = false)
-    {
-        var expected = fixture.TestData.AsQueryable().Where(expectedFilter).OrderBy(r => r.Key).ToList();
-
-        if (expected.Count == 0 && !expectZeroResults)
-        {
-            Assert.Fail("The test returns zero results, and so is unreliable");
-        }
-
-        if (expected.Count == fixture.TestData.Count && !expectAllResults)
-        {
-            Assert.Fail("The test returns all results, and so is unreliable");
-        }
-
-        var actual = await fixture.Collection.SearchAsync(
-                new ReadOnlyMemory<float>([1, 2, 3]),
-                top: fixture.TestData.Count,
-                new()
-                {
-                    OldFilter = legacyFilter
-                })
-            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
-
-        foreach (var (e, a) in expected.Zip(actual, (e, a) => (e, a)))
-        {
-            fixture.AssertEqualFilterRecord(e, a);
         }
     }
 

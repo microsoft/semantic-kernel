@@ -32,7 +32,7 @@ public sealed class MongoMapperTests
             ]
         };
 
-        this._sut = new(new MongoModelBuilder().Build(typeof(MongoHotelModel), definition, defaultEmbeddingGenerator: null));
+        this._sut = new(new MongoModelBuilder().Build(typeof(MongoHotelModel), typeof(string), definition, defaultEmbeddingGenerator: null));
     }
 
     [Fact]

@@ -26,6 +26,8 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))

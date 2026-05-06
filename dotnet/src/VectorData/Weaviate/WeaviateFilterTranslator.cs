@@ -175,15 +175,19 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
             Type t when t == typeof(bool) => "valueBoolean",
             Type t when t == typeof(string) || t == typeof(Guid) => "valueText",
             Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "valueNumber",
+            Type t when t == typeof(DateTime) => "valueDate",
             Type t when t == typeof(DateTimeOffset) => "valueDate",
+#if NET
+            Type t when t == typeof(DateOnly) => "valueDate",
+#endif
 
             _ => throw new NotSupportedException($"Unsupported value type {type.FullName} in filter.")
         });
 
         this._filter.Append(": ");
 
-        // Value
-        this._filter.Append(JsonSerializer.Serialize(value));
+        // Value — use Weaviate's JSON serializer options for proper date/time formatting
+        this._filter.Append(JsonSerializer.Serialize(value, value.GetType(), WeaviateConstants.s_jsonSerializerOptions));
 
         this._filter.Append('}');
     }

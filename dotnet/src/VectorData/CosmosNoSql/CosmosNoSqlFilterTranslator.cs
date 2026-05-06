@@ -136,6 +136,22 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                     .Append("Z\"");
                 return;
 
+            case DateTime v:
+                this._sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+
+#if NET
+            case DateOnly v:
+                this._sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+#endif
+
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
                 this._sql.Append('[');
 
