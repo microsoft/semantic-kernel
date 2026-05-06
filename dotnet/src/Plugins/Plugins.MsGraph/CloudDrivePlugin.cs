@@ -18,13 +18,15 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This plugin is secure by default. <see cref="AllowedUploadDirectories"/> and <see cref="AllowedSharePaths"/>
-/// must be explicitly configured before file upload or share-link operations are permitted.
+/// This plugin is secure by default. <see cref="AllowedUploadDirectories"/>, <see cref="AllowedUploadDestinationPaths"/>,
+/// <see cref="AllowedReadPaths"/>, and <see cref="AllowedSharePaths"/> must be explicitly configured
+/// before file upload, read, or share-link operations are permitted.
 /// By default, all paths are denied.
 /// </para>
 /// <para>
 /// When exposing this plugin to an LLM via auto function calling, ensure that
-/// <see cref="AllowedUploadDirectories"/> and <see cref="AllowedSharePaths"/> are restricted to trusted values only.
+/// <see cref="AllowedUploadDirectories"/>, <see cref="AllowedUploadDestinationPaths"/>, <see cref="AllowedReadPaths"/>,
+/// and <see cref="AllowedSharePaths"/> are restricted to trusted values only.
 /// </para>
 /// </remarks>
 public sealed class CloudDrivePlugin
@@ -33,6 +35,8 @@ public sealed class CloudDrivePlugin
     private readonly ILogger _logger;
     private HashSet<string> _allowedUploadDirectories = [];
     private HashSet<string> _allowedSharePaths = [];
+    private HashSet<string> _allowedReadPaths = [];
+    private HashSet<string> _allowedUploadDestinationPaths = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
@@ -79,6 +83,40 @@ public sealed class CloudDrivePlugin
     }
 
     /// <summary>
+    /// List of allowed remote directory prefixes from which file contents may be read.
+    /// A file is permitted if its parent directory starts with (or equals) any entry in this list.
+    /// Subdirectories of allowed paths are also permitted.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
+    /// with trusted remote directory paths before any read operations will succeed.
+    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Matching is case-insensitive (OneDrive paths are case-insensitive).
+    /// </remarks>
+    public IEnumerable<string> AllowedReadPaths
+    {
+        get => this._allowedReadPaths;
+        set => this._allowedReadPaths = value is null ? [] : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// List of allowed remote directory prefixes to which files may be uploaded.
+    /// A destination is permitted if its parent directory starts with (or equals) any entry in this list.
+    /// Subdirectories of allowed paths are also permitted.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
+    /// with trusted remote directory paths before any upload-destination operations will succeed.
+    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Matching is case-insensitive (OneDrive paths are case-insensitive).
+    /// </remarks>
+    public IEnumerable<string> AllowedUploadDestinationPaths
+    {
+        get => this._allowedUploadDestinationPaths;
+        set => this._allowedUploadDestinationPaths = value is null ? [] : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Get the contents of a file stored in a cloud drive.
     /// </summary>
     /// <param name="filePath">The path to the file.</param>
@@ -90,6 +128,14 @@ public sealed class CloudDrivePlugin
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
+
+        Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
+
+        if (!this.IsAllowedRemotePath(filePath, this._allowedReadPaths))
+        {
+            throw new InvalidOperationException("Reading from the provided path is not allowed. Configure 'AllowedReadPaths' with trusted remote paths to enable reading.");
+        }
+
         Stream? fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
 
         if (fileContentStream is null)
@@ -121,6 +167,11 @@ public sealed class CloudDrivePlugin
         if (string.IsNullOrWhiteSpace(destinationPath))
         {
             throw new ArgumentException("Variable was null or whitespace", nameof(destinationPath));
+        }
+
+        if (!this.IsAllowedRemotePath(destinationPath, this._allowedUploadDestinationPaths))
+        {
+            throw new InvalidOperationException("Uploading to the provided remote destination is not allowed. Configure 'AllowedUploadDestinationPaths' with trusted remote paths to enable uploads.");
         }
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
@@ -155,7 +206,7 @@ public sealed class CloudDrivePlugin
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        if (!this.IsSharePathAllowed(filePath))
+        if (!this.IsAllowedRemotePath(filePath, this._allowedSharePaths))
         {
             throw new InvalidOperationException("Creating a share link for the provided path is not allowed. Configure 'AllowedSharePaths' with trusted remote paths to enable sharing.");
         }
@@ -171,16 +222,16 @@ public sealed class CloudDrivePlugin
             : StringComparison.Ordinal;
 
     /// <summary>
-    /// Checks whether the provided remote path is allowed for sharing.
+    /// Checks whether the provided remote path falls within one of the allowed remote directory prefixes.
     /// Paths are normalized with forward slashes, dot-segments are collapsed,
     /// and compared case-insensitively (OneDrive paths are case-insensitive).
     /// Subdirectories of allowed paths are permitted.
     /// </summary>
-    private bool IsSharePathAllowed(string path)
+    private bool IsAllowedRemotePath(string path, HashSet<string> allowedPaths)
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
 
-        if (this._allowedSharePaths.Count == 0)
+        if (allowedPaths.Count == 0)
         {
             return false;
         }
@@ -188,7 +239,7 @@ public sealed class CloudDrivePlugin
         // Normalize to forward slashes and collapse dot-segments to prevent traversal bypass.
         var normalizedPath = NormalizeRemotePath(path);
 
-        foreach (var allowedPath in this._allowedSharePaths)
+        foreach (var allowedPath in allowedPaths)
         {
             var normalizedAllowed = NormalizeRemotePath(allowedPath);
             if (!normalizedAllowed.EndsWith("/", StringComparison.Ordinal))

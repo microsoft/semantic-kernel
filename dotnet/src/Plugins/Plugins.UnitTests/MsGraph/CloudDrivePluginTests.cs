@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.IO;
@@ -25,10 +25,10 @@ public class CloudDrivePluginTests
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
         // Act
-        await target.UploadFileAsync(anyFilePath, Guid.NewGuid().ToString());
+        await target.UploadFileAsync(anyFilePath, "/remote.txt");
 
         // Assert
         connectorMock.VerifyAll();
@@ -123,16 +123,16 @@ public class CloudDrivePluginTests
     [Fact]
     public async Task GetFileContentAsyncSucceedsAsync()
     {
-        string anyFilePath = Guid.NewGuid().ToString();
+        string anyFilePath = "/Documents/report.txt";
         string expectedContent = Guid.NewGuid().ToString();
         using MemoryStream expectedStream = new(Encoding.UTF8.GetBytes(expectedContent));
 
         // Arrange
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.GetFileContentStreamAsync(anyFilePath, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStream);
 
-        CloudDrivePlugin target = new(connectorMock.Object);
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedReadPaths = ["/Documents"] };
 
         // Act
         string? actual = await target.GetFileContentAsync(anyFilePath);
@@ -164,9 +164,7 @@ public class CloudDrivePluginTests
         var traversalPath = Path.Combine(allowedDir, "..", "outside-folder", "secret.txt");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
-
-        // Act & Assert — traversal path is canonicalized and rejected
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await target.UploadFileAsync(traversalPath, "/remote.txt"));
     }
@@ -176,7 +174,7 @@ public class CloudDrivePluginTests
     {
         // Arrange
         Mock<ICloudDriveConnector> connectorMock = new();
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
         // Act & Assert — UNC paths are rejected (ArgumentException on Windows, InvalidOperationException on Linux
         // where the path is canonicalized differently and fails the allowlist check instead)
@@ -192,7 +190,7 @@ public class CloudDrivePluginTests
         var disallowedPath = Path.Combine(Path.GetTempPath(), "disallowed", "file.txt");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -210,7 +208,7 @@ public class CloudDrivePluginTests
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
         // Act — subdirectory of allowed folder should succeed
         await target.UploadFileAsync(subDirPath, "/remote.txt");
@@ -235,7 +233,7 @@ public class CloudDrivePluginTests
             connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
-            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir], AllowedUploadDestinationPaths = ["/"] };
 
             // Act — env var should be expanded and path should be allowed
             await target.UploadFileAsync(envVarPath, "/remote.txt");
@@ -263,7 +261,7 @@ public class CloudDrivePluginTests
             var envVarPath = Path.Combine($"%{envVarName}%", "outside-file.txt");
 
             Mock<ICloudDriveConnector> connectorMock = new();
-            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
             // Act & Assert — expanded path is outside allowed directory
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -286,7 +284,7 @@ public class CloudDrivePluginTests
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -315,7 +313,7 @@ public class CloudDrivePluginTests
             var maliciousPath = Path.Combine($"%{envVarName}%", "secret.txt");
 
             Mock<ICloudDriveConnector> connectorMock = new();
-            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
             // Act & Assert — UNC path after env-var expansion should be rejected
             await Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -356,7 +354,7 @@ public class CloudDrivePluginTests
     {
         // Arrange — forward-slash UNC paths should also be rejected
         Mock<ICloudDriveConnector> connectorMock = new();
-        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
         // Act & Assert — forward-slash UNC path is rejected
         await Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -376,7 +374,7 @@ public class CloudDrivePluginTests
             var maliciousPath = $"%{envVarName}%/secret.txt";
 
             Mock<ICloudDriveConnector> connectorMock = new();
-            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
             // Act & Assert — forward-slash UNC path after env-var expansion should be rejected
             await Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -403,7 +401,7 @@ public class CloudDrivePluginTests
             var maliciousPath = Path.Combine(allowedDir, $"%{envVarName}%", "secret.txt");
 
             Mock<ICloudDriveConnector> connectorMock = new();
-            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
 
             // Act & Assert — after env-var expansion, the canonical path lands outside the allowed directory
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -413,5 +411,170 @@ public class CloudDrivePluginTests
         {
             Environment.SetEnvironmentVariable(envVarName, originalValue);
         }
+    }
+
+    [Fact]
+    public async Task GetFileContentAsyncDeniesAllPathsByDefaultAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object);
+
+        // Act & Assert — default config denies all read paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.GetFileContentAsync("/Documents/secret.docx"));
+    }
+
+    [Fact]
+    public async Task GetFileContentAsyncDeniesPathsOutsideAllowedAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedReadPaths = ["/Documents/Public"] };
+
+        // Act & Assert — path outside allowed read paths is denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.GetFileContentAsync("/Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task GetFileContentAsyncDeniesPathTraversalAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedReadPaths = ["/Documents"] };
+
+        // Act & Assert — traversal path should be denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.GetFileContentAsync("/Documents/../Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task GetFileContentAsyncAllowsSubdirectoriesOfAllowedReadPathsAsync()
+    {
+        // Arrange
+        string filePath = "/Documents/Public/Reports/Q1/summary.docx";
+        string expectedContent = "file content";
+        using MemoryStream expectedStream = new(Encoding.UTF8.GetBytes(expectedContent));
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        connectorMock.Setup(c => c.GetFileContentStreamAsync(filePath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedStream);
+
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedReadPaths = ["/Documents/Public"] };
+
+        // Act
+        string? actual = await target.GetFileContentAsync(filePath);
+
+        // Assert
+        Assert.Equal(expectedContent, actual);
+        connectorMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task GetFileContentAsyncDoesNotCallConnectorWhenDeniedAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedReadPaths = ["/Documents"] };
+
+        // Act & Assert — connector should never be called for denied paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.GetFileContentAsync("/Confidential/secret.docx"));
+        connectorMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UploadFileAsyncDeniesDisallowedDestinationPathAsync()
+    {
+        // Arrange
+        string allowedDir = Path.GetTempPath();
+        string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object)
+        {
+            AllowedUploadDirectories = [allowedDir],
+            AllowedUploadDestinationPaths = ["/Documents/Uploads"]
+        };
+
+        // Act & Assert — destination outside allowed paths is denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.UploadFileAsync(anyFilePath, "/Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task UploadFileAsyncDeniesAllDestinationPathsByDefaultAsync()
+    {
+        // Arrange
+        string allowedDir = Path.GetTempPath();
+        string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir] };
+
+        // Act & Assert — default config denies all destination paths
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.UploadFileAsync(anyFilePath, "/remote.txt"));
+    }
+
+    [Fact]
+    public async Task UploadFileAsyncAllowsDestinationInAllowedPathAsync()
+    {
+        // Arrange
+        string allowedDir = Path.GetTempPath();
+        string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        CloudDrivePlugin target = new(connectorMock.Object)
+        {
+            AllowedUploadDirectories = [allowedDir],
+            AllowedUploadDestinationPaths = ["/Documents"]
+        };
+
+        // Act
+        await target.UploadFileAsync(anyFilePath, "/Documents/Uploads/report.txt");
+
+        // Assert
+        connectorMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task UploadFileAsyncDeniesDestinationPathTraversalAsync()
+    {
+        // Arrange
+        string allowedDir = Path.GetTempPath();
+        string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object)
+        {
+            AllowedUploadDirectories = [allowedDir],
+            AllowedUploadDestinationPaths = ["/Documents"]
+        };
+
+        // Act & Assert — traversal in destination path should be denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.UploadFileAsync(anyFilePath, "/Documents/../Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task UploadFileAsyncDoesNotCallConnectorWhenDestinationDeniedAsync()
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+        CloudDrivePlugin target = new(connectorMock.Object)
+        {
+            AllowedUploadDirectories = [Path.GetTempPath()],
+            AllowedUploadDestinationPaths = ["/Documents"]
+        };
+
+        // Act & Assert — connector should never be called when destination is denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.UploadFileAsync(Path.Combine(Path.GetTempPath(), "file.txt"), "/Confidential/secret.docx"));
+        connectorMock.VerifyNoOtherCalls();
     }
 }
