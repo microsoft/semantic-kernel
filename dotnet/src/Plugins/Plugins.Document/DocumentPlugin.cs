@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -153,8 +154,22 @@ public sealed class DocumentPlugin
         // Expand environment variables first, then canonicalize — so that
         // validation and I/O operate on the same resolved path.
         var expanded = Environment.ExpandEnvironmentVariables(path);
+
+        // Re-check after expansion: an env var could have expanded to a UNC
+        // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
+        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
         return Path.GetFullPath(expanded);
     }
+
+    // Use case-insensitive comparison on Windows (case-insensitive FS), case-sensitive on Linux/macOS.
+    private static readonly StringComparison s_pathComparison =
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed directories.
@@ -178,13 +193,13 @@ public sealed class DocumentPlugin
         {
             var canonicalAllowed = Path.GetFullPath(allowedDirectory);
             var separator = Path.DirectorySeparatorChar.ToString();
-            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            if (!canonicalAllowed.EndsWith(separator, s_pathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (directoryPath.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (directoryPath + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (directoryPath.StartsWith(canonicalAllowed, s_pathComparison)
+                || (directoryPath + separator).Equals(canonicalAllowed, s_pathComparison))
             {
                 return true;
             }
