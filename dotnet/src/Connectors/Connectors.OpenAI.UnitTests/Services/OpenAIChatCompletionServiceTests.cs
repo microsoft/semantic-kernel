@@ -917,7 +917,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task FunctionResultsWithoutCallIdThrowClearExceptionAsync()
+    public async Task FunctionResultsWithoutCallIdThrowsClearExceptionAsync()
     {
         // Arrange
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)

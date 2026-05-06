@@ -761,7 +761,9 @@ internal partial class ClientCore
 
                 if (string.IsNullOrWhiteSpace(resultContent.CallId))
                 {
-                    throw new ArgumentException("Function result message is missing a tool call id. Provide FunctionResultContent.CallId when sending tool results to OpenAI.");
+                    throw new ArgumentException(
+                        $"Function result message is missing a tool call id. Provide {nameof(FunctionResultContent.CallId)} when sending tool results to OpenAI.",
+                        nameof(FunctionResultContent.CallId));
                 }
 
                 toolMessages ??= [];
