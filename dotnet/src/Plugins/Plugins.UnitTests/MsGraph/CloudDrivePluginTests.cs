@@ -328,6 +328,67 @@ public class CloudDrivePluginTests
     }
 
     [Fact]
+    public async Task CreateLinkAsyncDeniesPathTraversalAsync()
+    {
+        // Arrange — path with ".." segments that would bypass the allowed path prefix
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents"] };
+
+        // Act & Assert — traversal path should be denied even though it string-starts-with /Documents
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.CreateLinkAsync("/Documents/../Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task CreateLinkAsyncDeniesPathTraversalWithSubdirAsync()
+    {
+        // Arrange — traversal from an allowed subdirectory to an unauthorized location
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedSharePaths = ["/Documents/Public"] };
+
+        // Act & Assert — traversal should be denied
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await target.CreateLinkAsync("/Documents/Public/../Confidential/secret.docx"));
+    }
+
+    [Fact]
+    public async Task ItDeniesForwardSlashUncPathsAsync()
+    {
+        // Arrange — forward-slash UNC paths should also be rejected
+        Mock<ICloudDriveConnector> connectorMock = new();
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+
+        // Act & Assert — forward-slash UNC path is rejected
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await target.UploadFileAsync("//server/share/file.txt", "/remote.txt"));
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionToForwardSlashUncPathAsync()
+    {
+        // Arrange — env var that expands to a forward-slash UNC path should be rejected
+        var envVarName = "SK_TEST_FWDUNC_" + Guid.NewGuid().ToString("N")[..8];
+        var originalValue = Environment.GetEnvironmentVariable(envVarName);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, "//server/share");
+            var maliciousPath = $"%{envVarName}%/secret.txt";
+
+            Mock<ICloudDriveConnector> connectorMock = new();
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()] };
+
+            // Act & Assert — forward-slash UNC path after env-var expansion should be rejected
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+                await target.UploadFileAsync(maliciousPath, "/remote.txt"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, originalValue);
+        }
+    }
+
+    [Fact]
     public async Task ItDeniesEnvVarTraversalBypassAsync()
     {
         // Arrange — env var that expands to a traversal path

@@ -62,13 +62,15 @@ public sealed class CloudDrivePlugin
     }
 
     /// <summary>
-    /// List of allowed remote paths for which sharing links may be created. Subdirectories of allowed paths are also permitted.
+    /// List of allowed remote directory prefixes for which sharing links may be created.
+    /// A file is permitted if its parent directory starts with (or equals) any entry in this list.
+    /// Subdirectories of allowed paths are also permitted.
     /// </summary>
     /// <remarks>
     /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
-    /// with trusted remote paths before any share-link operations will succeed.
-    /// Paths are normalized with forward slashes before comparison and matched case-insensitively
-    /// (OneDrive paths are case-insensitive).
+    /// with trusted remote directory paths before any share-link operations will succeed.
+    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Matching is case-insensitive (OneDrive paths are case-insensitive).
     /// </remarks>
     public IEnumerable<string> AllowedSharePaths
     {
@@ -170,8 +172,9 @@ public sealed class CloudDrivePlugin
 
     /// <summary>
     /// Checks whether the provided remote path is allowed for sharing.
-    /// Paths are normalized with forward slashes and compared case-insensitively
-    /// (OneDrive paths are case-insensitive). Subdirectories of allowed paths are permitted.
+    /// Paths are normalized with forward slashes, dot-segments are collapsed,
+    /// and compared case-insensitively (OneDrive paths are case-insensitive).
+    /// Subdirectories of allowed paths are permitted.
     /// </summary>
     private bool IsSharePathAllowed(string path)
     {
@@ -182,12 +185,12 @@ public sealed class CloudDrivePlugin
             return false;
         }
 
-        // Normalize to forward slashes for consistent comparison of remote paths.
-        var normalizedPath = path.Replace('\\', '/');
+        // Normalize to forward slashes and collapse dot-segments to prevent traversal bypass.
+        var normalizedPath = NormalizeRemotePath(path);
 
         foreach (var allowedPath in this._allowedSharePaths)
         {
-            var normalizedAllowed = allowedPath.Replace('\\', '/');
+            var normalizedAllowed = NormalizeRemotePath(allowedPath);
             if (!normalizedAllowed.EndsWith("/", StringComparison.Ordinal))
             {
                 normalizedAllowed += "/";
@@ -211,6 +214,32 @@ public sealed class CloudDrivePlugin
     }
 
     /// <summary>
+    /// Normalizes a remote path by replacing backslashes with forward slashes
+    /// and collapsing "." and ".." segments to prevent traversal bypass.
+    /// </summary>
+    private static string NormalizeRemotePath(string path)
+    {
+        var normalizedPath = path.Replace('\\', '/');
+
+        // Collapse ".." and "." segments to prevent traversal bypass.
+        var segments = normalizedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var stack = new List<string>();
+        foreach (var segment in segments)
+        {
+            if (segment == ".." && stack.Count > 0)
+            {
+                stack.RemoveAt(stack.Count - 1);
+            }
+            else if (segment != "." && segment != "..")
+            {
+                stack.Add(segment);
+            }
+        }
+
+        return "/" + string.Join("/", stack);
+    }
+
+    /// <summary>
     /// Expands environment variables and resolves the path to its canonical form.
     /// This must be called before validation to prevent validate/use mismatches.
     /// </summary>
@@ -218,7 +247,8 @@ public sealed class CloudDrivePlugin
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -229,7 +259,8 @@ public sealed class CloudDrivePlugin
 
         // Re-check after expansion: an env var could have expanded to a UNC
         // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
+            expanded.StartsWith("//", StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
