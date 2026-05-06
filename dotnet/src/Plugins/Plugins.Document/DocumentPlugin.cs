@@ -87,14 +87,16 @@ public sealed class DocumentPlugin
         [Description("Path to the file to read")] string filePath,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Reading text from {0}", filePath);
+        var canonicalPath = CanonicalizePath(filePath);
 
-        if (!this.IsFilePathAllowed(filePath))
+        this._logger.LogDebug("Reading text from {0}", canonicalPath);
+
+        if (!this.IsFilePathAllowed(canonicalPath))
         {
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
 
@@ -107,25 +109,27 @@ public sealed class DocumentPlugin
         [Description("Destination file path")] string filePath,
         CancellationToken cancellationToken = default)
     {
-        if (!this.IsFilePathAllowed(filePath))
+        var canonicalPath = CanonicalizePath(filePath);
+
+        if (!this.IsFilePathAllowed(canonicalPath))
         {
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(filePath, cancellationToken).ConfigureAwait(false))
+        if (await this._fileSystemConnector.FileExistsAsync(canonicalPath, cancellationToken).ConfigureAwait(false))
         {
-            this._logger.LogDebug("Writing text to file {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+            this._logger.LogDebug("Writing text to file {0}", canonicalPath);
+            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.AppendText(stream, text);
         }
         else
         {
-            this._logger.LogDebug("File does not exist. Creating file at {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath, cancellationToken).ConfigureAwait(false);
+            this._logger.LogDebug("File does not exist. Creating file at {0}", canonicalPath);
+            using Stream stream = await this._fileSystemConnector.CreateFileAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.Initialize(stream);
 
-            this._logger.LogDebug("Writing text to {0}", filePath);
+            this._logger.LogDebug("Writing text to {0}", canonicalPath);
             this._documentConnector.AppendText(stream, text);
         }
     }
@@ -134,11 +138,10 @@ public sealed class DocumentPlugin
     private HashSet<string>? _allowedDirectories = [];
 
     /// <summary>
-    /// If a list of allowed directories has been provided, the directory of the provided filePath is checked
-    /// to verify it is in the allowed directory list. Paths are canonicalized before comparison.
-    /// Subdirectories of allowed directories are also permitted.
+    /// Expands environment variables and resolves the path to its canonical form.
+    /// This must be called before validation to prevent validate/use mismatches.
     /// </summary>
-    private bool IsFilePathAllowed(string path)
+    private static string CanonicalizePath(string path)
     {
         Verify.NotNullOrWhiteSpace(path);
 
@@ -147,19 +150,29 @@ public sealed class DocumentPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        string? directoryPath = Path.GetDirectoryName(path);
+        // Expand environment variables first, then canonicalize — so that
+        // validation and I/O operate on the same resolved path.
+        var expanded = Environment.ExpandEnvironmentVariables(path);
+        return Path.GetFullPath(expanded);
+    }
+
+    /// <summary>
+    /// Checks whether a canonicalized file path falls within one of the allowed directories.
+    /// Subdirectories of allowed directories are also permitted.
+    /// </summary>
+    private bool IsFilePathAllowed(string canonicalPath)
+    {
+        string? directoryPath = Path.GetDirectoryName(canonicalPath);
 
         if (string.IsNullOrEmpty(directoryPath))
         {
-            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(canonicalPath));
         }
 
         if (this._allowedDirectories is null || this._allowedDirectories.Count == 0)
         {
             return false;
         }
-
-        var canonicalDir = Path.GetFullPath(directoryPath);
 
         foreach (var allowedDirectory in this._allowedDirectories)
         {
@@ -170,8 +183,8 @@ public sealed class DocumentPlugin
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (directoryPath.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
+                || (directoryPath + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

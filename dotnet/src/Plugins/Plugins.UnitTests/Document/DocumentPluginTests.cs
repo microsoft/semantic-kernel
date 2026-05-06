@@ -247,7 +247,66 @@ public class DocumentPluginTests
             AllowedDirectories = [Path.GetTempPath()]
         };
 
-        // Act & Assert — relative paths are caught by the "fully qualified" check
-        await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync("myfile.docx"));
+        // Act & Assert — relative paths resolve to CWD after canonicalization,
+        // which will be outside the allowed directories
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync("myfile.docx"));
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionBypassOnReadAsync()
+    {
+        // Arrange — path that starts with an allowed directory but uses env-var expansion
+        // to escape to a different location after expansion.
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "allowed-sandbox");
+        // Construct a path like C:\temp\allowed-sandbox\..%HOMEPATH%\secret.docx
+        // After env-var expansion, %HOMEPATH% becomes \Users\<user>, and ".." traverses out.
+        var maliciousPath = Path.Combine(allowedFolder, "..%HOMEPATH%", "secret.docx");
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [allowedFolder]
+        };
+
+        // Act & Assert — the path should be denied because env vars are expanded
+        // before validation, so the canonical path lands outside the allowed directory.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(maliciousPath));
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionBypassOnWriteAsync()
+    {
+        // Arrange
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "allowed-sandbox");
+        var maliciousPath = Path.Combine(allowedFolder, "..%HOMEPATH%", "secret.docx");
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [allowedFolder]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", maliciousPath));
+    }
+
+    [Fact]
+    public async Task ItDeniesPercentEncodedPathTraversalOnReadAsync()
+    {
+        // Arrange — paths containing bare %VAR% that would expand to absolute paths
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "sandbox");
+        var maliciousPath = "%APPDATA%\\secret.docx";
+
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [allowedFolder]
+        };
+
+        // Act & Assert — after env-var expansion, the path resolves outside the sandbox
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(maliciousPath));
     }
 }
