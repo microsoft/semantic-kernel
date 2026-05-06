@@ -23,6 +23,13 @@ internal sealed class GeminiRequest
         }
     };
 
+    /// <summary>
+    /// Synthetic envelope used as the <c>functionResponse.response</c> body when emitting a multimodal
+    /// (image) tool result. The actual image data is carried in <c>functionResponse.parts[].inlineData</c>;
+    /// the envelope keeps the required <c>response</c> field present and gives the model a short hint.
+    /// </summary>
+    private static readonly object s_imageFunctionResponseEnvelope = new { status = "success", message = "Image data attached" };
+
     [JsonPropertyName("contents")]
     public IList<GeminiContent> Contents { get; set; } = null!;
 
@@ -327,7 +334,7 @@ internal sealed class GeminiRequest
             FunctionResponse = new GeminiPart.FunctionResponsePart
             {
                 FunctionName = functionName,
-                Response = new(new { status = "success", message = "Image data attached" }),
+                Response = new(s_imageFunctionResponseEnvelope),
                 Parts =
                 [
                     new GeminiPart.FunctionResponsePart.FunctionResponsePartContent

@@ -485,10 +485,17 @@ internal sealed class FunctionCallsProcessor
     }
 
     /// <summary>
-    /// Processes the function result.
+    /// Processes the function result into the form a connector should serialize into a tool/function response.
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
-    /// <returns>A string representation of the function result, or the original ImageContent for multimodal-capable connectors.</returns>
+    /// <returns>
+    /// One of:
+    /// <list type="bullet">
+    ///   <item><description>The original <see cref="string"/> when <paramref name="functionResult"/> is a string.</description></item>
+    ///   <item><description>The original <see cref="ImageContent"/> instance when <paramref name="functionResult"/> is an <see cref="ImageContent"/>, so multimodal-capable connectors (e.g., Gemini 3+) can attach it natively. Connectors that do not support multimodal tool results must detect this case and substitute <see cref="ImageContentNotSupportedErrorMessage"/>.</description></item>
+    ///   <item><description>A JSON-serialized <see cref="string"/> representation of any other type (with <see cref="ChatMessageContent"/> and <see cref="IEnumerable{ChatMessageContent}"/> short-circuited to their text form).</description></item>
+    /// </list>
+    /// </returns>
     public static object ProcessFunctionResult(object functionResult)
     {
         if (functionResult is string stringResult)

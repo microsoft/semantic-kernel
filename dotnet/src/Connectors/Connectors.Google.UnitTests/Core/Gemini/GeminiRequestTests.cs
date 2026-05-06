@@ -806,7 +806,7 @@ public sealed class GeminiRequestTests
         Assert.Single(part.FunctionResponse.Parts);
         Assert.NotNull(part.FunctionResponse.Parts[0].InlineData);
         Assert.Equal("image/png", part.FunctionResponse.Parts[0].InlineData!.MimeType);
-        Assert.Equal(Convert.ToBase64String(imageBytes), part.FunctionResponse.Parts[0].InlineData.InlineData);
+        Assert.Equal(Convert.ToBase64String(imageBytes), part.FunctionResponse.Parts[0].InlineData!.InlineData);
     }
 
     [Fact]
