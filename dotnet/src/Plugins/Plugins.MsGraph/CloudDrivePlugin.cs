@@ -222,7 +222,7 @@ public sealed class CloudDrivePlugin
         var normalizedPath = path.Replace('\\', '/');
 
         // Collapse ".." and "." segments to prevent traversal bypass.
-        var segments = normalizedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var segments = normalizedPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
         var stack = new List<string>();
         foreach (var segment in segments)
         {
