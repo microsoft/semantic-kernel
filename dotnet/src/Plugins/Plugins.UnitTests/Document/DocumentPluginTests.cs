@@ -239,15 +239,137 @@ public class DocumentPluginTests
     [Fact]
     public async Task ItDeniesRelativePathsAsync()
     {
-        // Arrange
+        // Arrange — use a unique subfolder so this test is deterministic regardless of CWD
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "unique-allowed-" + Guid.NewGuid().ToString("N")[..8]);
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         var documentConnectorMock = new Mock<IDocumentConnector>();
         var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
         {
-            AllowedDirectories = [Path.GetTempPath()]
+            AllowedDirectories = [allowedFolder]
         };
 
-        // Act & Assert — relative paths are caught by the "fully qualified" check
-        await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync("myfile.docx"));
+        // Act & Assert — relative paths resolve to CWD after canonicalization,
+        // which will be outside the allowed directories
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync("myfile.docx"));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", "myfile.docx"));
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionBypassOnReadAsync()
+    {
+        // Arrange — use a test-specific env var that expands to a value containing
+        // a path separator + ".." which creates a traversal after expansion.
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "allowed-sandbox");
+        var envVarName = "SK_TEST_EXPAND_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            // The env var value starts with a separator + ".." so that after expansion
+            // the path becomes: allowed-sandbox/<sep>..<sep>elsewhere<sep>secret.docx
+            Environment.SetEnvironmentVariable(envVarName,
+                $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}elsewhere");
+            var maliciousPath = Path.Combine(allowedFolder, $"%{envVarName}%", "secret.docx");
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+            var documentConnectorMock = new Mock<IDocumentConnector>();
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [allowedFolder]
+            };
+
+            // Act & Assert — the path should be denied because env vars are expanded
+            // before validation, so the canonical path lands outside the allowed directory.
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionBypassOnWriteAsync()
+    {
+        // Arrange — same pattern as read test, for the write path.
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "allowed-sandbox");
+        var envVarName = "SK_TEST_EXPAND_W_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName,
+                $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}elsewhere");
+            var maliciousPath = Path.Combine(allowedFolder, $"%{envVarName}%", "secret.docx");
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+            var documentConnectorMock = new Mock<IDocumentConnector>();
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [allowedFolder]
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesEnvVarExpansionToAbsolutePathAsync()
+    {
+        // Arrange — env var that expands to an absolute path outside the sandbox
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "sandbox");
+        var envVarName = "SK_TEST_ABS_" + Guid.NewGuid().ToString("N")[..8];
+        var outsidePath = Path.Combine(Path.GetTempPath(), "outside");
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, outsidePath);
+            var maliciousPath = Path.Combine($"%{envVarName}%", "secret.docx");
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+            var documentConnectorMock = new Mock<IDocumentConnector>();
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [allowedFolder]
+            };
+
+            // Act & Assert — after env-var expansion, the path resolves outside the sandbox
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesUncPathsIntroducedViaEnvVarExpansionAsync()
+    {
+        // Arrange — env var that expands to a UNC path
+        var allowedFolder = Path.Combine(Path.GetTempPath(), "sandbox");
+        var envVarName = "SK_TEST_UNC_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, @"\\evil-server\share");
+            var maliciousPath = $"%{envVarName}%{Path.DirectorySeparatorChar}secret.docx";
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+            var documentConnectorMock = new Mock<IDocumentConnector>();
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [allowedFolder]
+            };
+
+            // Act & Assert — expanded path is UNC, should be rejected
+            await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
     }
 }
