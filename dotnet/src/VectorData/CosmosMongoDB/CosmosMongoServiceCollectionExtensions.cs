@@ -12,7 +12,7 @@ using MongoDB.Driver;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to register Azure CosmosDB MongoDB <see cref="VectorStore"/> instances on an <see cref="IServiceCollection"/>.
+/// Extension methods to register Azure DocumentDB (with MongoDB compatibility) <see cref="VectorStore"/> instances on an <see cref="IServiceCollection"/>.
 /// </summary>
 public static class CosmosMongoServiceCollectionExtensions
 {
@@ -86,8 +86,8 @@ public static class CosmosMongoServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="CosmosMongoVectorStore"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the vector store.</param>
-    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
-    /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
+    /// <param name="connectionString">Connection string required to connect to Azure DocumentDB.</param>
+    /// <param name="databaseName">Database name for Azure DocumentDB.</param>
     /// <param name="options">Optional options to further configure the <see cref="CosmosMongoVectorStore"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
@@ -197,8 +197,8 @@ public static class CosmosMongoServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="CosmosMongoCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
-    /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
+    /// <param name="connectionString">Connection string required to connect to Azure DocumentDB.</param>
+    /// <param name="databaseName">Database name for Azure DocumentDB.</param>
     /// <param name="options">Optional options to further configure the <see cref="CosmosMongoCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>

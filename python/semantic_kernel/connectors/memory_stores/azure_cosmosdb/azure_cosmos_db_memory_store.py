@@ -28,7 +28,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @deprecated("This class will be removed in a future release, use AzureCosmosDBforMongoDBStore and Collection instead.")
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
-    """A memory store that uses AzureCosmosDB for MongoDB vCore.
+    """A memory store that uses Azure DocumentDB (with MongoDB compatibility).
 
     To perform vector similarity search on a fully managed MongoDB compatible database service.
     https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search.
