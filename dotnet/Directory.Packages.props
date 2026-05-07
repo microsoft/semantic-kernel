@@ -74,9 +74,9 @@
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.81.0" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
-    <PackageVersion Include="Microsoft.Kiota.Authentication.Azure" Version="1.21.1" />
-    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.21.1" />
-    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.21.1" />
+    <PackageVersion Include="Microsoft.Kiota.Authentication.Azure" Version="1.22.2" />
+    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.22.2" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.22.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.23.2" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />
