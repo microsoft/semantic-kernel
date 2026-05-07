@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -853,6 +854,54 @@ public class FunctionCallsProcessorTests
 
         // Assert
         Assert.Equal("{\"Text\":\"ﾃｽﾄ\"}", result);
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateFunctionResultMetadataToChatHistoryAsync()
+    {
+        // Arrange
+        var expectedMetadata = new Dictionary<string, object?>
+        {
+            ["key1"] = "value1",
+            ["key2"] = 42
+        };
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
+
+        var kernel = CreateKernel(plugin, async (context, next) =>
+        {
+            await next(context);
+
+            // Filter sets metadata on the FunctionResult
+            context.Result = new FunctionResult(context.Function, context.Result.GetValue<object>(), context.Result.Culture, expectedMetadata);
+        });
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", arguments: new KernelArguments() { ["parameter"] = "function1-result" }));
+
+        var chatHistory = new ChatHistory();
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
+                chatHistory: chatHistory,
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
+                kernel: kernel!,
+                isStreaming: false,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, chatHistory.Count);
+
+        var toolMessage = chatHistory[1]; // First is the assistant message, second is the tool result
+        Assert.Equal(AuthorRole.Tool, toolMessage.Role);
+        Assert.NotNull(toolMessage.Metadata);
+        Assert.Equal("value1", toolMessage.Metadata["key1"]);
+        Assert.Equal(42, toolMessage.Metadata["key2"]);
     }
 
     [Fact]

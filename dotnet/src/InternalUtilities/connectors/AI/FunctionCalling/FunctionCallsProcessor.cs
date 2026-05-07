@@ -389,6 +389,7 @@ internal sealed class FunctionCallsProcessor
     private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionResultContext resultContext)
     {
         var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result);
+        message.Metadata = resultContext.Context.Result.Metadata;
         message.Items.Add(this.GenerateResultContent(resultContext));
         chatHistory.Add(message);
     }
