@@ -412,6 +412,34 @@ def test_build_path_with_optional_and_required_parameters():
     assert operation.build_path(operation.path, arguments) == expected_path
 
 
+def test_build_path_encodes_special_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    # Characters like /, ?, #, and spaces must be percent-encoded to prevent traversal
+    arguments = {"id": "foo/bar?q=1#frag data"}
+    result = operation.build_path(operation.path, arguments)
+    encoded_part = result.split("/resource/")[1]
+    assert "/" not in encoded_part
+    assert "?" not in encoded_part
+    assert "#" not in encoded_part
+    assert " " not in encoded_part
+    # Python's quote(safe="") encodes all except unreserved chars (letters, digits, _, ., -, ~)
+    assert result == "/resource/foo%2Fbar%3Fq%3D1%23frag%20data"
+
+
+def test_build_path_prevents_path_traversal():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "../../admin"}
+    result = operation.build_path(operation.path, arguments)
+    # The slashes must be encoded so ../../admin becomes a single path segment, not a traversal
+    assert result == "/resource/..%2F..%2Fadmin"
+
+
 def test_build_query_string_with_required_parameter():
     parameters = [
         RestApiParameter(name="query", type="string", location=RestApiParameterLocation.QUERY, is_required=True)
