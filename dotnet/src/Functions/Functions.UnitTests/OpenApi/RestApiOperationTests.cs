@@ -1339,7 +1339,7 @@ public class RestApiOperationTests
         // Act
         var url = sut.BuildOperationUrl(arguments);
 
-        // Assert — slashes and dots must be percent-encoded, not interpreted as path separators
+        // Assert — reserved separators (/) must be percent-encoded so they are not interpreted as path delimiters
         Assert.Equal("https://example.com/v2%2F..%2Fadmin/items", url.OriginalString);
     }
 
@@ -1363,7 +1363,9 @@ public class RestApiOperationTests
 
         var arguments = new Dictionary<string, object?>() { { "host", "evil.com/hijack?q=1#" } };
 
-        // Act & Assert — encoding the malicious value makes the URI unparsable, preventing injection
+        // Act & Assert — encoding turns /, ?, # into percent-encoded sequences (%2F, %3F, %23),
+        // which prevents them from being interpreted as structural URI delimiters.
+        // The Uri constructor rejects the resulting hostname, which is the desired outcome.
         Assert.ThrowsAny<UriFormatException>(() => sut.BuildOperationUrl(arguments));
     }
 
@@ -1465,4 +1467,30 @@ public class RestApiOperationTests
         Assert.Equal("https://example.com/api/files/report.v2.txt", url.OriginalString);
     }
 
+    [Fact]
+    public void ItShouldEncodeServerVariableValuesLookedUpByArgumentName()
+    {
+        // Arrange — variable uses ArgumentName and the argument contains path-manipulation characters
+        var version = new RestApiServerVariable("v1", null, ["v1", "v2/../admin"]) { ArgumentName = "alt_version" };
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{version}", new Dictionary<string, RestApiServerVariable> { { "version", version } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "alt_version", "v2/../admin" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — reserved separators must be percent-encoded even when looked up via ArgumentName
+        Assert.Equal("https://example.com/v2%2F..%2Fadmin/items", url.OriginalString);
+    }
 }

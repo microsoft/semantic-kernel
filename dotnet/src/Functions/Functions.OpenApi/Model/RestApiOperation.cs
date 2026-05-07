@@ -366,19 +366,19 @@ public sealed class RestApiOperation
                     arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
                     value is string { } argStrValue && variable.Value.IsValid(argStrValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", Uri.EscapeDataString(argStrValue));
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(argStrValue));
                 }
                 // Try to get the variable value by the variable name.
                 else if (arguments.TryGetValue(variableName, out value) &&
                     value is string { } strValue &&
                     variable.Value.IsValid(strValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", Uri.EscapeDataString(strValue));
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(strValue));
                 }
                 // Use the default value if no argument is provided.
                 else if (variable.Value.Default is not null)
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", variable.Value.Default);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", variable.Value.Default);
                 }
                 // Throw an exception if there's no value for the variable.
                 else
@@ -424,7 +424,7 @@ public sealed class RestApiOperation
         {
             if (segments[i] == "." || segments[i] == "..")
             {
-                throw new KernelException($"Path '{path}' contains a dot-segment introduced by parameter values, which could lead to path traversal.");
+                throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
             }
         }
     }
