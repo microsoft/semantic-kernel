@@ -201,6 +201,72 @@ public sealed class GrpcRunnerTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldAllowAddressWithSubPathWhenAllowlistHasTrailingSlashAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
+        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
+        this._httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
+
+        var requestMetadata = new GrpcOperationDataContractType("greet.HelloRequest", [new("name", 1, "TYPE_STRING")]);
+        var responseMetadata = new GrpcOperationDataContractType("greet.HelloReply", [new("message", 1, "TYPE_STRING")]);
+
+        var allowedAddresses = new[] { new Uri("https://fake-random-test-host/grpc/") };
+        var sut = new GrpcOperationRunner(this._httpClient, allowedAddresses: allowedAddresses);
+
+        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        {
+            Package = "greet",
+            Address = "https://fake-random-test-host/grpc/v1"
+        };
+
+        var arguments = new KernelArguments
+        {
+            { "payload", JsonSerializer.Serialize(new { name = "author" }) }
+        };
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert - trailing slash in allowlist should allow sub-paths
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task ShouldAllowHttpWhenCustomSchemesPermitItAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
+        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
+        this._httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
+
+        var requestMetadata = new GrpcOperationDataContractType("greet.HelloRequest", [new("name", 1, "TYPE_STRING")]);
+        var responseMetadata = new GrpcOperationDataContractType("greet.HelloReply", [new("message", 1, "TYPE_STRING")]);
+
+        var allowedSchemes = new[] { "https", "http" };
+        var sut = new GrpcOperationRunner(this._httpClient, allowedSchemes: allowedSchemes);
+
+        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        {
+            Package = "greet",
+            Address = "http://localhost"
+        };
+
+        var arguments = new KernelArguments
+        {
+            { "payload", JsonSerializer.Serialize(new { name = "author" }) }
+        };
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert - http should be allowed when custom schemes permit it
+        Assert.NotNull(result);
+    }
+
+    [Fact]
     public async Task ShouldRejectNonHttpsSchemeByDefaultAsync()
     {
         // Arrange

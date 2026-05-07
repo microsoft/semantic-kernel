@@ -191,12 +191,17 @@ internal sealed class GrpcOperationRunner
             bool isAllowed = false;
             foreach (var allowedAddress in this._allowedAddresses)
             {
-                if (addressUri.AbsoluteUri.StartsWith(allowedAddress.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
+                string allowedUri = allowedAddress.AbsoluteUri;
+
+                if (addressUri.AbsoluteUri.StartsWith(allowedUri, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Ensure the match is at a path boundary to prevent prefix bypasses
-                    // e.g., allowed "https://host/grpc" should not match "https://host/grpcevil"
-                    int prefixLength = allowedAddress.AbsoluteUri.Length;
+                    // If the allowed URI already ends at a boundary (e.g., trailing '/'),
+                    // or the full URIs match exactly, no further check is needed.
+                    // Otherwise, ensure the next character is a path boundary to prevent
+                    // prefix bypasses (e.g., allowed "https://host/grpc" should not match "https://host/grpcevil").
+                    int prefixLength = allowedUri.Length;
                     if (prefixLength >= addressUri.AbsoluteUri.Length ||
+                        allowedUri[prefixLength - 1] is '/' ||
                         addressUri.AbsoluteUri[prefixLength] is '/' or '?' or '#')
                     {
                         isAllowed = true;
