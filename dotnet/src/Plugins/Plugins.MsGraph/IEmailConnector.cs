@@ -17,7 +17,7 @@ public interface IEmailConnector
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The user's email address.</returns>
-    Task<string> GetMyEmailAddressAsync(CancellationToken cancellationToken = default);
+    Task<string?> GetMyEmailAddressAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Send an email to the specified recipients.
@@ -37,6 +37,6 @@ public interface IEmailConnector
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user's email messages.</returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    Task<IEnumerable<EmailMessage>> GetMessagesAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
+    Task<IEnumerable<EmailMessage>?> GetMessagesAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
 #pragma warning restore CA1716 // Identifiers should not match keywords
 }

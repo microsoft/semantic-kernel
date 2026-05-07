@@ -36,7 +36,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
         // Define the agents
         Kernel researchKernel = CreateKernelWithOpenAIChatCompletion(ResearcherModel);
         ChatCompletionAgent researchAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "ResearchAgent",
                 description: "A helpful assistant with access to web search. Ask it to perform web searches.",
                 instructions: "You are a Researcher. You find information without additional computation or quantitative analysis.",
@@ -86,7 +86,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
             """;
         Console.WriteLine($"\n# INPUT:\n{input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 10));
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 20));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();

@@ -30,7 +30,8 @@ internal sealed class ChatCompletionRequest
     public bool Stream { get; set; } = false;
 
     [JsonPropertyName("safe_prompt")]
-    public bool SafePrompt { get; set; } = false;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SafePrompt { get; set; } = false;
 
     [JsonPropertyName("tools")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

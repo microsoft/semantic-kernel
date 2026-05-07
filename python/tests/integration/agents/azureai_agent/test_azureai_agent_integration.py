@@ -5,7 +5,7 @@ from typing import Annotated
 
 import pytest
 from azure.ai.agents.models import CodeInterpreterTool, FileInfo, FileSearchTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
@@ -29,7 +29,7 @@ class TestAzureAIAgentIntegration:
     async def azureai_agent(self, request):
         ai_agent_settings = AzureAIAgentSettings()
         async with (
-            DefaultAzureCredential() as creds,
+            AzureCliCredential() as creds,
             AzureAIAgent.create_client(credential=creds) as client,
         ):
             tools, tool_resources, plugins = [], {}, []
@@ -160,7 +160,7 @@ class TestAzureAIAgentIntegration:
     async def test_code_interpreter_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3
@@ -176,7 +176,7 @@ Dolphin  2
     async def test_code_interpreter_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3
@@ -194,7 +194,7 @@ Dolphin  2
     async def test_code_interpreter_invoke_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter streaming."""
         input_text = """
-Create a bar chart for the following data:
+Using Python, sum the number of animals for the following data:
 Panda   5
 Tiger   8
 Lion    3

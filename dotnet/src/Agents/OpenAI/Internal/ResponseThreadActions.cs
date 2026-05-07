@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using OpenAI.Responses;
@@ -27,14 +28,13 @@ internal static class ResponseThreadActions
         AgentInvokeOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var kernel = options?.Kernel ?? agent.Kernel;
         var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread, history)];
+            overrideHistory = [.. GetChatHistory(agentThread)];
         }
 
         var creationOptions = ResponseCreationOptionsFactory.CreateOptions(agent, agentThread, options);
@@ -45,7 +45,9 @@ internal static class ResponseThreadActions
         for (int requestIndex = 0; ; requestIndex++)
         {
             // Create a response using the OpenAI Responses API
-            var clientResult = await agent.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            var clientResult = await agent.Client.CreateResponseAsync(creationOptions, cancellationToken).ConfigureAwait(false);
             var response = clientResult.Value;
             ThrowIfIncompleteOrFailed(agent, response);
 
@@ -57,7 +59,9 @@ internal static class ResponseThreadActions
             }
             else
             {
-                inputItems.AddRange(response.OutputItems);
+                var filteredItems = response.OutputItems
+                    .Where(item => item is not ReasoningResponseItem); // Keep items that are not ReasoningResponseItem  
+                inputItems.AddRange(filteredItems);
             }
 
             var message = response.ToChatMessageContent();
@@ -86,9 +90,9 @@ internal static class ResponseThreadActions
                     message,
                     (_) => true,
                     functionOptions,
-                    kernel,
+                    agent.GetKernel(options),
                     isStreaming: false,
-                    cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items
@@ -102,8 +106,7 @@ internal static class ResponseThreadActions
             }
 
             // Return the function results as a message
-            ChatMessageContentItemCollection items = new();
-            items.AddRange(functionResults);
+            ChatMessageContentItemCollection items = [.. functionResults];
             ChatMessageContent functionResultMessage = new()
             {
                 Role = AuthorRole.Tool,
@@ -121,14 +124,13 @@ internal static class ResponseThreadActions
         AgentInvokeOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var kernel = options?.Kernel ?? agent.Kernel;
         var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. GetChatHistory(agentThread, history)];
+            overrideHistory = [.. GetChatHistory(agentThread)];
         }
 
         var inputItems = overrideHistory.Select(m => m.ToResponseItem()).ToList();
@@ -139,7 +141,7 @@ internal static class ResponseThreadActions
         ChatMessageContent? message = null;
         for (int requestIndex = 0; ; requestIndex++)
         {
-            // Make the call to the OpenAIResponseClient and process the streaming results.
+            // Make the call to the ResponsesClient and process the streaming results.
             DateTimeOffset? createdAt = null;
             string? responseId = null;
             string? modelId = null;
@@ -147,8 +149,11 @@ internal static class ResponseThreadActions
             Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
             Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
             StreamingFunctionCallUpdateContent? functionCallUpdateContent = null;
-            OpenAIResponse? response = null;
-            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
+            ResponseResult? response = null;
+            creationOptions.InputItems.Clear();
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            creationOptions.StreamingEnabled = true;
+            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)
                 {
@@ -161,6 +166,7 @@ internal static class ResponseThreadActions
                     case StreamingResponseCompletedUpdate completedUpdate:
                         response = completedUpdate.Response;
                         message = completedUpdate.Response.ToChatMessageContent();
+                        overrideHistory.Add(message);
                         break;
 
                     case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
@@ -258,9 +264,9 @@ internal static class ResponseThreadActions
                     message!,
                     (_) => true,
                     functionOptions,
-                    kernel,
-                    isStreaming: false,
-                    cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+                    agent.GetKernel(options),
+                    isStreaming: true,
+                    cancellationToken).ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items
@@ -274,21 +280,26 @@ internal static class ResponseThreadActions
             }
 
             // Return the function results as a message
-            ChatMessageContentItemCollection items = new();
-            items.AddRange(functionResults);
-            StreamingChatMessageContent functionResultMessage = new(
-                AuthorRole.Tool,
-                content: null)
+            ChatMessageContentItemCollection items = [.. functionResults];
+            ChatMessageContent functionResultMessage = new()
             {
-                ModelId = modelId,
-                InnerContent = functionCallUpdateContent,
-                Items = [functionCallUpdateContent],
+                Role = AuthorRole.Tool,
+                Items = items,
             };
-            yield return functionResultMessage;
+            StreamingChatMessageContent streamingFunctionResultMessage =
+                new(AuthorRole.Tool,
+                    content: null)
+                {
+                    ModelId = modelId,
+                    InnerContent = functionCallUpdateContent,
+                    Items = [functionCallUpdateContent],
+                };
+            overrideHistory.Add(functionResultMessage);
+            yield return streamingFunctionResultMessage;
         }
     }
 
-    private static ChatHistory GetChatHistory(AgentThread agentThread, ChatHistory history)
+    private static ChatHistory GetChatHistory(AgentThread agentThread)
     {
         if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
         {
@@ -298,20 +309,9 @@ internal static class ResponseThreadActions
         throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
     }
 
-    private static void UpdateResponseId(AgentThread agentThread, string id)
+    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, ResponseResult response)
     {
-        if (agentThread is OpenAIResponseAgentThread openAIResponseAgentThread)
-        {
-            openAIResponseAgentThread.ResponseId = id;
-            return;
-        }
-
-        throw new InvalidOperationException("The agent thread is not an OpenAIResponseAgentThread.");
-    }
-
-    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, OpenAIResponse response)
-    {
-        if (response.Status == ResponseStatus.Incomplete || response.Status == ResponseStatus.Failed)
+        if (response.Status is ResponseStatus.Incomplete or ResponseStatus.Failed)
         {
             throw new KernelException(
                 $"Run failed with status: `{response.Status}` for agent `{agent.Name}` with error: {response.Error.Message} or incomplete details: {response.IncompleteStatusDetails.Reason}");

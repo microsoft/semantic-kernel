@@ -187,7 +187,7 @@ public sealed class BedrockChatCompletionServiceTests
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        List<StreamingChatMessageContent> output = new();
+        List<StreamingChatMessageContent> output = [];
         var result = service.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
 
         // Assert
@@ -439,7 +439,7 @@ public sealed class BedrockChatCompletionServiceTests
                 Message = new Message
                 {
                     Role = role,
-                    Content = new List<ContentBlock> { new() { Text = text } }
+                    Content = [new() { Text = text }]
                 }
             },
             Metrics = new ConverseMetrics(),

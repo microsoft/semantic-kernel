@@ -23,7 +23,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
             "translate English to Dutch: Hello, how are you?",
         ),
         (
-            "jotamunz/billsum_tiny_summarization",
+            "Falconsai/text_summarization",
             "summarization",
             """
         Summarize: Whales are fully aquatic, open-ocean animals:

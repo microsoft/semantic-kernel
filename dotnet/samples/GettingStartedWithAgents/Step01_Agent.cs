@@ -27,7 +27,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     [InlineData(false)]
     public async Task UseSingleChatCompletionAgent(bool useChatClient)
     {
-        Kernel kernel = this.CreateKernelWithChatCompletion();
+        Kernel kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient);
 
         // Define the agent
         ChatCompletionAgent agent =
@@ -35,7 +35,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Name = ParrotName,
                 Instructions = ParrotInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
+                Kernel = kernel
             };
 
         // Respond to user input

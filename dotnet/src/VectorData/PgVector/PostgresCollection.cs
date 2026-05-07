@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -35,8 +35,13 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    /// <summary>Postgres client that is used to interact with the database.</summary>
-    private readonly PostgresDbClient _client;
+    /// <summary>Data source used to interact with the database.</summary>
+    private readonly NpgsqlDataSource _dataSource;
+    private readonly NpgsqlDataSourceArc? _dataSourceArc;
+    private readonly string _databaseName;
+
+    /// <summary>The database schema.</summary>
+    private readonly string? _schema;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -46,6 +51,9 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid search.</summary>
+    private static readonly HybridSearchOptions<TRecord> s_defaultHybridSearchOptions = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
@@ -57,7 +65,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
     [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead")]
     public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
-        : this(() => new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
+        : this(dataSource, ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null, name, options)
     {
     }
 
@@ -70,34 +78,26 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
     [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead")]
     public PostgresCollection(string connectionString, string name, PostgresCollectionOptions? options = default)
-        : this(() => new PostgresDbClient(PostgresUtils.CreateDataSource(connectionString), options?.Schema, ownsDataSource: true), name, options)
+        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
-    /// </summary>
-    /// <param name="clientFactory">The client to use for interacting with the database.</param>
-    /// <param name="name">The name of the collection.</param>
-    /// <param name="options">Optional configuration options for this class.</param>
-    /// <remarks>
-    /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
-    /// </remarks>
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
     [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
-    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, PostgresCollectionOptions? options)
+    internal PostgresCollection(NpgsqlDataSource dataSource, NpgsqlDataSourceArc? dataSourceArc, string name, PostgresCollectionOptions? options)
         : this(
-            clientFactory,
+            dataSource,
+            dataSourceArc,
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PostgresDynamicCollection)))
-                : new PostgresModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new PostgresModelBuilder().Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, Func<PostgresCollectionOptions, CollectionModel> modelFactory, PostgresCollectionOptions? options)
+    internal PostgresCollection(NpgsqlDataSource dataSource, NpgsqlDataSourceArc? dataSourceArc, string name, Func<PostgresCollectionOptions, CollectionModel> modelFactory, PostgresCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(name);
 
@@ -107,117 +107,79 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         this._model = modelFactory(options);
         this._mapper = new PostgresMapper<TRecord>(this._model);
 
-        // The code above can throw, so we need to create the client after the model is built and verified.
-        // In case an exception is thrown, we don't need to dispose any resources.
-        this._client = clientFactory();
+        this._dataSource = dataSource;
+        this._dataSourceArc = dataSourceArc;
+        this._databaseName = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString).Database!;
+        this._schema = options.Schema;
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._client.DatabaseName,
+            VectorStoreName = this._databaseName,
             CollectionName = name
         };
+
+        // Don't add any lines after this - an exception thrown afterwards would leave the reference count wrongly incremented.
+        this._dataSourceArc?.IncrementReferenceCount();
     }
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        this._client.Dispose();
+        this._dataSourceArc?.Dispose();
         base.Dispose(disposing);
     }
 
     /// <inheritdoc/>
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
-    {
-        const string OperationName = "DoesTableExists";
-        return this.RunOperationAsync(OperationName, () =>
-            this._client.DoesTableExistsAsync(this.Name, cancellationToken)
-        );
-    }
+        => this.RunOperationAsync("DoesTableExists", async () =>
+        {
+            NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+            await using (connection)
+            using (var command = connection.CreateCommand())
+            {
+                PostgresSqlBuilder.BuildDoesTableExistCommand(command, this._schema, this.Name);
+                using NpgsqlDataReader dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+                if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    return dataReader.GetString(dataReader.GetOrdinal("table_name")) == this.Name;
+                }
+
+                return false;
+            }
+        });
 
     /// <inheritdoc/>
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "EnsureCollectionExists";
-        return this.RunOperationAsync(OperationName, () =>
-            this.InternalCreateCollectionAsync(true, cancellationToken)
-        );
+        return this.RunOperationAsync("EnsureCollectionExists", () =>
+            this.InternalCreateCollectionAsync(true, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "DeleteCollection";
-        return this.RunOperationAsync(OperationName, () =>
-            this._client.DeleteTableAsync(this.Name, cancellationToken)
-        );
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildDropTableCommand(command, this._schema, this.Name);
+
+        await this.RunOperationAsync("DeleteCollection", () => command.ExecuteNonQueryAsync()).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        const string OperationName = "Upsert";
-
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
-
-        var vectorPropertyCount = this._model.VectorProperties.Count;
-        for (var i = 0; i < vectorPropertyCount; i++)
-        {
-            var vectorProperty = this._model.VectorProperties[i];
-
-            if (PostgresModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
-            {
-                continue;
-            }
-
-            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
-            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
-
-            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
-            // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
-            }
-#if NET8_0_OR_GREATER
-            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>>(record, cancellationToken, out var halfTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = [await halfTask.ConfigureAwait(false)];
-            }
-#endif
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
-        }
-
-        var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings);
-
-        Verify.NotNull(storageModel);
-
-        var keyObj = storageModel[this._model.KeyProperty.StorageName];
-        Verify.NotNull(keyObj);
-        TKey key = (TKey)keyObj!;
-
-        await this.RunOperationAsync(OperationName, async () =>
-            await this._client.UpsertAsync(this.Name, storageModel, this._model.KeyProperty.StorageName, cancellationToken).ConfigureAwait(false))
-            .ConfigureAwait(false);
-    }
+    public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => this.UpsertAsync([record], cancellationToken);
 
     /// <inheritdoc/>
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
-
-        const string OperationName = "UpsertBatch";
-
         IReadOnlyList<TRecord>? recordsList = null;
 
         // If an embedding generator is defined, invoke it once per property for all records.
-        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+        Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
         var vectorPropertyCount = this._model.VectorProperties.Count;
         for (var i = 0; i < vectorPropertyCount; i++)
@@ -247,44 +209,65 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
-            }
-#if NET8_0_OR_GREATER
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>>(records, cancellationToken, out var halfTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<Half>>)await halfTask.ConfigureAwait(false);
-            }
-#endif
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings[vectorProperty] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
-        var storageModels = records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList();
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var batch = connection.CreateBatch();
 
-        if (storageModels.Count == 0)
+        // If key auto-generation is enabled, we'll need to enumerate over the records multiple times:
+        // once to generate the upsert batch, and again to populate the retrieved keys into the records.
+        // To prevent multiple enumeration of the input enumerable, we materialize it here if needed.
+        if (this._model.KeyProperty.IsAutoGenerated && recordsList is null)
         {
-            return;
+            recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+            if (recordsList.Count == 0)
+            {
+                return;
+            }
+
+            records = recordsList;
         }
 
-        var keys = storageModels.Select(model => model[this._model.KeyProperty.StorageName]!).ToList();
+        if (PostgresSqlBuilder.BuildUpsertCommand<TKey>(batch, this._schema, this.Name, this._model, records, generatedEmbeddings))
+        {
+            await this.RunOperationAsync("Upsert", async () =>
+            {
+                var reader = await batch.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var keyProperty = this._model.KeyProperty;
+                    if (keyProperty.IsAutoGenerated)
+                    {
+                        int? keyOrdinal = null;
 
-        await this.RunOperationAsync(OperationName, () =>
-            this._client.UpsertBatchAsync(this.Name, storageModels, this._model.KeyProperty.StorageName, cancellationToken)
-        ).ConfigureAwait(false);
+                        foreach (var record in recordsList!)
+                        {
+                            if (Equals(keyProperty.GetValueAsObject(record), default(TKey)))
+                            {
+                                keyOrdinal ??= reader.GetOrdinal(keyProperty.StorageName);
+
+                                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                                var keyValue = reader.GetFieldValue<TKey>(keyOrdinal.Value);
+                                this._model.KeyProperty.SetValue<TKey>(record, keyValue);
+                                await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    await reader.DisposeAsync().ConfigureAwait(false);
+                }
+            }).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc/>
-    public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "Get";
-
         Verify.NotNull(key);
 
         bool includeVectors = options?.IncludeVectors is true;
@@ -293,17 +276,29 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        return this.RunOperationAsync<TRecord?>(OperationName, async () =>
-        {
-            var row = await this._client.GetAsync(this.Name, key, this._model, includeVectors, cancellationToken).ConfigureAwait(false);
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildGetCommand(command, this._schema, this.Name, this._model, key, includeVectors);
 
-            if (row is null) { return default; }
-            return this._mapper.MapFromStorageToDataModel(row, includeVectors);
-        });
+        return await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            operationName: "Get",
+            async () =>
+            {
+                using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                return reader.HasRows
+                    ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
+                    : null;
+            },
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        IEnumerable<TKey> keys,
+        RecordRetrievalOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetBatch";
 
@@ -315,35 +310,54 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._client.GetBatchAsync(this.Name, keys, this._model, includeVectors, cancellationToken)
-                .SelectAsync(row =>
-                    this._mapper.MapFromStorageToDataModel(row, includeVectors),
-                    cancellationToken
-                ),
+        List<TKey> listOfKeys = keys.ToList();
+        if (listOfKeys.Count == 0)
+        {
+            yield break;
+        }
+
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildGetBatchCommand(command, this._schema, this.Name, this._model, listOfKeys, includeVectors);
+
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
             OperationName,
-            this._collectionMetadata
-        );
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadWithErrorHandlingAsync(this._collectionMetadata, OperationName, cancellationToken).ConfigureAwait(false))
+        {
+            yield return this._mapper.MapFromStorageToDataModel(reader, includeVectors);
+        }
     }
 
     /// <inheritdoc/>
-    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "Delete";
-        return this.RunOperationAsync(OperationName, () =>
-            this._client.DeleteAsync(this.Name, this._model.KeyProperty.StorageName, key, cancellationToken)
-        );
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildDeleteCommand(command, this._schema, this.Name, this._model.KeyProperty.StorageName, key);
+
+        await this.RunOperationAsync("Delete", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        const string OperationName = "DeleteBatch";
-        return this.RunOperationAsync(OperationName, () =>
-            this._client.DeleteBatchAsync(this.Name, this._model.KeyProperty.StorageName, keys, cancellationToken)
-        );
+        var listOfKeys = keys.ToList();
+        if (listOfKeys.Count == 0)
+        {
+            return;
+        }
+
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildDeleteBatchCommand(command, this._schema, this.Name, this._model.KeyProperty, listOfKeys);
+
+        await this.RunOperationAsync("DeleteBatch", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
     }
 
     #region Search
@@ -365,85 +379,96 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        object vector = searchValue switch
-        {
-            // Dense float32
-            ReadOnlyMemory<float> r => r,
-            float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
-
-#if NET8_0_OR_GREATER
-            // Dense float16
-            ReadOnlyMemory<Half> r => r,
-            Half[] f => new ReadOnlyMemory<Half>(f),
-            Embedding<Half> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<Half>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
-#endif
-
-            // Dense Binary
-            BitArray b => b,
-            // TODO: Uncomment once we sync to the latest MEAI
-            // BinaryEmbedding e => e.Vector,
-            // _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TVector, BinaryEmbedding> generator
-            //     => (await generator.GenerateEmbeddingAsync(value, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector,
-
-            // Sparse
-            SparseVector sv => sv,
-            // TODO: Add a PG-specific SparseVectorEmbedding type
-
-            _ => vectorProperty.EmbeddingGenerator is null
-                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PostgresModelBuilder.SupportedVectorTypes))
-                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
-        };
-
-        var pgVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
-
-        Verify.NotNull(pgVector);
+        var pgVector = await this.ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = top + options.Skip;
 
-        var records = PostgresUtils.WrapAsyncEnumerableAsync(
-            this._client
-                .GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
-                .SelectAsync(result => new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(result.Row, options.IncludeVectors),
-                    result.Distance),
-                cancellationToken),
-            operationName: "Search",
-            this._collectionMetadata)
-            .ConfigureAwait(false);
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildGetNearestMatchCommand(command, this._schema, this.Name, this._model, vectorProperty, pgVector,
+            options.Filter, options.Skip, options.IncludeVectors, top, options.ScoreThreshold);
 
-        await foreach (var record in records)
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            "Search",
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadWithErrorHandlingAsync(this._collectionMetadata, "Search", cancellationToken).ConfigureAwait(false))
         {
-            yield return record;
+            yield return new VectorSearchResult<TRecord>(
+                this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors),
+                reader.GetDouble(reader.GetOrdinal(PostgresConstants.DistanceColumnName)));
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        Verify.NotNull(searchValue);
+        Verify.NotNull(keywords);
+        Verify.NotLessThan(top, 1);
+
+        options ??= s_defaultHybridSearchOptions;
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
+        var pgVector = await this.ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
+
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildHybridSearchCommand(command, this._schema, this.Name, this._model, vectorProperty, textProperty, pgVector, keywords,
+            options.Filter, options.Skip, options.IncludeVectors, top, options.ScoreThreshold);
+
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            "HybridSearch",
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadWithErrorHandlingAsync(this._collectionMetadata, "HybridSearch", cancellationToken).ConfigureAwait(false))
+        {
+            yield return new VectorSearchResult<TRecord>(
+                this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors),
+                reader.GetDouble(reader.GetOrdinal(PostgresConstants.DistanceColumnName)));
         }
     }
 
     #endregion Search
 
     /// <inheritdoc />
-    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._client.GetMatchingRecordsAsync(this.Name, this._model, filter, top, options, cancellationToken)
-                .SelectAsync(dictionary =>
-                {
-                    return this._mapper.MapFromStorageToDataModel(dictionary, options.IncludeVectors);
-                }, cancellationToken),
-            "Get",
-            this._collectionMetadata);
+        using var connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
+        PostgresSqlBuilder.BuildSelectWhereCommand(command, this._schema, this.Name, this._model, filter, top, options);
+        using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        while (await reader.ReadWithErrorHandlingAsync(this._collectionMetadata, "Get", cancellationToken).ConfigureAwait(false))
+        {
+            yield return this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
+        }
     }
 
     /// <inheritdoc />
@@ -454,14 +479,64 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
+            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
-    private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
+    private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
-        return this._client.CreateTableAsync(this.Name, this._model, ifNotExists, cancellationToken);
+        // Execute the commands in a transaction.
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var pgVersion = connection.PostgreSqlVersion;
+
+            // Prepare the SQL commands.
+            using var batch = connection.CreateBatch();
+
+            // First, check if the pgvector extension is already installed in PostgreSQL, and then install it if not.
+            // Note that we do a separate check before doing CREATE EXTENSION IF EXISTS in order to know if it was actually created,
+            // since in that case we must also must call ReloadTypesAsync() at the Npgsql level
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("SELECT EXISTS(SELECT * FROM pg_extension WHERE extname='vector')"));
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("CREATE EXTENSION IF NOT EXISTS vector"));
+
+            bool extensionAlreadyExisted;
+
+            try
+            {
+                extensionAlreadyExisted = (bool)(await batch.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
+            }
+            catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                // CREATE EXTENSION IF NOT EXISTS is not atomic in PG, so concurrent sessions doing this at the same time
+                // may trigger a unique constraint violation. We ignore it and interpret it to mean that the extension
+                // already exists.
+                extensionAlreadyExisted = true;
+            }
+
+            if (!extensionAlreadyExisted)
+            {
+                await connection.ReloadTypesAsync().ConfigureAwait(false);
+            }
+
+            batch.BatchCommands.Clear();
+
+            // Now create the table and any indexes.
+            // Note that this must be done in a separate batch/transaction as the creation of the extension above.
+            batch.BatchCommands.Add(
+                new NpgsqlBatchCommand(PostgresSqlBuilder.BuildCreateTableSql(this._schema, this.Name, this._model, pgVersion, ifNotExists)));
+
+            foreach (var (column, kind, function, isVector, isFullText, fullTextLanguage) in PostgresPropertyMapping.GetIndexInfo(this._model.Properties))
+            {
+                batch.BatchCommands.Add(
+                    new NpgsqlBatchCommand(
+                        PostgresSqlBuilder.BuildCreateIndexSql(this._schema, this.Name, column, kind, function, isVector, isFullText, fullTextLanguage, ifNotExists)));
+            }
+
+            await batch.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private Task RunOperationAsync(string operationName, Func<Task> operation)
@@ -475,4 +550,45 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             this._collectionMetadata,
             operationName,
             operation);
+
+    /// <summary>
+    /// Converts a search input value to a PostgreSQL vector representation, generating embeddings if necessary.
+    /// </summary>
+    private async Task<object> ConvertSearchInputToVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+    {
+        object vector = searchValue switch
+        {
+            // Dense float32
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+
+#if NET
+            // Dense float16
+            ReadOnlyMemory<Half> r => r,
+            Half[] f => new ReadOnlyMemory<Half>(f),
+            Embedding<Half> e => e.Vector,
+#endif
+
+            // Dense Binary
+            BitArray b => b,
+            BinaryEmbedding e => e.Vector,
+
+            // Sparse
+            SparseVector sv => sv,
+            // TODO: Add a PG-specific SparseVectorEmbedding type
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PostgresModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        var pgVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
+        Verify.NotNull(pgVector);
+        return pgVector;
+    }
 }

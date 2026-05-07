@@ -5,13 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Driver;
 using VectorData.ConformanceTests;
-using VectorData.ConformanceTests.Models;
 using Xunit;
 
 namespace MongoDB.ConformanceTests;
 
 public class MongoDependencyInjectionTests
-    : DependencyInjectionTests<MongoVectorStore, MongoCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
+    : DependencyInjectionTests<MongoVectorStore, MongoCollection<string, DependencyInjectionTests<string>.Record>, string, DependencyInjectionTests<string>.Record>
 {
     protected const string ConnectionString = "mongodb://localhost:27017";
     protected const string DatabaseName = "dbName";
@@ -43,22 +42,22 @@ public class MongoDependencyInjectionTests
                 ? services
                     .AddSingleton<MongoClient>(sp => new MongoClient(MongoClientSettings.FromConnectionString(ConnectionString)))
                     .AddSingleton<IMongoDatabase>(sp => sp.GetRequiredService<MongoClient>().GetDatabase(DatabaseName))
-                    .AddMongoCollection<SimpleRecord<string>>(name, lifetime: lifetime)
+                    .AddMongoCollection<Record>(name, lifetime: lifetime)
                 : services
                     .AddSingleton<MongoClient>(sp => new MongoClient(MongoClientSettings.FromConnectionString(ConnectionString)))
                     .AddSingleton<IMongoDatabase>(sp => sp.GetRequiredService<MongoClient>().GetDatabase(DatabaseName))
-                    .AddKeyedMongoCollection<SimpleRecord<string>>(serviceKey, name, lifetime: lifetime);
+                    .AddKeyedMongoCollection<Record>(serviceKey, name, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddMongoCollection<SimpleRecord<string>>(
+                ? services.AddMongoCollection<Record>(
                     name, ConnectionString, DatabaseName, lifetime: lifetime)
-                : services.AddKeyedMongoCollection<SimpleRecord<string>>(
+                : services.AddKeyedMongoCollection<Record>(
                     serviceKey, name, ConnectionString, DatabaseName, lifetime: lifetime);
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
-                ? services.AddMongoCollection<SimpleRecord<string>>(
+                ? services.AddMongoCollection<Record>(
                     name, ConnectionStringProvider, DatabaseNameProvider, lifetime: lifetime)
-                : services.AddKeyedMongoCollection<SimpleRecord<string>>(
+                : services.AddKeyedMongoCollection<Record>(
                     serviceKey, name, sp => ConnectionStringProvider(sp, serviceKey), sp => DatabaseNameProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
@@ -90,9 +89,9 @@ public class MongoDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<Record>(
             name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: null!, databaseNameProvider: DatabaseNameProvider));
     }
 
@@ -101,9 +100,9 @@ public class MongoDependencyInjectionTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<Record>(
             name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionStringProvider: ConnectionStringProvider, databaseNameProvider: null!));
     }
 
@@ -114,13 +113,13 @@ public class MongoDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddMongoVectorStore(connectionString: null!, DatabaseName));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoVectorStore(serviceKey: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<Record>(
             name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddMongoCollection<Record>(
             name: "notNull", connectionString: "", DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionString: null!, DatabaseName));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", connectionString: "", DatabaseName));
     }
 
@@ -131,13 +130,13 @@ public class MongoDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddMongoVectorStore(ConnectionString, databaseName: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoVectorStore(serviceKey: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddMongoCollection<Record>(
             name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddMongoCollection<Record>(
             name: "notNull", ConnectionString, databaseName: ""));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: null!));
-        Assert.Throws<ArgumentException>(() => services.AddKeyedMongoCollection<SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedMongoCollection<Record>(
             serviceKey: "notNull", name: "notNull", ConnectionString, databaseName: ""));
     }
 }

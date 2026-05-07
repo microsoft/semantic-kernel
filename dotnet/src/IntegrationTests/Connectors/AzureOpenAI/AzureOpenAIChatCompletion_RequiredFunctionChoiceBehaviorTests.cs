@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -17,8 +18,9 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
-public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationTest
+public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationTest, IDisposable
 {
+    private HttpClient? _httpClient;
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatCompletionService _chatCompletionService;
@@ -399,8 +401,14 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.Empty(invokedFunctions);
     }
 
+    public void Dispose()
+    {
+        this._httpClient?.Dispose();
+    }
+
     private Kernel InitializeKernel()
     {
+        this._httpClient ??= new() { Timeout = TimeSpan.FromSeconds(100) };
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
@@ -412,7 +420,8 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            credentials: new AzureCliCredential());
+            credentials: new AzureCliCredential(),
+            httpClient: this._httpClient);
 
         return kernelBuilder.Build();
     }

@@ -58,12 +58,13 @@ from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from azure.ai.agents.models import ToolResources
-    from azure.identity.aio import DefaultAzureCredential
+    from azure.core.credentials_async import AsyncTokenCredential
 
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -428,7 +429,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
 
     @staticmethod
     def create_client(
-        credential: "DefaultAzureCredential",
+        credential: "AsyncTokenCredential",
         endpoint: str | None = None,
         api_version: str | None = None,
         **kwargs: Any,
@@ -500,6 +501,11 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         arguments = None
         if args:
             arguments = KernelArguments(**args)
+
+        # Handle arguments from kwargs, merging with any arguments from data
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            arguments = arguments | incoming_args if arguments is not None else incoming_args
 
         if spec.id:
             existing_definition = await client.agents.get_agent(spec.id)
@@ -827,7 +833,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 # Emit tool-related messages only via callback
                 await on_intermediate_message(message)
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,

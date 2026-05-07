@@ -3,16 +3,14 @@
 from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
-import weaviate
 from weaviate import WeaviateAsyncClient
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_store import WeaviateStore
+from semantic_kernel.connectors.weaviate import WeaviateStore
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, VectorStoreInitializationException
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_weaviate_cloud",
+@patch(
+    "semantic_kernel.connectors.weaviate.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_weaviate_cloud(
@@ -33,13 +31,12 @@ def test_weaviate_store_init_with_weaviate_cloud(
     )
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_local",
+@patch(
+    "semantic_kernel.connectors.weaviate.use_async_with_local",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_local(
-    mock_use_weaviate_cloud,
+    mock_use_weaviate_local,
     clear_weaviate_env,
 ) -> None:
     """Test the initialization of a WeaviateStore object with Weaviate local deployment."""
@@ -49,19 +46,18 @@ def test_weaviate_store_init_with_local(
     )
 
     assert store.async_client is not None
-    mock_use_weaviate_cloud.assert_called_once_with(host="localhost")
+    mock_use_weaviate_local.assert_called_once_with(host="localhost")
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_embedded",
+@patch(
+    "semantic_kernel.connectors.weaviate.use_async_with_embedded",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_store_init_with_embedded(
-    mock_use_weaviate_cloud,
+    mock_use_weaviate_embedded,
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object with Weaviate embedded deployment."""
     store = WeaviateStore(
@@ -70,7 +66,7 @@ def test_weaviate_store_init_with_embedded(
     )
 
     assert store.async_client is not None
-    mock_use_weaviate_cloud.assert_called_once()
+    mock_use_weaviate_embedded.assert_called_once()
 
 
 def test_weaviate_store_init_with_invalid_settings_more_than_one_backends(
@@ -95,8 +91,8 @@ def test_weaviate_store_init_with_invalid_settings_no_backends(
 
 def test_weaviate_store_init_with_custom_client(
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object with a custom client."""
     store = WeaviateStore(
@@ -107,15 +103,14 @@ def test_weaviate_store_init_with_custom_client(
     assert store.async_client is not None
 
 
-@patch.object(
-    weaviate,
-    "use_async_with_local",
+@patch(
+    "semantic_kernel.connectors.weaviate.use_async_with_local",
     side_effect=Exception,
 )
 def test_weaviate_store_init_fail_to_create_client(
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object raises an error when failing to create a client."""
     with pytest.raises(VectorStoreInitializationException):

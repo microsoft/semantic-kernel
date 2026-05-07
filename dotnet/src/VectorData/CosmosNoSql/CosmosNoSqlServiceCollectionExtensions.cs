@@ -127,18 +127,20 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <inheritdoc cref="AddKeyedCosmosNoSqlVectorStore(IServiceCollection, object?, CosmosNoSqlVectorStoreOptions?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
     [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         string name,
         CosmosNoSqlCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
-        => AddKeyedCosmosNoSqlCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
+        => AddKeyedCosmosNoSqlCollection<TKey, TRecord>(services, serviceKey: null, name, options, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// with <see cref="Database"/> retrieved from the dependency injection container.
     /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
@@ -148,26 +150,27 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <returns>Service collection.</returns>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
     [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
         string name,
         CosmosNoSqlCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<string, TRecord>), serviceKey, (sp, _) =>
+        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var database = sp.GetRequiredService<Database>();
             options = GetCollectionOptions(sp, _ => options);
 
-            return new CosmosNoSqlCollection<string, TRecord>(database, name, options);
+            return new CosmosNoSqlCollection<TKey, TRecord>(database, name, options);
         }, lifetime));
 
-        AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
+        AddAbstractions<TKey, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
@@ -176,23 +179,25 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// Registers a <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
     /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
-    /// <inheritdoc cref="AddKeyedCosmosNoSqlCollection{TRecord}(IServiceCollection, object?, string, string, string, CosmosNoSqlCollectionOptions?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedCosmosNoSqlCollection{TKey, TRecord}(IServiceCollection, object?, string, string, string, CosmosNoSqlCollectionOptions?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         string name,
         string connectionString,
         string databaseName,
         CosmosNoSqlCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
-        => AddKeyedCosmosNoSqlCollection<TRecord>(services, serviceKey: null, name, connectionString, databaseName, options, lifetime);
+        => AddKeyedCosmosNoSqlCollection<TKey, TRecord>(services, serviceKey: null, name, connectionString, databaseName, options, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
     /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
@@ -204,7 +209,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <returns>Service collection.</returns>
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
         string name,
@@ -212,35 +217,38 @@ public static class CosmosNoSqlServiceCollectionExtensions
         string databaseName,
         CosmosNoSqlCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
 
-        return AddKeyedCosmosNoSqlCollection<TRecord>(services, serviceKey, name, _ => connectionString, _ => databaseName, _ => options!, lifetime);
+        return AddKeyedCosmosNoSqlCollection<TKey, TRecord>(services, serviceKey, name, _ => connectionString, _ => databaseName, _ => options!, lifetime);
     }
 
     /// <summary>
     /// Registers a <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
     /// using the provided <paramref name="connectionStringProvider"/> and <paramref name="databaseNameProvider"/>.
     /// </summary>
-    /// <inheritdoc cref="AddKeyedCosmosNoSqlCollection{TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, string}, Func{IServiceProvider, CosmosNoSqlCollectionOptions}?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedCosmosNoSqlCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, string}, Func{IServiceProvider, CosmosNoSqlCollectionOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         string name,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, string> databaseNameProvider,
         Func<IServiceProvider, CosmosNoSqlCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
-        => AddKeyedCosmosNoSqlCollection<TRecord>(services, serviceKey: null, name, connectionStringProvider, databaseNameProvider, optionsProvider, lifetime);
+        => AddKeyedCosmosNoSqlCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, databaseNameProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
     /// using the provided <paramref name="connectionStringProvider"/> and <paramref name="databaseNameProvider"/>.
     /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
@@ -252,7 +260,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <returns>Service collection.</returns>
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TRecord>(
+    public static IServiceCollection AddKeyedCosmosNoSqlCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
         string name,
@@ -260,6 +268,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
         Func<IServiceProvider, string> databaseNameProvider,
         Func<IServiceProvider, CosmosNoSqlCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
@@ -267,12 +276,12 @@ public static class CosmosNoSqlServiceCollectionExtensions
         Verify.NotNull(connectionStringProvider);
         Verify.NotNull(databaseNameProvider);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<string, TRecord>), serviceKey, (sp, _) =>
+        services.Add(new ServiceDescriptor(typeof(CosmosNoSqlCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var options = GetCollectionOptions(sp, optionsProvider);
             var clientOptions = CreateClientOptions(options?.JsonSerializerOptions);
 
-            return new CosmosNoSqlCollection<string, TRecord>(
+            return new CosmosNoSqlCollection<TKey, TRecord>(
                 connectionString: connectionStringProvider(sp),
                 databaseName: databaseNameProvider(sp),
                 name: name,
@@ -280,7 +289,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
                 options);
         }, lifetime));
 
-        AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
+        AddAbstractions<TKey, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }

@@ -3,6 +3,9 @@
 import asyncio
 import os
 
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureOpenAISettings
 from semantic_kernel.contents import AnnotationContent, AuthorRole
@@ -25,13 +28,14 @@ https://learn.microsoft.com/semantic-kernel/support/migration/group-chat-orchest
 """
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, credential: TokenCredential) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
     return kernel
 
 
 async def main():
+    credential = AzureCliCredential()
     file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
         "resources",
@@ -40,7 +44,7 @@ async def main():
     )
 
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=credential)
 
     # If desired, create using OpenAI resources
     # client = OpenAIAssistantAgent.create_client()
@@ -62,14 +66,11 @@ async def main():
     )
 
     # Create the AzureAssistantAgent instance using the client and the assistant definition
-    analyst_agent = AzureAssistantAgent(
-        client=client,
-        definition=definition,
-    )
+    analyst_agent = AzureAssistantAgent(client=client, definition=definition)
 
     service_id = "summary"
     summary_agent = ChatCompletionAgent(
-        kernel=_create_kernel_with_chat_completion(service_id=service_id),
+        kernel=_create_kernel_with_chat_completion(service_id=service_id, credential=credential),
         instructions="Summarize the entire conversation for the user in natural language.",
         name="SummaryAgent",
     )

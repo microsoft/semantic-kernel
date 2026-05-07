@@ -7,7 +7,8 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
+from openai import AsyncOpenAI
+from openai._types import Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
@@ -54,6 +55,7 @@ from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
@@ -137,9 +139,9 @@ class AssistantAgentThread(AgentThread):
         self,
         client: AsyncOpenAI,
         thread_id: str | None = None,
-        messages: Iterable["ThreadCreateMessage"] | NotGiven = NOT_GIVEN,
-        metadata: dict[str, Any] | NotGiven = NOT_GIVEN,
-        tool_resources: ToolResources | NotGiven = NOT_GIVEN,
+        messages: Iterable["ThreadCreateMessage"] | Omit = omit,
+        metadata: dict[str, Any] | Omit = omit,
+        tool_resources: ToolResources | Omit = omit,
     ) -> None:
         """Initialize the OpenAI Assistant Thread.
 
@@ -465,6 +467,11 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         arguments = None
         if args:
             arguments = KernelArguments(**args)
+
+        # Handle arguments from kwargs, merging with any arguments from data
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            arguments = arguments | incoming_args if arguments is not None else incoming_args
 
         if spec.id:
             existing_definition = await client.beta.assistants.retrieve(spec.id)
@@ -942,7 +949,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
                 # Emit tool-related messages only via callback
                 await on_intermediate_message(message)
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,

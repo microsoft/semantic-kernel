@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -66,18 +68,20 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
 
     Feel free to add or remove agents and handoff connections.
     """
+    credential = AzureCliCredential()
+
     support_agent = ChatCompletionAgent(
         name="TriageAgent",
         description="A customer support agent that triages issues.",
         instructions="Handle customer requests.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     refund_agent = ChatCompletionAgent(
         name="RefundAgent",
         description="A customer support agent that handles refunds.",
         instructions="Handle refund requests.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
         plugins=[OrderRefundPlugin()],
     )
 
@@ -85,7 +89,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderStatusAgent",
         description="A customer support agent that checks order status.",
         instructions="Handle order status requests.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
         plugins=[OrderStatusPlugin()],
     )
 
@@ -93,7 +97,7 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
         name="OrderReturnAgent",
         description="A customer support agent that handles order returns.",
         instructions="Handle order return requests.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
         plugins=[OrderReturnPlugin()],
     )
 

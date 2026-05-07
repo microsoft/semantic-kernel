@@ -200,7 +200,7 @@ public static class KernelFunctionFactory
             description,
             templateFormat,
             promptTemplateFactory,
-            loggerFactory);
+            loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -234,7 +234,7 @@ public static class KernelFunctionFactory
             description,
             templateFormat,
             promptTemplateFactory,
-            loggerFactory);
+            loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -260,7 +260,7 @@ public static class KernelFunctionFactory
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -286,7 +286,7 @@ public static class KernelFunctionFactory
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, jsonSerializerOptions, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, jsonSerializerOptions, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.

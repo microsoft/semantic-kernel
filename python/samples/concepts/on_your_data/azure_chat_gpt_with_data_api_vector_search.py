@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
@@ -50,8 +52,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_bod
 
 # When using data, use the 2024-02-15-preview API version.
 chat_service = AzureChatCompletion(
-    service_id="chat-gpt",
-    api_version="2024-02-15-preview",
+    service_id="chat-gpt", api_version="2024-02-15-preview", credential=AzureCliCredential()
 )
 kernel.add_service(chat_service)
 

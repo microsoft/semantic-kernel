@@ -23,18 +23,18 @@ public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : Base
 
         // Define the agents
         ChatCompletionAgent triageAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "Given a GitHub issue, triage it.",
                 name: "TriageAgent",
                 description: "An agent that triages GitHub issues");
         ChatCompletionAgent pythonAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an agent that handles Python related GitHub issues.",
                 name: "PythonAgent",
                 description: "An agent that handles Python related issues");
         pythonAgent.Kernel.Plugins.Add(plugin);
         ChatCompletionAgent dotnetAgent =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 instructions: "You are an agent that handles .NET related GitHub issues.",
                 name: "DotNetAgent",
                 description: "An agent that handles .NET related issues");

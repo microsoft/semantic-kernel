@@ -295,9 +295,10 @@ class MockEvent:
 
 
 class MockRunData:
-    def __init__(self, id, status):
+    def __init__(self, id, status, content: str | None = None):
         self.id = id
         self.status = status
+        self.content = content
 
 
 class MockAsyncIterable:
@@ -332,6 +333,7 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
 
     events = [
         MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
+        MockEvent("thread.message.created", MockRunData(id="msg_1", status="created", content="Hello")),
         MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
         MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
     ]
@@ -350,3 +352,5 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
             kernel=AsyncMock(spec=Kernel),
         ):
             collected_messages.append(content)
+            assert isinstance(content, ChatMessageContent)
+            assert content.metadata.get("message_id") == "msg_1"

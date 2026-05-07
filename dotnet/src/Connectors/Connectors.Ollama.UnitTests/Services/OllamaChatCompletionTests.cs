@@ -471,7 +471,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -525,7 +525,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._multiMessageHandlerStub.RequestContents[0]!);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(2, messages.GetArrayLength());
@@ -700,12 +700,12 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetChatMessageContentShouldSendMutatedChatHistoryToLLMAsync()
     {
         // Arrange
-        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        static Task MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Remove the function call messages from the chat history to reduce token count.
             context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
 
-            next(context);
+            return next(context);
         }
 
         var kernel = new Kernel();
@@ -741,7 +741,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());

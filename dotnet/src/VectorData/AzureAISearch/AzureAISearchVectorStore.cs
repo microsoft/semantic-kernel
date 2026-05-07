@@ -62,7 +62,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
@@ -82,7 +82,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-#if NET8_0_OR_GREATER
+#if NET
     public override AzureAISearchDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)

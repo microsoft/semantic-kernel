@@ -34,6 +34,13 @@ public sealed class TextSearchProviderOptions
     }
 
     /// <summary>
+    /// Gets or sets the filter expression to apply to the search query.
+    /// </summary>
+#pragma warning disable CS0618 // TextSearchFilter is obsolete - backward compatibility shim
+    public TextSearchFilter? Filter { get; init; }
+#pragma warning restore CS0618
+
+    /// <summary>
     /// Gets or sets the time at which the text search is performed.
     /// </summary>
     public RagBehavior SearchTime { get; init; } = RagBehavior.BeforeAIInvoke;

@@ -240,7 +240,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 /// <summary>
 /// Builder for a process step that represents an agent.
 /// </summary>
-public class ProcessAgentBuilder : ProcessAgentBuilder<FoundryProcessDefaultState>
+public class ProcessAgentBuilder : ProcessAgentBuilder<ProcessDefaultState>
 {
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
@@ -330,7 +330,7 @@ public class DeclarativeEventHandlerGroupBuilder
     /// <summary>
     /// The list of state based handlers for this group of event handlers.
     /// </summary>
-    public List<DeclarativeEventHandlerBuilder>? EvalHandlers { get; init; } = new List<DeclarativeEventHandlerBuilder>();
+    public List<DeclarativeEventHandlerBuilder>? EvalHandlers { get; init; } = [];
 
     /// <summary>
     /// Builds the declarative process condition for this event handler group.

@@ -3,6 +3,7 @@
 
 import asyncio
 import logging
+import os
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable
 from functools import partial, reduce
@@ -44,6 +45,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 
 logger = logging.getLogger(__name__)
@@ -214,7 +216,7 @@ class BedrockAgent(BedrockAgentBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
+            raise AgentInitializationException(f"Failed to initialize the Amazon Bedrock Agent settings: {e}") from e
 
         import boto3
         from botocore.exceptions import ClientError
@@ -235,7 +237,7 @@ class BedrockAgent(BedrockAgentBase):
             )
         except ClientError as e:
             logger.error(f"Failed to create agent {name}.")
-            raise AgentInitializationException("Failed to create the Amazon Bedrock Agent.") from e
+            raise AgentInitializationException(f"Failed to create the Amazon Bedrock Agent: {e}") from e
 
         bedrock_agent = cls(
             response["agent"],
@@ -458,7 +460,7 @@ class BedrockAgent(BedrockAgentBase):
             "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
         )
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,
@@ -589,7 +591,7 @@ class BedrockAgent(BedrockAgentBase):
                 data=file["bytes"],
                 data_format="base64",
                 mime_type=file["type"],
-                metadata={"name": file["name"]},
+                metadata={"name": self._sanitize_filename(file["name"])},
             )
             for file in files_event["files"]
         ]
@@ -638,7 +640,7 @@ class BedrockAgent(BedrockAgentBase):
                 data=file["bytes"],
                 data_format="base64",
                 mime_type=file["type"],
-                metadata={"name": file["name"]},
+                metadata={"name": self._sanitize_filename(file["name"])},
             )
             for file in files_event["files"]
         ]
@@ -719,3 +721,25 @@ class BedrockAgent(BedrockAgentBase):
         The new message is passed to the agent when invoking the agent.
         """
         pass
+
+    @staticmethod
+    def _sanitize_filename(filename: str) -> str:
+        """Sanitize filename to prevent directory traversal attacks.
+
+        Args:
+            filename: The filename to sanitize.
+
+        Returns:
+            The sanitized filename with directory components removed.
+        """
+        # Extract basename to remove any directory traversal attempts
+        # Handle both Unix and Windows path separators
+        sanitized = os.path.basename(filename.replace("\\", "/"))
+        # Remove any remaining path separators or null bytes
+        result = sanitized.replace("/", "").replace("\\", "").replace("\x00", "")
+        if result != filename:
+            logger.warning(
+                f"Filename contained potentially malicious path components and was sanitized: "
+                f"'{filename}' -> '{result}'"
+            )
+        return result

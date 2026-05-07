@@ -46,6 +46,7 @@ def bedrock_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "BEDROCK_TEXT_MODEL_ID": "env_test_text_model_id",
         "BEDROCK_CHAT_MODEL_ID": "env_test_chat_model_id",
         "BEDROCK_EMBEDDING_MODEL_ID": "env_test_embedding_model_id",
+        "BEDROCK_MODEL_PROVIDER": "amazon",
     }
 
     env_vars.update(override_env_param_dict)
@@ -164,8 +165,22 @@ def output_text():
 
 
 @pytest.fixture()
-def mock_bedrock_text_completion_response(model_id: str, output_text: str):
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+def model_provider():
+    return BedrockModelProvider.AMAZON
+
+
+@pytest.fixture()
+def mock_bedrock_text_completion_response(
+    model_id: str,
+    output_text: str,
+    request,
+):
+    # Check if model_provider fixture is requested by the test
+    model_provider = None
+    if "model_provider" in request.fixturenames:
+        model_provider = request.getfixturevalue("model_provider")
+    else:
+        model_provider = BedrockModelProvider.to_model_provider(model_id)
 
     match model_provider:
         case BedrockModelProvider.AMAZON:
@@ -219,8 +234,17 @@ def mock_bedrock_text_completion_response(model_id: str, output_text: str):
 
 
 @pytest.fixture()
-def mock_bedrock_streaming_text_completion_response(model_id: str, output_text: str):
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+def mock_bedrock_streaming_text_completion_response(
+    model_id: str,
+    output_text: str,
+    request,
+):
+    # Check if model_provider fixture is requested by the test
+    model_provider = None
+    if "model_provider" in request.fixturenames:
+        model_provider = request.getfixturevalue("model_provider")
+    else:
+        model_provider = BedrockModelProvider.to_model_provider(model_id)
 
     match model_provider:
         case BedrockModelProvider.AMAZON:
@@ -250,8 +274,16 @@ def mock_bedrock_streaming_text_completion_response(model_id: str, output_text: 
 
 
 @pytest.fixture()
-def mock_bedrock_text_embedding_response(model_id: str):
-    model_provider = BedrockModelProvider.to_model_provider(model_id)
+def mock_bedrock_text_embedding_response(
+    model_id: str,
+    request,
+):
+    # Check if model_provider fixture is requested by the test
+    model_provider = None
+    if "model_provider" in request.fixturenames:
+        model_provider = request.getfixturevalue("model_provider")
+    else:
+        model_provider = BedrockModelProvider.to_model_provider(model_id)
 
     match model_provider:
         case BedrockModelProvider.AMAZON:

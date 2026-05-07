@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public abstract class AgentActor : OrchestrationActor
 {
     private AgentInvokeOptions? _options;
+    private ChatMessageContent? _lastResponse;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentActor"/> class.
@@ -92,26 +92,34 @@ public abstract class AgentActor : OrchestrationActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected async ValueTask<ChatMessageContent> InvokeAsync(IList<ChatMessageContent> input, CancellationToken cancellationToken)
     {
-        this.Context.Cancellation.ThrowIfCancellationRequested();
-
-        ChatMessageContent? response = null;
-
-        AgentInvokeOptions options = this.GetInvokeOptions(HandleMessage);
-        if (this.Context.StreamingResponseCallback == null)
+        try
         {
-            // No need to utilize streaming if no callback is provided
-            await this.InvokeAsync(input, options, cancellationToken).ConfigureAwait(false);
+            this.Context.Cancellation.ThrowIfCancellationRequested();
+
+            this._lastResponse = null;
+
+            AgentInvokeOptions options = this.GetInvokeOptions(HandleMessageAsync);
+            if (this.Context.StreamingResponseCallback == null)
+            {
+                // No need to utilize streaming if no callback is provided
+                await this.InvokeAsync(input, options, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
+            }
+
+            return this._lastResponse ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
         }
-        else
+        catch (Exception exception)
         {
-            await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
+            this.Context.FailureCallback.Invoke(exception);
+            throw;
         }
 
-        return response ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
-
-        async Task HandleMessage(ChatMessageContent message)
+        async Task HandleMessageAsync(ChatMessageContent message)
         {
-            response = message; // Keep track of most recent response for both invocation modes
+            this._lastResponse = message; // Keep track of most recent response for both invocation modes
 
             if (this.Context.ResponseCallback is not null && !this.ResponseCallbackFilter(message))
             {
@@ -122,14 +130,19 @@ public abstract class AgentActor : OrchestrationActor
 
     private async Task InvokeAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)
     {
-        AgentResponseItem<ChatMessageContent>? lastResponse =
-            await this.Agent.InvokeAsync(
-                input,
-                this.Thread,
-                options,
-                cancellationToken).LastOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var last = default(AgentResponseItem<ChatMessageContent>)!;
+        var hasLast = false;
 
-        this.Thread ??= lastResponse?.Thread;
+        await foreach (var item in this.Agent.InvokeAsync(input, this.Thread, options, cancellationToken).ConfigureAwait(false))
+        {
+            hasLast = true;
+            last = item;
+        }
+
+        if (this.Thread is null && hasLast)
+        {
+            this.Thread = last.Thread;
+        }
     }
 
     private async Task InvokeStreamingAsync(IList<ChatMessageContent> input, AgentInvokeOptions options, CancellationToken cancellationToken)

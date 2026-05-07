@@ -34,7 +34,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
 
         // Act
-        string storeId = await this._client.CreateVectorStoreAsync(fileIds, waitUntilCompleted: false);
+        string storeId = await this._client.CreateVectorStoreAsync(fileIds);
 
         // Assert
         Assert.NotNull(storeId);
@@ -59,7 +59,6 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
         // Act
         string storeId = await this._client.CreateVectorStoreAsync(
             fileIds,
-            waitUntilCompleted: false,
             storeName: "test-store",
             expirationPolicy: new VectorStoreExpirationPolicy(VectorStoreExpirationAnchor.LastActiveAt, 30),
             chunkingStrategy: FileChunkingStrategy.Auto,

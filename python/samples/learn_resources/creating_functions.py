@@ -8,6 +8,8 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.prompt_template.input_variable import InputVariable
 
 
 async def main():
@@ -30,7 +32,18 @@ async def main():
     # <Chat>
     kernel = add_service(kernel, use_chat=True)
     kernel.add_function(
-        prompt="""{{$chat_history}}{{$input}}""",
+        prompt_template_config=PromptTemplateConfig(
+            template="""{{$chat_history}}{{$input}}""",
+            input_variables=[
+                InputVariable(name="input", description="The user input", is_required=True),
+                InputVariable(
+                    name="chat_history",
+                    description="The history of the conversation",
+                    is_required=True,
+                    allow_dangerously_set_content=True,
+                ),
+            ],
+        ),
         execution_settings=OpenAIChatPromptExecutionSettings(
             service_id="default",
             temperature=0.0,

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -27,8 +28,8 @@ public class OutlookMailConnector : IEmailConnector
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetMyEmailAddressAsync(CancellationToken cancellationToken = default)
-        => (await this._graphServiceClient.Me.Request().GetAsync(cancellationToken).ConfigureAwait(false)).UserPrincipalName;
+    public async Task<string?> GetMyEmailAddressAsync(CancellationToken cancellationToken = default)
+        => (await this._graphServiceClient.Me.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false))?.UserPrincipalName;
 
     /// <inheritdoc/>
     public async Task SendEmailAsync(string subject, string content, string[] recipients, CancellationToken cancellationToken = default)
@@ -47,36 +48,24 @@ public class OutlookMailConnector : IEmailConnector
                 {
                     Address = recipientAddress
                 }
-            })
+            }).ToList()
         };
 
-        await this._graphServiceClient.Me.SendMail(message).Request().PostAsync(cancellationToken).ConfigureAwait(false);
+        await this._graphServiceClient.Me.SendMail.PostAsync(new() { Message = message }, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Models.EmailMessage>> GetMessagesAsync(
+    public async Task<IEnumerable<Models.EmailMessage>?> GetMessagesAsync(
         int? top, int? skip, string? select, CancellationToken cancellationToken = default)
     {
-        IUserMessagesCollectionRequest query = this._graphServiceClient.Me.Messages.Request();
-
-        if (top.HasValue)
+        var result = await this._graphServiceClient.Me.Messages.GetAsync((config) =>
         {
-            query.Top(top.Value);
-        }
+            config.QueryParameters.Top = top;
+            config.QueryParameters.Skip = skip;
+            config.QueryParameters.Select = !string.IsNullOrEmpty(select) ? [select] : null;
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (skip.HasValue)
-        {
-            query.Skip(skip.Value);
-        }
-
-        if (!string.IsNullOrEmpty(select))
-        {
-            query.Select(select);
-        }
-
-        IUserMessagesCollectionPage result = await query.GetAsync(cancellationToken).ConfigureAwait(false);
-
-        IEnumerable<EmailMessage> messages = result.Select(m => m.ToEmailMessage());
+        IEnumerable<EmailMessage>? messages = result?.Value?.Select(m => m.ToEmailMessage());
 
         return messages;
     }

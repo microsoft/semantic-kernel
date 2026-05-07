@@ -28,15 +28,10 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private string? _responseMimeType;
     private object? _responseSchema;
     private string? _cachedContent;
-    private string? _labels;
+    private IDictionary<string, string>? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
     private GeminiThinkingConfig? _thinkingConfig;
-
-    /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
 
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -152,9 +147,12 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the labels.
     /// </summary>
     /// <value>
-    /// Metadata that can be added to the API call in the format of key-value pairs.
+    /// The labels with user-defined metadata for the request. It is used for billing and reporting only.
+    /// label keys and values can be no longer than 63 characters (Unicode codepoints) and can only contain lowercase letters, numeric characters, underscores, and dashes. International characters are allowed. label values are optional. label keys must start with a letter.
     /// </value>
-    public string? Labels
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, string>? Labels
     {
         get => this._labels;
         set
@@ -189,6 +187,9 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// than returning the response back to the caller, it will handle the request automatically, invoking
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
+    /// </remarks>
+    /// <remarks>
+    /// This property is deprecated. Use <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> instead.
     /// </remarks>
     public GeminiToolCallBehavior? ToolCallBehavior
     {
@@ -358,12 +359,72 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new GeminiPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
-            case GeminiPromptExecutionSettings settings:
-                return settings;
+                return new GeminiPromptExecutionSettings();
+            case GeminiPromptExecutionSettings geminiSettings:
+                // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
+                if (geminiSettings.FunctionChoiceBehavior is not null && geminiSettings.ToolCallBehavior is null)
+                {
+                    geminiSettings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(geminiSettings.FunctionChoiceBehavior);
+                }
+                return geminiSettings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        var settings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+
+        // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
+        if (executionSettings.FunctionChoiceBehavior is not null && settings.ToolCallBehavior is null)
+        {
+            settings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior);
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Shared empty kernel instance used for FunctionChoiceBehavior conversion.
+    /// </summary>
+    private static readonly Kernel s_emptyKernel = new();
+
+    /// <summary>
+    /// Converts a <see cref="FunctionChoiceBehavior"/> to a <see cref="GeminiToolCallBehavior"/>.
+    /// </summary>
+    /// <param name="functionChoiceBehavior">The <see cref="FunctionChoiceBehavior"/> to convert.</param>
+    /// <returns>The converted <see cref="GeminiToolCallBehavior"/>.</returns>
+    internal static GeminiToolCallBehavior? ConvertFunctionChoiceBehaviorToToolCallBehavior(FunctionChoiceBehavior? functionChoiceBehavior)
+    {
+        if (functionChoiceBehavior is null)
+        {
+            return null;
+        }
+
+        // Check the type and determine auto-invoke by reflection or known behavior types
+        // All FunctionChoiceBehavior types (Auto, Required, None) support auto-invoke
+        // We use a simple approach: get the configuration with minimal context to check AutoInvoke
+        try
+        {
+            var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
+            {
+                Kernel = s_emptyKernel, // Provide an empty kernel for the configuration
+                RequestSequenceIndex = 0
+            };
+            var config = functionChoiceBehavior.GetConfiguration(context);
+
+            // Return appropriate GeminiToolCallBehavior based on AutoInvoke setting
+            if (config.AutoInvoke)
+            {
+                return GeminiToolCallBehavior.AutoInvokeKernelFunctions;
+            }
+
+            return GeminiToolCallBehavior.EnableKernelFunctions;
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch
+#pragma warning restore CA1031
+        {
+            // If we can't get configuration (e.g., due to missing dependencies or unexpected state),
+            // default to EnableKernelFunctions as the safer option that doesn't auto-invoke
+            return GeminiToolCallBehavior.EnableKernelFunctions;
+        }
     }
 }

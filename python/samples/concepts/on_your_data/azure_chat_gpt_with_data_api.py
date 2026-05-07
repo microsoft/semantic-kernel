@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
@@ -10,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.azure_ai_search import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -42,7 +44,7 @@ extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
-chat_service = AzureChatCompletion(service_id="chat-gpt")
+chat_service = AzureChatCompletion(service_id="chat-gpt", credential=AzureCliCredential())
 kernel.add_service(chat_service)
 
 prompt_template_config = PromptTemplateConfig(

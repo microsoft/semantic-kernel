@@ -28,7 +28,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             {
                 Description = aiFunction.UnderlyingMethod?.ReturnParameter.GetCustomAttribute<DescriptionAttribute>()?.Description,
                 ParameterType = aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType,
-                Schema = new KernelJsonSchema(AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
+                Schema = new KernelJsonSchema(aiFunction.ReturnJsonSchema ?? AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
             })
     {
         // Kernel functions created from AI functions are always fully qualified

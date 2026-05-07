@@ -44,25 +44,44 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
             // Add chat deployment
             if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName)
             {
-                chatResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
-                    name: config.AzureOpenAIChat.DeploymentName,
-                    modelName: config.AzureOpenAIChat.ModelName,
-                    modelVersion: config.AzureOpenAIChat.ModelVersion,
-                    skuName: config.AzureOpenAIChat.SkuName,
-                    skuCapacity: config.AzureOpenAIChat.SkuCapacity)
-                );
+                chatResource = azureOpenAI
+                    .AddDeployment(
+                        name: config.AzureOpenAIChat.DeploymentName,
+                        modelName: config.AzureOpenAIChat.ModelName,
+                        modelVersion: config.AzureOpenAIChat.ModelVersion)
+                    .WithProperties((resource) =>
+                    {
+                        if (config.AzureOpenAIChat.SkuName is { } skuName)
+                        {
+                            resource.SkuName = skuName;
+                        }
+
+                        if (config.AzureOpenAIChat.SkuCapacity is { } skuCapacity)
+                        {
+                            resource.SkuCapacity = skuCapacity;
+                        }
+                    });
             }
 
             // Add deployment
             if (config.Rag.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
             {
-                embeddingsResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
-                    name: config.AzureOpenAIEmbeddings.DeploymentName,
-                    modelName: config.AzureOpenAIEmbeddings.ModelName,
-                    modelVersion: config.AzureOpenAIEmbeddings.ModelVersion,
-                    skuName: config.AzureOpenAIEmbeddings.SkuName,
-                    skuCapacity: config.AzureOpenAIEmbeddings.SkuCapacity)
-                );
+                embeddingsResource = azureOpenAI
+                    .AddDeployment(
+                        name: config.AzureOpenAIEmbeddings.DeploymentName,
+                        modelName: config.AzureOpenAIEmbeddings.ModelName,
+                        modelVersion: config.AzureOpenAIEmbeddings.ModelVersion)
+                    .WithProperties((resource) =>
+                    {
+                        if (config.AzureOpenAIEmbeddings.SkuName is { } skuName)
+                        {
+                            resource.SkuName = skuName;
+                        }
+                        if (config.AzureOpenAIEmbeddings.SkuCapacity is { } skuCapacity)
+                        {
+                            resource.SkuCapacity = skuCapacity;
+                        }
+                    });
             }
         }
         else

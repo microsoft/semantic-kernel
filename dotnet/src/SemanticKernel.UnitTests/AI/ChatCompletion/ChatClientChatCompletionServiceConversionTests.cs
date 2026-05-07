@@ -418,6 +418,277 @@ public sealed class ChatClientChatCompletionServiceConversionTests
         Assert.Equal("test-model", message.ModelId);
     }
 
+    [Fact]
+    public async Task GetChatMessageContentsAsyncCallsPrepareChatHistoryToRequestAsync()
+    {
+        // Arrange
+        var originalChatHistory = new ChatHistory();
+        originalChatHistory.AddUserMessage("Original message");
+
+        var modifiedChatHistory = new ChatHistory();
+        modifiedChatHistory.AddSystemMessage("System message added by PrepareChatHistoryToRequestAsync");
+        modifiedChatHistory.AddUserMessage("Original message");
+
+        var testSettings = new TestPromptExecutionSettings(modifiedChatHistory);
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the modified chat history
+                Assert.Equal(2, messages.Count());
+                Assert.Equal("System message added by PrepareChatHistoryToRequestAsync", messages.First().Text);
+                Assert.Equal("Original message", messages.Last().Text);
+
+                return Task.FromResult(new ChatResponse([new ChatMessage(ChatRole.Assistant, "Test response")]));
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(originalChatHistory, testSettings);
+
+        // Assert
+        Assert.Single(result);
+        Assert.True(testSettings.PrepareChatHistoryWasCalled);
+
+        // Verify that the original chat history reference was passed to PrepareChatHistoryToRequestAsync
+        Assert.Same(originalChatHistory, testSettings.ReceivedChatHistory);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsAsyncCallsPrepareChatHistoryToRequestAsync()
+    {
+        // Arrange
+        var originalChatHistory = new ChatHistory();
+        originalChatHistory.AddUserMessage("Original message");
+
+        var modifiedChatHistory = new ChatHistory();
+        modifiedChatHistory.AddSystemMessage("System message added by PrepareChatHistoryToRequestAsync");
+        modifiedChatHistory.AddUserMessage("Original message");
+
+        var testSettings = new TestPromptExecutionSettings(modifiedChatHistory);
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteStreamingAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the modified chat history
+                Assert.Equal(2, messages.Count());
+                Assert.Equal("System message added by PrepareChatHistoryToRequestAsync", messages.First().Text);
+                Assert.Equal("Original message", messages.Last().Text);
+
+                return new[]
+                {
+                    new ChatResponseUpdate(ChatRole.Assistant, "Test streaming response")
+                }.ToAsyncEnumerable();
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var results = new List<StreamingChatMessageContent>();
+        await foreach (var update in service.GetStreamingChatMessageContentsAsync(originalChatHistory, testSettings))
+        {
+            results.Add(update);
+        }
+
+        // Assert
+        Assert.Single(results);
+        Assert.True(testSettings.PrepareChatHistoryWasCalled);
+
+        // Verify that the original chat history reference was passed to PrepareChatHistoryToRequestAsync
+        Assert.Same(originalChatHistory, testSettings.ReceivedChatHistory);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncWithNullExecutionSettingsDoesNotCallPrepareChatHistory()
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Test message");
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the original chat history unchanged
+                Assert.Single(messages);
+                Assert.Equal("Test message", messages.First().Text);
+
+                return Task.FromResult(new ChatResponse([new ChatMessage(ChatRole.Assistant, "Test response")]));
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings: null);
+
+        // Assert
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsAsyncWithNullExecutionSettingsDoesNotCallPrepareChatHistory()
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Test message");
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteStreamingAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the original chat history unchanged
+                Assert.Single(messages);
+                Assert.Equal("Test message", messages.First().Text);
+
+                return new[]
+                {
+                    new ChatResponseUpdate(ChatRole.Assistant, "Test streaming response")
+                }.ToAsyncEnumerable();
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var results = new List<StreamingChatMessageContent>();
+        await foreach (var update in service.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings: null))
+        {
+            results.Add(update);
+        }
+
+        // Assert
+        Assert.Single(results);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncWithMutatingPrepareChatHistoryPreservesChatHistoryMutations()
+    {
+        // Arrange
+        var originalChatHistory = new ChatHistory();
+        originalChatHistory.AddUserMessage("Original message");
+
+        var testSettings = new MutatingTestPromptExecutionSettings();
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the mutated chat history
+                Assert.Equal(2, messages.Count());
+                Assert.Equal("System message added by mutation", messages.First().Text);
+                Assert.Equal("Original message", messages.Last().Text);
+
+                return Task.FromResult(new ChatResponse([new ChatMessage(ChatRole.Assistant, "Test response")]));
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(originalChatHistory, testSettings);
+
+        // Assert
+        Assert.Single(result);
+        Assert.True(testSettings.PrepareChatHistoryWasCalled);
+
+        // Verify that the original chat history was mutated and the mutations are preserved
+        Assert.Equal(2, originalChatHistory.Count);
+        Assert.Equal("System message added by mutation", originalChatHistory[0].Content);
+        Assert.Equal("Original message", originalChatHistory[1].Content);
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsAsyncWithMutatingPrepareChatHistoryPreservesChatHistoryMutations()
+    {
+        // Arrange
+        var originalChatHistory = new ChatHistory();
+        originalChatHistory.AddUserMessage("Original message");
+
+        var testSettings = new MutatingTestPromptExecutionSettings();
+
+        using var chatClient = new TestChatClient
+        {
+            CompleteStreamingAsyncDelegate = (messages, options, cancellationToken) =>
+            {
+                // Verify that the chat client receives the mutated chat history
+                Assert.Equal(2, messages.Count());
+                Assert.Equal("System message added by mutation", messages.First().Text);
+                Assert.Equal("Original message", messages.Last().Text);
+
+                return new[]
+                {
+                    new ChatResponseUpdate(ChatRole.Assistant, "Test streaming response")
+                }.ToAsyncEnumerable();
+            }
+        };
+
+        var service = chatClient.AsChatCompletionService();
+
+        // Act
+        var results = new List<StreamingChatMessageContent>();
+        await foreach (var update in service.GetStreamingChatMessageContentsAsync(originalChatHistory, testSettings))
+        {
+            results.Add(update);
+        }
+
+        // Assert
+        Assert.Single(results);
+        Assert.True(testSettings.PrepareChatHistoryWasCalled);
+
+        // Verify that the original chat history was mutated and the mutations are preserved
+        Assert.Equal(2, originalChatHistory.Count);
+        Assert.Equal("System message added by mutation", originalChatHistory[0].Content);
+        Assert.Equal("Original message", originalChatHistory[1].Content);
+    }
+
+    /// <summary>
+    /// Test implementation of PromptExecutionSettings that overrides PrepareChatHistoryToRequestAsync.
+    /// </summary>
+    private sealed class TestPromptExecutionSettings : PromptExecutionSettings
+    {
+        private readonly ChatHistory _modifiedChatHistory;
+
+        public bool PrepareChatHistoryWasCalled { get; private set; }
+        public ChatHistory? ReceivedChatHistory { get; private set; }
+
+        public TestPromptExecutionSettings(ChatHistory modifiedChatHistory)
+        {
+            this._modifiedChatHistory = modifiedChatHistory;
+        }
+
+        protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
+        {
+            this.PrepareChatHistoryWasCalled = true;
+            this.ReceivedChatHistory = chatHistory;
+            return this._modifiedChatHistory;
+        }
+    }
+
+    /// <summary>
+    /// Test implementation of PromptExecutionSettings that mutates the original chat history.
+    /// </summary>
+    private sealed class MutatingTestPromptExecutionSettings : PromptExecutionSettings
+    {
+        public bool PrepareChatHistoryWasCalled { get; private set; }
+
+        protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
+        {
+            this.PrepareChatHistoryWasCalled = true;
+
+            // Mutate the original chat history by inserting a system message at the beginning
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, "System message added by mutation"));
+
+            // Return the same mutated chat history
+            return chatHistory;
+        }
+    }
+
     /// <summary>
     /// Test implementation of IChatClient for unit testing.
     /// </summary>

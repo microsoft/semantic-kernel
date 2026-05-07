@@ -12,6 +12,7 @@ using OpenAI.Chat;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
+
 public class ChatHistoryExtensionsTests
 {
     [Fact]

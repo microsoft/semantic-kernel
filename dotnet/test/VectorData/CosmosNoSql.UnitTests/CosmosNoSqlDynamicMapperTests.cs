@@ -23,8 +23,8 @@ public sealed class CosmosNoSqlDynamicMapperTests
         .BuildDynamic(
             new VectorStoreCollectionDefinition
             {
-                Properties = new List<VectorStoreProperty>
-                {
+                Properties =
+                [
                     new VectorStoreKeyProperty("Key", typeof(string)),
                     new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
                     new VectorStoreDataProperty("NullableBoolDataProp", typeof(bool?)),
@@ -46,7 +46,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
                     new VectorStoreVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?), 10),
                     new VectorStoreVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>), 10),
                     new VectorStoreVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?), 10),
-                },
+                ],
             },
             defaultEmbeddingGenerator: null);
 
@@ -121,13 +121,13 @@ public sealed class CosmosNoSqlDynamicMapperTests
         // Arrange
         VectorStoreCollectionDefinition definition = new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
                 new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-            },
+            ],
         };
 
         var dataModel = new Dictionary<string, object?>
@@ -213,13 +213,13 @@ public sealed class CosmosNoSqlDynamicMapperTests
         // Arrange
         VectorStoreCollectionDefinition definition = new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
                 new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-            },
+            ],
         };
 
         var storageModel = new JsonObject
@@ -261,12 +261,12 @@ public sealed class CosmosNoSqlDynamicMapperTests
         // Arrange
         VectorStoreCollectionDefinition definition = new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-            },
+            ],
         };
 
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
@@ -287,12 +287,12 @@ public sealed class CosmosNoSqlDynamicMapperTests
         // Arrange
         VectorStoreCollectionDefinition definition = new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-            },
+            ],
         };
 
         var storageModel = new JsonObject

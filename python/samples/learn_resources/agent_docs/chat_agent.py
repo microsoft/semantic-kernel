@@ -5,6 +5,8 @@ import os
 import sys
 from datetime import datetime
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -34,7 +36,7 @@ async def main():
 
     # Add the AzureChatCompletion AI Service to the Kernel
     service_id = "agent"
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=AzureCliCredential()))
 
     settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     # Configure the function choice behavior to auto invoke kernel functions

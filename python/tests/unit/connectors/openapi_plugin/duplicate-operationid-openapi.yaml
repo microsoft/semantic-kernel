@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Simple HTTPBin API
+  version: 1.0.0
+
+servers:
+  - url: https://httpbin.org
+
+paths:
+  /get:
+    get:
+      operationId: duplicateId
+      summary: Simple GET request to httpbin.org
+      responses:
+        '200':
+          description: Successful response from httpbin
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /ip:
+    get:
+      operationId: duplicateId
+      summary: Get client IP address from httpbin
+      responses:
+        '200':
+          description: Successful response with IP
+          content:
+            application/json:
+              schema:
+                type: object

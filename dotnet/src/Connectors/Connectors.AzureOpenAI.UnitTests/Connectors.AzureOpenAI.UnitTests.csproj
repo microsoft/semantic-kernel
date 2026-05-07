@@ -4,11 +4,11 @@
 
     <AssemblyName>SemanticKernel.Connectors.AzureOpenAI.UnitTests</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,IDE1006</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,IDE1006,OPENAI001</NoWarn>
     
   </PropertyGroup>
 

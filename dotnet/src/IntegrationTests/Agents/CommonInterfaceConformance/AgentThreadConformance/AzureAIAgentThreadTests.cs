@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadConformance;
 
-public class AzureAIAgentThreadTests() : AgentThreadTests(() => new AzureAIAgentFixture())
-{
-}
+public class AzureAIAgentThreadTests() : AgentThreadTests(() => new AzureAIAgentFixture());

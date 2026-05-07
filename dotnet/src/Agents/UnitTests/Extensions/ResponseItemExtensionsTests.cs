@@ -35,7 +35,8 @@ public class ResponseItemExtensionsTests
         // Act  
         var messageContent = responseItem.ToChatMessageContent();
 
-        // Assert  
+        // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(new AuthorRole(roleLabel), messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<TextContent>(messageContent.Items[0]);
@@ -53,6 +54,7 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<FileReferenceContent>(messageContent.Items[0]);
@@ -64,13 +66,14 @@ public class ResponseItemExtensionsTests
     {
         // Arrange
         var fileBytes = new ReadOnlyMemory<byte>([1, 2, 3, 4, 5]);
-        IEnumerable<ResponseContentPart> contentParts = [ResponseContentPart.CreateInputFilePart("fileId", "fileName", new(fileBytes))];
+        IEnumerable<ResponseContentPart> contentParts = [ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(fileBytes), "text/plain", "fileName")];
         MessageResponseItem responseItem = ResponseItem.CreateUserMessageItem(contentParts);
 
         // Act
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<BinaryContent>(messageContent.Items[0]);
@@ -88,9 +91,28 @@ public class ResponseItemExtensionsTests
         var messageContent = responseItem.ToChatMessageContent();
 
         // Assert
+        Assert.NotNull(messageContent);
         Assert.Equal(AuthorRole.User, messageContent.Role);
         Assert.Single(messageContent.Items);
         Assert.IsType<TextContent>(messageContent.Items[0]);
         Assert.Equal("refusal", ((TextContent)messageContent.Items[0]).Text);
+    }
+
+    [Fact]
+    public void VerifyToChatMessageContentFromReasoning()
+    {
+        // Arrange
+        IEnumerable<ReasoningSummaryPart> summaryParts = [ReasoningSummaryPart.CreateTextPart("Foo")];
+        ReasoningResponseItem responseItem = ResponseItem.CreateReasoningItem(summaryParts);
+
+        // Act
+        var messageContent = responseItem.ToChatMessageContent();
+
+        // Assert
+        Assert.NotNull(messageContent);
+        Assert.Single(messageContent.Items);
+        var reasoningContent = messageContent.Items[0] as ReasoningContent;
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("Foo", reasoningContent.Text);
     }
 }

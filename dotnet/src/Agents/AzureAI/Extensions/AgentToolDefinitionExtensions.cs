@@ -61,7 +61,7 @@ internal static class AgentToolDefinitionExtensions
     {
         var details = new FileSearchToolDefinitionDetails();
         var maxNumResults = agentToolDefinition.GetOption<int?>("max_num_results");
-        if (maxNumResults is not null && maxNumResults > 0)
+        if (maxNumResults is not null and > 0)
         {
             details.MaxNumResults = maxNumResults;
         }

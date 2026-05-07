@@ -20,8 +20,8 @@ public class AgentTests
 {
     private readonly Mock<Agent> _agentMock;
     private readonly Mock<AgentThread> _agentThreadMock;
-    private readonly List<AgentResponseItem<ChatMessageContent>> _invokeResponses = new();
-    private readonly List<AgentResponseItem<StreamingChatMessageContent>> _invokeStreamingResponses = new();
+    private readonly List<AgentResponseItem<ChatMessageContent>> _invokeResponses = [];
+    private readonly List<AgentResponseItem<StreamingChatMessageContent>> _invokeStreamingResponses = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentTests"/> class.

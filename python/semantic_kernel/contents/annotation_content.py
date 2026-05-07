@@ -23,6 +23,7 @@ class CitationType(str, Enum):
     URL_CITATION = "url_citation"
     FILE_PATH = "file_path"
     FILE_CITATION = "file_citation"
+    CONTAINER_FILE_CITATION = "container_file_citation"
 
 
 @experimental
@@ -38,6 +39,8 @@ class AnnotationContent(KernelContent):
     url: str | None = None
     title: str | None = None
     citation_type: CitationType | None = Field(None, alias="type")
+    container_id: str | None = None
+    filename: str | None = None
 
     model_config = ConfigDict(
         extra="ignore",

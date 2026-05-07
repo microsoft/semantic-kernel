@@ -108,11 +108,29 @@ def test_add_assistant_message_list(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == AuthorRole.ASSISTANT
 
 
+def test_add_tool_message_raises_without_tool_call_id(chat_history: ChatHistory):
+    content = "Tool message"
+    with pytest.raises(ContentInitializationError):
+        chat_history.add_tool_message(content)
+
+
 def test_add_tool_message(chat_history: ChatHistory):
     content = "Tool message"
-    chat_history.add_tool_message(content)
-    assert chat_history.messages[-1].content == content
+    chat_history.add_tool_message(content, tool_call_id="call_123")
+
+
+def test_add_tool_message_to_dict_succeeds(chat_history: ChatHistory):
+    content = "Tool message"
+    chat_history.add_tool_message(content, tool_call_id="call_123", function_name="test_function")
     assert chat_history.messages[-1].role == AuthorRole.TOOL
+
+    msg = chat_history.messages[-1]
+    assert isinstance(msg.items[0], FunctionResultContent)
+    assert msg.items[0].function_name == "test_function"
+    result = msg.to_dict()
+    assert result["content"] == content
+    assert result["role"] == AuthorRole.TOOL
+    assert result["tool_call_id"] == "call_123"
 
 
 def test_add_tool_message_list(chat_history: ChatHistory):
@@ -381,7 +399,8 @@ async def test_template_safe(chat_history: ChatHistory):
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -407,7 +426,8 @@ async def test_template_two_histories():  # ignore: E501
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -434,7 +454,8 @@ async def test_template_two_histories_one_empty():
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -454,7 +475,8 @@ async def test_template_history_only(chat_history: ChatHistory):
 
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
@@ -556,7 +578,8 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
 async def test_template_empty_history(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -587,6 +610,48 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     assert chat_history_2.messages[2] == chat_history.messages[2]
     assert chat_history_2.messages[3] == chat_history.messages[3]
     assert chat_history_2.messages[4] == chat_history.messages[4]
+
+
+def test_from_rendered_prompt_preserves_html_p_tag():
+    """HTML <p> tags in prompts should be preserved as text, not treated as template tags.
+
+    Regression test for https://github.com/microsoft/semantic-kernel/issues/13632
+    """
+    rendered = (
+        'Translate following message from English language into the Spanish language - "<p>What is your name?</p>"'
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
+    assert "<p>What is your name?</p>" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_preserves_multiple_html_tags():
+    """Multiple HTML tags in prompts should be preserved as text."""
+    rendered = "<p>First paragraph</p><div>A div</div>"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert "<p>First paragraph</p>" in chat_history.messages[0].content
+    assert "<div>A div</div>" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_preserves_html_with_text_around():
+    """HTML tags surrounded by plain text should preserve all content."""
+    rendered = "Hello <b>world</b> today"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(chat_history.messages) == 1
+    assert "Hello" in chat_history.messages[0].content
+    assert "<b>world</b>" in chat_history.messages[0].content
+    assert "today" in chat_history.messages[0].content
+
+
+def test_from_rendered_prompt_sk_tags_still_work_with_html():
+    """SK template tags should still be parsed correctly even when HTML tags are present."""
+    rendered = '<message role="user">Tell me about <b>bold</b> text</message>'
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    # The <b> tag inside a <message> is handled by ChatMessageContent.from_element
+    assert len(chat_history.messages) == 1
+    assert chat_history.messages[0].role == AuthorRole.USER
 
 
 def test_chat_history_serialize(chat_history: ChatHistory):

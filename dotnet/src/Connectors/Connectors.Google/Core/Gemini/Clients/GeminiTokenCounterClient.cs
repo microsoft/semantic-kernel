@@ -33,7 +33,8 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
-            logger: logger)
+            logger: logger,
+            apiKey: apiKey)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -41,7 +42,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
         this._modelId = modelId;
-        this._tokenCountingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:countTokens?key={apiKey}");
+        this._tokenCountingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:countTokens");
     }
 
     /// <summary>
@@ -73,9 +74,10 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         Verify.NotNullOrWhiteSpace(projectId);
 
         string versionSubLink = GetApiVersionSubLink(apiVersion);
+        string baseUri = GetVertexAIBaseUri(location);
 
         this._modelId = modelId;
-        this._tokenCountingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:countTokens");
+        this._tokenCountingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:countTokens");
     }
 
     /// <summary>

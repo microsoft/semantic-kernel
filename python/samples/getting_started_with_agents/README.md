@@ -38,14 +38,14 @@ Example|Description
 
 Example|Description
 ---|---
-[step1_azure_ai_agent](../getting_started_with_agents/azure_ai_agent/step1_azure_ai_agent.py)|How to create an Azure AI Agent and invoke a Semantic Kernel plugin.
-[step2_azure_ai_agent_plugin](../getting_started_with_agents/azure_ai_agent/step2_azure_ai_agent_plugin.py)|How to create an Azure AI Agent with plugins.
-[step3_azure_ai_agent_group_chat](../getting_started_with_agents/azure_ai_agent/step3_azure_ai_agent_group_chat.py)|How to create an agent group chat with Azure AI Agents.
-[step4_azure_ai_agent_code_interpreter](../getting_started_with_agents/azure_ai_agent/step4_azure_ai_agent_code_interpreter.py)|How to use the code-interpreter tool for an Azure AI agent.
-[step5_azure_ai_agent_file_search](../getting_started_with_agents/azure_ai_agent/step5_azure_ai_agent_file_search.py)|How to use the file-search tool for an Azure AI agent.
-[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI agent.
-[step7_azure_ai_agent_retrieval](../getting_started_with_agents/azure_ai_agent/step7_azure_ai_agent_retrieval.py)|How to reference an existing Azure AI Agent.
-[step8_azure_ai_agent_declarative](../getting_started_with_agents/azure_ai_agent/step8_azure_ai_agent_declarative.py)|How to create an Azure AI Agent from a declarative spec.
+[step1_azure_ai_agent](../getting_started_with_agents/azure_ai_agent/step01_azure_ai_agent.py)|How to create an Azure AI Agent and invoke a Semantic Kernel plugin.
+[step2_azure_ai_agent_plugin](../getting_started_with_agents/azure_ai_agent/step02_azure_ai_agent_plugin.py)|How to create an Azure AI Agent with plugins.
+[step3_azure_ai_agent_group_chat](../getting_started_with_agents/azure_ai_agent/step03_azure_ai_agent_group_chat.py)|How to create an agent group chat with Azure AI Agents.
+[step4_azure_ai_agent_code_interpreter](../getting_started_with_agents/azure_ai_agent/step04_azure_ai_agent_code_interpreter.py)|How to use the code-interpreter tool for an Azure AI agent.
+[step5_azure_ai_agent_file_search](../getting_started_with_agents/azure_ai_agent/step05_azure_ai_agent_file_search.py)|How to use the file-search tool for an Azure AI agent.
+[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step06_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI agent.
+[step7_azure_ai_agent_retrieval](../getting_started_with_agents/azure_ai_agent/step07_azure_ai_agent_retrieval.py)|How to reference an existing Azure AI Agent.
+[step8_azure_ai_agent_declarative](../getting_started_with_agents/azure_ai_agent/step08_azure_ai_agent_declarative.py)|How to create an Azure AI Agent from a declarative spec.
 
 _Note: For details on configuring an Azure AI Agent, please see [here](../getting_started_with_agents/azure_ai_agent/README.md)._
 

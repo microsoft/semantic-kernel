@@ -15,12 +15,17 @@ namespace Microsoft.SemanticKernel;
 public static class PromptExecutionSettingsExtensions
 {
     /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
+    [return: NotNullIfNotNull(nameof(settings))]
     public static ChatOptions? ToChatOptions(this PromptExecutionSettings? settings, Kernel? kernel)
     {
         if (settings is null)
         {
             return null;
         }
+
+        // Preserve the original (potentially derived) settings instance so derived hooks can run after the
+        // base-type roundtrip below replaces 'settings' with a base PromptExecutionSettings.
+        PromptExecutionSettings derivedSettings = settings;
 
         if (settings.GetType() != typeof(PromptExecutionSettings))
         {
@@ -88,6 +93,13 @@ public static class PromptExecutionSettingsExtensions
                 {
                     options.StopSequences = stopSequences;
                 }
+                else if ((entry.Key.Equals("chat_system_prompt", StringComparison.OrdinalIgnoreCase) ||
+                          entry.Key.Equals("chat_developer_prompt", StringComparison.OrdinalIgnoreCase) ||
+                          entry.Key.Equals("systemInstruction", StringComparison.OrdinalIgnoreCase)) &&
+                         TryConvert(entry.Value, out string? systemInstructions))
+                {
+                    options.Instructions = systemInstructions;
+                }
                 else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
                     entry.Value is { } responseFormat)
                 {
@@ -104,6 +116,18 @@ public static class PromptExecutionSettingsExtensions
                     {
                         options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
                     }
+                }
+                else if (entry.Key.Equals("reasoning_effort", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out string? reasoningEffort))
+                {
+                    (options.Reasoning ??= new()).Effort = reasoningEffort.ToUpperInvariant() switch
+                    {
+                        "LOW" => ReasoningEffort.Low,
+                        "MEDIUM" => ReasoningEffort.Medium,
+                        "HIGH" => ReasoningEffort.High,
+                        "XHIGH" => ReasoningEffort.ExtraHigh,
+                        _ => null,
+                    };
                 }
                 else
                 {
@@ -155,13 +179,11 @@ public static class PromptExecutionSettingsExtensions
                 options.ToolMode = ChatToolMode.Auto;
                 options.AllowMultipleToolCalls = autoChoiceBehavior.Options?.AllowParallelCalls;
             }
-            else
-            if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.None;
             }
-            else
-            if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.RequireAny;
                 options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
@@ -175,6 +197,11 @@ public static class PromptExecutionSettingsExtensions
                 options.Tools.Add(functionClone);
             }
         }
+
+        // Allow derived PromptExecutionSettings to perform post-processing on the produced ChatOptions
+        // (for example, setting ChatOptions.RawRepresentationFactory). Invoke on the original derived instance
+        // since 'settings' may have been replaced with a base-type clone above.
+        derivedSettings.ChatClientPrepareChatOptionsForRequest(options);
 
         // Enables usage of AutoFunctionInvocationFilters
         return kernel is null

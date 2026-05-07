@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistoryTruncationReducer
@@ -49,7 +51,7 @@ async def main():
     agent = ChatCompletionAgent(
         name="NumeroTranslator",
         instructions="Add one to the latest user number and spell it in Spanish without explanation.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
     )
 
     # Create a group chat using the reducer

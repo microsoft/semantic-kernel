@@ -68,6 +68,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         parent_directory: str | None = None,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
+        encoding: str = "utf-8",
     ) -> "KernelPlugin":
         """Adds a plugin to the kernel's collection of plugins.
 
@@ -88,6 +89,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             parent_directory: The parent directory path where the plugin directory resides
             description: The description of the plugin, used if the plugin is not a KernelPlugin.
             class_init_arguments: The class initialization arguments
+            encoding: The encoding to use when reading text files. Defaults to "utf-8".
 
         Returns:
             KernelPlugin: The plugin that was added.
@@ -116,6 +118,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 parent_directory=parent_directory,
                 description=description,
                 class_init_arguments=class_init_arguments,
+                encoding=encoding,
             )
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")

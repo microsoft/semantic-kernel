@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
@@ -17,7 +16,6 @@ public static class KernelFunctionExtensions
     /// <param name="kernelFunction">The <see cref="KernelFunction"/> to clone with a default <see cref="Kernel"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to use as the default option.</param>
     /// <param name="pluginName">Optional plugin name to use for the new kernel cloned function.</param>
-    [Experimental("SKEXP0001")]
     public static KernelFunction WithKernel(this KernelFunction kernelFunction, Kernel? kernel = null, string? pluginName = null)
     {
         var clone = kernelFunction.Clone(pluginName ?? kernelFunction.PluginName);

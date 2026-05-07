@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
 
-public class ChatCompletionAgentInvokeStreamingTests() : InvokeStreamingTests(() => new ChatCompletionAgentFixture())
-{
-}
+public class ChatCompletionAgentInvokeStreamingTests() : InvokeStreamingTests(() => new ChatCompletionAgentFixture());

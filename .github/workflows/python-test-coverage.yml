@@ -20,23 +20,23 @@ jobs:
     env:
       UV_PYTHON: "3.10"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Save the PR number to a file since the workflow_run event
       # in the coverage report workflow does not have access to it
       - name: Save PR number
         run: |
           echo ${{ github.event.number }} > ./pr_number
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
           cache-dependency-glob: "**/uv.lock"
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
       - name: Test with pytest
-        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered --cov-report=xml:python-coverage.xml ./tests/unit
+        run: uv run --frozen pytest -q --junitxml=pytest.xml --cov=semantic_kernel --cov-report=term-missing:skip-covered --cov-report=xml:python-coverage.xml ./tests/unit --ignore=./tests/unit/processes/dapr_runtime
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:

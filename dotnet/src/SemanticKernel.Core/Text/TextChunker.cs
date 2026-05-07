@@ -52,7 +52,7 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
     private static readonly char[] s_spaceChar = [' '];
-    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
     private static readonly string?[] s_markdownSplitOptions = [".\u3002\uFF0E", "?!", ";", ":", ",\uFF0C\u3001", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
@@ -84,8 +84,21 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(IEnumerable<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
-        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
+    public static List<string> SplitPlainTextParagraphs(
+    IEnumerable<string> lines,
+    int maxTokensPerParagraph,
+    int overlapTokens = 0,
+    string? chunkHeader = null,
+    TokenCounter? tokenCounter = null) =>
+    InternalSplitTextParagraphs(
+        lines.Select(line => line
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')),
+        maxTokensPerParagraph,
+        overlapTokens,
+        chunkHeader,
+        static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter),
+        tokenCounter);
 
     /// <summary>
     /// Split markdown text into paragraphs.

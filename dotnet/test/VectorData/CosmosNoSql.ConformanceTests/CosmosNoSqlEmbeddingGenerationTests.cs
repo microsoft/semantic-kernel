@@ -10,8 +10,8 @@ using Xunit;
 
 namespace CosmosNoSql.ConformanceTests;
 
-public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture>
+public class CosmosNoSqlEmbeddingGenerationTests(CosmosNoSqlEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosNoSqlEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosNoSqlEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosNoSqlEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -31,7 +31,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
-                .AddCosmosNoSqlCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosNoSqlCollection<string, RecordWithAttributes>(this.CollectionName)
         ];
     }
 
@@ -53,7 +53,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
-                .AddCosmosNoSqlCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosNoSqlCollection<string, RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

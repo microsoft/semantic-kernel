@@ -3,11 +3,9 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Process.Utilities.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.Process.Utilities.UnitTests</AssemblyName>
-    <TargetFrameworks>net8.0</TargetFrameworks>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <LangVersion>12</LangVersion>
     <NoWarn>
       $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>

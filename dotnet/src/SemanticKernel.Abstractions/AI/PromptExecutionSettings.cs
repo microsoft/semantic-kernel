@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -166,6 +167,37 @@ public class PromptExecutionSettings
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }
     }
+
+    /// <summary>
+    /// When some specialized <see cref="ChatHistory"/> is used, this method can be overridden to prepare the chat history before the request is sent based on the
+    /// current settings configuration
+    /// </summary>
+    /// <param name="chatHistory">Chat history to prepare.</param>
+    /// <returns>Returns the prepared chat history.</returns>
+    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory) => chatHistory;
+
+    /// <summary>
+    /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
+    /// without the need to make the <see cref="PrepareChatHistoryForRequest"/> public.
+    /// </summary>
+    /// <param name="chatHistory">Target chat history to prepare.</param>
+    /// <returns>Prepared chat history.</returns>
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
+
+    /// <summary>
+    /// When some derived <see cref="PromptExecutionSettings"/> requires post-processing of the produced
+    /// <see cref="ChatOptions"/> (for example, setting <see cref="ChatOptions.RawRepresentationFactory"/>),
+    /// this method can be overridden. Called after the standard <c>ToChatOptions</c> conversion completes.
+    /// </summary>
+    /// <param name="options">The <see cref="ChatOptions"/> instance to prepare.</param>
+    protected virtual void PrepareChatOptionsForRequest(ChatOptions options) { }
+
+    /// <summary>
+    /// Internal bridge used by <c>PromptExecutionSettingsExtensions.ToChatOptions</c> without exposing
+    /// the protected <see cref="PrepareChatOptionsForRequest"/> publicly.
+    /// </summary>
+    /// <param name="options">Target <see cref="ChatOptions"/> to prepare.</param>
+    internal void ChatClientPrepareChatOptionsForRequest(ChatOptions options) => this.PrepareChatOptionsForRequest(options);
 
     #region private ================================================================================
 

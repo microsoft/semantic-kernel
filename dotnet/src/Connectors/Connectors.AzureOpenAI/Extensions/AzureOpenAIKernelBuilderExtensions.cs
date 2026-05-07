@@ -612,6 +612,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="apiVersion">Azure OpenAI API version</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
@@ -621,21 +622,21 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         TokenCredential credentials,
         string? modelId = null,
         string? serviceId = null,
-        string? apiVersion = null)
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextToImageService(
-                deploymentName,
-                endpoint,
-                credentials,
-                modelId,
-                HttpClientProvider.GetHttpClient(serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                apiVersion));
+        builder.Services.AddAzureOpenAITextToImage(
+            deploymentName,
+            endpoint,
+            credentials,
+            modelId,
+            serviceId,
+            apiVersion,
+            httpClient);
 
         return builder;
     }
@@ -667,15 +668,14 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextToImageService(
-                deploymentName,
-                endpoint,
-                apiKey,
-                modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                apiVersion));
+        builder.Services.AddAzureOpenAITextToImage(
+            deploymentName: deploymentName,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            serviceId: serviceId,
+            modelId: modelId,
+            apiVersion: apiVersion,
+            httpClient: httpClient);
 
         return builder;
     }

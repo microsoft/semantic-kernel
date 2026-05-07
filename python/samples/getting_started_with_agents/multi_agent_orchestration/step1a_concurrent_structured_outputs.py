@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, ConcurrentOrchestration
@@ -28,7 +30,7 @@ class ArticleAnalysis(BaseModel):
     entities: list[str]
 
 
-def get_agents() -> list[Agent]:
+def get_agents(credential: TokenCredential) -> list[Agent]:
     """Return a list of agents that will participate in the concurrent orchestration.
 
     Feel free to add or remove agents.
@@ -36,17 +38,17 @@ def get_agents() -> list[Agent]:
     theme_agent = ChatCompletionAgent(
         name="ThemeAgent",
         instructions="You are an expert in identifying themes in articles. Given an article, identify the main themes.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     sentiment_agent = ChatCompletionAgent(
         name="SentimentAgent",
         instructions="You are an expert in sentiment analysis. Given an article, identify the sentiment.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     entity_agent = ChatCompletionAgent(
         name="EntityAgent",
         instructions="You are an expert in entity recognition. Given an article, extract the entities.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     return [theme_agent, sentiment_agent, entity_agent]
@@ -60,10 +62,11 @@ async def main():
     #   and the generic types for the orchestration.
     # Note: the chat completion service and model provided to the
     #    structure output transform must support structured output.
-    agents = get_agents()
+    credential = AzureCliCredential()
+    agents = get_agents(credential)
     concurrent_orchestration = ConcurrentOrchestration[str, ArticleAnalysis](
         members=agents,
-        output_transform=structured_outputs_transform(ArticleAnalysis, AzureChatCompletion()),
+        output_transform=structured_outputs_transform(ArticleAnalysis, AzureChatCompletion(credential=credential)),
     )
 
     # 2. Read the task from a file

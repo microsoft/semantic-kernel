@@ -148,7 +148,7 @@ public sealed class OpenAIChatClientTests : BaseIntegrationTest
         Assert.Contains("<result>John</result>", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "Currently not supported - Chat System Prompt is not surfacing as a system message level")]
+    [Fact]
     public async Task ChatSystemPromptIsNotIgnoredAsync()
     {
         // Arrange

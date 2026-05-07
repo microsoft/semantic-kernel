@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions import kernel_function
@@ -12,7 +12,8 @@ from semantic_kernel.functions import kernel_function
 The following sample demonstrates how to create an Azure AI Agent
 and use it with streaming responses. The agent is configured to use
 a plugin that provides a list of specials from the menu and the price
-of the requested menu item.
+of the requested menu item. The thread message ID is also printed as each
+message is processed.
 """
 
 
@@ -39,7 +40,7 @@ async def main() -> None:
     ai_agent_settings = AzureAIAgentSettings()
 
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         AGENT_NAME = "Host"
@@ -72,12 +73,22 @@ async def main() -> None:
         ]
 
         try:
+            last_thread_msg_id = None
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'")
                 first_chunk = True
-                async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                async for response in agent.invoke_stream(
+                    messages=user_input,
+                    thread=thread,
+                ):
                     if first_chunk:
                         print(f"# {response.role}: ", end="", flush=True)
+                        # Show the thread message id before the first text chunk
+                        if "thread_message_id" in response.content.metadata:
+                            current_id = response.content.metadata["thread_message_id"]
+                            if current_id != last_thread_msg_id:
+                                print(f"(thread message id: {current_id}) ", end="", flush=True)
+                                last_thread_msg_id = current_id
                         first_chunk = False
                     print(response.content, end="", flush=True)
                     thread = response.thread
@@ -86,6 +97,23 @@ async def main() -> None:
             # Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
+
+        """
+        Sample Output:
+
+        # User: 'Hello'
+        # AuthorRole.ASSISTANT: (thread message id: msg_HZ2h4Wzbj7GEcnVCjnyEuYWT) Hello! How can I assist you with 
+            the menu today?
+        # User: 'What is the special soup?'
+        # AuthorRole.ASSISTANT: (thread message id: msg_TSjkJK6hHJojIkPvF6uUofHD) The special soup today is 
+            Clam Chowder. Would you like to know more about it or anything else from the menu?
+        # User: 'How much does that cost?'
+        # AuthorRole.ASSISTANT: (thread message id: msg_liwTpBFrB9JpCM1oM9EXKiwq) The Clam Chowder costs $9.99. 
+            Is there anything else you'd like to know?
+        # User: 'Thank you'
+        # AuthorRole.ASSISTANT: (thread message id: msg_K6lpR3gYIHethXq17T6gJcxi) You're welcome! 
+            If you have any more questions or need assistance, feel free to ask. Enjoy your meal!
+        """
 
 
 if __name__ == "__main__":

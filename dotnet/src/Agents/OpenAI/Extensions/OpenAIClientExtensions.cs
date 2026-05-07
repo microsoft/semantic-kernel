@@ -20,7 +20,6 @@ public static class OpenAIClientExtensions
     /// </summary>
     /// <param name="client">The OpenAI client instance.</param>
     /// <param name="fileIds">The collection of file identifiers to include in the vector store.</param>
-    /// <param name="waitUntilCompleted">Indicates whether to wait until the operation is completed.</param>
     /// <param name="storeName">The name of the vector store.</param>
     /// <param name="expirationPolicy">The expiration policy for the vector store.</param>
     /// <param name="chunkingStrategy">The chunking strategy for the vector store.</param>
@@ -30,7 +29,6 @@ public static class OpenAIClientExtensions
     public static async Task<string> CreateVectorStoreAsync(
         this OpenAIClient client,
         IEnumerable<string> fileIds,
-        bool waitUntilCompleted = true,
         string? storeName = null,
         VectorStoreExpirationPolicy? expirationPolicy = null,
         FileChunkingStrategy? chunkingStrategy = null,
@@ -55,9 +53,9 @@ public static class OpenAIClientExtensions
         }
 
         VectorStoreClient vectorStoreClient = client.GetVectorStoreClient();
-        CreateVectorStoreOperation result = await vectorStoreClient.CreateVectorStoreAsync(waitUntilCompleted, options, cancellationToken).ConfigureAwait(false);
+        var result = await vectorStoreClient.CreateVectorStoreAsync(options, cancellationToken).ConfigureAwait(false);
 
-        return result.VectorStoreId;
+        return result.Value.Id;
     }
 
     /// <summary>

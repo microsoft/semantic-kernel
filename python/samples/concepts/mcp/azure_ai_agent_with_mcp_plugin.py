@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
@@ -22,7 +22,7 @@ set the required environment variables for the Azure AI Foundry service:
 async def main():
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
         # 2. Create the MCP plugin
         MCPStdioPlugin(

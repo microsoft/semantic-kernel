@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.bedrock.bedrock_settings import BedrockSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_base import BedrockBase
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model_provider import (
+    BedrockModelProvider,
     get_chat_completion_additional_model_request_fields,
 )
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
@@ -36,10 +37,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInitializationError,
-    ServiceInvalidResponseError,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
@@ -60,6 +58,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     def __init__(
         self,
         model_id: str | None = None,
+        model_provider: BedrockModelProvider | None = None,
         service_id: str | None = None,
         runtime_client: Any | None = None,
         client: Any | None = None,
@@ -70,6 +69,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
         Args:
             model_id: The Amazon Bedrock chat model ID to use.
+            model_provider: The Bedrock model provider to use.
             service_id: The Service ID for the completion service.
             runtime_client: The Amazon Bedrock runtime client to use.
             client: The Amazon Bedrock client to use.
@@ -79,6 +79,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         try:
             bedrock_settings = BedrockSettings(
                 chat_model_id=model_id,
+                model_provider=model_provider,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -93,6 +94,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             service_id=service_id or bedrock_settings.chat_model_id,
             runtime_client=runtime_client,
             client=client,
+            bedrock_model_provider=bedrock_settings.model_provider,
         )
 
     # region Overriding base class methods
@@ -212,7 +214,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "stopSequences": settings.stop,
             }),
             "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
-                self.ai_model_id, settings
+                self.ai_model_id, settings, model_provider=self.bedrock_model_provider
             ),
         }
 

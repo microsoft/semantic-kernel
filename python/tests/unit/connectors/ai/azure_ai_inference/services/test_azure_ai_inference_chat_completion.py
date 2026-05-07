@@ -66,6 +66,15 @@ def test_azure_ai_inference_chat_completion_init_with_service_id(
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
 
 
+def test_azure_ai_inference_chat_completion_init_with_api_version(azure_ai_inference_unit_test_env, model_id) -> None:
+    """Test initialization of AzureAIInferenceChatCompletion with api_version"""
+    azure_ai_inference = AzureAIInferenceChatCompletion(model_id, api_version="2024-02-15-test")
+
+    assert azure_ai_inference.ai_model_id == model_id
+    assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
+    assert azure_ai_inference.client._config.api_version == "2024-02-15-test"
+
+
 @pytest.mark.parametrize(
     "azure_ai_inference_client",
     [AzureAIInferenceChatCompletion.__name__],
@@ -210,7 +219,6 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
         messages=[UserMessage(content=user_message_content)],
         model=model_id,
         model_extras=settings.extra_parameters,
-        **settings.prepare_settings_dict(),
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
@@ -263,9 +271,12 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
 async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
     mock_complete,
     azure_ai_inference_service,
-    kernel,
+    kernel: Kernel,
     chat_history: ChatHistory,
     mock_azure_ai_inference_chat_completion_response_with_tool_call,
+    mock_azure_ai_inference_chat_completion_response,
+    decorated_native_function,
+    disabled_model_diagnostics_test_env,
 ) -> None:
     """Test completion of AzureAIInferenceChatCompletion with function choice behavior"""
     user_message_content: str = "Hello"
@@ -276,7 +287,13 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
     )
     settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
 
-    mock_complete.return_value = mock_azure_ai_inference_chat_completion_response_with_tool_call
+    # First call returns tool call, second call returns final response
+    mock_complete.side_effect = [
+        mock_azure_ai_inference_chat_completion_response_with_tool_call,
+        mock_azure_ai_inference_chat_completion_response,
+    ]
+
+    kernel.add_function(plugin_name="TestPlugin", function=decorated_native_function)
 
     responses = await azure_ai_inference_service.get_chat_message_contents(
         chat_history=chat_history,
@@ -285,13 +302,13 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
         arguments=KernelArguments(),
     )
 
-    # The function should be called twice:
+    # Completion should be called twice:
     # One for the tool call and one for the last completion
     # after the maximum_auto_invoke_attempts is reached
     assert mock_complete.call_count == 2
     assert len(responses) == 1
     assert responses[0].role == "assistant"
-    assert responses[0].finish_reason == FinishReason.TOOL_CALLS
+    assert responses[0].content == "Hello"
 
 
 @pytest.mark.parametrize(
@@ -506,7 +523,6 @@ async def test_azure_ai_inference_streaming_chat_completion_with_extra_parameter
         messages=[UserMessage(content=user_message_content)],
         model=model_id,
         model_extras=settings.extra_parameters,
-        **settings.prepare_settings_dict(),
     )
 
 

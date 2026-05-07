@@ -2,6 +2,4 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadConformance;
 
-public class OpenAIAssistantAgentThreadTests() : AgentThreadTests(() => new OpenAIAssistantAgentFixture())
-{
-}
+public class OpenAIAssistantAgentThreadTests() : AgentThreadTests(() => new OpenAIAssistantAgentFixture());

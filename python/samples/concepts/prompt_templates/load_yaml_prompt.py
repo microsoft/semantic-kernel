@@ -5,7 +5,6 @@ import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.contents import ChatHistory
 
 
 async def main():
@@ -18,15 +17,13 @@ async def main():
     )
     kernel.add_service(chat_service)
 
-    chat_history = ChatHistory(system_message="Assistant is a large language model")
-
     plugin_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
         "resources",
     )
     plugin = kernel.add_plugin(plugin_name="sample_plugins", parent_directory=plugin_path)
 
-    result = await kernel.invoke(plugin["Parrot"], count=2, user_message="I love parrots.", chat_history=chat_history)
+    result = await kernel.invoke(plugin["Parrot"], count=2, user_message="I love parrots.")
     print(result)
 
 

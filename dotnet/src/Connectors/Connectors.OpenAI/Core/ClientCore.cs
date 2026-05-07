@@ -199,10 +199,7 @@ internal partial class ClientCore
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
         };
 
-        if (endpoint is not null)
-        {
-            options.Endpoint = endpoint;
-        }
+        options.Endpoint ??= endpoint ?? httpClient?.BaseAddress;
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
 

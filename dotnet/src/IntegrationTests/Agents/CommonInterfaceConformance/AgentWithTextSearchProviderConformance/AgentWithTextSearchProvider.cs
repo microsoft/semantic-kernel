@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Obsolete TextSearchOptions/TextSearchFilter
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -41,7 +43,6 @@ public abstract class AgentWithTextSearchProvider<TFixture>(Func<TFixture> creat
     public async Task TextSearchBehaviorStateIsUsedByAgentInternalAsync(string question, string expectedResult, params string[] ragResults)
     {
         // Arrange
-        ragResults.Select(x => new TextSearchResult(x)).ToAsyncEnumerable();
         var mockTextSearch = new Mock<ITextSearch>();
         mockTextSearch.Setup(x => x.GetTextSearchResultsAsync(
             It.IsAny<string>(),

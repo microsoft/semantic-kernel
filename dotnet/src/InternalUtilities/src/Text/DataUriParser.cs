@@ -157,7 +157,7 @@ internal static class DataUriParser
         /// <summary>
         /// The optional parameters of the data.
         /// </summary>
-        internal Dictionary<string, string> Parameters { get; set; } = new();
+        internal Dictionary<string, string> Parameters { get; set; } = [];
 
         /// <summary>
         /// The optional format of the data. Most common is "base64".

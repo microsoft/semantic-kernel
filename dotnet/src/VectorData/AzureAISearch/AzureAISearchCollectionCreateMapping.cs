@@ -76,8 +76,10 @@ internal static class AzureAISearchCollectionCreateMapping
         {
             IndexKind.Hnsw => new HnswAlgorithmConfiguration(algorithmConfigName) { Parameters = new HnswParameters { Metric = algorithmMetric } },
             IndexKind.Flat => new ExhaustiveKnnAlgorithmConfiguration(algorithmConfigName) { Parameters = new ExhaustiveKnnParameters { Metric = algorithmMetric } },
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Azure AI Search VectorStore.")
+
+            _ => throw new NotSupportedException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Azure AI Search VectorStore.")
         };
+
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
         return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
@@ -105,7 +107,8 @@ internal static class AzureAISearchCollectionCreateMapping
             DistanceFunction.CosineSimilarity or null => VectorSearchAlgorithmMetric.Cosine,
             DistanceFunction.DotProductSimilarity => VectorSearchAlgorithmMetric.DotProduct,
             DistanceFunction.EuclideanDistance => VectorSearchAlgorithmMetric.Euclidean,
-            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Azure AI Search VectorStore.")
+
+            _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Azure AI Search VectorStore.")
         };
 
     /// <summary>
@@ -125,7 +128,11 @@ internal static class AzureAISearchCollectionCreateMapping
             // Half is also listed by the SDK, but currently not supported.
             Type t when t == typeof(float) => SearchFieldDataType.Double,
             Type t when t == typeof(double) => SearchFieldDataType.Double,
+            Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
+#if NET
+            Type t when t == typeof(DateOnly) => SearchFieldDataType.DateTimeOffset,
+#endif
 
             Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
             Type t when t == typeof(List<string>) => SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -139,9 +146,15 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<float>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#if NET
+            Type t when t == typeof(DateOnly[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateOnly>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#endif
 
-            _ => throw new InvalidOperationException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
+            _ => throw new NotSupportedException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };
 }

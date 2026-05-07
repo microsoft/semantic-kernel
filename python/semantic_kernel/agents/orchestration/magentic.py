@@ -5,6 +5,7 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
+from html import escape
 from typing import Annotated
 
 from pydantic import Field
@@ -290,14 +291,21 @@ class StandardMagenticManager(MagenticManagerBase):
 
         # 2. Create the plan
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=await prompt_template.render(
                     Kernel(),
-                    KernelArguments(team=magentic_context.participant_descriptions),
+                    KernelArguments(team=escaped_participant_descriptions),
                 ),
             )
         )
@@ -345,14 +353,21 @@ class StandardMagenticManager(MagenticManagerBase):
 
         # 2. Update the plan
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_update_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_update_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=await prompt_template.render(
                     Kernel(),
-                    KernelArguments(team=magentic_context.participant_descriptions),
+                    KernelArguments(team=escaped_participant_descriptions),
                 ),
             )
         )
@@ -379,14 +394,20 @@ class StandardMagenticManager(MagenticManagerBase):
             raise RuntimeError("The task ledger is not initialized. Planning needs to happen first.")
 
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_full_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_full_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
 
         rendered_task_ledger = await prompt_template.render(
             Kernel(),
             KernelArguments(
                 task=magentic_context.task.content,
-                team=magentic_context.participant_descriptions,
+                team=escaped_participant_descriptions,
                 facts=self.task_ledger.facts.content,
                 plan=self.task_ledger.plan.content,
             ),
@@ -405,13 +426,20 @@ class StandardMagenticManager(MagenticManagerBase):
             ProgressLedger: The progress ledger.
         """
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.progress_ledger_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.progress_ledger_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        escaped_participant_descriptions: dict[str, str] = {}
+
+        for key, value in magentic_context.participant_descriptions.items():
+            escaped_participant_descriptions[key] = escape(value)
+
         progress_ledger_prompt = await prompt_template.render(
             Kernel(),
             KernelArguments(
                 task=magentic_context.task.content,
-                team=magentic_context.participant_descriptions,
+                team=escaped_participant_descriptions,
                 names=", ".join(magentic_context.participant_descriptions.keys()),
             ),
         )
@@ -445,8 +473,12 @@ class StandardMagenticManager(MagenticManagerBase):
             ChatMessageContent: The final answer.
         """
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(template=self.final_answer_prompt)
+            prompt_template_config=PromptTemplateConfig(template=self.final_answer_prompt),
+            allow_dangerously_set_content=True,
         )
+
+        magentic_context.task.content = escape(magentic_context.task.content)
+
         magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
@@ -477,6 +509,7 @@ class MagenticManagerActor(ActorBase):
         manager: MagenticManagerBase,
         internal_topic_type: str,
         participant_descriptions: dict[str, str],
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Initialize the Magentic One manager actor.
@@ -485,6 +518,7 @@ class MagenticManagerActor(ActorBase):
             manager (MagenticManagerBase): The Magentic One manager.
             internal_topic_type (str): The internal topic type.
             participant_descriptions (dict[str, str]): The participant descriptions.
+            exception_callback (Callable[[BaseException], None]): A callback function to handle exceptions.
             result_callback (Callable | None): A callback function to handle the final answer.
         """
         self._manager = manager
@@ -494,9 +528,10 @@ class MagenticManagerActor(ActorBase):
         self._context: MagenticContext | None = None
         self._task_ledger: ChatMessageContent | None = None
 
-        super().__init__(description="Magentic One Manager")
+        super().__init__("Magentic One Manager", exception_callback)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_start_message(self, message: MagenticStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the Magentic One manager."""
         logger.debug(f"{self.id}: Received Magentic One start message.")
@@ -512,6 +547,7 @@ class MagenticManagerActor(ActorBase):
         await self._run_outer_loop(ctx.cancellation_token)
 
     @message_handler
+    @ActorBase.exception_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         """Handle the response message for the Magentic One manager."""
         if self._context is None or self._task_ledger is None:
@@ -647,19 +683,32 @@ class MagenticManagerActor(ActorBase):
         if self._context is None:
             raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
 
-        if (
+        hit_round_limit = (
             self._manager.max_round_count is not None and self._context.round_count >= self._manager.max_round_count
-        ) or (self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count):
-            message = (
-                "Max round count reached."
-                if self._manager.max_round_count and self._context.round_count >= self._manager.max_round_count
-                else "Max reset count reached."
+        )
+        hit_reset_limit = (
+            self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count
+        )
+
+        if hit_round_limit or hit_reset_limit:
+            limit_type = "round" if hit_round_limit else "reset"
+            logger.error(f"Max {limit_type} count reached.")
+
+            # Retrieve the latest assistant content produced so far
+            partial_result = next(
+                (m for m in reversed(self._context.chat_history.messages) if m.role == AuthorRole.ASSISTANT),
+                None,
             )
-            logger.debug(message)
-            if self._result_callback:
-                await self._result_callback(
-                    ChatMessageContent(role=AuthorRole.ASSISTANT, content=message, name=self.__class__.__name__)
+            if partial_result is None:
+                partial_result = ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    content=f"Stopped because the maximum {limit_type} limit was reached. No partial result available.",
+                    name=self.__class__.__name__,
                 )
+
+            if self._result_callback:
+                await self._result_callback(partial_result)
+
             return False
 
         return True
@@ -677,10 +726,7 @@ class MagenticAgentActor(AgentActorBase):
     @message_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
         logger.debug(f"{self.id}: Received response message.")
-        if self._agent_thread is not None:
-            await self._agent_thread.on_new_message(message.body)
-        else:
-            self._chat_history.add_message(message.body)
+        self._message_cache.add_message(message.body)
 
     @message_handler
     async def _handle_request_message(self, message: MagenticRequestMessage, ctx: MessageContext) -> None:
@@ -703,7 +749,7 @@ class MagenticAgentActor(AgentActorBase):
     async def _handle_reset_message(self, message: MagenticResetMessage, ctx: MessageContext) -> None:
         """Handle the reset message for the Magentic One group chat."""
         logger.debug(f"{self.id}: Received reset message.")
-        self._chat_history.clear()
+        self._message_cache.clear()
         if self._agent_thread:
             await self._agent_thread.delete()
             self._agent_thread = None
@@ -785,14 +831,20 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
-        await self._register_members(runtime, internal_topic_type)
-        await self._register_manager(runtime, internal_topic_type, result_callback=result_callback)
+        await self._register_members(runtime, internal_topic_type, exception_callback)
+        await self._register_manager(runtime, internal_topic_type, exception_callback, result_callback=result_callback)
         await self._add_subscriptions(runtime, internal_topic_type)
 
-    async def _register_members(self, runtime: CoreRuntime, internal_topic_type: str) -> None:
+    async def _register_members(
+        self,
+        runtime: CoreRuntime,
+        internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
+    ) -> None:
         """Register the agents."""
         await asyncio.gather(*[
             MagenticAgentActor.register(
@@ -801,6 +853,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
                 lambda agent=agent: MagenticAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
+                    exception_callback,
                     self._agent_response_callback,
                     self._streaming_agent_response_callback,
                 ),
@@ -812,6 +865,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Register the group chat manager."""
@@ -822,6 +876,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
                 self._manager,
                 internal_topic_type=internal_topic_type,
                 participant_descriptions={agent.name: agent.description for agent in self._members},  # type: ignore[misc]
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )

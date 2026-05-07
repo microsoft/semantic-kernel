@@ -10,12 +10,12 @@ public class TaskManagementTask
     /// <summary>
     /// ID of the task.
     /// </summary>
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Title of the task.
     /// </summary>
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Reminder date/time for the task.
@@ -40,7 +40,7 @@ public class TaskManagementTask
     /// <param name="reminder">Reminder date/time for the task.</param>
     /// <param name="due">Task's due date/time.</param>
     /// <param name="isCompleted">True if the task is completed, otherwise false.</param>
-    public TaskManagementTask(string id, string title, string? reminder = null, string? due = null, bool isCompleted = false)
+    public TaskManagementTask(string? id, string? title, string? reminder = null, string? due = null, bool isCompleted = false)
     {
         this.Id = id;
         this.Title = title;

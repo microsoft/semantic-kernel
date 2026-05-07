@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import tempfile
+from copy import deepcopy
 from unittest.mock import patch
 
 import pytest
@@ -418,3 +420,229 @@ def test_function_model_dump_json():
     model_dump_json = function.model_dump_json()
     assert isinstance(model_dump_json, str)
     assert "test" in model_dump_json
+
+
+def test_from_directory_utf8_encoding_default():
+    """Test loading plugin with default UTF-8 encoding."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        # UTF-8 content with international characters
+        prompt_content = """Hello! I can help with questions in multiple languages:
+        English: Hello world!
+        Spanish: ¡Hola mundo!
+        Chinese: 你好世界!
+        Japanese: こんにちは世界!
+        
+        Question: {{$input}}
+        """
+
+        config_content = """{
+    "schema": 1,
+    "description": "A multilingual assistant function",
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "User's question",
+            "required": true
+        }
+    ]
+}"""
+
+        # Write files with UTF-8 encoding
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Test default behavior (should use UTF-8)
+        function = KernelFunctionFromPrompt.from_directory(temp_dir)
+        assert function.name == os.path.basename(temp_dir)
+        assert function.description == "A multilingual assistant function"
+        assert "你好世界" in function.prompt_template.prompt_template_config.template
+        assert "こんにちは世界" in function.prompt_template.prompt_template_config.template
+
+
+def test_from_directory_explicit_utf8_encoding():
+    """Test loading plugin with explicit UTF-8 encoding."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        prompt_content = "Hello with UTF-8 characters: ñáéíóú {{$input}}"
+        config_content = '{"schema": 1, "description": "Test with UTF-8 characters"}'
+
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Test explicit UTF-8 encoding
+        function = KernelFunctionFromPrompt.from_directory(temp_dir, encoding="utf-8")
+        assert function.description == "Test with UTF-8 characters"
+        assert "ñáéíóú" in function.prompt_template.prompt_template_config.template
+
+
+def test_from_directory_latin1_encoding():
+    """Test loading plugin with Latin-1 encoding."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        # Content with Latin-1 characters (Western European)
+        prompt_content = """Assistant for Western European languages:
+        French: café, naïve, résumé
+        German: Müller, Größe, weiß
+        Spanish: niño, señora, años
+        
+        Question: {{$input}}
+        """
+
+        config_content = """{
+    "schema": 1,
+    "description": "Western European language assistant",
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "User's question",
+            "required": true
+        }
+    ]
+}"""
+
+        # Write files with Latin-1 encoding
+        with open(prompt_path, "w", encoding="latin-1") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="latin-1") as f:
+            f.write(config_content)
+
+        # Load with Latin-1 encoding
+        function = KernelFunctionFromPrompt.from_directory(temp_dir, encoding="latin-1")
+        assert function.description == "Western European language assistant"
+        assert "café" in function.prompt_template.prompt_template_config.template
+        assert "Müller" in function.prompt_template.prompt_template_config.template
+        assert "niño" in function.prompt_template.prompt_template_config.template
+
+
+def test_from_directory_cp1252_encoding():
+    """Test loading plugin with Windows-1252 encoding."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        # Content with Windows-1252 specific characters
+        prompt_content = """Windows text processing assistant:
+        Smart quotes: "Hello" and 'world'
+        Em dash: Yes—absolutely!
+        Ellipsis: Wait…
+        
+        Question: {{$input}}
+        """
+
+        config_content = """{
+    "schema": 1,
+    "description": "Windows text processing assistant",
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "User's question about text processing",
+            "required": true
+        }
+    ]
+}"""
+
+        # Write files with Windows-1252 encoding
+        with open(prompt_path, "w", encoding="cp1252") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="cp1252") as f:
+            f.write(config_content)
+
+        # Load with Windows-1252 encoding
+        function = KernelFunctionFromPrompt.from_directory(temp_dir, encoding="cp1252")
+        assert function.description == "Windows text processing assistant"
+        assert '"Hello"' in function.prompt_template.prompt_template_config.template
+        assert "Yes—absolutely" in function.prompt_template.prompt_template_config.template
+        assert "Wait…" in function.prompt_template.prompt_template_config.template
+
+
+def test_from_directory_with_plugin_name_and_encoding():
+    """Test loading plugin with both plugin name and encoding specified."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        prompt_content = "Simple assistant: {{$input}}"
+        config_content = '{"schema": 1, "description": "Simple assistant"}'
+
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Load with both plugin name and encoding specified
+        function = KernelFunctionFromPrompt.from_directory(
+            path=temp_dir, plugin_name="MyCustomPlugin", encoding="utf-8"
+        )
+        assert function.metadata.plugin_name == "MyCustomPlugin"
+        assert function.description == "Simple assistant"
+        assert function.prompt_template.prompt_template_config.template == "Simple assistant: {{$input}}"
+
+
+def test_from_directory_encoding_error_handling():
+    """Test that incorrect encoding raises appropriate error."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        # Write UTF-8 content
+        prompt_content = "Hello with UTF-8: 你好世界 {{$input}}"
+        config_content = '{"schema": 1, "description": "UTF-8 content"}'
+
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Try to read with ASCII encoding - should fail
+        with pytest.raises(UnicodeDecodeError):
+            KernelFunctionFromPrompt.from_directory(temp_dir, encoding="ascii")
+
+
+def test_from_directory_backward_compatibility():
+    """Test that existing code without encoding parameter still works."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        prompt_path = os.path.join(temp_dir, "skprompt.txt")
+        config_path = os.path.join(temp_dir, "config.json")
+
+        prompt_content = "Basic ASCII content: {{$input}}"
+        config_content = '{"schema": 1, "description": "Basic function"}'
+
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_content)
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(config_content)
+
+        # Test that old calling style still works
+        function = KernelFunctionFromPrompt.from_directory(temp_dir)
+        assert function.description == "Basic function"
+        assert function.prompt_template.prompt_template_config.template == "Basic ASCII content: {{$input}}"
+
+
+def test_kernel_function_from_prompt_deepcopy():
+    """Test deepcopying a KernelFunctionFromPrompt."""
+    function = KernelFunctionFromPrompt(
+        function_name="test_function",
+        plugin_name="test_plugin",
+        prompt="Hello, world!",
+        description="A test function.",
+    )
+    copied_function = deepcopy(function)
+    assert copied_function is not function
+    assert copied_function.name == function.name
+    assert copied_function.plugin_name == function.plugin_name
+    assert copied_function.description == function.description
+    assert copied_function.prompt_template.prompt_template_config.template == (
+        function.prompt_template.prompt_template_config.template
+    )
+    assert copied_function.prompt_template is not function.prompt_template

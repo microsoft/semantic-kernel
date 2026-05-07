@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 from semantic_kernel.functions import KernelArguments
@@ -31,7 +33,7 @@ async def invoke_agent_with_template(
     template_str: str, template_format: TEMPLATE_FORMAT_TYPES, default_style: str = "haiku"
 ):
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Configure the prompt template
     prompt_template_config = PromptTemplateConfig(template=template_str, template_format=template_format)

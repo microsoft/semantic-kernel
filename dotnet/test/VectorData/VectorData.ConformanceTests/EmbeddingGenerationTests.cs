@@ -9,7 +9,6 @@ using Xunit;
 
 namespace VectorData.ConformanceTests;
 
-#pragma warning disable CA1819 // Properties should not return arrays
 #pragma warning disable CA2000 // Don't actually need to dispose FakeEmbeddingGenerator
 #pragma warning disable CS8605 // Unboxing a possibly null value.
 
@@ -341,9 +340,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     #region Support
 
-    public class Record
+    public class Record : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public string? Embedding { get; set; }
 
         public int Counter { get; set; }
@@ -374,9 +372,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? Text { get; set; }
     }
 
-    public class RecordWithRomOfFloatVectorProperty
+    public class RecordWithRomOfFloatVectorProperty : TestRecord<TKey>
     {
-        public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float> Embedding { get; set; }
 
         public int Counter { get; set; }
@@ -439,7 +436,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "EmbeddingGenerationTests";
+        protected override string CollectionNameBase => nameof(EmbeddingGenerationTests<int>);
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -510,7 +507,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         private int _counter;
 
-        public override string CollectionName => "SearchOnlyEmbeddingGenerationTests";
+        protected override string CollectionNameBase => "SearchOnlyEmbeddingGenerationTests";
 
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -577,7 +574,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             => Interlocked.Increment(ref this._counter);
     }
 
-    private sealed class FakeEmbeddingGenerator(int? replaceLast = null) : IEmbeddingGenerator<string, Embedding<float>>
+    protected sealed class FakeEmbeddingGenerator(int? replaceLast = null) : IEmbeddingGenerator<string, Embedding<float>>
     {
         public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
             IEnumerable<string> values,

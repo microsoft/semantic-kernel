@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// A <see cref="GroupChatManager"/> that selects agents in a round-robin fashion.
 /// </summary>
 /// <remarks>
-/// Subclass this class to customize filter and user interaction behavior.
+/// Subclass this class to customize filter, termination, and user interaction behaviors.
 /// </remarks>
 public class RoundRobinGroupChatManager : GroupChatManager
 {

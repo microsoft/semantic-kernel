@@ -56,6 +56,7 @@ class ConcurrentAgentActor(AgentActorBase):
         agent: Agent,
         internal_topic_type: str,
         collection_agent_type: str,
+        exception_callback: Callable[[BaseException], None],
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
         streaming_agent_response_callback: Callable[[StreamingChatMessageContent, bool], Awaitable[None] | None]
         | None = None,
@@ -66,6 +67,7 @@ class ConcurrentAgentActor(AgentActorBase):
             agent: The agent to be executed.
             internal_topic_type: The internal topic type for the actor.
             collection_agent_type: The collection agent type for the actor.
+            exception_callback: A callback function to handle exceptions.
             agent_response_callback: A callback function to handle the full response from the agent.
             streaming_agent_response_callback: A callback function to handle streaming responses from the agent.
         """
@@ -73,6 +75,7 @@ class ConcurrentAgentActor(AgentActorBase):
         super().__init__(
             agent=agent,
             internal_topic_type=internal_topic_type,
+            exception_callback=exception_callback,
             agent_response_callback=agent_response_callback,
             streaming_agent_response_callback=streaming_agent_response_callback,
         )
@@ -102,6 +105,7 @@ class CollectionActor(ActorBase):
         self,
         description: str,
         expected_answer_count: int,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         """Initialize the collection agent container."""
@@ -110,7 +114,7 @@ class CollectionActor(ActorBase):
         self._results: list[ChatMessageContent] = []
         self._lock = asyncio.Lock()
 
-        super().__init__(description=description)
+        super().__init__(description, exception_callback)
 
     @message_handler
     async def _handle_message(self, message: ConcurrentResponseMessage, _: MessageContext) -> None:
@@ -147,17 +151,20 @@ class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
-        result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
+        exception_callback: Callable[[BaseException], None],
+        result_callback: Callable[[DefaultTypeAlias], Awaitable[None]],
     ) -> None:
         """Register the actors and orchestrations with the runtime and add the required subscriptions."""
         await asyncio.gather(*[
             self._register_members(
                 runtime,
                 internal_topic_type,
+                exception_callback,
             ),
             self._register_collection_actor(
                 runtime,
                 internal_topic_type,
+                exception_callback,
                 result_callback=result_callback,
             ),
             self._add_subscriptions(
@@ -170,6 +177,7 @@ class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
     ) -> None:
         """Register the members."""
 
@@ -180,7 +188,8 @@ class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
                 lambda agent=agent: ConcurrentAgentActor(  # type: ignore[misc]
                     agent,
                     internal_topic_type,
-                    collection_agent_type=self._get_collection_actor_type(internal_topic_type),
+                    self._get_collection_actor_type(internal_topic_type),
+                    exception_callback,
                     agent_response_callback=self._agent_response_callback,
                     streaming_agent_response_callback=self._streaming_agent_response_callback,
                 ),
@@ -192,6 +201,7 @@ class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
         self,
         runtime: CoreRuntime,
         internal_topic_type: str,
+        exception_callback: Callable[[BaseException], None],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
     ) -> None:
         await CollectionActor.register(
@@ -200,6 +210,7 @@ class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
             lambda: CollectionActor(
                 description="An internal agent that is responsible for collection results",
                 expected_answer_count=len(self._members),
+                exception_callback=exception_callback,
                 result_callback=result_callback,
             ),
         )

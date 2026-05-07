@@ -73,7 +73,7 @@ public sealed class OpenAIJsonSchemaTransformerTests
                     "null"
                   ],
                   "items": {
-                    "type": "object",
+                    "type": ["object","null"],
                     "properties": {
                       "TextProperty": {
                         "type": [

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -32,13 +31,19 @@ public static class ChatClientExtensions
         var chatOptions = executionSettings.ToChatOptions(kernel);
 
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
+        if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))
         {
-            var messageList = chatHistoryFromPrompt.ToChatMessageList();
-            return chatClient.GetResponseAsync(messageList, chatOptions, cancellationToken);
+            chatHistory = [new ChatMessageContent(AuthorRole.User, prompt)];
         }
 
-        return chatClient.GetResponseAsync(prompt, chatOptions, cancellationToken);
+        // Check if the execution settings is present and attempt to prepare the chat history for the request
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
+
+        var messageList = chatHistory.ToChatMessageList();
+        return chatClient.GetResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
     /// <summary>Get ChatClient streaming response for the prompt, settings and kernel.</summary>
@@ -58,14 +63,21 @@ public static class ChatClientExtensions
         var chatOptions = executionSettings.ToChatOptions(kernel);
 
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
+        if (!ChatPromptParser.TryParse(prompt, out ChatHistory? chatHistory))
         {
-            var messageList = chatHistoryFromPrompt.ToChatMessageList();
-            return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
+            chatHistory = [new ChatMessageContent(AuthorRole.User, prompt)];
         }
 
+        // Check if the execution settings is present and attempt to prepare the chat history for the request
+        if (executionSettings is not null)
+        {
+            chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
+        }
+
+        var messageList = chatHistory.ToChatMessageList();
+
         // Otherwise, use the prompt as the chat user message
-        return chatClient.GetStreamingResponseAsync(prompt, chatOptions, cancellationToken);
+        return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
     /// <summary>Creates an <see cref="IChatCompletionService"/> for the specified <see cref="IChatClient"/>.</summary>
@@ -75,7 +87,6 @@ public static class ChatClientExtensions
     /// The <see cref="IChatCompletionService"/>. If <paramref name="client"/> is an <see cref="IChatCompletionService"/>, <paramref name="client"/> will
     /// be returned. Otherwise, a new <see cref="IChatCompletionService"/> will be created that wraps <paramref name="client"/>.
     /// </returns>
-    [Experimental("SKEXP0001")]
     public static IChatCompletionService AsChatCompletionService(this IChatClient client, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(client);
@@ -88,7 +99,6 @@ public static class ChatClientExtensions
     /// <summary>
     /// Get the model identifier for the specified <see cref="IChatClient"/>.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public static string? GetModelId(this IChatClient client)
     {
         Verify.NotNull(client);

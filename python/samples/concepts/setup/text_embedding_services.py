@@ -95,9 +95,11 @@ def get_azure_openai_text_embedding_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
     """
+    from azure.identity import AzureCliCredential
+
     from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, OpenAIEmbeddingPromptExecutionSettings
 
-    embedding_service = AzureTextEmbedding(deployment_name="text-embedding-3-large")
+    embedding_service = AzureTextEmbedding(deployment_name="text-embedding-3-large", credential=AzureCliCredential())
     # Note: not all models support specifying the dimensions or there may be constraints on the dimensions
     request_settings = OpenAIEmbeddingPromptExecutionSettings(dimensions=3072)
 
@@ -294,13 +296,10 @@ def get_vertex_ai_text_embedding_service_and_request_settings() -> tuple[
     Please refer to the Semantic Kernel Python documentation for more information:
     https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
     """
-    from semantic_kernel.connectors.ai.google.vertex_ai import (
-        VertexAIEmbeddingPromptExecutionSettings,
-        VertexAITextEmbedding,
-    )
+    from semantic_kernel.connectors.ai.google import GoogleAIEmbeddingPromptExecutionSettings, GoogleAITextEmbedding
 
-    embedding_service = VertexAITextEmbedding()
+    embedding_service = GoogleAITextEmbedding()
     # Note: not all models support specifying the dimensions or there may be constraints on the dimensions
-    request_settings = VertexAIEmbeddingPromptExecutionSettings(output_dimensionality=768)
+    request_settings = GoogleAIEmbeddingPromptExecutionSettings(output_dimensionality=768)
 
     return embedding_service, request_settings

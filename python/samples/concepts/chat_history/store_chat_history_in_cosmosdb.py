@@ -7,17 +7,11 @@ from typing import Annotated
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
+from semantic_kernel.connectors.azure_cosmos_db import CosmosNoSqlStore
 from semantic_kernel.contents import ChatHistory, ChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.data import (
-    VectorStore,
-    VectorStoreRecordCollection,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    vectorstoremodel,
-)
+from semantic_kernel.data.vector import VectorStore, VectorStoreCollection, VectorStoreField, vectorstoremodel
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -39,9 +33,9 @@ in order to search for similar conversations.
 @vectorstoremodel
 @dataclass
 class ChatHistoryModel:
-    session_id: Annotated[str, VectorStoreRecordKeyField]
-    user_id: Annotated[str, VectorStoreRecordDataField(is_filterable=True)]
-    messages: Annotated[list[dict[str, str]], VectorStoreRecordDataField(is_filterable=True)]
+    session_id: Annotated[str, VectorStoreField("key")]
+    user_id: Annotated[str, VectorStoreField("data", is_indexed=True)]
+    messages: Annotated[list[dict[str, str]], VectorStoreField("data", is_indexed=True)]
 
 
 # 2. We then create a class that extends the ChatHistory class
@@ -55,7 +49,7 @@ class ChatHistoryInCosmosDB(ChatHistory):
     session_id: str
     user_id: str
     store: VectorStore
-    collection: VectorStoreRecordCollection[str, ChatHistoryModel] | None = None
+    collection: VectorStoreCollection[str, ChatHistoryModel] | None = None
 
     async def create_collection(self, collection_name: str) -> None:
         """Create a collection with the inbuild data model using the vector store.
@@ -64,9 +58,9 @@ class ChatHistoryInCosmosDB(ChatHistory):
         """
         self.collection = self.store.get_collection(
             collection_name=collection_name,
-            data_model_type=ChatHistoryModel,
+            record_type=ChatHistoryModel,
         )
-        await self.collection.create_collection_if_not_exists()
+        await self.collection.ensure_collection_exists()
 
     async def store_messages(self) -> None:
         """Store the chat history in the Cosmos DB.
@@ -175,7 +169,7 @@ async def main() -> None:
 
     # First we enter the store context manager to connect.
     # The create_database flag will create the database if it does not exist.
-    async with AzureCosmosDBNoSQLStore(create_database=True) as store:
+    async with CosmosNoSqlStore(create_database=True) as store:
         # Then we create the chat history in CosmosDB.
         history = ChatHistoryInCosmosDB(store=store, session_id=session_id, user_id="user")
         # Finally we create the collection.
@@ -191,7 +185,7 @@ async def main() -> None:
         except Exception:
             print("Closing chat...")
         if delete_when_done and history.collection:
-            await history.collection.delete_collection()
+            await history.collection.ensure_collection_deleted()
 
 
 if __name__ == "__main__":

@@ -12,11 +12,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class OpenAIResponseExtensions
 {
     /// <summary>
-    /// Converts a <see cref="OpenAIResponse"/> instance to a <see cref="ChatMessageContent"/>.
+    /// Converts a <see cref="ResponseResult"/> instance to a <see cref="ChatMessageContent"/>.
     /// </summary>
     /// <param name="response">The response to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this OpenAIResponse response)
+    public static ChatMessageContent ToChatMessageContent(this ResponseResult response)
     {
         var messageItem = response.OutputItems
             .FirstOrDefault(item => item is MessageResponseItem);
@@ -27,8 +27,7 @@ internal static class OpenAIResponseExtensions
         var kernelContents = response.OutputItems
             .SelectMany(item => item.ToChatMessageContentItemCollection())
             .ToList();
-        ChatMessageContentItemCollection items = new();
-        items.AddRange(kernelContents);
+        ChatMessageContentItemCollection items = [.. kernelContents];
 
         return new ChatMessageContent(
             role,
@@ -43,18 +42,25 @@ internal static class OpenAIResponseExtensions
     /// </summary>
     /// <param name="item">The response item to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this ResponseItem item)
+    public static ChatMessageContent? ToChatMessageContent(this ResponseItem item)
     {
         if (item is MessageResponseItem messageResponseItem)
         {
             var role = messageResponseItem.Role.ToAuthorRole();
             return new ChatMessageContent(role, item.ToChatMessageContentItemCollection(), innerContent: messageResponseItem);
         }
+        else if (item is ReasoningResponseItem reasoningResponseItem)
+        {
+            if (reasoningResponseItem.SummaryParts is not null && reasoningResponseItem.SummaryParts.Count > 0)
+            {
+                return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: reasoningResponseItem);
+            }
+        }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
             return new ChatMessageContent(AuthorRole.Assistant, item.ToChatMessageContentItemCollection(), innerContent: functionCallResponseItem);
         }
-        throw new NotSupportedException($"Unsupported response item: {item.GetType()}");
+        return null;
     }
 
     /// <summary>
@@ -67,6 +73,10 @@ internal static class OpenAIResponseExtensions
         if (item is MessageResponseItem messageResponseItem)
         {
             return messageResponseItem.Content.ToChatMessageContentItemCollection();
+        }
+        else if (item is ReasoningResponseItem reasoningResponseItem)
+        {
+            return reasoningResponseItem.SummaryParts.ToChatMessageContentItemCollection();
         }
         else if (item is FunctionCallResponseItem functionCallResponseItem)
         {
@@ -92,7 +102,7 @@ internal static class OpenAIResponseExtensions
             };
             return [functionCallContent];
         }
-        throw new NotImplementedException($"Unsupported response item: {item.GetType()}");
+        return [];
     }
 
     /// <summary>
@@ -164,7 +174,7 @@ internal static class OpenAIResponseExtensions
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in content)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText || part.Kind == ResponseContentPartKind.InputText)
+            if (part.Kind is ResponseContentPartKind.OutputText or ResponseContentPartKind.InputText)
             {
                 collection.Add(new TextContent(part.Text, innerContent: part));
             }
@@ -179,6 +189,19 @@ internal static class OpenAIResponseExtensions
             else if (part.Kind == ResponseContentPartKind.Refusal)
             {
                 collection.Add(new TextContent(part.Refusal, innerContent: part));
+            }
+        }
+        return collection;
+    }
+
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ReasoningSummaryPart> parts)
+    {
+        var collection = new ChatMessageContentItemCollection();
+        foreach (var part in parts)
+        {
+            if (part is ReasoningSummaryTextPart text)
+            {
+                collection.Add(new ReasoningContent(text.Text) { InnerContent = text });
             }
         }
         return collection;

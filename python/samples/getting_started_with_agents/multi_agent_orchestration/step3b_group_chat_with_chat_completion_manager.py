@@ -3,6 +3,9 @@
 import asyncio
 import sys
 
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration
 from semantic_kernel.agents.orchestration.group_chat import BooleanResult, GroupChatManager, MessageResult, StringResult
 from semantic_kernel.agents.runtime import InProcessRuntime
@@ -32,11 +35,12 @@ filtering the results of the conversation, which is a summary of the discussion.
 """
 
 
-def get_agents() -> list[Agent]:
+def get_agents(credential: TokenCredential) -> list[Agent]:
     """Return a list of agents that will participate in the group style discussion.
 
     Feel free to add or remove agents.
     """
+
     farmer = ChatCompletionAgent(
         name="Farmer",
         description="A rural farmer from Southeast Asia.",
@@ -46,7 +50,7 @@ def get_agents() -> list[Agent]:
             "You value tradition and sustainability. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     developer = ChatCompletionAgent(
         name="Developer",
@@ -57,7 +61,7 @@ def get_agents() -> list[Agent]:
             "You value innovation, freedom, and work-life balance. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     teacher = ChatCompletionAgent(
         name="Teacher",
@@ -68,7 +72,7 @@ def get_agents() -> list[Agent]:
             "You value legacy, learning, and cultural continuity. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     activist = ChatCompletionAgent(
         name="Activist",
@@ -78,7 +82,7 @@ def get_agents() -> list[Agent]:
             "You focus on social justice, environmental rights, and generational change. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     spiritual_leader = ChatCompletionAgent(
         name="SpiritualLeader",
@@ -88,7 +92,7 @@ def get_agents() -> list[Agent]:
             "You provide insights grounded in religion, morality, and community service. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     artist = ChatCompletionAgent(
         name="Artist",
@@ -98,7 +102,7 @@ def get_agents() -> list[Agent]:
             "You view life through creative expression, storytelling, and collective memory. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     immigrant = ChatCompletionAgent(
         name="Immigrant",
@@ -109,7 +113,7 @@ def get_agents() -> list[Agent]:
             "You focus on family success, risk, and opportunity. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     doctor = ChatCompletionAgent(
         name="Doctor",
@@ -119,7 +123,7 @@ def get_agents() -> list[Agent]:
             "Your perspective is shaped by public health, equity, and structured societal support. "
             "You are in a debate. Feel free to challenge the other participants with respect."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     return [farmer, developer, teacher, activist, spiritual_leader, artist, immigrant, doctor]
@@ -306,12 +310,13 @@ def agent_response_callback(message: ChatMessageContent) -> None:
 async def main():
     """Main function to run the agents."""
     # 1. Create a group chat orchestration with the custom group chat manager
-    agents = get_agents()
+    credential = AzureCliCredential()
+    agents = get_agents(credential)
     group_chat_orchestration = GroupChatOrchestration(
         members=agents,
         manager=ChatCompletionGroupChatManager(
             topic="What does a good life mean to you personally?",
-            service=AzureChatCompletion(),
+            service=AzureChatCompletion(credential=credential),
             max_rounds=10,
         ),
         agent_response_callback=agent_response_callback,

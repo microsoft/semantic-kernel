@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -75,7 +77,7 @@ public sealed class TextSearchProvider : AIContextProvider
 
         var searchResults = await this._textSearch.GetTextSearchResultsAsync(
             input,
-            new() { Top = this.Options.Top },
+            new() { Top = this.Options.Top, Filter = this.Options.Filter },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -96,7 +98,7 @@ public sealed class TextSearchProvider : AIContextProvider
     {
         var searchResults = await this._textSearch.GetTextSearchResultsAsync(
             userQuestion,
-            new() { Top = this.Options.Top },
+            new() { Top = this.Options.Top, Filter = this.Options.Filter },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);

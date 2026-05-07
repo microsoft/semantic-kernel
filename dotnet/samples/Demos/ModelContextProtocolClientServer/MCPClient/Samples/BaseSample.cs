@@ -21,14 +21,14 @@ internal abstract class BaseSample
     /// <param name="kernel">Optional kernel instance to use for the MCP client.</param>
     /// <param name="samplingRequestHandler">Optional handler for MCP sampling requests.</param>
     /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
-    protected static Task<IMcpClient> CreateMcpClientAsync(
+    protected static Task<McpClient> CreateMcpClientAsync(
         Kernel? kernel = null,
         Func<Kernel, CreateMessageRequestParams?, IProgress<ProgressNotificationValue>, CancellationToken, Task<CreateMessageResult>>? samplingRequestHandler = null)
     {
         KernelFunction? skSamplingHandler = null;
 
         // Create and return the MCP client
-        return McpClientFactory.CreateAsync(
+        return McpClient.CreateAsync(
             clientTransport: new StdioClientTransport(new StdioClientTransportOptions
             {
                 Name = "MCPServer",
@@ -36,12 +36,9 @@ internal abstract class BaseSample
             }),
             clientOptions: samplingRequestHandler != null ? new McpClientOptions()
             {
-                Capabilities = new ClientCapabilities
+                Handlers = new()
                 {
-                    Sampling = new SamplingCapability
-                    {
-                        SamplingHandler = InvokeHandlerAsync
-                    },
+                    SamplingHandler = InvokeHandlerAsync,
                 },
             } : null
          );

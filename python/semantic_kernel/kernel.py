@@ -38,6 +38,7 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
@@ -222,6 +223,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             "handlebars",
             "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
+        prompt_template_config: PromptTemplateConfig | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Invoke a function from the provided prompt.
@@ -232,6 +234,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -247,6 +250,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
+            prompt_template_config=prompt_template_config,
         )
         return await self.invoke(function=function, arguments=arguments)
 
@@ -262,6 +266,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         return_function_results: bool | None = False,
+        prompt_template_config: PromptTemplateConfig | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
         """Invoke a function from the provided prompt and stream the results.
@@ -273,6 +278,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -290,6 +296,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
+            prompt_template_config=prompt_template_config,
         )
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
@@ -536,9 +543,23 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         New lists of plugins and filters are created. It will not affect the original lists when the new instance
         is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
         instance is mutated.
+
+        Important: Plugins are cloned without deep-copying their underlying callable methods. This avoids attempting
+        to pickle/clone unpickleable objects (e.g., async generators), which can be present when plugins wrap async
+        context managers such as MCP client sessions. Function metadata is deep-copied while callables are shared.
         """
+        # Safely clone plugins by copying function metadata while retaining callable references.
+        # This avoids deepcopying bound methods that may reference unpickleable async components.
+        new_plugins: dict[str, KernelPlugin] = {}
+        for plugin_name, plugin in self.plugins.items():
+            cloned_plugin = KernelPlugin(name=plugin.name, description=plugin.description)
+            # Using KernelPlugin.add will copy functions via KernelFunction.function_copy(),
+            # which deep-copies metadata but keeps callables shallow.
+            cloned_plugin.add(plugin.functions)
+            new_plugins[plugin_name] = cloned_plugin
+
         return Kernel(
-            plugins=deepcopy(self.plugins),
+            plugins=new_plugins,
             # Shallow copy of the services, as they are not serializable
             services={k: v for k, v in self.services.items()},
             ai_service_selector=deepcopy(self.ai_service_selector),

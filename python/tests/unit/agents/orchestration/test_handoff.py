@@ -23,7 +23,7 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
-from tests.unit.agents.orchestration.conftest import MockAgent, MockRuntime
+from tests.unit.agents.orchestration.conftest import MockAgent, MockAgentWithException, MockRuntime
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -691,6 +691,29 @@ async def test_invoke_cancel_after_completion():
 
         with pytest.raises(RuntimeError, match="The invocation has already been completed."):
             orchestration_result.cancel()
+    finally:
+        await runtime.stop_when_idle()
+
+
+async def test_invoke_with_agent_raising_exception():
+    """Test the invoke method of the HandoffOrchestration with an agent raising an exception."""
+    agent_a = MockAgentWithException()
+    agent_b = MockAgent()
+
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    try:
+        orchestration = HandoffOrchestration(
+            members=[agent_a, agent_b],
+            handoffs={agent_a.name: {agent_b.name: "test"}},
+        )
+
+        orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+
+        with pytest.raises(RuntimeError, match="Mock agent exception"):
+            await orchestration_result.get(1.0)
+        assert orchestration_result.exception is not None
     finally:
         await runtime.stop_when_idle()
 

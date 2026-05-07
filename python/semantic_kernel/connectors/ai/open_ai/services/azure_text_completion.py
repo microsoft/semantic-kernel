@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import Mapping
 from typing import Any
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
@@ -14,9 +16,20 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated(
+    "The AzureTextCompletion class is deprecated and will be removed after 01/01/2026. "
+    "There won't be a replacement because all text completion models on Azure OpenAI "
+    "have retired. Please migrate to chat completion models before the deprecation date."
+)
 class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     """Azure Text Completion class."""
 
@@ -34,6 +47,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+        credential: TokenCredential | None = None,
     ) -> None:
         """Initialize an AzureTextCompletion service.
 
@@ -57,6 +71,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
+            credential (TokenCredential): The credential to use for authentication. (Optional)
         """
         try:
             azure_openai_settings = AzureOpenAISettings(
@@ -86,6 +101,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT,
             client=async_client,
+            credential=credential,
         )
 
     @classmethod

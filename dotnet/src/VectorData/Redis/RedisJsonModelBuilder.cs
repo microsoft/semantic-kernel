@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -10,18 +12,23 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal class RedisJsonModelBuilder(CollectionModelBuildingOptions options) : CollectionJsonModelBuilder(options)
 {
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-            ?? vectorProperty.ResolveEmbeddingType<Embedding<double>>(embeddingGenerator, userRequestedEmbeddingType);
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<double>>()
+    ];
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "string";
+        base.ValidateKeyProperty(keyProperty);
 
-        return type == typeof(string);
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
@@ -51,5 +58,13 @@ internal class RedisJsonModelBuilder(CollectionModelBuildingOptions options) : C
             || type == typeof(ReadOnlyMemory<double>)
             || type == typeof(Embedding<double>)
             || type == typeof(double[]);
+    }
+
+    /// <inheritdoc />
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        RedisModelBuilder.ValidateStorageName(propertyModel);
     }
 }

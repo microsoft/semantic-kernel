@@ -1,10 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from _typeshed import SupportsKeysAndGetItem
+
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
@@ -49,3 +56,67 @@ class KernelArguments(dict):
         has_arguments = self.__len__() > 0
         has_execution_settings = self.execution_settings is not None and len(self.execution_settings) > 0
         return has_arguments or has_execution_settings
+
+    def __or__(self, value: dict) -> "KernelArguments":
+        """Merges a KernelArguments with another KernelArguments or dict.
+
+        This implements the `|` operator for KernelArguments.
+        """
+        if not isinstance(value, dict):
+            raise TypeError(
+                f"TypeError: unsupported operand type(s) for |: '{type(self).__name__}' and '{type(value).__name__}'"
+            )
+
+        # Merge execution settings
+        new_execution_settings = (self.execution_settings or {}).copy()
+        if isinstance(value, KernelArguments) and value.execution_settings:
+            new_execution_settings |= value.execution_settings
+        # Create a new KernelArguments with merged dict values
+        return KernelArguments(settings=new_execution_settings, **(dict(self) | dict(value)))
+
+    def __ror__(self, value: dict) -> "KernelArguments":
+        """Merges a dict with a KernelArguments.
+
+        This implements the right-side `|` operator for KernelArguments.
+        """
+        if not isinstance(value, dict):
+            raise TypeError(
+                f"TypeError: unsupported operand type(s) for |: '{type(value).__name__}' and '{type(self).__name__}'"
+            )
+
+        # Merge execution settings
+        new_execution_settings = {}
+        if isinstance(value, KernelArguments) and value.execution_settings:
+            new_execution_settings = value.execution_settings.copy()
+        if self.execution_settings:
+            new_execution_settings |= self.execution_settings
+
+        # Create a new KernelArguments with merged dict values
+        return KernelArguments(settings=new_execution_settings, **(dict(value) | dict(self)))
+
+    def __ior__(self, value: "SupportsKeysAndGetItem[Any, Any] | Iterable[tuple[Any, Any]]") -> "KernelArguments":
+        """Merges into this KernelArguments with another KernelArguments or dict (in-place)."""
+        self.update(value)
+
+        # In-place merge execution settings
+        if isinstance(value, KernelArguments) and value.execution_settings:
+            if self.execution_settings:
+                self.execution_settings.update(value.execution_settings)
+            else:
+                self.execution_settings = value.execution_settings.copy()
+
+        return self
+
+    def dumps(self, include_execution_settings: bool = False) -> str:
+        """Serializes the KernelArguments to a JSON string."""
+        data = dict(self)
+        if include_execution_settings and self.execution_settings:
+            data["execution_settings"] = self.execution_settings
+
+        def default(obj):
+            if isinstance(obj, BaseModel):
+                return obj.model_dump()
+
+            return str(obj)
+
+        return json.dumps(data, default=default)

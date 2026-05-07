@@ -80,7 +80,7 @@ public class EmailPluginTests
         EmailPlugin target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyEmailAddressAsync();
+        string? actual = await target.GetMyEmailAddressAsync();
 
         // Assert
         Assert.Equal(anyEmailAddress, actual);

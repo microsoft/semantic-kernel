@@ -19,7 +19,7 @@ public interface ITaskManagementConnector
     /// <param name="task">Task to add.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Added task definition.</returns>
-    Task<TaskManagementTask> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default);
+    Task<TaskManagementTask?> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete a task from a task list.
@@ -40,7 +40,7 @@ public interface ITaskManagementConnector
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>All of the user's task lists.</returns>
-    Task<IEnumerable<TaskManagementTaskList>> GetTaskListsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<TaskManagementTaskList>?> GetTaskListsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get the all tasks in a task list.
@@ -49,5 +49,5 @@ public interface ITaskManagementConnector
     /// <param name="includeCompleted">Whether to include completed tasks.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>All of the tasks in the specified task list.</returns>
-    Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TaskManagementTask>?> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default);
 }

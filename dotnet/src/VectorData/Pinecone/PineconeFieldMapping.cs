@@ -17,14 +17,16 @@ internal static class PineconeFieldMapping
         => metadataValue.Value switch
         {
             null => null,
-            bool boolValue => boolValue,
-            string stringValue => stringValue,
+            bool v => v,
+            string v => v,
+
             // Numeric values are not always coming from the SDK in the desired type
             // that the data model requires, so we need to convert them.
-            int intValue => ConvertToNumericValue(intValue, targetType),
-            long longValue => ConvertToNumericValue(longValue, targetType),
-            float floatValue => ConvertToNumericValue(floatValue, targetType),
-            double doubleValue => ConvertToNumericValue(doubleValue, targetType),
+            int v => ConvertToNumericValue(v, targetType),
+            long v => ConvertToNumericValue(v, targetType),
+            float v => ConvertToNumericValue(v, targetType),
+            double v => ConvertToNumericValue(v, targetType),
+
             IEnumerable<MetadataValue> enumerable => DeserializeCollection(enumerable, targetType),
 
             _ => throw new InvalidOperationException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
@@ -62,20 +64,15 @@ internal static class PineconeFieldMapping
         };
 
     private static object? ConvertToNumericValue(object? number, Type targetType)
-    {
-        if (number is null)
-        {
-            return null;
-        }
+        => number is null
+            ? null
+            : (Nullable.GetUnderlyingType(targetType) ?? targetType) switch
+            {
+                Type t when t == typeof(int) => (object)Convert.ToInt32(number),
+                Type t when t == typeof(long) => Convert.ToInt64(number),
+                Type t when t == typeof(float) => Convert.ToSingle(number),
+                Type t when t == typeof(double) => Convert.ToDouble(number),
 
-        return targetType switch
-        {
-            Type intType when intType == typeof(int) || intType == typeof(int?) => Convert.ToInt32(number),
-            Type longType when longType == typeof(long) || longType == typeof(long?) => Convert.ToInt64(number),
-            Type floatType when floatType == typeof(float) || floatType == typeof(float?) => Convert.ToSingle(number),
-            Type doubleType when doubleType == typeof(double) || doubleType == typeof(double?) => Convert.ToDouble(number),
-            Type decimalType when decimalType == typeof(decimal) || decimalType == typeof(decimal?) => Convert.ToDecimal(number),
-            _ => throw new InvalidOperationException($"Unsupported target numeric type '{targetType.FullName}'."),
-        };
-    }
+                _ => throw new InvalidOperationException($"Unsupported target numeric type '{targetType.FullName}'."),
+            };
 }

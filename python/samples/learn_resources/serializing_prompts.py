@@ -7,8 +7,8 @@ from samples.sk_service_configurator import add_service
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import ConversationSummaryPlugin
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 async def main():
@@ -37,9 +37,14 @@ async def main():
         template=template,
         description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
-        InputVariables=[
+        input_variables=[
             InputVariable(name="input", description="The user input", is_required=True),
-            InputVariable(name="history", description="The history of the conversation", is_required=True),
+            InputVariable(
+                name="history",
+                description="The history of the conversation",
+                is_required=True,
+                allow_dangerously_set_content=True,
+            ),
         ],
     )
 

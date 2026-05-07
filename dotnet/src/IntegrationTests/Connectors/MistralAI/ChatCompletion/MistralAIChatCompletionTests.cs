@@ -568,7 +568,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
                 this._output.WriteLine("=== REQUEST ===");
                 try
                 {
-                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                    string formattedContent = JsonSerializer.Serialize(JsonElement.Parse(content), s_jsonSerializerOptions);
                     this._output.WriteLine(formattedContent);
                 }
                 catch (JsonException)
@@ -588,7 +588,7 @@ public sealed class MistralAIChatCompletionTests : IDisposable
                 this._output.WriteLine("=== RESPONSE ===");
                 try
                 {
-                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(responseContent), s_jsonSerializerOptions);
+                    string formattedContent = JsonSerializer.Serialize(JsonElement.Parse(responseContent), s_jsonSerializerOptions);
                     this._output.WriteLine(formattedContent);
                 }
                 catch (JsonException)

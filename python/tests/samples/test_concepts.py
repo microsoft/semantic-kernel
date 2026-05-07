@@ -46,7 +46,7 @@ from samples.concepts.prompt_templates.azure_chat_gpt_api_jinja2 import main as 
 from samples.concepts.prompt_templates.configuring_prompts import main as configuring_prompts
 from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml_prompt
 from samples.concepts.prompt_templates.template_language import main as template_language
-from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
+from samples.concepts.rag.rag_with_vector_collection import main as rag_with_vector_collection
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
 from samples.concepts.text_completion.text_completion import main as text_completion
 from samples.getting_started_with_agents.chat_completion.step01_chat_completion_agent_simple import (
@@ -256,7 +256,7 @@ concepts = [
         id="simple_memory",
         marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
     ),
-    param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
+    param(rag_with_vector_collection, [], id="rag_with_vector_collection"),
     param(
         custom_service_selector,
         [],

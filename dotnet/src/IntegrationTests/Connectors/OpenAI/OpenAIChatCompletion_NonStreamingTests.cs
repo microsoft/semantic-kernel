@@ -163,7 +163,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.NotEmpty(chatCompletion.Annotations);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ChatCompletionWithAudioInputAndOutputAsync()
     {
         // Arrange

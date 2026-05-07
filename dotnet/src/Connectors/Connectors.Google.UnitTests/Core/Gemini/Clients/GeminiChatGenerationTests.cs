@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -164,6 +165,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
         }
 
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata.PromptTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata!.CachedContentTokenCount, metadata.CachedContentTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata!.ThoughtsTokenCount, metadata.ThoughtsTokenCount);
         Assert.Equal(testDataCandidate.TokenCount, metadata.CurrentCandidateTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata.CandidatesTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
@@ -207,6 +210,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
         }
 
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata!.CachedContentTokenCount, metadata[nameof(GeminiMetadata.CachedContentTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata!.ThoughtsTokenCount, metadata[nameof(GeminiMetadata.ThoughtsTokenCount)]);
         Assert.Equal(testDataCandidate.TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata[nameof(GeminiMetadata.CandidatesTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
@@ -423,6 +428,38 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCreatesPostRequestWithApiKeyInHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var apiKeyHeader = this._messageHandlerStub.RequestHeaders.GetValues("x-goog-api-key").SingleOrDefault();
+        Assert.NotNull(apiKeyHeader);
+        Assert.Equal("fake-key", apiKeyHeader);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithoutApiKeyInUrlAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.DoesNotContain("key=", this._messageHandlerStub.RequestUri.ToString());
+    }
+
+    [Fact]
     public async Task ItCreatesPostRequestWithResponseSchemaPropertyAsync()
     {
         // Get a mock logger that will return true for IsEnabled(LogLevel.Trace)
@@ -528,6 +565,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
     [InlineData("us-central1-a")]
     [InlineData("northamerica-northeast1")]
     [InlineData("australia-southeast1")]
+    [InlineData("global")]
     public void ItAcceptsValidHostnameSegments(string validLocation)
     {
         // Arrange
@@ -553,12 +591,207 @@ public sealed class GeminiChatGenerationTests : IDisposable
         Assert.Null(exception);
     }
 
+    [Fact]
+    public async Task ShouldUseGlobalEndpointWhenLocationIsGlobalAsync()
+    {
+        // Arrange
+        var client = new GeminiChatCompletionClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            apiVersion: VertexAIVersion.V1,
+            bearerTokenProvider: () => new ValueTask<string>("fake-key"),
+            location: "global",
+            projectId: "fake-project-id");
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/global/", requestUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ShouldUseRegionalEndpointWhenLocationIsRegionalAsync()
+    {
+        // Arrange
+        var client = new GeminiChatCompletionClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            apiVersion: VertexAIVersion.V1,
+            bearerTokenProvider: () => new ValueTask<string>("fake-key"),
+            location: "us-central1",
+            projectId: "fake-project-id");
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://us-central1-aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/us-central1/", requestUri, StringComparison.Ordinal);
+    }
+
     private sealed class BearerTokenGenerator()
     {
         private int _index = 0;
         public required List<string> BearerKeys { get; init; }
 
         public ValueTask<string> GetBearerToken() => ValueTask.FromResult(this.BearerKeys[this._index++]);
+    }
+
+    [Fact]
+    public async Task ShouldHandleThoughtAndTextPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "Let me think about this...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "The answer is 42."
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.Equal("The answer is 42.", message.Content);
+        Assert.Equal(2, message.Items.Count);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContent = message.Items.OfType<ReasoningContent>().FirstOrDefault();
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("Let me think about this...", reasoningContent.Text);
+
+        var textContent = message.Items.OfType<TextContent>().FirstOrDefault();
+        Assert.NotNull(textContent);
+        Assert.Equal("The answer is 42.", textContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    [Fact]
+    public async Task ShouldHandleOnlyThoughtPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "This is just thinking content...",
+                                    "thought": true
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.True(string.IsNullOrEmpty(message.Content));
+        Assert.Single(message.Items);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContent = message.Items.OfType<ReasoningContent>().Single();
+        Assert.Equal("This is just thinking content...", reasoningContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    [Fact]
+    public async Task ShouldHandleMultipleThoughtPartsAsync()
+    {
+        // Arrange
+        var responseContent = """
+            {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": "First thought...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "Second thought...",
+                                    "thought": true
+                                },
+                                {
+                                    "text": "Final answer."
+                                }
+                            ],
+                            "role": "model"
+                        },
+                        "finishReason": "STOP",
+                        "index": 0
+                    }
+                ]
+            }
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseContent);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = result[0];
+        Assert.Equal("Final answer.", message.Content);
+        Assert.Equal(3, message.Items.Count);
+
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoningContents = message.Items.OfType<ReasoningContent>().ToList();
+        Assert.Equal(2, reasoningContents.Count);
+        Assert.Equal("First thought...", reasoningContents[0].Text);
+        Assert.Equal("Second thought...", reasoningContents[1].Text);
+
+        var textContent = message.Items.OfType<TextContent>().Single();
+        Assert.Equal("Final answer.", textContent.Text);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     private static ChatHistory CreateSampleChatHistory()

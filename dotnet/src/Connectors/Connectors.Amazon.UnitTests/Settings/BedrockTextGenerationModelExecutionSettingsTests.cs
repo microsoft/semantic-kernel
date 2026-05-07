@@ -154,14 +154,14 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
                 {
                     InputTextTokenCount = 5,
-                    Results = new List<TitanTextResponse.Result>
-                    {
+                    Results =
+                    [
                         new() {
                             TokenCount = 10,
                             OutputText = "This is a mock output.",
                             CompletionReason = "stop"
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });
@@ -224,7 +224,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             Temperature = 0.1f,
             TopP = 0.95f,
             MaxTokenCount = 256,
-            StopSequences = new List<string> { "</end>" },
+            StopSequences = ["</end>"],
             ModelId = modelId,
         };
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
@@ -249,14 +249,14 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
                 {
                     InputTextTokenCount = 5,
-                    Results = new List<TitanTextResponse.Result>
-                    {
+                    Results =
+                    [
                         new() {
                             TokenCount = 10,
                             OutputText = "This is a mock output.",
                             CompletionReason = "stop"
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });
@@ -350,8 +350,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
                 {
                     Id = "my-request-id",
-                    Choices = new List<AI21JambaResponse.Choice>
-                    {
+                    Choices =
+                    [
                         new() {
                             Index = 0,
                             Message = new AI21JambaResponse.Message
@@ -361,7 +361,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             },
                             FinishReason = "stop"
                         }
-                    },
+                    ],
                     Usage = new AI21JambaResponse.JambaUsage
                     {
                         PromptTokens = 10,
@@ -441,7 +441,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             Temperature = 0.8f,
             TopP = 0.95f,
             MaxTokens = 256,
-            Stop = new List<string> { "</end>" },
+            Stop = ["</end>"],
             NumberOfResponses = 1,
             FrequencyPenalty = 0.0,
             PresencePenalty = 0.0,
@@ -469,8 +469,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
                 {
                     Id = "my-request-id",
-                    Choices = new List<AI21JambaResponse.Choice>
-                    {
+                    Choices =
+                    [
                         new() {
                             Index = 0,
                             Message = new AI21JambaResponse.Message
@@ -480,7 +480,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             },
                             FinishReason = "stop"
                         }
-                    },
+                    ],
                     Usage = new AI21JambaResponse.JambaUsage
                     {
                         PromptTokens = 10,
@@ -588,8 +588,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JurassicResponse
                 {
                     Id = 10000000000,
-                    Completions = new List<AI21JurassicResponse.Completion>
-                    {
+                    Completions =
+                    [
                         new()
                         {
                             Data = new AI21JurassicResponse.JurassicData
@@ -597,7 +597,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                                 Text = "Hello! This is a mock AI21 response."
                             }
                         }
-                    }
+                    ]
                 })))
             });
         var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
@@ -773,15 +773,15 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 {
                     Id = "my-request-id",
                     Prompt = "Write a greeting.",
-                    Generations = new List<CommandResponse.Generation>
-                    {
+                    Generations =
+                    [
                         new() {
                             Id = "generation-id",
                             Text = "Hello! This is a mock Cohere Command response.",
                             FinishReason = "COMPLETE",
                             IsFinished = true
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });
@@ -839,7 +839,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             Temperature = 0.8,
             TopP = 0.95,
             MaxTokens = 256,
-            StopSequences = new List<string> { "</end>" },
+            StopSequences = ["</end>"],
             ModelId = modelId
         };
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
@@ -865,15 +865,15 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 {
                     Id = "my-request-id",
                     Prompt = "Write a greeting.",
-                    Generations = new List<CommandResponse.Generation>
-                    {
+                    Generations =
+                    [
                         new() {
                             Id = "generation-id",
                             Text = "Hello! This is a mock Cohere Command response.",
                             FinishReason = "COMPLETE",
                             IsFinished = true
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });
@@ -957,13 +957,13 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
                 {
-                    Outputs = new List<MistralResponse.Output>
-                    {
+                    Outputs =
+                    [
                         new() {
                             Text = "Hello! This is a mock Mistral response.",
                             StopReason = "stop_sequence"
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });
@@ -1040,13 +1040,13 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
                 {
-                    Outputs = new List<MistralResponse.Output>
-                    {
+                    Outputs =
+                    [
                         new() {
                             Text = "Hello! This is a mock Mistral response.",
                             StopReason = "stop_sequence"
                         }
-                    }
+                    ]
                 }))),
                 ContentType = "application/json"
             });

@@ -103,9 +103,8 @@ public sealed class PromptDefinition
             [
                 new PromptMessage()
                 {
-                    Content = new Content()
+                    Content = new TextContentBlock()
                     {
-                        Type = "text",
                         Text = renderedPrompt
                     },
                     Role = Role.Assistant

@@ -106,7 +106,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         this._kernel = builder.Build();
 
         this._kernelAgentFactory =
-            new AggregatorKernelAgentFactory(
+            new AggregatorAgentFactory(
                 new ChatCompletionAgentFactory(),
                 new OpenAIAssistantAgentFactory(),
                 new AzureAIAgentFactory());

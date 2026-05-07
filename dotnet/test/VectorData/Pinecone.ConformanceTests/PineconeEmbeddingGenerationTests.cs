@@ -31,9 +31,6 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
 
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "embedding-generation-tests";
-
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => PineconeTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
@@ -61,9 +58,6 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
     public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
-
-        // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        public override string CollectionName => "search-only-embedding-generation-tests";
 
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => PineconeTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });

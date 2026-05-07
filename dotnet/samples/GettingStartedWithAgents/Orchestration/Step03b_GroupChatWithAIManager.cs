@@ -23,7 +23,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
     {
         // Define the agents
         ChatCompletionAgent farmer =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Farmer",
                 description: "A rural farmer from Southeast Asia.",
                 instructions:
@@ -34,7 +34,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent developer =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Developer",
                 description: "An urban software developer from the United States.",
                 instructions:
@@ -45,7 +45,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent teacher =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Teacher",
                 description: "A retired history teacher from Eastern Europe",
                 instructions:
@@ -56,7 +56,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent activist =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Activist",
                 description: "A young activist from South America.",
                 instructions:
@@ -66,7 +66,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent spiritual =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "SpiritualLeader",
                 description: "A spiritual leader from the Middle East.",
                 instructions:
@@ -76,7 +76,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent artist =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Artist",
                 description: "An artist from Africa.",
                 instructions:
@@ -86,7 +86,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent immigrant =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Immigrant",
                 description: "An immigrant entrepreneur from Asia living in Canada.",
                 instructions:
@@ -97,7 +97,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                 You are in a debate. Feel free to challenge the other participants with respect.
                 """);
         ChatCompletionAgent doctor =
-            this.CreateAgent(
+            this.CreateChatCompletionAgent(
                 name: "Doctor",
                 description: "A doctor from Scandinavia.",
                 instructions:

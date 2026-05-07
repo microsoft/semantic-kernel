@@ -17,6 +17,7 @@ using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
+
 public sealed class OpenApiKernelPluginFactoryTests
 {
     /// <summary>
@@ -713,6 +714,27 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         // Assert
         Assert.False(plugin.TryGetFunction("createItem", out var _));
+    }
+
+    [Fact]
+    public async Task ItCanAddPropertyDescriptionToSchemaAsync()
+    {
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
+
+        // Assert
+        var setSecretFunction = plugin["SetSecret"];
+        Assert.NotNull(setSecretFunction);
+
+        var functionView = setSecretFunction.Metadata;
+        Assert.NotNull(functionView);
+
+        // Check if description is added to the parameter schema
+        var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
+        Assert.Equal("The name of the secret", secretNameParameter.Description);
+
+        Assert.True(secretNameParameter.Schema!.RootElement.TryGetProperty("description", out var description));
+        Assert.Equal("The name of the secret", description.GetString());
     }
 
     [Fact]

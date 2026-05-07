@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
@@ -26,37 +27,26 @@ public class OutlookCalendarConnector : ICalendarConnector
     }
 
     /// <inheritdoc/>
-    public async Task<CalendarEvent> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
+    public async Task<CalendarEvent?> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
     {
-        Event resultEvent = await this._graphServiceClient.Me.Events.Request()
-            .AddAsync(calendarEvent.ToGraphEvent(), cancellationToken).ConfigureAwait(false);
-        return resultEvent.ToCalendarEvent();
+        Event? resultEvent = await this._graphServiceClient.Me.Events
+            .PostAsync(calendarEvent.ToGraphEvent(), cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return resultEvent?.ToCalendarEvent();
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<CalendarEvent>> GetEventsAsync(
+    public async Task<IEnumerable<CalendarEvent>?> GetEventsAsync(
         int? top, int? skip, string? select, CancellationToken cancellationToken = default)
     {
-        ICalendarEventsCollectionRequest query = this._graphServiceClient.Me.Calendar.Events.Request();
-
-        if (top.HasValue)
+        var result = await this._graphServiceClient.Me.Calendar.Events.GetAsync(config =>
         {
-            query.Top(top.Value);
-        }
+            config.QueryParameters.Top = top;
+            config.QueryParameters.Skip = skip;
+            config.QueryParameters.Select = !string.IsNullOrEmpty(select) ? [select] : null;
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (skip.HasValue)
-        {
-            query.Skip(skip.Value);
-        }
-
-        if (!string.IsNullOrEmpty(select))
-        {
-            query.Select(select);
-        }
-
-        ICalendarEventsCollectionPage result = await query.GetAsync(cancellationToken).ConfigureAwait(false);
-
-        IEnumerable<CalendarEvent> events = result.Select(e => e.ToCalendarEvent());
+        IEnumerable<CalendarEvent>? events = result?.Value?.Select(e => e.ToCalendarEvent());
 
         return events;
     }

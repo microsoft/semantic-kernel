@@ -36,6 +36,6 @@ public static class AggregateAIContextProviderExtensions
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextProvider"/> objects.</returns>
     public static Task<AIContext> ModelInvokingAsync(this AggregateAIContextProvider aggregateAIContextProvider, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        return aggregateAIContextProvider.ModelInvokingAsync(newMessages.Select(m => m.ToChatMessage()).ToList(), cancellationToken);
+        return aggregateAIContextProvider.ModelInvokingAsync([.. newMessages.Select(m => m.ToChatMessage())], cancellationToken);
     }
 }

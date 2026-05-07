@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAIInference.UnitTests.Settings;
+
 public sealed class AzureAIInferencePromptExecutionSettingsTests
 {
     [Fact]

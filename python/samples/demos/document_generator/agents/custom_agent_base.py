@@ -62,9 +62,11 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
 
         match service:
             case Services.AZURE_OPENAI:
+                from azure.identity import AzureCliCredential
+
                 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
-                return AzureChatCompletion(instruction_role=instruction_role)
+                return AzureChatCompletion(instruction_role=instruction_role, credential=AzureCliCredential())
             case Services.OPENAI:
                 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 

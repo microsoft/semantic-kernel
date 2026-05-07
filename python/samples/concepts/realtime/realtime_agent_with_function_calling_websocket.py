@@ -5,6 +5,8 @@ import logging
 from datetime import datetime
 from random import randint
 
+from azure.identity import AzureCliCredential
+
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -66,7 +68,7 @@ async def main() -> None:
     # create the realtime agent, in this using Azure OpenAI through Websockets,
     # there are also OpenAI Websocket and WebRTC clients
     # See realtime_agent_with_function_calling_webrtc.py for an example of the WebRTC client
-    realtime_agent = AzureRealtimeWebsocket()
+    realtime_agent = AzureRealtimeWebsocket(credential=AzureCliCredential())
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
     audio_player = AudioPlayerWebsocket()
@@ -80,6 +82,9 @@ async def main() -> None:
     # to signal the end of the user's turn and start the response.
     # manual VAD is not part of this sample
     # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
+
+    # Note: api_version (either through settings or directly in the client) must be set to "2025-08-28"
+    # for Azure OpenAI deployments realtime deployments.
     settings = AzureRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and

@@ -10,7 +10,7 @@ import pytest
 from pydantic import SecretStr, ValidationError
 
 try:
-    import microsoft.agents.copilotstudio.client  # type: ignore # noqa: F401
+    import microsoft_agents.copilotstudio.client  # type: ignore # noqa: F401
 
     copilot_installed = True
 except ImportError:

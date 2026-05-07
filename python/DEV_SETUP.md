@@ -73,7 +73,7 @@ Alternatively you can run the VSCode task `Python: Install` to run the same comm
 
 Install the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) for VSCode.
 
-Open the workspace in [VSCode](https://code.visualstudio.com/docs/editor/workspaces).
+Open the workspace in [VSCode](https://code.visualstudio.com/docs/editing/workspaces/workspaces).
 > The workspace for python should be rooted in the `./python` folder.
 
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`

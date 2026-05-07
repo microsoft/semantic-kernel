@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
@@ -38,8 +38,11 @@ class OpenAITextToImageExecutionSettings(PromptExecutionSettings):
     prompt: str | None = None
     ai_model_id: str | None = Field(default=None, serialization_alias="model")
     size: ImageSize | None = None
-    quality: str | None = None
-    style: str | None = None
+    quality: Literal["high", "medium", "low"] | None = None
+    output_compression: int | None = None
+    background: Literal["transparent", "opaque", "auto"] | None = None
+    n: int | None = Field(default=1, ge=1, le=10)
+    moderation: Literal["auto", "low"] | None = None
 
     @model_validator(mode="before")
     @classmethod

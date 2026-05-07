@@ -26,4 +26,14 @@ internal static class AgentExtensions
     /// Currently, it's intended for telemetry purposes only.
     /// </remarks>
     public static string GetDisplayName(this Agent agent) => !string.IsNullOrWhiteSpace(agent.Name) ? agent.Name! : "UnnamedAgent";
+
+    /// <summary>
+    /// Gets the kernel scoped to the current invocation.
+    /// </summary>
+    /// <param name="agent">The <see cref="Agent"/> whose kernel is used as a fallback if <paramref name="options"/> does not specify one.</param>
+    /// <param name="options">The <see cref="AgentInvokeOptions"/> instance containing invocation-specific options. May be <c>null</c>.</param>
+    /// <returns>
+    /// The <see cref="Kernel"/> instance to use for the current invocation. Returns the kernel from <paramref name="options"/> if specified; otherwise, returns the kernel from <paramref name="agent"/>.
+    /// </returns>
+    public static Kernel GetKernel(this Agent agent, AgentInvokeOptions? options) => options?.Kernel ?? agent.Kernel;
 }

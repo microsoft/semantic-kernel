@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import (
     ChatCompletionAgent,
     ChatHistoryAgentThread,
@@ -31,7 +33,7 @@ USER_INPUTS = [
 async def main():
     # 1. Create the agent by specifying the service
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Assistant",
         instructions="Answer the user's questions.",
     )

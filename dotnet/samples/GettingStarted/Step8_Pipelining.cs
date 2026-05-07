@@ -17,7 +17,7 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
     public async Task CreateFunctionPipeline()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(
+        builder.AddOpenAIChatClient(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Trace));

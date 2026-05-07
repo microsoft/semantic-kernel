@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -9,6 +11,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
@@ -46,13 +49,15 @@ class CustomServiceSelector(AIServiceSelector):
 
 
 kernel = Kernel(ai_service_selector=CustomServiceSelector())
-kernel.add_service(AzureChatCompletion(service_id="gpt-4o"))
+kernel.add_service(AzureChatCompletion(service_id="gpt-4o", credential=AzureCliCredential()))
 kernel.add_service(OpenAIChatCompletion(service_id="gpt-3.5-turbo", ai_model_id="gpt-3.5-turbo"))
 
 kernel.add_function(
     plugin_name="selector",
     function_name="select_ai_service",
-    prompt="Always respond with your name. {{$chat_history}}",
+    prompt_template_config=PromptTemplateConfig(
+        template="Always respond with your name. {{$chat_history}}", allow_dangerously_set_content=True
+    ),
     prompt_execution_settings={
         "gpt-4o": PromptExecutionSettings(service_id="gpt-4o", max_tokens=200, temperature=0.0),
         "gpt-3.5-turbo": PromptExecutionSettings(service_id="gpt-3.5-turbo", max_tokens=400, temperature=1.0),

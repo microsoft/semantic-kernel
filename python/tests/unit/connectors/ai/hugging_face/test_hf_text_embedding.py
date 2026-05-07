@@ -5,9 +5,7 @@ from unittest.mock import patch
 import pytest
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding import (
-    HuggingFaceTextEmbedding,
-)
+from semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding import HuggingFaceTextEmbedding
 from semantic_kernel.exceptions import ServiceResponseException
 
 
@@ -15,9 +13,7 @@ def test_huggingface_text_embedding_initialization():
     model_name = "sentence-transformers/all-MiniLM-L6-v2"
     device = -1
 
-    with patch(
-        "semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding.sentence_transformers.SentenceTransformer"
-    ) as mock_transformer:
+    with patch("sentence_transformers.SentenceTransformer") as mock_transformer:
         mock_instance = mock_transformer.return_value
         service = HuggingFaceTextEmbedding(service_id="test", ai_model_id=model_name, device=device)
 
@@ -33,9 +29,7 @@ async def test_generate_embeddings_success():
     texts = ["Hello world!", "How are you?"]
     mock_embeddings = array([[0.1, 0.2], [0.3, 0.4]])
 
-    with patch(
-        "semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding.sentence_transformers.SentenceTransformer"
-    ) as mock_transformer:
+    with patch("sentence_transformers.SentenceTransformer") as mock_transformer:
         mock_instance = mock_transformer.return_value
         mock_instance.encode.return_value = mock_embeddings
 
@@ -52,9 +46,7 @@ async def test_generate_embeddings_throws():
     device = -1
     texts = ["Hello world!", "How are you?"]
 
-    with patch(
-        "semantic_kernel.connectors.ai.hugging_face.services.hf_text_embedding.sentence_transformers.SentenceTransformer"
-    ) as mock_transformer:
+    with patch("sentence_transformers.SentenceTransformer") as mock_transformer:
         mock_instance = mock_transformer.return_value
         mock_instance.encode.side_effect = Exception("Test exception")
 

@@ -3,14 +3,12 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.Ollama.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.Ollama.UnitTests</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,CA1861,VSTHRD111,CS1591,SKEXP0001,SKEXP0070</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,CS1591,SKEXP0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

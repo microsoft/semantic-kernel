@@ -4,7 +4,7 @@ import asyncio
 import os
 from typing import Annotated
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -37,7 +37,7 @@ class MenuPlugin:
 
 async def main():
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         try:

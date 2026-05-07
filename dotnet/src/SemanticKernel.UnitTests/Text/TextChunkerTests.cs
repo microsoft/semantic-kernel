@@ -777,4 +777,46 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void SplitPlainTextParagraphsHandlesExampleFromIssue()
+    {
+        var lines = new[] { "First line\nSecond line\nThird line" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
+
+        Assert.Equal("First line\nSecond line\nThird line", result[0]);
+    }
+
+    [Theory]
+    [InlineData("First line\r\nSecond line\r\nThird line")]
+    [InlineData("First line\nSecond line\nThird line")]
+    [InlineData("First line\rSecond line\rThird line")]
+    public void SplitPlainTextParagraphsNormalizesNewlinesButDoesNotSplit(string input)
+    {
+        var lines = new[] { input };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
+
+        Assert.Single(result);
+        Assert.DoesNotContain('\r', result[0]);
+        Assert.Contains("First line", result[0]);
+        Assert.Contains("Second line", result[0]);
+        Assert.Contains("Third line", result[0]);
+    }
+
+    [Fact]
+    public void SplitPlainTextParagraphsSplitsWhenExceedingTokenLimit()
+    {
+        var lines = new[] { "First line\nSecond line\nThird line" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 5);
+
+        Assert.True(result.Count > 1);
+
+        var combined = string.Join(" ", result);
+        Assert.Contains("First line", combined);
+        Assert.Contains("Second line", combined);
+        Assert.Contains("Third line", combined);
+    }
 }

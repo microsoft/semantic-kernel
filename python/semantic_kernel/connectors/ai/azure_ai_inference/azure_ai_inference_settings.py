@@ -4,6 +4,7 @@ from typing import ClassVar
 
 from pydantic import SecretStr
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -29,9 +30,12 @@ class AzureAIInferenceSettings(KernelBaseSettings):
                 This value can be found in the Keys & Endpoint section when examining
                 your resource from the Azure portal. You can use either KEY1 or KEY2.
                 (Env var AZURE_AI_INFERENCE_API_KEY)
+    - api_version: str | None - The API version to use. The default value is "2024-10-21".
+                (Env var AZURE_AI_INFERENCE_API_VERSION)
     """
 
     env_prefix: ClassVar[str] = "AZURE_AI_INFERENCE_"
 
     endpoint: HttpsUrl
     api_key: SecretStr | None = None
+    api_version: str = DEFAULT_AZURE_API_VERSION

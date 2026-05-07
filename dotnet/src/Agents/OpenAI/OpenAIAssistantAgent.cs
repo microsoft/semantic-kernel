@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -138,18 +139,36 @@ public sealed partial class OpenAIAssistantAgent : Agent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => InternalInvokeAsync(),
-            cancellationToken);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
+        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+
+        // Notify the thread of new messages and return them to the caller.
+        await foreach (var result in InternalInvokeAsync().ConfigureAwait(false))
+        {
+            yield return new(result, openAIAssistantAgentThread);
+            chatMessageContents?.Add(result);
+        }
+
+        activity?.SetAgentResponse(chatMessageContents);
 
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
@@ -176,12 +195,6 @@ public sealed partial class OpenAIAssistantAgent : Agent
                     yield return message;
                 }
             }
-        }
-
-        // Notify the thread of new messages and return them to the caller.
-        await foreach (var result in invokeResults.ConfigureAwait(false))
-        {
-            yield return new(result, openAIAssistantAgentThread);
         }
     }
 
@@ -226,11 +239,22 @@ public sealed partial class OpenAIAssistantAgent : Agent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        Kernel kernel = (options?.Kernel ?? this.Kernel).Clone();
+        Kernel kernel = this.GetKernel(options);
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (this.UseImmutableKernel)
+        {
+            kernel = kernel.Clone();
+        }
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+
+        // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
+        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        {
+            throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
+        }
+
         kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -243,11 +267,11 @@ public sealed partial class OpenAIAssistantAgent : Agent
         });
 
 #pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+
         ChatHistory newMessagesReceiver = [];
-        var invokeResults = ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
-            () => InternalInvokeStreamingAsync(),
-            cancellationToken);
+        var invokeResults = InternalInvokeStreamingAsync();
 #pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
 
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
@@ -266,19 +290,32 @@ public sealed partial class OpenAIAssistantAgent : Agent
         }
 
         // Return the chunks to the caller.
+        int messageIndex = 0;
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            // Notify the thread of any messages that were assembled from the streaming response during this iteration.
+            await NotifyMessagesAsync().ConfigureAwait(false);
+
             yield return new(result, openAIAssistantAgentThread);
+            streamedContents?.Add(result);
         }
 
-        // Notify the thread of any new messages that were assembled from the streaming response.
-        foreach (var newMessage in newMessagesReceiver)
-        {
-            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
+        // Notify the thread of any remaining messages that were assembled from the streaming response after all iterations are complete.
+        await NotifyMessagesAsync().ConfigureAwait(false);
 
-            if (options?.OnIntermediateMessage is not null)
+        activity?.EndAgentStreamingResponse(streamedContents);
+
+        async Task NotifyMessagesAsync()
+        {
+            for (; messageIndex < newMessagesReceiver.Count; messageIndex++)
             {
-                await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
+                ChatMessageContent newMessage = newMessagesReceiver[messageIndex];
+                await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
+
+                if (options?.OnIntermediateMessage is not null)
+                {
+                    await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
+                }
             }
         }
     }

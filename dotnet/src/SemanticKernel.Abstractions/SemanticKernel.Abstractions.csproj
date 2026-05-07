@@ -3,7 +3,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);NU5104;SKEXP0001;SKEXP0120</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
@@ -15,6 +15,7 @@
   
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/meai/MEAIUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -29,6 +30,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +45,6 @@
   <ItemGroup>
     <!-- Exclude utilities that are not used by the project and causing AOT warnings-->
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseData.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
@@ -52,9 +54,6 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/ReadOnlyMemoryConverter.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-
-    <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
   </ItemGroup>
   
 </Project>

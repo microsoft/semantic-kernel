@@ -34,6 +34,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
+    trace_agent_streaming_invocation,
 )
 
 if TYPE_CHECKING:
@@ -255,6 +256,15 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         if "function_choice_behavior" in kwargs:
             fields["function_choice_behavior"] = kwargs["function_choice_behavior"]
 
+        # Handle arguments from kwargs, merging with any arguments from _normalize_spec_fields
+        if "arguments" in kwargs and kwargs["arguments"] is not None:
+            incoming_args = kwargs["arguments"]
+            if fields.get("arguments") is not None:
+                # Use KernelArguments' built-in merge operator, with incoming_args taking precedence
+                fields["arguments"] = fields["arguments"] | incoming_args
+            else:
+                fields["arguments"] = incoming_args
+
         return cls(**fields, kernel=kernel)
 
     # endregion
@@ -361,7 +371,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         ):
             yield AgentResponseItem(message=response, thread=thread)
 
-    @trace_agent_invocation
+    @trace_agent_streaming_invocation
     @override
     async def invoke_stream(
         self,

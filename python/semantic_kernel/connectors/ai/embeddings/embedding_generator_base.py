@@ -1,9 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing_extensions import deprecated
+import sys
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase as NewEmbeddingGeneratorBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
 @deprecated(

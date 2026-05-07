@@ -70,7 +70,7 @@ public class VolatileMemoryStoreTests
         var collections = this._db.GetCollectionsAsync();
 
         // Assert
-        Assert.NotEmpty(collections.ToEnumerable());
+        Assert.NotEmpty(await collections.ToArrayAsync());
         Assert.True(await collections.ContainsAsync(collection));
     }
 
@@ -258,13 +258,13 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+        var collections = await this._db.GetCollectionsAsync().ToArrayAsync();
 
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
         Assert.NotNull(collections);
-        Assert.True(collections.Any(), "Collections is empty");
-        Assert.Equal(3, collections.Count());
+        Assert.True(collections.Length != 0, "Collections is empty");
+        Assert.Equal(3, collections.Length);
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
         Assert.True(collections.Contains(testCollections[1]),
@@ -325,7 +325,7 @@ public class VolatileMemoryStoreTests
 
         // Act
         double threshold = -1;
-        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToEnumerable().ToArray();
+        var topNResults = await this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToArrayAsync();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
@@ -475,7 +475,7 @@ public class VolatileMemoryStoreTests
         }
 
         // Act
-        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
+        var topNResults = await this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToArrayAsync();
         IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
 
         // Assert
@@ -501,12 +501,12 @@ public class VolatileMemoryStoreTests
 
         // Act
         var keys = this._db.UpsertBatchAsync(collection, records);
-        var resultRecords = this._db.GetBatchAsync(collection, keys.ToEnumerable());
+        var resultRecords = this._db.GetBatchAsync(collection, await keys.ToArrayAsync());
 
         // Assert
         Assert.NotNull(keys);
-        Assert.Equal(numRecords, keys.ToEnumerable().Count());
-        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+        Assert.Equal(numRecords, (await keys.ToArrayAsync()).Length);
+        Assert.Equal(numRecords, (await resultRecords.ToArrayAsync()).Length);
     }
 
     [Fact]
@@ -521,12 +521,12 @@ public class VolatileMemoryStoreTests
         var keys = this._db.UpsertBatchAsync(collection, records);
 
         // Act
-        var results = this._db.GetBatchAsync(collection, keys.ToEnumerable());
+        var results = this._db.GetBatchAsync(collection, await keys.ToArrayAsync());
 
         // Assert
         Assert.NotNull(keys);
         Assert.NotNull(results);
-        Assert.Equal(numRecords, results.ToEnumerable().Count());
+        Assert.Equal(numRecords, (await results.ToArrayAsync()).Length);
     }
 
     [Fact]
@@ -559,9 +559,9 @@ public class VolatileMemoryStoreTests
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+        var collections = await this._db.GetCollectionsAsync().ToArrayAsync();
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
-        int numCollections = collections.Count();
+        int numCollections = collections.Length;
         Assert.True(numCollections == this._collectionNum);
 
         // Act
@@ -571,8 +571,8 @@ public class VolatileMemoryStoreTests
         }
 
         // Assert
-        collections = this._db.GetCollectionsAsync().ToEnumerable();
-        numCollections = collections.Count();
+        collections = await this._db.GetCollectionsAsync().ToArrayAsync();
+        numCollections = collections.Length;
         Assert.Equal(0, numCollections);
         this._collectionNum = 0;
     }

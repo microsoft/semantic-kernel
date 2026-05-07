@@ -15,20 +15,25 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = true,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = false,
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "string";
+        base.ValidateKeyProperty(keyProperty);
 
-        return type == typeof(string);
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "bool, string, int, long, float, double, decimal, string[]/List<string>";
+        supportedTypes = "bool, string, int, long, float, double, string[]/List<string>";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -41,7 +46,6 @@ internal class PineconeModelBuilder() : CollectionModelBuilder(s_validationOptio
             || type == typeof(long)
             || type == typeof(float)
             || type == typeof(double)
-            || type == typeof(decimal)
             || type == typeof(string[])
             || type == typeof(List<string>);
     }

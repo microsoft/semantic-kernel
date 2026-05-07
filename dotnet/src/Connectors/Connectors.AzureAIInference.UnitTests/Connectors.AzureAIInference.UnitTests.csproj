@@ -3,12 +3,12 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.AzureAIInference.UnitTests</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1806,CS1591,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0070</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1806,CS1591,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,11 +24,11 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0.0b11",
-    "azure-ai-agents >= 1.1.0b1",
+    "azure-ai-projects ~= 1.0.0b12",
+    "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.14",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -37,7 +37,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai >= 1.67",
+    "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -54,9 +54,9 @@ dependencies = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # Protobuf
-    "protobuf",
     # explicit typing extensions
     "typing-extensions>=4.13",
+    "mcp>=1.26.0",
 ]
 
 ### Optional dependencies
@@ -68,7 +68,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.39.0",
+    "boto3>=1.36.4,<1.43.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -77,53 +77,58 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,< 1.1"
+    "chromadb >= 0.5,< 1.4"
 ]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0",
+copilotstudio = [
+    "microsoft-agents-copilotstudio-client >= 0.3.1",
+    "microsoft-agents-activity >= 0.3.1"
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.95.1",
-    "google-generativeai ~= 0.8"
+    "google-cloud-aiplatform>=1.114,<1.134",
+    "google-genai >= 1.51,< 1.75"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.7.0"
+    "sentence-transformers >= 2.2,< 6.0",
+    "torch == 2.8.0"
 ]
 mcp = [
     "mcp>=1.8",
 ]
 milvus = [
-    "pymilvus >= 2.3,< 2.6",
+    "pymilvus >= 2.3,< 2.7",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.13",
+    "pymongo >= 4.8.0, < 4.16",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
-    "ipykernel ~= 6.29"
+    "ipykernel >= 6.29,< 8.0"
 ]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.7"
+  # onnxruntime>=1.24.0 dropped Python 3.10 support; pin to last compatible version for 3.10.
+  "onnxruntime==1.22.1; python_version == '3.10'",
+  "onnxruntime>=1.24.3; python_version > '3.10'",
+  "onnxruntime-genai==0.9.0"
+]
+oracledb = [
+    "oracledb >= 3.4.1"
 ]
 pandas = [
     "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone[asyncio, grpc] ~= 6.0"
+    "pinecone[asyncio, grpc] ~= 7.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -132,7 +137,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 5,< 6",
+    "redis[hiredis] >= 6,< 8",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -145,17 +150,16 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 21.0"
+    "pyarrow >= 12.0,< 22.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<5.0",
+    "weaviate-client>=4.17.0,<5.0",
 ]
 
-[tool.uv]
-prerelease = "if-necessary-or-explicit"
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pre-commit ~= 3.7",
-    "ipykernel ~= 6.29",
+    "ipykernel >= 6.29,< 8.0",
     "nbconvert ~= 7.16",
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
@@ -167,6 +171,9 @@ dev-dependencies = [
     "types-PyYAML ~= 6.0.12.20240311",
     "ruff ~= 0.9"
 ]
+
+[tool.uv]
+prerelease = "if-necessary-or-explicit"
 environments = [
     "sys_platform == 'darwin'",
     "sys_platform == 'linux'",
@@ -215,6 +222,7 @@ select = [
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "D418", #allow docstring on overloaded function
     "TD003", #allow missing link to todo issue
     "FIX002" #allow todo
 ]
@@ -239,7 +247,7 @@ min-file-size = 1
 
 [tool.bandit]
 targets = ["semantic_kernel"]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 
 [tool.flit.module]
 name = "semantic_kernel"

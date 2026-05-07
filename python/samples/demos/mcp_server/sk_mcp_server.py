@@ -11,8 +11,8 @@ from typing import Any, Literal
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.functions import kernel_function
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger = logging.getLogger(__name__)
 

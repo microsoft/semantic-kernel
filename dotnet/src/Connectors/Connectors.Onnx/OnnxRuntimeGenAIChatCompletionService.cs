@@ -18,6 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// </summary>
 public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
 {
+    private readonly Config? _config;
+    private readonly Model? _model;
     private readonly string _modelPath;
     private OnnxRuntimeGenAIChatClient? _chatClient;
     private IChatCompletionService? _chatClientWrapper;
@@ -46,9 +48,43 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         this._modelPath = modelPath;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the OnnxRuntimeGenAIChatCompletionService class.
+    /// </summary>
+    /// <param name="modelId">The name of the model.</param>
+    /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
+    /// <param name="providers">The providers to use for the chat completion service.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization and deserialization required by the service.</param>
+    public OnnxRuntimeGenAIChatCompletionService(
+        string modelId,
+        string modelPath,
+        IEnumerable<Provider> providers,
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+        : this(modelId, modelPath, loggerFactory, jsonSerializerOptions)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(modelPath);
+        Verify.NotNull(providers);
+
+        this._config = new Config(modelPath);
+        this._config.ClearProviders();
+        foreach (Provider provider in providers)
+        {
+            this._config.AppendProvider(provider.Id);
+            foreach (KeyValuePair<string, string> option in provider.Options)
+            {
+                this._config.SetProviderOption(provider.Id, option.Key, option.Value);
+            }
+        }
+
+        this._model = new Model(this._config);
+    }
+
     private IChatCompletionService GetChatCompletionService()
     {
-        this._chatClient ??= new OnnxRuntimeGenAIChatClient(this._modelPath, new OnnxRuntimeGenAIChatClientOptions()
+        var options = new OnnxRuntimeGenAIChatClientOptions()
         {
             PromptFormatter = (messages, options) =>
             {
@@ -57,17 +93,27 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 {
                     promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
                 }
+
                 promptBuilder.Append("<|end|>\n<|assistant|>");
 
                 return promptBuilder.ToString();
             }
-        });
+        };
+
+        this._chatClient ??= this._model is null
+            ? new(this._modelPath, options)
+            : new(this._model, false, options);
 
         return this._chatClientWrapper ??= this._chatClient.AsChatCompletionService();
     }
 
     /// <inheritdoc/>
-    public void Dispose() => this._chatClient?.Dispose();
+    public void Dispose()
+    {
+        this._model?.Dispose();
+        this._config?.Dispose();
+        this._chatClient?.Dispose();
+    }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>

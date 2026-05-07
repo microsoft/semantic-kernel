@@ -21,9 +21,11 @@
 - [Azure AI Agent Declarative with OpenAPI Interpreter](./agents/azure_ai_agent/azure_ai_agent_declarative_openapi.py)
 - [Azure AI Agent Declarative with Existing Agent ID](./agents/azure_ai_agent/azure_ai_agent_declarative_with_existing_agent_id.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent MCP Streaming](./agents/azure_ai_agent/azure_ai_agent_mcp_streaming.py)
 - [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
 - [Azure AI Agent Message Callback Streaming](./agents/azure_ai_agent/azure_ai_agent_message_callback_streaming.py)
 - [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
+- [Azure AI Agent Retrieve Messages from Thread](./agents/azure_ai_agent/azure_ai_agent_retrieve_messages_from_thread.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 - [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
 - [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
@@ -215,8 +217,8 @@
 
 ### RAG - Different ways of `RAG` (Retrieval-Augmented Generation)
 
-- [RAG with Text Memory Plugin](./rag/rag_with_text_memory_plugin.py)
-- [Self-Critique RAG](./rag/self-critique_rag.py)
+- [RAG with Vector Collection](./rag/rag_with_vector_collection.py)
+- [Self-Critique RAG](./rag/self_critique_rag.py)
 
 ### Reasoning - Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) to reason with OpenAI Reasoning
 
@@ -263,9 +265,15 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 3. **Direct Constructor Input:**
    - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
 
-## Microsoft Entra Token Authentication
+## Azure Authentication
 
-To authenticate to your Azure resources using a Microsoft Entra Authentication Token, the `AzureChatCompletion` AI Service connector now supports this as a built-in feature. If you do not provide an API key -- either through an environment variable, a `.env` file, or the constructor -- and you also do not provide a custom `AsyncAzureOpenAI` client, an `ad_token`, or an `ad_token_provider`, the `AzureChatCompletion` connector will attempt to retrieve a token using the [`DefaultAzureCredential`](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
+To authenticate to your Azure resources, you must provide one of the following authentication methods to successfully authenticate:
+
+1. **AsyncTokenCredential** - provide one of the `AsyncTokenCredential` types (e.g. `AzureCliCredential`, `ManagedIdentityCredential`). More information here: [Credentials for asynchronous Azure SDK clients]("https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.aio?view=azure-python").
+2. **Custom AsyncAzureOpenAI client** - Pass a pre-configured client instance.
+3. **Access Token (`ad_token`)** - Provide a valid Microsoft Entra access token directly.
+4. **Token Provider (`ad_token_provider`)** - Provide a callable that returns a valid access token.
+5. **API Key** - Provide through an environment variable, a `.env` file, or the constructor.
 
 To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 

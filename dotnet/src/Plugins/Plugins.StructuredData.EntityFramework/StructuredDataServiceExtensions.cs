@@ -91,10 +91,10 @@ public static class StructuredDataServiceExtensions
             ReturnParameter = new() { ParameterType = typeof(IList<TEntity>) },
         };
 
-        Task<IList<TEntity>> SelectAsync(string? filter = null, CancellationToken cancellationToken = default)
+        Task<IList<TEntity>> Select(string? filter = null, CancellationToken cancellationToken = default)
             => Task.FromResult<IList<TEntity>>(service.Select<TEntity>(filter).ToList());
 
-        return KernelFunctionFactory.CreateFromMethod(SelectAsync, options);
+        return KernelFunctionFactory.CreateFromMethod(Select, options);
     }
 
     /// <summary>

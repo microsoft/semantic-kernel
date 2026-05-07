@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 internal abstract class ClientBase
 {
     private readonly Func<ValueTask<string>>? _bearerTokenProvider;
+    private readonly string? _apiKey;
 
     protected ILogger Logger { get; }
 
@@ -32,12 +33,14 @@ internal abstract class ClientBase
 
     protected ClientBase(
         HttpClient httpClient,
-        ILogger? logger)
+        ILogger? logger,
+        string? apiKey = null)
     {
         Verify.NotNull(httpClient);
 
         this.HttpClient = httpClient;
         this.Logger = logger ?? NullLogger.Instance;
+        this._apiKey = apiKey;
     }
 
     protected static void ValidateMaxTokens(int? maxTokens)
@@ -96,6 +99,10 @@ internal abstract class ClientBase
             httpRequestMessage.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", bearerKey);
         }
+        else if (!string.IsNullOrWhiteSpace(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("x-goog-api-key", this._apiKey);
+        }
 
         return httpRequestMessage;
     }
@@ -115,4 +122,14 @@ internal abstract class ClientBase
             VertexAIVersion.V1_Beta => "v1beta1",
             _ => throw new NotSupportedException($"Vertex API version {apiVersion} is not supported.")
         };
+
+    /// <summary>
+    /// Gets the Vertex AI endpoint base URI for the given location.
+    /// The global location uses <c>https://aiplatform.googleapis.com</c> while
+    /// regional locations use <c>https://{location}-aiplatform.googleapis.com</c>.
+    /// </summary>
+    protected static string GetVertexAIBaseUri(string location)
+        => string.Equals(location, "global", StringComparison.OrdinalIgnoreCase)
+            ? "https://aiplatform.googleapis.com"
+            : $"https://{location}-aiplatform.googleapis.com";
 }
