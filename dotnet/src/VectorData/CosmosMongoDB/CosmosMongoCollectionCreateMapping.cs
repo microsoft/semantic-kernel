@@ -105,7 +105,7 @@ internal static class CosmosMongoCollectionCreateMapping
     }
 
     /// <summary>
-    /// More information about Azure DocumentDB index kinds here: <see href="https://learn.microsoft.com/azure/documentdb/" />.
+    /// More information about Azure DocumentDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/documentdb/vector-search" />.
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)
         => CosmosMongoCollectionSearchMapping.GetVectorPropertyIndexKind(indexKind) switch
