@@ -144,3 +144,11 @@ def test_google_ai_prompt_execution_settings_thinking_level_mapping():
 
     assert "thinking_level" not in settings_dict
     assert settings_dict["thinking_config"] == {"thinking_level": "medium"}
+
+
+def test_google_ai_prompt_execution_settings_no_thinking_level():
+    settings = GoogleAIPromptExecutionSettings(temperature=0.5)
+    settings_dict = settings.prepare_settings_dict()
+
+    assert "thinking_level" not in settings_dict
+    assert "thinking_level" not in settings_dict.get("thinking_config", {})
