@@ -171,6 +171,7 @@
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.2.0" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
     <PackageVersion Include="MongoDB.Driver" Version="3.5.2" />
+    <PackageVersion Include="Snappier" Version="1.3.1" /><!-- Vulnerability fix: GHSA-pggp-6c3x-2xmx; transitively pinned via MongoDB.Driver -->
     <PackageVersion Include="Microsoft.Graph" Version="5.94.0" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
