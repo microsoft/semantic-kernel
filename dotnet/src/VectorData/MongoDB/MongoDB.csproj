@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="Snappier" /><!-- Pin to patched version; overrides transitive 1.0.0 from MongoDB.Driver (GHSA-pggp-6c3x-2xmx) -->
   </ItemGroup>
 
   <ItemGroup>
