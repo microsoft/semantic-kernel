@@ -233,6 +233,7 @@ async def test_ensure_collection_deleted(collection, mock_ensure_collection_dele
     await collection.ensure_collection_deleted()
 
 
+@mark.parametrize("distance_function", [("cosine_distance")])
 async def test_create_index_from_index(collection, mock_ensure_collection_exists):
     from azure.search.documents.indexes.models import SearchIndex
 
@@ -240,6 +241,7 @@ async def test_create_index_from_index(collection, mock_ensure_collection_exists
     await collection.ensure_collection_exists(index=index)
 
 
+@mark.parametrize("distance_function", [("cosine_distance")])
 async def test_create_index_from_definition(collection, mock_ensure_collection_exists):
     from azure.search.documents.indexes.models import SearchIndex
 
