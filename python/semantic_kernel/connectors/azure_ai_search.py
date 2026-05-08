@@ -364,6 +364,8 @@ class AzureAISearchCollection(
                 collection_name=collection_name,
                 search_client=search_client,
                 search_index_client=search_index_client,
+                search_endpoint=kwargs.get("search_endpoint"),
+                search_credential=search_credential,
                 managed_search_index_client=False,
                 managed_client=False,
                 embedding_generator=embedding_generator,
@@ -767,8 +769,6 @@ class AzureAISearchStore(VectorStore):
     ) -> None:
         """Initializes a new instance of the AzureAISearchStore class."""
         managed_client: bool = False
-        endpoint: str | None = None
-        credential: "AzureKeyCredential | AsyncTokenCredential | None" = None
         if not search_index_client:
             try:
                 azure_ai_search_settings = AzureAISearchSettings(
@@ -791,6 +791,9 @@ class AzureAISearchStore(VectorStore):
                 token_credential=token_credentials,
             )
             managed_client = True
+        else:
+            endpoint = search_endpoint
+            credential = azure_credentials or token_credentials or (AzureKeyCredential(api_key) if api_key else None)
 
         super().__init__(
             search_index_client=search_index_client,
