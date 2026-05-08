@@ -16,6 +16,7 @@ from semantic_kernel.connectors.azure_ai_search import (
     AzureAISearchStore,
     _definition_to_azure_ai_search_index,
     _get_search_index_client,
+    _resolve_credential,
 )
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -171,8 +172,6 @@ def test_init_with_search_index_client(azure_ai_search_unit_test_env, definition
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_INDEX_NAME"]], indirect=True)
 def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
-    search_index_client._endpoint = "test-endpoint"
-    search_index_client._credential = "test-credential"
     with raises(VectorStoreInitializationException):
         AzureAISearchCollection(
             record_type=dict,
@@ -301,7 +300,8 @@ def test_get_collection(vector_store, definition):
     assert collection.collection_name == "test"
     assert collection.search_index_client == vector_store.search_index_client
     assert collection.search_client is not None
-    assert collection.search_client._endpoint == vector_store.search_index_client._endpoint
+    assert collection.search_endpoint == vector_store.search_endpoint
+    assert collection.search_credential == vector_store.search_credential
 
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
@@ -313,7 +313,6 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
     azure_credential = MagicMock(spec=AzureKeyCredential)
     client = _get_search_index_client(settings, azure_credential=azure_credential)
     assert client is not None
-    assert client._credential == azure_credential
 
     token_credential = MagicMock(spec=TokenCredential)
     client2 = _get_search_index_client(
@@ -321,10 +320,27 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
         token_credential=token_credential,
     )
     assert client2 is not None
-    assert client2._credential == token_credential
 
     with raises(ServiceInitializationError):
         _get_search_index_client(settings)
+
+
+@mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
+def test_resolve_credential(azure_ai_search_unit_test_env):
+    from azure.core.credentials import AzureKeyCredential, TokenCredential
+
+    settings = AzureAISearchSettings(**azure_ai_search_unit_test_env, env_file_path="test.env")
+
+    azure_credential = MagicMock(spec=AzureKeyCredential)
+    resolved = _resolve_credential(settings, azure_credential=azure_credential)
+    assert resolved == azure_credential
+
+    token_credential = MagicMock(spec=TokenCredential)
+    resolved = _resolve_credential(settings, token_credential=token_credential)
+    assert resolved == token_credential
+
+    with raises(ServiceInitializationError):
+        _resolve_credential(settings)
 
 
 @mark.parametrize("include_vectors", [True, False])
