@@ -301,7 +301,7 @@ class AzureAISearchCollection(
 
     search_client: SearchClient
     search_index_client: SearchIndexClient
-    search_endpoint: str = ""
+    search_endpoint: str | None = None
     search_credential: Any = None
     supported_key_types: ClassVar[set[str] | None] = {"str"}
     supported_vector_types: ClassVar[set[str] | None] = {"float", "int"}
@@ -751,7 +751,7 @@ class AzureAISearchStore(VectorStore):
     """Azure AI Search store implementation."""
 
     search_index_client: SearchIndexClient
-    search_endpoint: str = ""
+    search_endpoint: str | None = None
     search_credential: Any = None
 
     def __init__(
@@ -767,7 +767,7 @@ class AzureAISearchStore(VectorStore):
     ) -> None:
         """Initializes a new instance of the AzureAISearchStore class."""
         managed_client: bool = False
-        endpoint: str = ""
+        endpoint: str | None = None
         credential: "AzureKeyCredential | AsyncTokenCredential | None" = None
         if not search_index_client:
             try:

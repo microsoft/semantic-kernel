@@ -304,9 +304,33 @@ def test_get_collection(vector_store, definition):
     assert collection.search_credential == vector_store.search_credential
 
 
+def test_get_collection_with_provided_search_index_client(azure_ai_search_unit_test_env, definition):
+    """Test that get_collection works when AzureAISearchStore is created with a pre-built search_index_client.
+
+    When search_index_client is provided directly, search_endpoint and search_credential
+    are not resolved at store creation time. get_collection() should still succeed
+    by falling back to environment variables for endpoint/credential resolution.
+    """
+    search_index_client = MagicMock(spec=SearchIndexClient)
+    store = AzureAISearchStore(search_index_client=search_index_client)
+    assert store.search_endpoint is None
+    assert store.search_credential is None
+
+    collection = store.get_collection(
+        collection_name="test",
+        record_type=dict,
+        definition=definition,
+    )
+    assert collection is not None
+    assert collection.collection_name == "test"
+    assert collection.search_index_client == search_index_client
+    assert collection.search_client is not None
+
+
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
 def test_get_search_index_client(azure_ai_search_unit_test_env):
-    from azure.core.credentials import AzureKeyCredential, TokenCredential
+    from azure.core.credentials import AzureKeyCredential
+    from azure.core.credentials_async import AsyncTokenCredential
 
     settings = AzureAISearchSettings(**azure_ai_search_unit_test_env, env_file_path="test.env")
 
@@ -314,7 +338,7 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
     client = _get_search_index_client(settings, azure_credential=azure_credential)
     assert client is not None
 
-    token_credential = MagicMock(spec=TokenCredential)
+    token_credential = MagicMock(spec=AsyncTokenCredential)
     client2 = _get_search_index_client(
         settings,
         token_credential=token_credential,
@@ -327,7 +351,8 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
 def test_resolve_credential(azure_ai_search_unit_test_env):
-    from azure.core.credentials import AzureKeyCredential, TokenCredential
+    from azure.core.credentials import AzureKeyCredential
+    from azure.core.credentials_async import AsyncTokenCredential
 
     settings = AzureAISearchSettings(**azure_ai_search_unit_test_env, env_file_path="test.env")
 
@@ -335,7 +360,7 @@ def test_resolve_credential(azure_ai_search_unit_test_env):
     resolved = _resolve_credential(settings, azure_credential=azure_credential)
     assert resolved == azure_credential
 
-    token_credential = MagicMock(spec=TokenCredential)
+    token_credential = MagicMock(spec=AsyncTokenCredential)
     resolved = _resolve_credential(settings, token_credential=token_credential)
     assert resolved == token_credential
 
