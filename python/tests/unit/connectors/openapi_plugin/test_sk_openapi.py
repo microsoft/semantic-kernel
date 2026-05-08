@@ -440,6 +440,28 @@ def test_build_path_prevents_path_traversal():
     assert result == "/resource/..%2F..%2Fadmin"
 
 
+def test_build_path_double_encodes_pre_encoded_values():
+    """Arguments must be raw/unencoded values. Pre-encoded values are double-encoded by design."""
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "hello%2Fworld"}
+    result = operation.build_path(operation.path, arguments)
+    # %2F in input becomes %252F — the % is encoded, preventing decode-based bypass
+    assert result == "/resource/hello%252Fworld"
+
+
+def test_build_path_encodes_unicode_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "café résumé"}
+    result = operation.build_path(operation.path, arguments)
+    assert result == "/resource/caf%C3%A9%20r%C3%A9sum%C3%A9"
+
+
 def test_build_query_string_with_required_parameter():
     parameters = [
         RestApiParameter(name="query", type="string", location=RestApiParameterLocation.QUERY, is_required=True)
