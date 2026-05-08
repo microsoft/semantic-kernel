@@ -7,7 +7,7 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
-from azure.core.credentials import AzureKeyCredential, TokenCredential
+from azure.core.credentials import AzureKeyCredential
 from azure.core.credentials_async import AsyncTokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
@@ -151,7 +151,7 @@ class AzureAISearchSettings(KernelBaseSettings):
 def _get_search_client(
     endpoint: str,
     collection_name: str | None,
-    credential: "AzureKeyCredential | AsyncTokenCredential | TokenCredential",
+    credential: "AzureKeyCredential | AsyncTokenCredential",
     **kwargs: Any,
 ) -> SearchClient:
     """Create a search client for a collection."""
@@ -168,8 +168,8 @@ def _get_search_client(
 def _resolve_credential(
     azure_ai_search_settings: AzureAISearchSettings,
     azure_credential: AzureKeyCredential | None = None,
-    token_credential: "AsyncTokenCredential | TokenCredential | None" = None,
-) -> "AzureKeyCredential | AsyncTokenCredential | TokenCredential":
+    token_credential: "AsyncTokenCredential | None" = None,
+) -> "AzureKeyCredential | AsyncTokenCredential":
     """Resolve the credential to use for Azure AI Search.
 
     Args:
@@ -189,7 +189,7 @@ def _resolve_credential(
 def _get_search_index_client(
     azure_ai_search_settings: AzureAISearchSettings,
     azure_credential: AzureKeyCredential | None = None,
-    token_credential: "AsyncTokenCredential | TokenCredential | None" = None,
+    token_credential: "AsyncTokenCredential | None" = None,
 ) -> SearchIndexClient:
     """Return a client for Azure AI Search.
 
@@ -202,7 +202,7 @@ def _get_search_index_client(
 
     return SearchIndexClient(
         endpoint=str(azure_ai_search_settings.endpoint),
-        credential=credential,  # type: ignore
+        credential=credential,
         headers=prepend_semantic_kernel_to_user_agent({}) if APP_INFO else None,
     )
 
@@ -316,7 +316,7 @@ class AzureAISearchCollection(
         search_index_client: SearchIndexClient | None = None,
         search_client: SearchClient | None = None,
         embedding_generator: "EmbeddingGeneratorBase | None" = None,
-        search_credential: "AzureKeyCredential | AsyncTokenCredential | TokenCredential | None" = None,
+        search_credential: "AzureKeyCredential | AsyncTokenCredential | None" = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the AzureAISearchCollection class.
@@ -346,7 +346,7 @@ class AzureAISearchCollection(
                     search_endpoint: str | None = None,
                     api_key: str | None = None,
                     azure_credentials: AzureKeyCredential | None = None,
-                    token_credentials: AsyncTokenCredential | TokenCredential | None = None,
+                    token_credentials: AsyncTokenCredential | None = None,
                     env_file_path: str | None = None,
                     env_file_encoding: str | None = None
 
@@ -759,7 +759,7 @@ class AzureAISearchStore(VectorStore):
         search_endpoint: str | None = None,
         api_key: str | None = None,
         azure_credentials: "AzureKeyCredential | None" = None,
-        token_credentials: "AsyncTokenCredential | TokenCredential | None" = None,
+        token_credentials: "AsyncTokenCredential | None" = None,
         search_index_client: SearchIndexClient | None = None,
         embedding_generator: "EmbeddingGeneratorBase | None" = None,
         env_file_path: str | None = None,
@@ -768,7 +768,7 @@ class AzureAISearchStore(VectorStore):
         """Initializes a new instance of the AzureAISearchStore class."""
         managed_client: bool = False
         endpoint: str = ""
-        credential: "AzureKeyCredential | AsyncTokenCredential | TokenCredential | None" = None
+        credential: "AzureKeyCredential | AsyncTokenCredential | None" = None
         if not search_index_client:
             try:
                 azure_ai_search_settings = AzureAISearchSettings(
