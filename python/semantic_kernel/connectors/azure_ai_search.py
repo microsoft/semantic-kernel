@@ -769,6 +769,8 @@ class AzureAISearchStore(VectorStore):
     ) -> None:
         """Initializes a new instance of the AzureAISearchStore class."""
         managed_client: bool = False
+        endpoint: str | None = None
+        credential: AzureKeyCredential | AsyncTokenCredential | None = None
         if not search_index_client:
             try:
                 azure_ai_search_settings = AzureAISearchSettings(
