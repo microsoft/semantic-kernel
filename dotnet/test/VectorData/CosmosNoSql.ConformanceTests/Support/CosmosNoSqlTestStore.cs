@@ -11,6 +11,7 @@ using VectorData.ConformanceTests.Support;
 namespace CosmosNoSql.ConformanceTests.Support;
 
 #pragma warning disable CA1001 // Type owns disposable fields (_connection) but is not disposable
+#pragma warning disable CA2000 // Dispose objects before losing scope
 
 internal sealed class CosmosNoSqlTestStore : TestStore
 {

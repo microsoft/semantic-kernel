@@ -11,7 +11,7 @@ using OpenAI.VectorStores;
 /// <summary>
 /// Base class for samples that demonstrate the usage of <see cref="OpenAIResponseAgent"/>.
 /// </summary>
-public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClient>
+public abstract class BaseResponsesAgentTest : BaseAgentsTest<ResponsesClient>
 {
     protected BaseResponsesAgentTest(ITestOutputHelper output, string? model = null) : base(output)
     {
@@ -27,10 +27,13 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
             });
         }
 
-        this.Client = new(model: model ?? TestConfiguration.OpenAI.ChatModelId, credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
+        this.ModelId = model ?? TestConfiguration.OpenAI.ChatModelId;
+        this.Client = new(credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
         this.FileClient = new OpenAIFileClient(TestConfiguration.OpenAI.ApiKey);
         this.VectorStoreClient = new VectorStoreClient(TestConfiguration.OpenAI.ApiKey);
     }
+
+    protected string ModelId { get; set; }
 
     protected OpenAIFileClient FileClient { get; set; }
 
@@ -39,5 +42,5 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
     protected bool EnableLogging { get; set; } = false;
 
     /// <inheritdoc/>
-    protected override OpenAIResponseClient Client { get; }
+    protected override ResponsesClient Client { get; }
 }

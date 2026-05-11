@@ -18,21 +18,28 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         return new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors
         };
     }
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
-        supportedTypes = "Guid";
+        base.ValidateKeyProperty(keyProperty);
 
-        return type == typeof(Guid);
+        if (keyProperty.Type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{keyProperty.Type.Name}'. Key properties must be of type Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, bool, int, long, short, byte, float, double, decimal, DateTime, DateTimeOffset, Guid, or arrays/lists of these types";
+        supportedTypes = "string, bool, int, long, short, byte, float, double, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " Guid, or arrays/lists of these types";
 
         return IsValid(type)
             || (type.IsArray && IsValid(type.GetElementType()!))
@@ -56,6 +63,9 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
                 || type == typeof(decimal)
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
+#if NET
+                || type == typeof(DateOnly)
+#endif
                 || type == typeof(Guid);
         }
     }

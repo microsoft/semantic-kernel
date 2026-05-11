@@ -7,22 +7,23 @@ using OpenAI.Responses;
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
 /// <summary>
-/// Factory for creating instances of <see cref="ResponseCreationOptions"/>.
+/// Factory for creating instances of <see cref="CreateResponseOptions"/>.
 /// </summary>
 internal static class ResponseCreationOptionsFactory
 {
-    internal static ResponseCreationOptions CreateOptions(
+    internal static CreateResponseOptions CreateOptions(
         OpenAIResponseAgent agent,
         AgentThread agentThread,
         AgentInvokeOptions? invokeOptions)
     {
         var instructions = $"{agent.Instructions}{(string.IsNullOrEmpty(agent.Instructions) || string.IsNullOrEmpty(invokeOptions?.AdditionalInstructions) ? "" : "\n")}{invokeOptions?.AdditionalInstructions}";
-        ResponseCreationOptions creationOptions;
+        CreateResponseOptions creationOptions;
         if (invokeOptions is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions &&
             responseAgentInvokeOptions.ResponseCreationOptions is not null)
         {
-            creationOptions = new ResponseCreationOptions
+            creationOptions = new CreateResponseOptions
             {
+                Model = responseAgentInvokeOptions.ResponseCreationOptions.Model ?? agent.ModelId,
                 EndUserId = responseAgentInvokeOptions.ResponseCreationOptions.EndUserId ?? agent.GetDisplayName(),
                 Instructions = responseAgentInvokeOptions.ResponseCreationOptions.Instructions ?? instructions,
                 StoredOutputEnabled = responseAgentInvokeOptions.ResponseCreationOptions.StoredOutputEnabled ?? agent.StoreEnabled,
@@ -42,8 +43,9 @@ internal static class ResponseCreationOptionsFactory
         }
         else
         {
-            creationOptions = new ResponseCreationOptions
+            creationOptions = new CreateResponseOptions
             {
+                Model = agent.ModelId,
                 EndUserId = agent.GetDisplayName(),
                 Instructions = instructions,
                 StoredOutputEnabled = agent.StoreEnabled,

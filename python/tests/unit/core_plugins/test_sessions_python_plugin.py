@@ -232,6 +232,7 @@ async def test_upload_file_with_local_path(mock_post, mock_get, aca_python_sessi
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            enable_dangerous_file_uploads=True,
             allowed_upload_directories={str(tmp_path)},
         )
 
@@ -295,6 +296,7 @@ async def test_upload_file_with_local_path_and_no_remote(
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            enable_dangerous_file_uploads=True,
             allowed_upload_directories={str(tmp_path)},
         )
 
@@ -326,6 +328,7 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
             env_file_path="test.env",
+            enable_dangerous_file_uploads=True,
             allowed_upload_directories={str(tmp_path)},
         )
 
@@ -400,6 +403,7 @@ async def test_upload_file_with_buffer(
 
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
+            enable_dangerous_file_uploads=True,
             allowed_upload_directories={str(tmp_path)},
         )
 
@@ -532,6 +536,8 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
         plugin = SessionsPythonTool(
             auth_callback=mock_auth_callback,
             env_file_path="test.env",
+            enable_dangerous_file_uploads=True,
+            allowed_download_directories={str(tmp_path)},
         )
 
         await plugin.download_file(remote_file_name="remote_test.txt", local_file_path=str(local_file))
@@ -667,10 +673,21 @@ def test_full_path(filename, expected_full_path):
 
 
 async def test_upload_file_denied_when_no_allowed_directories(aca_python_sessions_unit_test_env):
-    """Test that upload_file raises an exception when allowed_upload_directories is not configured."""
+    """Test that upload_file raises an exception when enable_dangerous_file_uploads is False."""
     plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
     with pytest.raises(FunctionExecutionException, match="File upload is disabled"):
+        await plugin.upload_file(local_file_path="/some/path/file.txt")
+
+
+async def test_upload_file_denied_when_flag_true_but_no_directories(aca_python_sessions_unit_test_env):
+    """Test that upload_file raises an exception when flag is True but directories not configured."""
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
+    )
+
+    with pytest.raises(FunctionExecutionException, match="allowed_upload_directories"):
         await plugin.upload_file(local_file_path="/some/path/file.txt")
 
 
@@ -681,6 +698,7 @@ async def test_upload_file_denied_outside_allowed_directories(aca_python_session
 
     plugin = SessionsPythonTool(
         auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
         allowed_upload_directories={str(allowed_dir)},
     )
 
@@ -695,6 +713,7 @@ async def test_upload_file_path_traversal_blocked(aca_python_sessions_unit_test_
 
     plugin = SessionsPythonTool(
         auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
         allowed_upload_directories={str(allowed_dir)},
     )
 
@@ -755,6 +774,7 @@ async def test_upload_file_succeeds_within_allowed_directory(
 
         plugin = SessionsPythonTool(
             auth_callback=lambda: "sample_token",
+            enable_dangerous_file_uploads=True,
             allowed_upload_directories={str(allowed_dir)},
         )
 
@@ -870,6 +890,7 @@ async def test_empty_set_denies_all_uploads(aca_python_sessions_unit_test_env, t
 
     plugin = SessionsPythonTool(
         auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
         allowed_upload_directories=set(),  # Empty set - deny all
     )
 

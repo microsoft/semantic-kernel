@@ -34,7 +34,7 @@ public abstract class VectorStoreCollectionFixtureBase<TKey, TRecord> : VectorSt
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
     protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
-        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.CreateRecordDefinition());
+        => this.TestStore.CreateCollection<TKey, TRecord>(this.CollectionName, this.CreateRecordDefinition());
 
     public override async Task InitializeAsync()
     {

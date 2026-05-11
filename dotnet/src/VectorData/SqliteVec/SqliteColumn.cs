@@ -18,6 +18,8 @@ internal sealed class SqliteColumn(
 
     public bool IsPrimary { get; set; } = isPrimary;
 
+    public bool IsNullable { get; set; }
+
     public bool HasIndex { get; set; }
 
     public Dictionary<string, object>? Configuration { get; set; }

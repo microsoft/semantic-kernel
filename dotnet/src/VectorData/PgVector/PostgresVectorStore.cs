@@ -30,7 +30,7 @@ public sealed class PostgresVectorStore : VectorStore
     private readonly string _databaseName;
 
     /// <summary>The database schema.</summary>
-    private readonly string _schema;
+    private readonly string? _schema;
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
@@ -44,7 +44,7 @@ public sealed class PostgresVectorStore : VectorStore
     {
         Verify.NotNull(dataSource);
 
-        this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        this._schema = options?.Schema;
         this._embeddingGenerator = options?.EmbeddingGenerator;
         this._dataSource = dataSource;
         this._dataSourceArc = ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null;

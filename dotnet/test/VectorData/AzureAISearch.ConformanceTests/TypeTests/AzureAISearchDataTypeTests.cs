@@ -13,25 +13,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
     : DataTypeTests<string, AzureAISearchDataTypeTests.Fixture.AzureAISearchRecord>(fixture),
     IClassFixture<AzureAISearchDataTypeTests.Fixture>
 {
-    public override Task Byte() => Task.CompletedTask;
-    public override Task Short() => Task.CompletedTask;
-    public override Task Decimal() => Task.CompletedTask;
-
-    [ConditionalFact(Skip = "Guid not yet supported")]
-    public override Task Guid() => Task.CompletedTask;
-
-    [ConditionalFact(Skip = "DateTime not yet supported")]
-    public override Task DateTime() => Task.CompletedTask;
-
-    // [ConditionalFact(Skip = "DateTimeOffset not yet supported")]
-    // public override Task DateTimeOffset() => Task.CompletedTask;
-
-    [ConditionalFact(Skip = "DateOnly not yet supported")]
-    public override Task DateOnly() => Task.CompletedTask;
-
-    [ConditionalFact(Skip = "TimeOnly not yet supported")]
-    public override Task TimeOnly() => Task.CompletedTask;
-
+    [ConditionalFact(Skip = "Issues around empty collection initialization")]
     public override Task String_array() => Task.CompletedTask;
 
     protected override object? GenerateEmptyProperty(VectorStoreProperty property)
@@ -55,12 +37,21 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
                 && p.Type != typeof(short)
                 && p.Type != typeof(decimal)
                 && p.Type != typeof(Guid)
-                && p.Type != typeof(DateTime)
 #if NET
-                && p.Type != typeof(DateOnly)
                 && p.Type != typeof(TimeOnly)
 #endif
             ).ToList();
+
+        public override Type[] UnsupportedDefaultTypes { get; } =
+        [
+            typeof(byte),
+            typeof(short),
+            typeof(decimal),
+            typeof(Guid),
+#if NET
+            typeof(TimeOnly)
+#endif
+        ];
 
         public class AzureAISearchRecord : RecordBase
         {
@@ -72,7 +63,12 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
             public string? String { get; set; }
             public bool Bool { get; set; }
 
+            public DateTime DateTime { get; set; }
             public DateTimeOffset DateTimeOffset { get; set; }
+
+#if NET
+            public DateOnly DateOnly { get; set; }
+#endif
 
             public string[] StringArray { get; set; } = null!;
 

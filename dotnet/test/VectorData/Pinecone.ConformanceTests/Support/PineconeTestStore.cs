@@ -88,7 +88,7 @@ internal sealed class PineconeTestStore : TestStore
 
     private async Task<IContainer> StartContainerAsync()
     {
-        ContainerBuilder builder = new ContainerBuilder()
+        ContainerBuilder builder = new ContainerBuilder("ghcr.io/pinecone-io/pinecone-local:latest")
             .WithImage(Image)
             // Pinecone Local will run on port $FirstPort.
             .WithPortBinding(FirstPort, assignRandomHostPort: true)

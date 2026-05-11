@@ -12,7 +12,7 @@ public class QdrantKeyTypeTests(QdrantKeyTypeTests.Fixture fixture)
     : KeyTypeTests(fixture), IClassFixture<QdrantKeyTypeTests.Fixture>
 {
     [ConditionalFact]
-    public virtual Task ULong() => this.Test<ulong>(8UL, 9UL);
+    public virtual Task ULong() => this.Test<ulong>(8UL);
 
     public new class Fixture : KeyTypeTests.Fixture
     {

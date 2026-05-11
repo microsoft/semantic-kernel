@@ -113,6 +113,7 @@ public sealed partial class SessionsPythonPlugin
     /// <returns>The metadata of the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
         [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
@@ -122,11 +123,13 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
+        var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
+
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
-        using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
+        using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedLocalPath));
 
         using var multipartFormDataContent = new MultipartFormDataContent()
         {
@@ -147,15 +150,21 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="localFilePath">The path to save the downloaded file to. If not provided won't save it in the disk.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The data of the downloaded file as byte array.</returns>
-    [KernelFunction, Description("Downloads a file from the `/mnt/data` directory of the current session.")]
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     public async Task<byte[]> DownloadFileAsync(
-        [Description("The name of the remote file to download, relative to `/mnt/data`.")] string remoteFileName,
-        [Description("The path to save the downloaded file to. If not provided won't save it in the disk.")] string? localFilePath = null,
+        string remoteFileName,
+        string? localFilePath = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
+        string? validatedLocalPath = null;
+        if (!string.IsNullOrWhiteSpace(localFilePath))
+        {
+            validatedLocalPath = this.ValidateLocalPathForDownload(localFilePath);
+        }
+
+        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, validatedLocalPath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
@@ -163,11 +172,11 @@ public sealed partial class SessionsPythonPlugin
 
         var fileContent = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!string.IsNullOrWhiteSpace(localFilePath))
+        if (!string.IsNullOrWhiteSpace(validatedLocalPath))
         {
             try
             {
-                File.WriteAllBytes(localFilePath, fileContent);
+                File.WriteAllBytes(validatedLocalPath, fileContent);
             }
             catch (Exception ex)
             {
@@ -277,6 +286,90 @@ public sealed partial class SessionsPythonPlugin
         await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Validates that the local file path is within allowed upload directories.
+    /// </summary>
+    /// <param name="localFilePath">The local file path to validate.</param>
+    /// <returns>The canonicalized path if valid.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
+    private string ValidateLocalPathForUpload(string localFilePath)
+    {
+        if (!this._settings.EnableDangerousFileUploads)
+        {
+            throw new InvalidOperationException(
+                "File upload is disabled. Set 'EnableDangerousFileUploads' to true and configure 'AllowedUploadDirectories' to enable.");
+        }
+
+        if (this._settings.AllowedUploadDirectories is null || !this._settings.AllowedUploadDirectories.Any())
+        {
+            throw new InvalidOperationException(
+                "File upload requires 'AllowedUploadDirectories' to be configured.");
+        }
+
+        var canonicalPath = Path.GetFullPath(localFilePath);
+
+        foreach (var allowedDir in this._settings.AllowedUploadDirectories)
+        {
+            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            // Ensure we match the directory correctly by appending separator
+            var separator = Path.DirectorySeparatorChar.ToString();
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+                ? canonicalAllowedDir
+                : canonicalAllowedDir + separator;
+
+            if (canonicalPath.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            {
+                return canonicalPath;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Access denied: '{localFilePath}' is not within allowed upload directories.");
+    }
+
+    /// <summary>
+    /// Validates that the local file path is within allowed download directories.
+    /// </summary>
+    /// <param name="localFilePath">The local file path to validate.</param>
+    /// <returns>The canonicalized path if valid.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the path is not allowed.</exception>
+    private string ValidateLocalPathForDownload(string localFilePath)
+    {
+        // If no restrictions configured, allow all paths (permissive by default for downloads)
+        if (this._settings.AllowedDownloadDirectories is null || !this._settings.AllowedDownloadDirectories.Any())
+        {
+            return Path.GetFullPath(localFilePath);
+        }
+
+        // Get the directory of the target file path
+        var targetDirectory = Path.GetDirectoryName(localFilePath);
+        if (string.IsNullOrEmpty(targetDirectory))
+        {
+            targetDirectory = ".";
+        }
+
+        var canonicalTargetDir = Path.GetFullPath(targetDirectory);
+        var canonicalFilePath = Path.GetFullPath(localFilePath);
+
+        foreach (var allowedDir in this._settings.AllowedDownloadDirectories)
+        {
+            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            // Ensure we match the directory correctly by appending separator
+            var separator = Path.DirectorySeparatorChar.ToString();
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+                ? canonicalAllowedDir
+                : canonicalAllowedDir + separator;
+
+            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            {
+                return canonicalFilePath;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Access denied: '{localFilePath}' is not within allowed download directories.");
     }
 
 #if NET

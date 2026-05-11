@@ -59,14 +59,18 @@ public class SqliteFilterTests(SqliteFilterTests.Fixture fixture)
         => Assert.ThrowsAsync<InvalidOperationException>(base.Contains_with_MemoryExtensions_Contains_with_null_comparer);
 #endif
 
-    // AnyTagEqualTo not (currently) supported on SQLite
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_array()
-        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_array);
+    // Any over array fields not (currently) supported on SQLite (see #10343)
+    public override Task Any_with_Contains_over_inline_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Any_with_Contains_over_inline_string_array);
 
-    [Obsolete("Legacy filter support")]
-    public override Task Legacy_AnyTagEqualTo_List()
-        => Assert.ThrowsAsync<NotSupportedException>(base.Legacy_AnyTagEqualTo_List);
+    public override Task Any_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Any_with_Contains_over_captured_string_array);
+
+    public override Task Any_with_Contains_over_captured_string_list()
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Any_with_Contains_over_captured_string_list);
+
+    public override Task Any_over_List_with_Contains_over_captured_string_array()
+        => Assert.ThrowsAsync<InvalidOperationException>(base.Any_over_List_with_Contains_over_captured_string_array);
 
     public new class Fixture : FilterTests<long>.Fixture
     {

@@ -214,7 +214,8 @@ public static partial class OpenApiKernelPluginFactory
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false,
             executionParameters?.HttpResponseContentReader,
-            executionParameters?.RestApiOperationResponseFactory);
+            executionParameters?.RestApiOperationResponseFactory,
+            serverUrlValidationOptions: executionParameters?.ServerUrlValidationOptions);
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;

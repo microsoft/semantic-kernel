@@ -71,8 +71,24 @@ internal static class AssistantMessageFactory
             else if (content is FunctionResultContent resultContent && resultContent.Result != null && !hasTextContent)
             {
                 // Only convert a function result when text-content is not already present
-                yield return MessageContent.FromText(FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result));
+                yield return MessageContent.FromText(GetFunctionResultAsString(resultContent.Result));
             }
         }
+    }
+
+    /// <summary>
+    /// Processes a function result and returns a string representation.
+    /// OpenAI Assistants do not support multimodal tool results, so ImageContent returns an error message.
+    /// </summary>
+    private static string GetFunctionResultAsString(object result)
+    {
+        var processed = FunctionCallsProcessor.ProcessFunctionResult(result);
+
+        if (processed is ImageContent)
+        {
+            return FunctionCallsProcessor.ImageContentNotSupportedErrorMessage;
+        }
+
+        return (string?)processed ?? string.Empty;
     }
 }

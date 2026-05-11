@@ -14,7 +14,7 @@ internal sealed class PostgresTestStore : TestStore
     public static PostgresTestStore Instance { get; } = new();
 
     private static readonly PostgreSqlContainer s_container = new PostgreSqlBuilder()
-        .WithImage("pgvector/pgvector:pg17")
+        .WithImage("pgvector/pgvector:pg18")
         .Build();
 
     private NpgsqlDataSource? _dataSource;
@@ -64,13 +64,6 @@ internal sealed class PostgresTestStore : TestStore
         NpgsqlDataSourceBuilder dataSourceBuilder = new(this._connectionString!);
         dataSourceBuilder.UseVector();
         this._dataSource = dataSourceBuilder.Build();
-
-        // Ensure vector extension is enabled
-        await using var connection = this._dataSource.CreateConnection();
-        await connection.OpenAsync();
-        using var command = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection);
-        await command.ExecuteNonQueryAsync();
-        await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
         this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, ownsDataSource: false);
