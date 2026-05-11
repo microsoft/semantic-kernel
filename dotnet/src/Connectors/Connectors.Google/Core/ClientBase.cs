@@ -122,4 +122,14 @@ internal abstract class ClientBase
             VertexAIVersion.V1_Beta => "v1beta1",
             _ => throw new NotSupportedException($"Vertex API version {apiVersion} is not supported.")
         };
+
+    /// <summary>
+    /// Gets the Vertex AI endpoint base URI for the given location.
+    /// The global location uses <c>https://aiplatform.googleapis.com</c> while
+    /// regional locations use <c>https://{location}-aiplatform.googleapis.com</c>.
+    /// </summary>
+    protected static string GetVertexAIBaseUri(string location)
+        => string.Equals(location, "global", StringComparison.OrdinalIgnoreCase)
+            ? "https://aiplatform.googleapis.com"
+            : $"https://{location}-aiplatform.googleapis.com";
 }

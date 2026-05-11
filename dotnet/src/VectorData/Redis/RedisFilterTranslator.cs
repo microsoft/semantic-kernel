@@ -258,8 +258,8 @@ internal class RedisFilterTranslator : FilterTranslatorBase
 
     private static string SanitizeStringConstant(string value)
 #if NET
-        => value.Replace("\"", "\\\"", StringComparison.Ordinal);
+        => value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
 #else
-        => value.Replace("\"", "\\\"");
+        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 #endif
 }
