@@ -1,185 +1,94 @@
-﻿using System;
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using OpenAI;
+using OpenAI.Responses;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI
+namespace SemanticKernel.Agents.UnitTests.OpenAI;
+
+/// <summary>
+/// Tests for the exception handling logic in OpenAIResponseAgent.
+/// Verifies that provider exceptions are wrapped in KernelException.
+/// </summary>
+public class OpenAIResponseAgentExceptionTests : BaseOpenAIResponseClientTest
 {
+    private const string AgentName = "TestAgent";
+
     /// <summary>
-    /// Tests for the updated exception handling logic in OpenAIResponseAgent.
-    /// Verifies that KernelException messages are correct and unknown exceptions propagate.
+    /// Verifies that InvokeAsync wraps provider exceptions in a KernelException.
     /// </summary>
-    public class OpenAIResponseAgentExceptionTests
+    [Fact]
+    public async Task InvokeAsync_WhenProviderFails_ShouldThrowKernelExceptionAsync()
     {
-        private const string AgentName = "TestAgent";
+        // Arrange
+        var ex = new HttpRequestException("HTTP 429 Rate limit exceeded");
+        var agent = CreateAgentWithThrowingHandler(ex);
 
-        [Fact]
-        public void InvokeAsync_ShouldMapRateLimitCorrectly()
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(async () =>
         {
-            var ex = new HttpRequestException("HTTP 429 Rate limit exceeded");
-            KernelException? result = null;
-
-            try
+            await foreach (var item in agent.InvokeAsync("Hello"))
             {
-                if (ex.Message.Contains("429"))
-                    throw new KernelException($"Rate limit exceeded for agent '{AgentName}'. Check Retry-After header and implement backoff.", ex);
+                // Enumerate to trigger lazy execution
             }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
+        });
 
-            Assert.NotNull(result);
-            Assert.Contains("Rate limit exceeded", result.Message);
-            Assert.Contains("Retry-After header", result.Message);
-            Assert.Equal(ex, result.InnerException);
-        }
+        Assert.Contains($"OpenAI provider error for agent '{AgentName}':", exception.Message);
+        Assert.NotNull(exception.InnerException);
+        Assert.Contains("HTTP 429 Rate limit exceeded", exception.ToString());
+    }
 
-        [Theory]
-        [InlineData("HTTP 401 Unauthorized")]
-        [InlineData("HTTP 403 Forbidden")]
-        public void InvokeAsync_ShouldMapAuthErrorsCorrectly(string message)
+    /// <summary>
+    /// Verifies that InvokeStreamingAsync wraps provider exceptions in a KernelException.
+    /// </summary>
+    [Fact]
+    public async Task InvokeStreamingAsync_WhenProviderFails_ShouldThrowKernelExceptionAsync()
+    {
+        // Arrange
+        var ex = new HttpRequestException("HTTP 500 Internal Server Error");
+        var agent = CreateAgentWithThrowingHandler(ex);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(async () =>
         {
-            var ex = new HttpRequestException(message);
-            KernelException? result = null;
-
-            try
+            await foreach (var item in agent.InvokeStreamingAsync("Hello"))
             {
-                if (ex.Message.Contains("401") || ex.Message.Contains("403"))
-                    throw new KernelException($"Authentication or permission error for agent '{AgentName}'. Verify API key and account status.", ex);
+                // Enumerate to trigger lazy execution
             }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
+        });
 
-            Assert.NotNull(result);
-            Assert.Contains("Authentication or permission error", result.Message);
-            Assert.Equal(ex, result.InnerException);
-        }
+        Assert.Contains($"OpenAI provider error for agent '{AgentName}' during streaming:", exception.Message);
+        Assert.NotNull(exception.InnerException);
+        Assert.Contains("HTTP 500 Internal Server Error", exception.ToString());
+    }
 
-        [Fact]
-        public void InvokeAsync_ShouldMapModelNotFoundCorrectly()
+    private OpenAIResponseAgent CreateAgentWithThrowingHandler(Exception exceptionToThrow)
+    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        var handler = new ThrowingHttpMessageHandler(exceptionToThrow);
+        var httpClient = new HttpClient(handler);
+        var clientOptions = new OpenAIClientOptions()
         {
-            var ex = new HttpRequestException("HTTP 404 Model not found");
-            KernelException? result = null;
+            Transport = new HttpClientPipelineTransport(httpClient)
+        };
+        var client = new ResponsesClient(new ApiKeyCredential("apiKey"), clientOptions);
+        return new OpenAIResponseAgent(client) { Name = AgentName };
+#pragma warning restore CA2000 // Dispose objects before losing scope
+    }
 
-            try
-            {
-                if (ex.Message.Contains("404"))
-                    throw new KernelException($"Model or deployment not found for agent '{AgentName}'. Verify model configuration.", ex);
-            }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
-
-            Assert.NotNull(result);
-            Assert.Contains("Model or deployment not found", result.Message);
-        }
-
-        [Theory]
-        [InlineData("Content filter violation")]
-        [InlineData("Content policy blocked")]
-        public void InvokeAsync_ShouldMapContentPolicyViolationCorrectly(string message)
+    private sealed class ThrowingHttpMessageHandler(Exception exceptionToThrow) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var ex = new HttpRequestException(message);
-            KernelException? result = null;
-
-            try
-            {
-                if (ex.Message.Contains("content", StringComparison.OrdinalIgnoreCase)
-                    && (ex.Message.Contains("filter", StringComparison.OrdinalIgnoreCase)
-                    || ex.Message.Contains("policy", StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new KernelException($"Content policy violation for agent '{AgentName}'. Request blocked by OpenAI filtering.", ex);
-                }
-            }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
-
-            Assert.NotNull(result);
-            Assert.Contains("Content policy violation", result.Message);
-        }
-
-        [Fact]
-        public void InvokeAsync_ShouldMapTimeoutCorrectly()
-        {
-            var ex = new TaskCanceledException("Request timeout");
-            var token = new CancellationToken(); // Not cancelled
-            KernelException? result = null;
-
-            try
-            {
-                if (!token.IsCancellationRequested)
-                    throw new KernelException($"Request timeout for agent '{AgentName}'. The OpenAI API request timed out.", ex);
-            }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
-
-            Assert.NotNull(result);
-            Assert.Contains("Request timeout", result.Message);
-            Assert.Equal(ex, result.InnerException);
-        }
-
-        [Fact]
-        public void InvokeAsync_UnknownOpenAIException_ShouldMapProviderError()
-        {
-            var ex = new InvalidOperationException("Custom OpenAI SDK error");
-            KernelException? result = null;
-
-            try
-            {
-                // Simulate OpenAI SDK exception handling
-                if (ex.GetType().FullName?.StartsWith("OpenAI", StringComparison.OrdinalIgnoreCase) == true)
-                    throw new KernelException($"OpenAI provider error for agent '{AgentName}': {ex.Message}", ex);
-                else
-                    throw new KernelException($"OpenAI provider error for agent '{AgentName}': {ex.Message}", ex);
-            }
-            catch (KernelException ke)
-            {
-                result = ke;
-            }
-
-            Assert.NotNull(result);
-            Assert.Contains("OpenAI provider error", result.Message);
-            Assert.Equal(ex, result.InnerException);
-        }
-
-        [Fact]
-        public static void InvokeStreamingAsync_UnknownException_ShouldPropagate()
-        {
-            var ex = new InvalidOperationException("Unknown streaming exception");
-
-            // Synchronous exception için Assert.Throws kullanılır
-            var thrownException =  Assert.ThrowsAsync<InvalidOperationException>(() =>
-            {
-                throw ex;
-            });
-
-            Assert.Equal("Unknown streaming exception", thrownException.Result.Message);
-        }
-
-        // Eğer async test yapmak istiyorsanız:
-        [Fact]
-        public async Task InvokeStreamingAsync_UnknownExceptionAsync_ShouldPropagate()
-        {
-            var ex = new InvalidOperationException("Unknown streaming exception async");
-
-            // Async exception için Assert.ThrowsAsync kullanılır
-            var thrownException = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await Task.Delay(1); // Async operation simüle et
-                throw ex;
-            });
-
-            Assert.Equal("Unknown streaming exception async", thrownException.Message);
+            return Task.FromException<HttpResponseMessage>(exceptionToThrow);
         }
     }
 }

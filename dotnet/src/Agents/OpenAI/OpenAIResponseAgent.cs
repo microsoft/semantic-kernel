@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -72,13 +72,20 @@ public sealed class OpenAIResponseAgent : Agent
                 extensionsContextOptions,
                 cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new KernelException($"OpenAI provider error for agent '{this.Name}': {ex.Message}", ex);
         }
 
+        var errorMessagePrefix = $"OpenAI provider error for agent '{this.Name}': ";
+        var mappedResults = HandleProviderExceptionsAsync(
+            invokeResults,
+            result => result,
+            errorMessagePrefix,
+            cancellationToken);
+
         // Yield results with additional error handling
-        await foreach (var result in invokeResults.ConfigureAwait(false))
+        await foreach (var result in mappedResults.ConfigureAwait(false))
         {
             if (options?.OnIntermediateMessage is not null)
             {
@@ -119,7 +126,7 @@ public sealed class OpenAIResponseAgent : Agent
                 extensionsContextOptions,
                 cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new KernelException($"OpenAI provider error for agent '{this.Name}' during streaming: {ex.Message}", ex);
         }
@@ -138,7 +145,14 @@ public sealed class OpenAIResponseAgent : Agent
             }
         }
 
-        await foreach (var result in invokeResults.ConfigureAwait(false))
+        var errorMessagePrefix = $"OpenAI provider error for agent '{this.Name}' during streaming: ";
+        var mappedResults = HandleProviderExceptionsAsync(
+            invokeResults,
+            result => result,
+            errorMessagePrefix,
+            cancellationToken);
+
+        await foreach (var result in mappedResults.ConfigureAwait(false))
         {
             await NotifyMessagesAsync().ConfigureAwait(false);
             yield return new(result, agentThread);
@@ -214,5 +228,48 @@ public sealed class OpenAIResponseAgent : Agent
                     Kernel = kernel,
                 };
         return extensionsContextOptions;
+    }
+
+    private static async IAsyncEnumerable<TResult> HandleProviderExceptionsAsync<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, TResult> selector,
+        string errorMessagePrefix,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerator<TSource> enumerator;
+        try
+        {
+            enumerator = source.GetAsyncEnumerator(cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new KernelException($"{errorMessagePrefix}{ex.Message}", ex);
+        }
+
+        try
+        {
+            while (true)
+            {
+                TSource item;
+                try
+                {
+                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                    item = enumerator.Current;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    throw new KernelException($"{errorMessagePrefix}{ex.Message}", ex);
+                }
+
+                yield return selector(item);
+            }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync().ConfigureAwait(false);
+        }
     }
 }
