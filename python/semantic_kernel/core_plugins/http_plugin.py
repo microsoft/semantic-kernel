@@ -139,7 +139,9 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
-            session.post(url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+            session.post(
+                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+            ) as response,
         ):
             return await response.text()
 
@@ -164,7 +166,9 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
-            session.put(url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+            session.put(
+                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+            ) as response,
         ):
             return await response.text()
 
