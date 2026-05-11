@@ -35,22 +35,6 @@ public class SqlServerFilterTests(SqlServerFilterTests.Fixture fixture)
             r => r["String"] != null && r["String"] != "foo");
     }
 
-    [Fact(Skip = "Not supported")]
-    [Obsolete("Legacy filters are not supported")]
-    public override Task Legacy_And() => throw new NotSupportedException();
-
-    [Fact(Skip = "Not supported")]
-    [Obsolete("Legacy filters are not supported")]
-    public override Task Legacy_AnyTagEqualTo_array() => throw new NotSupportedException();
-
-    [Fact(Skip = "Not supported")]
-    [Obsolete("Legacy filters are not supported")]
-    public override Task Legacy_AnyTagEqualTo_List() => throw new NotSupportedException();
-
-    [Fact(Skip = "Not supported")]
-    [Obsolete("Legacy filters are not supported")]
-    public override Task Legacy_equality() => throw new NotSupportedException();
-
     public new class Fixture : FilterTests<int>.Fixture
     {
         private static readonly string s_uniqueName = Guid.NewGuid().ToString();

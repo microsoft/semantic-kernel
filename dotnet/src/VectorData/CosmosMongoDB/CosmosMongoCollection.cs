@@ -373,15 +373,9 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => CosmosMongoCollectionSearchMapping.BuildFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new CosmosMongoFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new CosmosMongoFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.

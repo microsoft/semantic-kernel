@@ -15,12 +15,24 @@ namespace GettingStartedWithTextSearch;
 /// </summary>
 public class InMemoryVectorStoreFixture : IAsyncLifetime
 {
+    /// <summary>
+    /// Gets the embedding generator used for creating vector embeddings.
+    /// </summary>
     public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
+    /// <summary>
+    /// Gets the in-memory vector store instance.
+    /// </summary>
     public InMemoryVectorStore InMemoryVectorStore { get; private set; }
 
+    /// <summary>
+    /// Gets the vector store record collection for data models.
+    /// </summary>
     public VectorStoreCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
 
+    /// <summary>
+    /// Gets the name of the collection used for storing records.
+    /// </summary>
     public string CollectionName => "records";
 
     /// <summary>
@@ -138,21 +150,36 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// </remarks>
     public sealed class DataModel
     {
+        /// <summary>
+        /// Gets or sets the unique identifier for this record.
+        /// </summary>
         [VectorStoreKey]
         [TextSearchResultName]
         public Guid Key { get; init; }
 
+        /// <summary>
+        /// Gets or sets the text content of this record.
+        /// </summary>
         [VectorStoreData]
         [TextSearchResultValue]
         public string Text { get; init; }
 
+        /// <summary>
+        /// Gets or sets the link associated with this record.
+        /// </summary>
         [VectorStoreData]
         [TextSearchResultLink]
         public string Link { get; init; }
 
+        /// <summary>
+        /// Gets or sets the tag for categorizing this record.
+        /// </summary>
         [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
+        /// <summary>
+        /// Gets the embedding representation of the text content.
+        /// </summary>
         [VectorStoreVector(1536)]
         public string Embedding => Text;
     }

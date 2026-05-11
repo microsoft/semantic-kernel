@@ -44,7 +44,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.GetAsync(this._uriString);
@@ -60,7 +60,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.PostAsync(this._uriString, this._content);
@@ -76,7 +76,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.PutAsync(this._uriString, this._content);
@@ -92,7 +92,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.DeleteAsync(this._uriString);
@@ -100,6 +100,18 @@ public sealed class HttpPluginTests : IDisposable
         // Assert
         Assert.Equal(this._content, result);
         this.VerifyMock(mockHandler, HttpMethod.Delete);
+    }
+
+    [Fact]
+    public async Task ItDeniesAllDomainsWithDefaultConfigAsync()
+    {
+        // Arrange
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client);
+
+        // Act & Assert - default config denies all domains
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(this._uriString));
     }
 
     [Fact]

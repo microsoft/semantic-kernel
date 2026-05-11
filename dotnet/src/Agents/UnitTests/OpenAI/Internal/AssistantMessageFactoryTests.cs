@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
+
 using OpenAI.Assistants;
 using Xunit;
 
@@ -206,5 +207,29 @@ public class AssistantMessageFactoryTests
         // Assert
         Assert.NotNull(contents);
         Assert.Equal(3, contents.Length);
+    }
+
+    /// <summary>
+    /// Verify that ImageContent in FunctionResultContent returns error message
+    /// since OpenAI Assistants do not support multimodal tool results.
+    /// </summary>
+    [Fact]
+    public void VerifyAssistantMessageAdapterGetMessageWithImageContentInFunctionResult()
+    {
+        // Arrange: Create a FunctionResultContent containing ImageContent
+        var imageData = new ReadOnlyMemory<byte>([0x89, 0x50, 0x4E, 0x47]); // PNG magic bytes
+        var imageContent = new ImageContent(imageData, "image/png");
+        var functionResultContent = new FunctionResultContent("TestFunction", "TestPlugin", "call-id", imageContent);
+        ChatMessageContent message = new(AuthorRole.Tool, items: [functionResultContent]);
+
+        // Act
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert: Should return error message since OpenAI Assistants don't support multimodal tool results
+        Assert.NotNull(contents);
+        Assert.Single(contents);
+        Assert.NotNull(contents.Single().Text);
+        // Expected error message from FunctionCallsProcessor.ImageContentNotSupportedErrorMessage
+        Assert.Equal("Error: This model does not support image content in tool results.", contents.Single().Text);
     }
 }

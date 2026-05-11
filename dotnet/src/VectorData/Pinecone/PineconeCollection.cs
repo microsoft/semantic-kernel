@@ -437,15 +437,9 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => PineconeCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new PineconeFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         QueryRequest request = new()
         {
