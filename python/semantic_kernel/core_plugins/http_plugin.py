@@ -30,8 +30,10 @@ class HttpPlugin(KernelBaseModel):
     Security:
         - By default, all requests are blocked unless ``allowed_domains`` is provided
           or ``allow_all_domains`` is set to True.
-        - When ``allowed_domains`` is set, HTTP redirects are disabled to prevent
-          redirect-based domain bypass (SSRF).
+        - When ``allowed_domains`` is set and ``allow_all_domains`` is False, HTTP
+          redirects are disabled to prevent redirect-based domain bypass (SSRF).
+        - When ``allow_all_domains`` is True, redirects are allowed regardless of
+          whether ``allowed_domains`` is also set.
         - Only ``http`` and ``https`` URL schemes are permitted.
     """
 
@@ -42,6 +44,16 @@ class HttpPlugin(KernelBaseModel):
     """When True, requests to any domain are allowed. Must be explicitly set."""
 
     _ALLOWED_SCHEMES: frozenset[str] = frozenset({"http", "https"})
+
+    @property
+    def _allow_redirects(self) -> bool:
+        """Whether HTTP redirects should be followed.
+
+        Redirects are only allowed when ``allow_all_domains`` is True.
+        When domain restrictions are configured, redirects are disabled
+        to prevent redirect-based SSRF bypass.
+        """
+        return self.allow_all_domains
 
     def _is_uri_allowed(self, url: str) -> bool:
         """Check if the URL's host and scheme are permitted.
@@ -101,10 +113,9 @@ class HttpPlugin(KernelBaseModel):
         """
         self._validate_url(url)
 
-        allow_redirects = self.allow_all_domains or self.allowed_domains is None
         async with (
             aiohttp.ClientSession() as session,
-            session.get(url, raise_for_status=True, allow_redirects=allow_redirects) as response,
+            session.get(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()
 
@@ -126,10 +137,9 @@ class HttpPlugin(KernelBaseModel):
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
-        allow_redirects = self.allow_all_domains or self.allowed_domains is None
         async with (
             aiohttp.ClientSession() as session,
-            session.post(url, headers=headers, data=data, raise_for_status=True, allow_redirects=allow_redirects) as response,
+            session.post(url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()
 
@@ -152,10 +162,9 @@ class HttpPlugin(KernelBaseModel):
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
-        allow_redirects = self.allow_all_domains or self.allowed_domains is None
         async with (
             aiohttp.ClientSession() as session,
-            session.put(url, headers=headers, data=data, raise_for_status=True, allow_redirects=allow_redirects) as response,
+            session.put(url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()
 
@@ -171,9 +180,8 @@ class HttpPlugin(KernelBaseModel):
         """
         self._validate_url(url)
 
-        allow_redirects = self.allow_all_domains or self.allowed_domains is None
         async with (
             aiohttp.ClientSession() as session,
-            session.delete(url, raise_for_status=True, allow_redirects=allow_redirects) as response,
+            session.delete(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()

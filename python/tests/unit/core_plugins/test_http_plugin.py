@@ -178,7 +178,7 @@ async def test_allowed_domains_case_insensitive():
     assert plugin._is_uri_allowed("https://Example.Com/path") is True
 
 
-async def test_allowed_domains_none_allows_all():
+async def test_allow_all_domains_allows_all():
     """Test that when allow_all_domains is True, all domains are allowed."""
     plugin = HttpPlugin(allow_all_domains=True)
     assert plugin._is_uri_allowed("https://any-domain.com/path") is True
@@ -310,6 +310,45 @@ async def test_redirects_allowed_with_allow_all_domains(mock_get):
     await plugin.get("https://example.com/path")
 
     _, kwargs = mock_get.call_args
+    assert kwargs["allow_redirects"] is True
+
+
+@patch("aiohttp.ClientSession.post")
+async def test_redirects_allowed_for_post_with_allow_all_domains(mock_post):
+    """Test that redirects are allowed for POST when allow_all_domains is True."""
+    mock_post.return_value.__aenter__.return_value.text.return_value = "OK"
+    mock_post.return_value.__aenter__.return_value.status = 200
+
+    plugin = HttpPlugin(allow_all_domains=True)
+    await plugin.post("https://example.com/path", body={"key": "value"})
+
+    _, kwargs = mock_post.call_args
+    assert kwargs["allow_redirects"] is True
+
+
+@patch("aiohttp.ClientSession.put")
+async def test_redirects_allowed_for_put_with_allow_all_domains(mock_put):
+    """Test that redirects are allowed for PUT when allow_all_domains is True."""
+    mock_put.return_value.__aenter__.return_value.text.return_value = "OK"
+    mock_put.return_value.__aenter__.return_value.status = 200
+
+    plugin = HttpPlugin(allow_all_domains=True)
+    await plugin.put("https://example.com/path", body={"key": "value"})
+
+    _, kwargs = mock_put.call_args
+    assert kwargs["allow_redirects"] is True
+
+
+@patch("aiohttp.ClientSession.delete")
+async def test_redirects_allowed_for_delete_with_allow_all_domains(mock_delete):
+    """Test that redirects are allowed for DELETE when allow_all_domains is True."""
+    mock_delete.return_value.__aenter__.return_value.text.return_value = "OK"
+    mock_delete.return_value.__aenter__.return_value.status = 200
+
+    plugin = HttpPlugin(allow_all_domains=True)
+    await plugin.delete("https://example.com/path")
+
+    _, kwargs = mock_delete.call_args
     assert kwargs["allow_redirects"] is True
 
 
