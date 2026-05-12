@@ -2,7 +2,7 @@
 
 import re
 from typing import Any, Final
-from urllib.parse import ParseResult, ParseResultBytes, urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import ParseResult, ParseResultBytes, quote, urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
     RestApiExpectedResponse,
@@ -288,7 +288,7 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
+            path_template = path_template.replace(f"{{{parameter.name}}}", quote(str(argument), safe=""))
         return path_template
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
