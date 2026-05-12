@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -2265,6 +2265,28 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         Assert.NotNull(dataUriFile);
         Assert.Equal($"data:{mimeType};base64,{PdfBase64Data}", dataUriFile);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncUsesModelIdFromExecutionSettingsAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+        var settings = new OpenAIPromptExecutionSettings() { ModelId = "gpt-4-override" };
+
+        // Act
+        var result = await chatCompletion.GetChatMessageContentsAsync([new ChatMessageContent(AuthorRole.User, "test")], settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("gpt-4-override", result[0].ModelId);
+
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
+        Assert.Equal("gpt-4-override", optionsJson.GetProperty("model").GetString());
     }
 
     /// <summary>
