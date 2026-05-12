@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -371,6 +371,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
         var settings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        settings.ModelId = executionSettings.ModelId;
 
         // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
         if (executionSettings.FunctionChoiceBehavior is not null && settings.ToolCallBehavior is null)

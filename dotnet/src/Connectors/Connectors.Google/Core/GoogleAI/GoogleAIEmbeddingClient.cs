@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 internal sealed class GoogleAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
+    private readonly GoogleAIVersion _apiVersion;
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
 
@@ -46,9 +47,16 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
 
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
+        this._apiVersion = apiVersion;
         this._embeddingModelId = modelId;
         this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents");
         this._dimensions = dimensions;
+    }
+
+    private Uri GetEmbeddingEndpoint(string modelId)
+    {
+        string versionSubLink = GetApiVersionSubLink(this._apiVersion);
+        return new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{modelId}:batchEmbedContents");
     }
 
     /// <summary>
@@ -65,9 +73,11 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
+        string modelId = !string.IsNullOrWhiteSpace(options?.ModelId) ? options.ModelId : this._embeddingModelId;
         var geminiRequest = this.GetEmbeddingRequest(data, options);
 
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
+        var endpoint = modelId == this._embeddingModelId ? this._embeddingEndpoint : this.GetEmbeddingEndpoint(modelId);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, endpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
