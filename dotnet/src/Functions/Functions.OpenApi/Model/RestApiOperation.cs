@@ -308,6 +308,8 @@ public sealed class RestApiOperation
             pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
         }
 
+        ValidatePathSegments(pathTemplate);
+
         return pathTemplate;
     }
 
@@ -364,19 +366,19 @@ public sealed class RestApiOperation
                     arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
                     value is string { } argStrValue && variable.Value.IsValid(argStrValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", argStrValue);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(argStrValue));
                 }
                 // Try to get the variable value by the variable name.
                 else if (arguments.TryGetValue(variableName, out value) &&
                     value is string { } strValue &&
                     variable.Value.IsValid(strValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", strValue);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(strValue));
                 }
                 // Use the default value if no argument is provided.
                 else if (variable.Value.Default is not null)
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", variable.Value.Default);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", variable.Value.Default);
                 }
                 // Throw an exception if there's no value for the variable.
                 else
@@ -408,6 +410,24 @@ public sealed class RestApiOperation
         { RestApiParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
         { RestApiParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
+
+    /// <summary>
+    /// Validates that the path does not contain dot-segments (. or ..) that could enable path traversal.
+    /// ".." navigates up one path segment, enabling traversal to unintended endpoints.
+    /// "." refers to the current directory — harmless but unexpected, so rejected to prevent misuse.
+    /// </summary>
+    /// <param name="path">The path to validate.</param>
+    private static void ValidatePathSegments(string path)
+    {
+        var segments = path.Split('/');
+        for (int i = 0; i < segments.Length; i++)
+        {
+            if (segments[i] == "." || segments[i] == "..")
+            {
+                throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+            }
+        }
+    }
 
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
     private readonly Freezable _freezable = new();
