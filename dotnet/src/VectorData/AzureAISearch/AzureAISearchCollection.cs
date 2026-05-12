@@ -442,9 +442,6 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             this._model,
             new()
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                OldFilter = options.OldFilter,
-#pragma warning restore CS0618 // Type or member is obsolete
                 Filter = options.Filter,
                 VectorProperty = options.VectorProperty,
                 Skip = options.Skip,
@@ -660,16 +657,10 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new AzureAISearchFilterTranslator().Translate(options.Filter, model)
+            : null;
 
         // Build search options.
         var searchOptions = new SearchOptions

@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public sealed class CollectionModel
 {
     private readonly Type _recordType;
-    private readonly IRecordCreator _recordCreator;
+    private readonly Func<object> _recordFactory;
 
     private KeyPropertyModel? _singleKeyProperty;
     private VectorPropertyModel? _singleVectorProperty;
@@ -57,14 +57,14 @@ public sealed class CollectionModel
 
     internal CollectionModel(
         Type recordType,
-        IRecordCreator recordCreator,
+        Func<object> recordFactory,
         IReadOnlyList<KeyPropertyModel> keyProperties,
         IReadOnlyList<DataPropertyModel> dataProperties,
         IReadOnlyList<VectorPropertyModel> vectorProperties,
         IReadOnlyDictionary<string, PropertyModel> propertyMap)
     {
         this._recordType = recordType;
-        this._recordCreator = recordCreator;
+        this._recordFactory = recordFactory;
 
         this.KeyProperties = keyProperties;
         this.DataProperties = dataProperties;
@@ -97,7 +97,7 @@ public sealed class CollectionModel
     {
         Debug.Assert(typeof(TRecord) == this._recordType, "Type mismatch between record type and model type.");
 
-        return this._recordCreator.Create<TRecord>();
+        return (TRecord)this._recordFactory();
     }
 
     /// <summary>
