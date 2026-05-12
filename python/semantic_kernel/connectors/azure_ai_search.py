@@ -343,7 +343,7 @@ class AzureAISearchCollection(
             embedding_generator: The embedding generator, optional.
             **kwargs: Additional keyword arguments, including:
                 The same keyword arguments used for AzureAISearchVectorStore:
-                    search_endpoint: str | None = None,
+                    search_endpoint: The endpoint of the Azure AI Search service, optional.
                     api_key: str | None = None,
                     azure_credentials: AzureKeyCredential | None = None,
                     token_credentials: AsyncTokenCredential | None = None,
