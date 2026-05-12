@@ -102,7 +102,12 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatMessageContentsAsync(executionSettings?.ModelId ?? this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatMessageContentsAsync(
+            string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? this._client.ModelId : executionSettings!.ModelId,
+            chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
@@ -110,7 +115,12 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetStreamingChatMessageContentsAsync(executionSettings?.ModelId ?? this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetStreamingChatMessageContentsAsync(
+            string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? this._client.ModelId : executionSettings!.ModelId,
+            chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
@@ -118,7 +128,12 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextContentsAsync(executionSettings?.ModelId ?? this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextContentsAsync(
+            string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? this._client.ModelId : executionSettings!.ModelId,
+            prompt,
+            executionSettings,
+            kernel,
+            cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -126,5 +141,10 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextStreamingContentsAsync(executionSettings?.ModelId ?? this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextStreamingContentsAsync(
+            string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? this._client.ModelId : executionSettings!.ModelId,
+            prompt,
+            executionSettings,
+            kernel,
+            cancellationToken);
 }

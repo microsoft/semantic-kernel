@@ -66,6 +66,11 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
 
     private Uri GetEmbeddingEndpoint(string modelId)
     {
+        if (modelId == this._embeddingModelId)
+        {
+            return this._embeddingEndpoint;
+        }
+
         string versionSubLink = GetApiVersionSubLink(this._apiVersion);
         string baseUri = GetVertexAIBaseUri(this._location);
         return new Uri($"{baseUri}/{versionSubLink}/projects/{this._projectId}/locations/{this._location}/publishers/google/models/{modelId}:predict");

@@ -200,7 +200,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             ? state.ExecutionSettings.ModelId
             : this._modelId;
 
-        var (generationEndpoint, streamingEndpoint) = this.GetEndpoints(modelId);
+        var (generationEndpoint, _) = this.GetEndpoints(modelId);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {

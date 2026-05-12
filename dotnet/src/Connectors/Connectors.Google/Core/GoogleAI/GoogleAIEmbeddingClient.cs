@@ -55,6 +55,11 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
 
     private Uri GetEmbeddingEndpoint(string modelId)
     {
+        if (modelId == this._embeddingModelId)
+        {
+            return this._embeddingEndpoint;
+        }
+
         string versionSubLink = GetApiVersionSubLink(this._apiVersion);
         return new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{modelId}:batchEmbedContents");
     }
@@ -74,7 +79,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         Verify.NotNullOrEmpty(data);
 
         string modelId = !string.IsNullOrWhiteSpace(options?.ModelId) ? options.ModelId : this._embeddingModelId;
-        var geminiRequest = this.GetEmbeddingRequest(data, options);
+        var geminiRequest = this.GetEmbeddingRequest(data, modelId, options);
 
         var endpoint = this.GetEmbeddingEndpoint(modelId);
         using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, endpoint).ConfigureAwait(false);
@@ -85,8 +90,8 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
-    => GoogleAIEmbeddingRequest.FromData(data, options?.ModelId ?? this._embeddingModelId, options?.Dimensions ?? this._dimensions, options);
+    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, string modelId, EmbeddingGenerationOptions? options = null)
+    => GoogleAIEmbeddingRequest.FromData(data, modelId, options?.Dimensions ?? this._dimensions, options);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<GoogleAIEmbeddingResponse>(body));
