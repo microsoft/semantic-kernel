@@ -1413,11 +1413,29 @@ public sealed class KernelFunctionFromMethodTests1
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
 
         // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
+        _ = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
 
         // Assert
         Assert.NotNull(actualArgValue);
         Assert.Equal(28, actualArgValue.Id);
+    }
+
+    [Fact]
+    public async Task ItCanDeserializeStringEnumsWithDefaultJsonOptionsAsync()
+    {
+        // Arrange
+        var jsonString = @"[{""unit"":""hours""}]";
+        Reminder[]? actualArgValue = null;
+
+        var func = KernelFunctionFactory.CreateFromMethod((Reminder[] param) => { actualArgValue = param; });
+
+        // Act
+        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
+
+        // Assert
+        Assert.NotNull(actualArgValue);
+        Assert.Single(actualArgValue);
+        Assert.Equal(ReminderUnit.Hours, actualArgValue[0].Unit);
     }
 
     [Fact]
@@ -1584,6 +1602,19 @@ public sealed class KernelFunctionFromMethodTests1
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
+    }
+
+    private sealed class Reminder
+    {
+        [JsonPropertyName("unit")]
+        public ReminderUnit Unit { get; set; }
+    }
+
+    private enum ReminderUnit
+    {
+        Minutes,
+        Hours,
+        Days
     }
 
     private sealed class ThirdPartyJsonPrimitive(string jsonToReturn)
