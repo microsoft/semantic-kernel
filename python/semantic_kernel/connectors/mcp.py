@@ -272,6 +272,7 @@ class MCPPluginBase:
         self.request_timeout = request_timeout
         self.sampling_consent_callback = sampling_consent_callback
         self._sampling_auto_approved_warning_logged = False
+        self._mcp_reserved_attribute_names: set[str] | None = None
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
@@ -392,7 +393,7 @@ class MCPPluginBase:
                     self.name,
                 )
                 self._sampling_auto_approved_warning_logged = True
-        elif not await self.sampling_consent_callback(self.name, params):
+        elif not await self._is_sampling_approved(params):
             return types.ErrorData(
                 code=types.INTERNAL_ERROR,
                 message="Sampling denied by policy.",
@@ -465,6 +466,15 @@ class MCPPluginBase:
             model=service.ai_model_id,
         )
 
+    async def _is_sampling_approved(self, params: types.CreateMessageRequestParams) -> bool:
+        if self.sampling_consent_callback is None:
+            return True
+        try:
+            return await self.sampling_consent_callback(self.name, params)
+        except Exception:
+            logger.exception("MCP sampling consent callback failed for plugin '%s'.", self.name)
+            return False
+
     async def logging_callback(self, params: types.LoggingMessageNotificationParams) -> None:
         """Callback function for logging.
 
@@ -499,7 +509,9 @@ class MCPPluginBase:
                     await self.load_prompts()
 
     def _has_mcp_function_name_conflict(self, item_type: str, remote_name: str, local_name: str) -> bool:
-        if not hasattr(self, local_name):
+        if self._mcp_reserved_attribute_names is None:
+            self._mcp_reserved_attribute_names = set(dir(self))
+        if local_name not in self._mcp_reserved_attribute_names:
             return False
         logger.warning(
             "Skipping MCP %s '%s' because normalized name '%s' conflicts with an existing plugin attribute.",
@@ -531,7 +543,7 @@ class MCPPluginBase:
             tool_list = await self.session.list_tools()
         except Exception:
             tool_list = None
-            # Create methods with the kernel_function decorator for each tool
+        # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             local_name = _normalize_mcp_name(tool.name)
             if self._has_mcp_function_name_conflict("tool", tool.name, local_name):

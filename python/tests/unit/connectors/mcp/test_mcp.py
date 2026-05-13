@@ -110,6 +110,28 @@ async def test_mcp_sampling_denied_by_consent_callback():
     assert result.message == "Sampling denied by policy."
 
 
+async def test_mcp_sampling_consent_callback_error_denies_request(caplog):
+    sampling_consent_callback = AsyncMock(side_effect=RuntimeError("policy failure"))
+    plugin = MCPSsePlugin(
+        name="TestMCPPlugin",
+        url="http://localhost:8080/sse",
+        sampling_consent_callback=sampling_consent_callback,
+    )
+    params = types.CreateMessageRequestParams(
+        messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
+        systemPrompt="server instructions",
+        maxTokens=100,
+    )
+
+    with caplog.at_level(logging.ERROR, logger="semantic_kernel.connectors.mcp"):
+        result = await plugin.sampling_callback(MagicMock(), params)
+
+    sampling_consent_callback.assert_awaited_once_with("TestMCPPlugin", params)
+    assert isinstance(result, types.ErrorData)
+    assert result.message == "Sampling denied by policy."
+    assert "MCP sampling consent callback failed" in caplog.text
+
+
 async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(caplog):
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     params = types.CreateMessageRequestParams(
@@ -152,6 +174,34 @@ async def test_mcp_tool_and_prompt_names_do_not_shadow_plugin_attributes():
 
     assert plugin.session is session
     assert hasattr(plugin, "safe_prompt")
+
+
+async def test_mcp_tool_and_prompt_names_can_reload_existing_mcp_functions():
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.side_effect = [
+        ListToolsResult(tools=[Tool(name="safe_tool", description="first tool", inputSchema={})]),
+        ListToolsResult(tools=[Tool(name="safe_tool", description="second tool", inputSchema={})]),
+    ]
+    session.list_prompts.side_effect = [
+        types.ListPromptsResult(prompts=[types.Prompt(name="safe_prompt", description="first prompt", arguments=[])]),
+        types.ListPromptsResult(prompts=[types.Prompt(name="safe_prompt", description="second prompt", arguments=[])]),
+    ]
+    plugin.session = session
+
+    await plugin.load_tools()
+    first_tool = plugin.safe_tool
+    await plugin.load_tools()
+
+    assert plugin.safe_tool is not first_tool
+    assert plugin.safe_tool.__kernel_function_description__ == "second tool"
+
+    await plugin.load_prompts()
+    first_prompt = plugin.safe_prompt
+    await plugin.load_prompts()
+
+    assert plugin.safe_prompt is not first_prompt
+    assert plugin.safe_prompt.__kernel_function_description__ == "second prompt"
 
 
 async def test_mcp_plugin_failed_get_session():
