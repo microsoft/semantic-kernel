@@ -247,7 +247,21 @@ class MCPPluginBase:
         request_timeout: int | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
     ) -> None:
-        """Initialize the MCP Plugin Base."""
+        """Initialize the MCP Plugin Base.
+
+        Args:
+            name: The name of the plugin.
+            description: The description of the plugin.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            session: The session to use for the MCP connection.
+            kernel: The kernel instance with one or more Chat Completion clients.
+            request_timeout: The default timeout used for all requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
+        """
         self.name = name
         self.description = description
         self.load_tools_flag = load_tools
@@ -366,8 +380,9 @@ class MCPPluginBase:
 
         This function is called when the MCP server needs to get a message completed.
 
-        This is a simple version of this function, it can be overridden to allow more complex sampling.
-        It get's added to the session at initialization time, so overriding it is the best way to do this.
+        If a sampling consent callback is configured, it is called before forwarding the request to the configured
+        chat completion service. Returning False denies the request. If no callback is configured, requests are
+        auto-approved and a warning is logged.
         """
         if self.sampling_consent_callback is None:
             if not self._sampling_auto_approved_warning_logged:
@@ -614,7 +629,10 @@ class MCPStdioPlugin(MCPPluginBase):
             env: The environment variables to set for the command.
             encoding: The encoding to use for the command output.
             kernel: The kernel instance with one or more Chat Completion clients.
-            sampling_consent_callback: Callback for approving MCP sampling requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
@@ -688,7 +706,10 @@ class MCPSsePlugin(MCPPluginBase):
             timeout: The timeout for the request.
             sse_read_timeout: The timeout for reading from the SSE stream.
             kernel: The kernel instance with one or more Chat Completion clients.
-            sampling_consent_callback: Callback for approving MCP sampling requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the sse client.
 
         """
@@ -766,7 +787,10 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             sse_read_timeout: The timeout for reading from the SSE stream.
             terminate_on_close: Close the transport when the MCP client is terminated.
             kernel: The kernel instance with one or more Chat Completion clients.
-            sampling_consent_callback: Callback for approving MCP sampling requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the sse client.
         """
         super().__init__(
@@ -838,7 +862,10 @@ class MCPWebsocketPlugin(MCPPluginBase):
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             kernel: The kernel instance with one or more Chat Completion clients.
-            sampling_consent_callback: Callback for approving MCP sampling requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
