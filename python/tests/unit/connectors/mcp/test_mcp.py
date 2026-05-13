@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import re
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -87,6 +88,70 @@ async def test_mcp_plugin_session_initialized(plugin_class, plugin_args):
     async with plugin_class(name="test", session=mock_session, **plugin_args) as plugin:
         assert plugin.session is mock_session
         assert not mock_session.initialize.called
+
+
+async def test_mcp_sampling_denied_by_consent_callback():
+    sampling_consent_callback = AsyncMock(return_value=False)
+    plugin = MCPSsePlugin(
+        name="TestMCPPlugin",
+        url="http://localhost:8080/sse",
+        sampling_consent_callback=sampling_consent_callback,
+    )
+    params = types.CreateMessageRequestParams(
+        messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
+        systemPrompt="server instructions",
+        maxTokens=100,
+    )
+
+    result = await plugin.sampling_callback(MagicMock(), params)
+
+    sampling_consent_callback.assert_awaited_once_with("TestMCPPlugin", params)
+    assert isinstance(result, types.ErrorData)
+    assert result.message == "Sampling denied by policy."
+
+
+async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(caplog):
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    params = types.CreateMessageRequestParams(
+        messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
+        systemPrompt="server instructions",
+        maxTokens=100,
+    )
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        result = await plugin.sampling_callback(MagicMock(), params)
+
+    assert isinstance(result, types.ErrorData)
+    assert "auto-approved because no sampling consent callback was configured" in caplog.text
+
+
+async def test_mcp_tool_and_prompt_names_do_not_shadow_plugin_attributes():
+    kernel = MagicMock()
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse", kernel=kernel)
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(
+        tools=[
+            Tool(name="kernel", description="reserved", inputSchema={}),
+            Tool(name="safe_tool", description="safe", inputSchema={}),
+        ]
+    )
+    session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[
+            types.Prompt(name="session", description="reserved", arguments=[]),
+            types.Prompt(name="safe_prompt", description="safe", arguments=[]),
+        ]
+    )
+    plugin.session = session
+
+    await plugin.load_tools()
+
+    assert plugin.kernel is kernel
+    assert hasattr(plugin, "safe_tool")
+
+    await plugin.load_prompts()
+
+    assert plugin.session is session
+    assert hasattr(plugin, "safe_prompt")
 
 
 async def test_mcp_plugin_failed_get_session():
