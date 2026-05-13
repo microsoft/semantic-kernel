@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -90,7 +91,7 @@ async Task SKAgent_As_AFAgentAsync()
 
     var agent = skAgent.AsAIAgent();
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
 
     var result = await agent.RunAsync(userInput, thread);
     Console.WriteLine(result);
@@ -103,9 +104,9 @@ async Task SKAgent_As_AFAgentAsync()
 
     // Clean up
     var azureAgentClient = serviceProvider.GetRequiredService<PersistentAgentsClient>();
-    if (thread is ChatClientAgentThread chatThread)
+    if (thread is ChatClientAgentSession chatSession)
     {
-        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
+        await azureAgentClient.Threads.DeleteThreadAsync(chatSession.ConversationId);
     }
     await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
 }
@@ -115,36 +116,29 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddSingleton((sp) => new PersistentAgentsClient(azureEndpoint, new AzureCliCredential()));
+    serviceCollection.AddSingleton((sp) => new AIProjectClient(new Uri(azureEndpoint), new AzureCliCredential()));
     serviceCollection.AddTransient<AIAgent>((sp) =>
     {
-        var azureAgentClient = sp.GetRequiredService<PersistentAgentsClient>();
-
-        return azureAgentClient.CreateAIAgent(
-            deploymentName,
-            name: "GenerateStory",
-            instructions: "You are good at telling jokes.");
+        var client = sp.GetRequiredService<AIProjectClient>();
+        return client.AsAIAgent(
+                deploymentName,
+                instructions: "You are good at telling jokes.",
+                name: "GenerateStory");
     });
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
     var agent = serviceProvider.GetRequiredService<AIAgent>();
 
-    var thread = agent.GetNewThread();
+    var session = await agent.CreateSessionAsync();
 
-    var result = await agent.RunAsync(userInput, thread);
+    var result = await agent.RunAsync(userInput, session);
     Console.WriteLine(result);
 
     Console.WriteLine("---");
-    await foreach (var update in agent.RunStreamingAsync(userInput, thread))
+    await foreach (var update in agent.RunStreamingAsync(userInput, session))
     {
         Console.Write(update);
     }
 
-    // Clean up
-    var azureAgentClient = serviceProvider.GetRequiredService<PersistentAgentsClient>();
-    if (thread is ChatClientAgentThread chatThread)
-    {
-        await azureAgentClient.Threads.DeleteThreadAsync(chatThread.ConversationId);
-    }
-    await azureAgentClient.Administration.DeleteAgentAsync(agent.Id);
+    // No cleanup needed - non-hosted path doesn't create server-side resources.
 }
