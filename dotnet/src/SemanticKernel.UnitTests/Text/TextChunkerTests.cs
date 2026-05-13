@@ -819,4 +819,15 @@ public sealed class TextChunkerTests
         Assert.Contains("Second line", combined);
         Assert.Contains("Third line", combined);
     }
+
+    [Fact]
+    public void SplitPlainTextParagraphsDoesNotGlueLastParagraphPastTokenLimit()
+    {
+        var lines = new[] { new string('a', 14), "bbb" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 16, tokenCounter: input => input.Length);
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, paragraph => Assert.True(paragraph.Length <= 16));
+    }
 }
