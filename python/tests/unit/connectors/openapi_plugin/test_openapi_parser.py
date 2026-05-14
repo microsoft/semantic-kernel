@@ -329,7 +329,7 @@ def test_parse_enables_both_file_and_http_refs_when_requested():
 
 def test_create_functions_propagates_enable_http_ref_resolution():
     """Verify enable_http_ref_resolution=True is propagated from settings to parser."""
-    from unittest.mock import MagicMock, patch
+    from unittest.mock import patch
 
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
@@ -358,7 +358,7 @@ def test_create_functions_propagates_enable_http_ref_resolution():
 
 def test_create_functions_propagates_enable_file_ref_resolution():
     """Verify enable_file_ref_resolution=True is propagated from settings to parser."""
-    from unittest.mock import MagicMock, patch
+    from unittest.mock import patch
 
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
