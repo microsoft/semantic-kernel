@@ -3,12 +3,12 @@
 """Sample: long-term memory via the Synap plugin.
 
 [Synap](https://maximem.ai) is a managed long-term memory layer for AI agents.
-The `synap-semantic-kernel` package exposes it as a Semantic Kernel plugin
-(`SynapPlugin`) with `search_memory` and `store_memory` kernel functions, so a
-chat completion service can recall and persist facts across sessions.
+The `maximem-synap-semantic-kernel` package exposes it as a Semantic Kernel
+plugin (`SynapPlugin`) with `search_memory` and `store_memory` kernel functions,
+so a chat completion service can recall and persist facts across sessions.
 
 Setup:
-    pip install synap-semantic-kernel maximem-synap semantic-kernel
+    pip install maximem-synap-semantic-kernel maximem-synap semantic-kernel
     export SYNAP_API_KEY=<your-key>     # https://synap.maximem.ai
     export OPENAI_API_KEY=<your-key>
 
