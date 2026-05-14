@@ -789,7 +789,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     {
         try
         {
-            JsonSerializerOptions effectiveOptions = jsonSerializerOptions ?? KernelJsonSchemaBuilder.GetDefaultOptionsForSerialization();
+            JsonSerializerOptions effectiveOptions = jsonSerializerOptions ?? KernelJsonSchemaBuilder.GetDefaultJsonSerializerOptions();
 
             deserializedValue = value switch
             {

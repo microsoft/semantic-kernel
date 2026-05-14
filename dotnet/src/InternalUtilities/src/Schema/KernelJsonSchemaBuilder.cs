@@ -28,7 +28,7 @@ internal static class KernelJsonSchemaBuilder
 
     [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
-    internal static JsonSerializerOptions GetDefaultOptionsForSerialization() => GetDefaultOptions();
+    internal static JsonSerializerOptions GetDefaultJsonSerializerOptions() => GetDefaultOptions();
 
     private static readonly JsonElement s_trueSchemaAsObject = JsonElement.Parse("{}");
     private static readonly JsonElement s_falseSchemaAsObject = JsonElement.Parse("""{"not":true}""");
