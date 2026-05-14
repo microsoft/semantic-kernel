@@ -1430,7 +1430,7 @@ public sealed class KernelFunctionFromMethodTests1
         var func = KernelFunctionFactory.CreateFromMethod((Reminder[] param) => { actualArgValue = param; });
 
         // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
+        _ = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
 
         // Assert
         Assert.NotNull(actualArgValue);
