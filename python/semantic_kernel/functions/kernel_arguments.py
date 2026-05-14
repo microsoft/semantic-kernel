@@ -44,7 +44,7 @@ class KernelArguments(dict):
         if settings:
             settings_dict = {}
             if isinstance(settings, dict):
-                settings_dict = settings
+                settings_dict = dict(settings)
             elif isinstance(settings, list):
                 settings_dict = {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
             else:
