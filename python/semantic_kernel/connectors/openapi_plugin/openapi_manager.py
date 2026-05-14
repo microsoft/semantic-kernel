@@ -56,7 +56,12 @@ def create_functions_from_openapi(
 
         # Parse the document from the given path
         parser = OpenApiParser()
-        parsed_doc = parser.parse(openapi_document_path)
+        parsed_doc = parser.parse(
+            openapi_document_path,
+            enable_external_ref_resolution=(
+                execution_settings.enable_external_ref_resolution if execution_settings else False
+            ),
+        )
         if parsed_doc is None:
             raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
 

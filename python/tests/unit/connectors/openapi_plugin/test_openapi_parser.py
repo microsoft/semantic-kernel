@@ -189,3 +189,79 @@ def test_no_operationid_raises_error():
             openapi_document_path=no_op_path,
             execution_settings=None,
         )
+
+
+def test_parse_blocks_external_http_refs_by_default(tmp_path):
+    """Verify that external HTTP $ref references cause an error by default."""
+    from prance import ValidationError
+
+    openapi_spec = tmp_path / "spec_with_http_ref.yaml"
+    openapi_spec.write_text(
+        """
+openapi: 3.0.0
+info:
+  title: External Ref Test
+  version: 1.0.0
+servers:
+  - url: http://example.com
+paths:
+  /test:
+    get:
+      operationId: testOp
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "http://127.0.0.1:9999/malicious-schema.json"
+""",
+        encoding="utf-8",
+    )
+
+    parser = OpenApiParser()
+    with pytest.raises(ValidationError):
+        parser.parse(str(openapi_spec))
+
+
+def test_parse_resolves_internal_refs_by_default(tmp_path):
+    """Verify that internal $ref references are still resolved by default."""
+    openapi_spec = tmp_path / "spec_with_internal_ref.yaml"
+    openapi_spec.write_text(
+        """
+openapi: 3.0.0
+info:
+  title: Internal Ref Test
+  version: 1.0.0
+servers:
+  - url: http://example.com
+paths:
+  /test:
+    get:
+      operationId: testOp
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestSchema"
+components:
+  schemas:
+    TestSchema:
+      type: object
+      properties:
+        name:
+          type: string
+""",
+        encoding="utf-8",
+    )
+
+    parser = OpenApiParser()
+    result = parser.parse(str(openapi_spec))
+
+    # Internal $ref should be resolved
+    response_schema = result["paths"]["/test"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert "$ref" not in response_schema, "Internal $ref should be resolved"
+    assert response_schema["type"] == "object"
+    assert "name" in response_schema["properties"]
