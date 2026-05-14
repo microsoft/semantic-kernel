@@ -45,17 +45,27 @@ class OpenApiParser:
     PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
     SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
 
-    def parse(self, openapi_document: str, enable_external_ref_resolution: bool = False) -> Any | dict[str, Any] | None:
+    def parse(
+        self,
+        openapi_document: str,
+        enable_file_ref_resolution: bool = False,
+        enable_http_ref_resolution: bool = False,
+    ) -> Any | dict[str, Any] | None:
         """Parse the OpenAPI document.
 
         Args:
             openapi_document: The path or URL to the OpenAPI document.
-            enable_external_ref_resolution: Whether to resolve external HTTP $ref references.
+            enable_file_ref_resolution: Whether to resolve local file $ref references.
                 Disabled by default. When False, only internal JSON pointer references
-                and local file references are resolved.
+                are resolved. Set to True if your OpenAPI spec is split across multiple
+                local files.
+            enable_http_ref_resolution: Whether to resolve external HTTP $ref references.
+                Disabled by default.
         """
-        resolve_types = RESOLVE_INTERNAL | RESOLVE_FILES
-        if enable_external_ref_resolution:
+        resolve_types = RESOLVE_INTERNAL
+        if enable_file_ref_resolution:
+            resolve_types |= RESOLVE_FILES
+        if enable_http_ref_resolution:
             resolve_types |= RESOLVE_HTTP
         parser = ResolvingParser(openapi_document, resolve_types=resolve_types)
         return parser.specification

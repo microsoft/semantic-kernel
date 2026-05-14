@@ -30,12 +30,20 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     timeout: float | None = Field(
         None, description="Default timeout in seconds for HTTP requests. Uses httpx default (5 seconds) if None."
     )
-    enable_external_ref_resolution: bool = Field(
+    enable_file_ref_resolution: bool = Field(
+        False,
+        description=(
+            "Whether to resolve local file $ref references when parsing OpenAPI documents. "
+            "Disabled by default. When False, only internal JSON pointer references are resolved. "
+            "Set to True if your OpenAPI spec is split across multiple local files and you trust "
+            "the document source."
+        ),
+    )
+    enable_http_ref_resolution: bool = Field(
         False,
         description=(
             "Whether to resolve external HTTP $ref references when parsing OpenAPI documents. "
-            "Disabled by default. When False, only internal JSON pointer references and local file "
-            "references are resolved. Set to True only if you trust the OpenAPI document source "
+            "Disabled by default. Set to True only if you trust the OpenAPI document source "
             "and need external HTTP $ref resolution."
         ),
     )
