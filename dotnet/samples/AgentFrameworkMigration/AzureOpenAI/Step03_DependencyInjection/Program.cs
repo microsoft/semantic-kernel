@@ -7,7 +7,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using OpenAI;
+using OpenAI.Chat;
 
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-4o";
@@ -72,7 +72,7 @@ async Task AFAgent()
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<AIAgent>((sp) => new AzureOpenAIClient(new(endpoint), new AzureCliCredential())
         .GetChatClient(deploymentName)
-        .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
+        .AsAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
     var agent = serviceProvider.GetRequiredService<AIAgent>();
