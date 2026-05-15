@@ -559,6 +559,45 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    public void SplitPlainTextParagraphsWithCustomTokenCounterDoesNotMergePastTokenLimit()
+    {
+        List<string> input =
+        [
+            "abcdefghijklmnopqr",
+            "abc"
+        ];
+
+        var expected = new[]
+        {
+            "abcdefghijklmnopqr",
+            "abc"
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 20, tokenCounter: static (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void SplitPlainTextParagraphsWithCustomTokenCounterStillMergesWhenCandidateFits()
+    {
+        List<string> input =
+        [
+            "abcdefghijklmnop",
+            "abc"
+        ];
+
+        var expected = new[]
+        {
+            "abcdefghijklmnop abc"
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 20, tokenCounter: static (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
     public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
     {
         List<string> input =

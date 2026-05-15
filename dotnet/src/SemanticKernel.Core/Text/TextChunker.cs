@@ -202,9 +202,13 @@ public static class TextChunker
                 {
                     var newSecondLastParagraph = string.Join(" ", secondLastParagraphTokens);
                     var newLastParagraph = string.Join(" ", lastParagraphTokens);
+                    var mergedParagraph = $"{newSecondLastParagraph} {newLastParagraph}";
 
-                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}";
-                    paragraphs.RemoveAt(paragraphs.Count - 1);
+                    if (GetTokenCount(mergedParagraph, tokenCounter) <= adjustedMaxTokensPerParagraph)
+                    {
+                        paragraphs[paragraphs.Count - 2] = mergedParagraph;
+                        paragraphs.RemoveAt(paragraphs.Count - 1);
+                    }
                 }
             }
         }
