@@ -291,3 +291,51 @@ async def test_mcp_normalization_function(mock_session, list_tool_calls_with_sla
     assert _normalize_mcp_name("weird\\name with spaces") == "weird-name-with-spaces"
     assert _normalize_mcp_name("simple_name") == "simple_name"
     assert _normalize_mcp_name("Name-With.Dots_And-Hyphens") == "Name-With.Dots_And-Hyphens"
+
+
+@patch("semantic_kernel.connectors.mcp.stdio_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_mcp_plugin_failed_client_session_creation(mock_client_session, mock_stdio_client):
+    """Test that connect() raises KernelPluginInvalidConfigurationError when ClientSession creation fails."""
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = None
+    mock_stdio_client.return_value = mock_generator
+
+    mock_client_session.return_value.__aenter__.side_effect = Exception("ClientSession creation failed")
+
+    with pytest.raises(KernelPluginInvalidConfigurationError):
+        async with MCPStdioPlugin(
+            name="test",
+            command="echo",
+            args=["Hello"],
+        ):
+            pass
+
+
+@patch("semantic_kernel.connectors.mcp.stdio_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_mcp_plugin_failed_session_initialize(mock_client_session, mock_stdio_client):
+    """Test that connect() raises KernelPluginInvalidConfigurationError when session.initialize() fails."""
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = None
+    mock_stdio_client.return_value = mock_generator
+
+    mock_session_inst = AsyncMock(spec=ClientSession)
+    mock_session_inst.initialize.side_effect = Exception("Session initialize failed")
+    mock_client_session.return_value.__aenter__.return_value = mock_session_inst
+
+    with pytest.raises(KernelPluginInvalidConfigurationError):
+        async with MCPStdioPlugin(
+            name="test",
+            command="echo",
+            args=["Hello"],
+        ):
+            pass
