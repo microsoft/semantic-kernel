@@ -68,6 +68,24 @@ class SimpleDataModel:
     ] = None
 
 
+@vectorstoremodel
+@dataclass
+class FilterableDataModel:
+    id: Annotated[int, VectorStoreField("key")]
+    embedding: Annotated[
+        list[float] | str | None,
+        VectorStoreField(
+            "vector",
+            index_kind=IndexKind.HNSW,
+            dimensions=1536,
+            distance_function=DistanceFunction.COSINE_DISTANCE,
+            type="float",
+        ),
+    ]
+    content_type: Annotated[str, VectorStoreField("data")]
+    version: Annotated[int, VectorStoreField("data")]
+
+
 # region VectorStore Tests
 
 
@@ -320,6 +338,56 @@ async def test_vector_search(
         )
 
     assert statement_str == expected_statement
+
+
+async def test_vector_search_filter_embeds_where_clause_as_sql_expression(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterableDataModel)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=5,
+        filter="lambda record: record.content_type == 'course'",
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert statement_str == (
+        'SELECT "id", "content_type", "version", "embedding" <=> %s as "sk_pg_distance" '
+        'FROM "public"."test_collection" '
+        'WHERE "content_type" = \'course\' ORDER BY "sk_pg_distance" LIMIT 5'
+    )
+
+
+async def test_vector_search_multiple_filters_are_combined_with_and(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterableDataModel)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=5,
+        filter=[
+            "lambda record: record.content_type in ['course', 'lesson']",
+            "lambda record: not (record.version < 2)",
+        ],
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert statement_str == (
+        'SELECT "id", "content_type", "version", "embedding" <=> %s as "sk_pg_distance" '
+        'FROM "public"."test_collection" '
+        "WHERE \"content_type\" IN ('course', 'lesson') AND NOT (\"version\" < 2) "
+        'ORDER BY "sk_pg_distance" LIMIT 5'
+    )
 
 
 async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
