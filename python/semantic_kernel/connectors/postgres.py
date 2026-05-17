@@ -871,8 +871,16 @@ class PostgresCollection(
                     case ast.NotIn():
                         return sql.SQL("{} NOT IN {}").format(left, right)
                     case ast.Eq():
+                        if isinstance(node.comparators[0], ast.Constant) and node.comparators[0].value is None:
+                            return sql.SQL("{} IS NULL").format(left)
+                        if isinstance(node.left, ast.Constant) and node.left.value is None:
+                            return sql.SQL("{} IS NULL").format(right)
                         return sql.SQL("{} = {}").format(left, right)
                     case ast.NotEq():
+                        if isinstance(node.comparators[0], ast.Constant) and node.comparators[0].value is None:
+                            return sql.SQL("{} IS NOT NULL").format(left)
+                        if isinstance(node.left, ast.Constant) and node.left.value is None:
+                            return sql.SQL("{} IS NOT NULL").format(right)
                         return sql.SQL("{} <> {}").format(left, right)
                     case ast.Gt():
                         return sql.SQL("{} > {}").format(left, right)

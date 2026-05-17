@@ -390,6 +390,40 @@ async def test_vector_search_multiple_filters_are_combined_with_and(
     )
 
 
+@pytest.mark.parametrize(
+    ("filter", "expected_filter"),
+    [
+        ("lambda record: record.content_type == None", '"content_type" IS NULL'),
+        ("lambda record: record.content_type != None", '"content_type" IS NOT NULL'),
+        ("lambda record: None == record.content_type", '"content_type" IS NULL'),
+        ("lambda record: None != record.content_type", '"content_type" IS NOT NULL'),
+    ],
+)
+async def test_vector_search_filter_renders_null_comparisons(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+    filter: str,
+    expected_filter: str,
+) -> None:
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterableDataModel)
+
+    await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        top=5,
+        filter=filter,
+        include_total_count=True,
+    )
+
+    execute_args, _ = mock_cursor.execute.call_args
+    statement_str = execute_args[0].as_string()
+
+    assert statement_str == (
+        'SELECT "id", "content_type", "version", "embedding" <=> %s as "sk_pg_distance" '
+        'FROM "public"."test_collection" '
+        f"WHERE {expected_filter} ORDER BY \"sk_pg_distance\" LIMIT 5"
+    )
+
+
 async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
     @vectorstoremodel
     @dataclass
