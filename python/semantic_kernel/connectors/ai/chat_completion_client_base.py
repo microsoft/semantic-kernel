@@ -170,7 +170,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 )
 
                 if any(result.terminate for result in results if result is not None):
-                    return merge_function_results(chat_history.messages[-len(results) :])
+                    return self._combine_auto_invoke_text_responses(
+                        merge_function_results(chat_history.messages[-len(results) :]),
+                        function_call_messages,
+                    )
             else:
                 # Do a final call, without function calling when the max has been reached.
                 self._reset_function_choice_settings(settings)
