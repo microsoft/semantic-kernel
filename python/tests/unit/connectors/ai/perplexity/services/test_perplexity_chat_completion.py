@@ -60,6 +60,13 @@ class TestPerplexityChatCompletion:
         service = PerplexityChatCompletion(base_url="https://example.test/api")
         assert str(service.client.base_url).rstrip("/") == "https://example.test/api"
 
+    def test_to_dict_from_dict_preserves_base_url(self, perplexity_unit_test_env):
+        service = PerplexityChatCompletion(base_url="https://example.test/api")
+        serialized_settings = service.to_dict()
+        round_tripped_service = PerplexityChatCompletion.from_dict(serialized_settings)
+
+        assert str(round_tripped_service.client.base_url) == str(service.client.base_url)
+
     @pytest.mark.parametrize("exclude_list", [["PERPLEXITY_API_KEY"]], indirect=True)
     def test_init_with_missing_api_key(self, perplexity_unit_test_env):
         """A missing API key (and no provided client) raises a clear error."""

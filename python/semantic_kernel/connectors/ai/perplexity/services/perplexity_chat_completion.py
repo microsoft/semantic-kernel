@@ -8,18 +8,26 @@ from typing import Any
 
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
-from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_chunk import (
+    ChatCompletionChunk,
+    Choice as ChunkChoice,
+)
 from pydantic import ValidationError
 
 from semantic_kernel import __version__ as semantic_kernel_version
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.perplexity.prompt_execution_settings.perplexity_prompt_execution_settings import (
     PerplexityChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.perplexity.settings.perplexity_settings import PerplexitySettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.perplexity.settings.perplexity_settings import (
+    PerplexitySettings,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents import (
     AuthorRole,
@@ -30,13 +38,19 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceResponseException,
+)
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -138,6 +152,7 @@ class PerplexityChatCompletion(ChatCompletionClientBase):
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
             env_file_path=settings.get("env_file_path"),
+            env_file_encoding=settings.get("env_file_encoding"),
         )
 
     @override
@@ -276,15 +291,13 @@ class PerplexityChatCompletion(ChatCompletionClientBase):
         role_key: str = "role",
         content_key: str = "content",
     ) -> list[dict[str, Any]]:
-        messages: list[dict[str, Any]] = []
-        for message in chat_history.messages:
-            messages.append({role_key: message.role.value, content_key: message.content})
-        return messages
+        return [{role_key: message.role.value, content_key: message.content} for message in chat_history.messages]
 
     def to_dict(self) -> dict[str, str]:
         """Create a dict of the service settings."""
         client_settings = {
             "api_key": self.client.api_key,
+            "base_url": str(self.client.base_url),
             "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
         }
         base = self.model_dump(

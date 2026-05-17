@@ -4,8 +4,12 @@ from semantic_kernel.connectors.ai.perplexity.prompt_execution_settings.perplexi
     PerplexityChatPromptExecutionSettings,
     PerplexityPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.perplexity.services.perplexity_chat_completion import PerplexityChatCompletion
-from semantic_kernel.connectors.ai.perplexity.settings.perplexity_settings import PerplexitySettings
+from semantic_kernel.connectors.ai.perplexity.services.perplexity_chat_completion import (
+    PerplexityChatCompletion,
+)
+from semantic_kernel.connectors.ai.perplexity.settings.perplexity_settings import (
+    PerplexitySettings,
+)
 
 __all__ = [
     "PerplexityChatCompletion",

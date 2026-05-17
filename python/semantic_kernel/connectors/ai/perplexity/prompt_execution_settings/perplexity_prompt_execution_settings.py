@@ -2,9 +2,11 @@
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 
 class PerplexityPromptExecutionSettings(PromptExecutionSettings):
@@ -27,15 +29,13 @@ class PerplexityChatPromptExecutionSettings(PerplexityPromptExecutionSettings):
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     top_k: Annotated[int | None, Field(ge=0)] = None
-    n: Annotated[int | None, Field(ge=1)] = None
+    number_of_responses: Annotated[int | None, Field(ge=1, serialization_alias="n")] = None
     stream: bool = False
     stop: str | list[str] | None = None
     max_tokens: Annotated[int | None, Field(ge=1)] = None
     presence_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
     frequency_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
-    response_format: (
-        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
-    ) = None
+    response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
     user: str | None = None
     extra_headers: dict | None = None
     extra_body: dict | None = None
