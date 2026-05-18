@@ -6,6 +6,7 @@ from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Final
 
 from prance import ResolvingParser
+from prance.util.resolver import RESOLVE_FILES, RESOLVE_HTTP, RESOLVE_INTERNAL
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import RestApiExpectedResponse
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
@@ -44,9 +45,29 @@ class OpenApiParser:
     PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
     SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
 
-    def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
-        """Parse the OpenAPI document."""
-        parser = ResolvingParser(openapi_document)
+    def parse(
+        self,
+        openapi_document: str,
+        enable_file_ref_resolution: bool = False,
+        enable_http_ref_resolution: bool = False,
+    ) -> Any | dict[str, Any] | None:
+        """Parse the OpenAPI document.
+
+        Args:
+            openapi_document: The path or URL to the OpenAPI document.
+            enable_file_ref_resolution: Whether to resolve local file $ref references.
+                Disabled by default. When False, only internal JSON pointer references
+                are resolved. Set to True if your OpenAPI spec is split across multiple
+                local files.
+            enable_http_ref_resolution: Whether to resolve external HTTP $ref references.
+                Disabled by default.
+        """
+        resolve_types = RESOLVE_INTERNAL
+        if enable_file_ref_resolution:
+            resolve_types |= RESOLVE_FILES
+        if enable_http_ref_resolution:
+            resolve_types |= RESOLVE_HTTP
+        parser = ResolvingParser(openapi_document, resolve_types=resolve_types)
         return parser.specification
 
     def _parse_parameters(self, parameters: list[dict[str, Any]]):
