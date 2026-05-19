@@ -249,7 +249,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         items: list[CMC_ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             part_dict = part.to_dict()
-            if "text" in part_dict:
+            if "text" in part_dict and not part_dict.get("thought"):
                 items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
             elif "function_call" in part_dict:
                 fc_metadata: dict[str, Any] = {}
@@ -304,7 +304,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         items: list[STREAMING_ITEM_TYPES] = []
         for idx, part in enumerate(candidate.content.parts):
             part_dict = part.to_dict()
-            if "text" in part_dict:
+            if "text" in part_dict and not part_dict.get("thought"):
                 items.append(
                     StreamingTextContent(
                         choice_index=candidate.index,
