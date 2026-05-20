@@ -481,7 +481,8 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
 
         # Step 4: Invoke the function call
         chat_history = ChatHistory()
-        await self._kernel.invoke_function_call(item, chat_history)
+        function_behavior = self._current_settings.function_choice_behavior if self._current_settings else None
+        await self._kernel.invoke_function_call(item, chat_history, function_behavior=function_behavior)
         created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
         # Step 5: Create the function result event
         result = RealtimeFunctionResultEvent(

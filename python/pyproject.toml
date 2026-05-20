@@ -103,7 +103,7 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 1.2,< 2.0"
+    "mistralai >= 1.2,< 2.4.6"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.16",
@@ -118,9 +118,7 @@ ollama = [
 onnx = [
   # onnxruntime>=1.24.0 dropped Python 3.10 support; pin to last compatible version for 3.10.
   "onnxruntime==1.22.1; python_version == '3.10'",
-  # onnxruntime 1.26.0 has no macOS ARM64 wheel; pin to last compatible version.
-  # https://github.com/microsoft/onnxruntime/issues/28441
-  "onnxruntime>=1.24.3, <1.26.0; python_version > '3.10'",
+  "onnxruntime>=1.24.3; python_version > '3.10'",
   "onnxruntime-genai==0.9.0"
 ]
 oracledb = [
