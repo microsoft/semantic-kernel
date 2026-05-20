@@ -832,4 +832,16 @@ public sealed class TextChunkerTests
             paragraph => Assert.Equal(new string('a', 19), paragraph),
             paragraph => Assert.Equal("b", paragraph));
     }
+
+    [Fact]
+    public void SplitPlainTextParagraphsMergesOrphanParagraphWithinTokenLimit()
+    {
+        var lines = new[] { new string('a', 16), "abc" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 20, tokenCounter: input => input.Length);
+
+        Assert.Collection(
+            result,
+            paragraph => Assert.Equal($"{new string('a', 16)} abc", paragraph));
+    }
 }
