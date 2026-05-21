@@ -681,6 +681,7 @@ class BedrockAgent(BedrockAgentBase):
                     chat_history=chat_history,
                     arguments=self.arguments,
                     function_call_count=len(function_call_contents),
+                    function_behavior=self.function_choice_behavior,
                 )
                 for function_call in function_call_contents
             ],
