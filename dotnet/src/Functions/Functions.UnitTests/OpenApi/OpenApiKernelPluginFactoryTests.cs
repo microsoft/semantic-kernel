@@ -174,6 +174,12 @@ public sealed class OpenApiKernelPluginFactoryTests
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         this._executionParameters.HttpClient = httpClient;
+        // Permit the test scenario URLs (including http://localhost:3001/) under the
+        // secure-by-default SSRF policy by explicitly allowlisting the expected base.
+        this._executionParameters.ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri(expectedServerUrl)]
+        };
 
         var arguments = new KernelArguments
         {

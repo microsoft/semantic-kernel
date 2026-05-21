@@ -1909,9 +1909,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldAllowRequestWhenNoValidationOptionsConfiguredAsync()
+    public async Task ItShouldBlockHttpRequestByDefaultWhenNoValidationOptionsConfiguredAsync()
     {
-        // Arrange - no validation options (default behavior)
+        // Arrange - no validation options (default-on protection applies).
         var operation = new RestApiOperation(
             id: "test",
             servers: [new RestApiServer("http://internal-service:8080")],
@@ -1925,8 +1925,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
-        // Act & Assert - should not throw
-        await sut.RunAsync(operation, []);
+        // Act & Assert - secure-by-default policy blocks plaintext http.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("http", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -1945,7 +1946,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         );
 
         var validationOptions = new RestApiOperationServerUrlValidationOptions();
-        // Default AllowedSchemes is ["https"], so "http" should be blocked.
+        // Default policy permits only "https" implicitly, so "http" should be blocked.
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
 
@@ -2075,7 +2076,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var validationOptions = new RestApiOperationServerUrlValidationOptions
         {
-            AllowedSchemes = ["http", "https"],
             AllowedBaseUrls = [new Uri("http://api.example.com")]
         };
 
@@ -2229,6 +2229,162 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Act & Assert - should not throw; the path portion matches the allowed base URL
         await sut.RunAsync(operation, arguments);
+    }
+
+    [Theory]
+    [InlineData("http://169.254.169.254/latest/meta-data/iam/")]   // AWS / Azure / GCP metadata
+    [InlineData("https://169.254.169.254/latest/meta-data/iam/")]
+    [InlineData("http://127.0.0.1:8888")]
+    [InlineData("https://127.0.0.1/")]
+    [InlineData("http://10.0.0.5/internal")]
+    [InlineData("https://192.168.1.1/admin")]
+    [InlineData("https://[::1]/")]
+    [InlineData("http://[fe80::1]/")]
+    public async Task ItShouldBlockSsrfTargetsByDefaultAsync(string maliciousServerUrl)
+    {
+        // Arrange - reproduces the MSRC 108836 PoC: a malicious OpenAPI document whose
+        // servers[].url points at a private/loopback/link-local address. With the secure
+        // default policy, the call must throw before any HTTP traffic leaves the host.
+        var operation = new RestApiOperation(
+            id: "exploit",
+            servers: [new RestApiServer(maliciousServerUrl)],
+            path: "/",
+            method: HttpMethod.Get,
+            description: "ssrf attempt",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
+        Assert.Contains("not allowed", exception.Message, StringComparison.OrdinalIgnoreCase);
+
+        // Verify no HTTP traffic was sent before the validator threw.
+        Assert.Null(this._httpMessageHandlerStub.RequestUri);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockSsrfTargetSuppliedViaServerVariableFromKernelArgumentsAsync()
+    {
+        // Arrange - second SSRF vector covered by the same chokepoint: an LLM (or other
+        // untrusted source of KernelArguments) supplies the value for a server variable.
+        var operation = new RestApiOperation(
+            id: "weather",
+            servers:
+            [
+                new RestApiServer(
+                    "https://{host}/api",
+                    new Dictionary<string, RestApiServerVariable>
+                    {
+                        { "host", new RestApiServerVariable("api.weather.example.com") }
+                    })
+            ],
+            path: "/forecast",
+            method: HttpMethod.Get,
+            description: "weather",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // LLM-supplied host steers the request at the cloud metadata service.
+        var arguments = new KernelArguments { { "host", "169.254.169.254" } };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, arguments));
+        Assert.Contains("link-local", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(this._httpMessageHandlerStub.RequestUri);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowPrivateAddressWhenAllowPrivateNetworkAccessIsTrueAsync()
+    {
+        // Arrange - localhost dev opt-out.
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("http://127.0.0.1:5000")],
+            path: "/api",
+            method: HttpMethod.Get,
+            description: "dev loop",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowPrivateNetworkAccess = true,
+            // http requires explicit allow because https is the implicit default.
+            AllowedBaseUrls = [new Uri("http://127.0.0.1:5000")]
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw.
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowExplicitAllowedBaseUrlForPlaintextIntranetAsync()
+    {
+        // Arrange - explicit allow bypasses both the implicit https gate and the private-IP
+        // gate so a mixed-scheme intranet allowlist works without enabling
+        // AllowPrivateNetworkAccess globally.
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("http://192.168.1.100/v1")],
+            path: "/orders",
+            method: HttpMethod.Get,
+            description: "intranet",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("http://192.168.1.100/v1")]
+            // AllowPrivateNetworkAccess stays false.
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
+
+        // Act & Assert - should not throw.
+        await sut.RunAsync(operation, []);
+    }
+
+    [Fact]
+    public async Task ItShouldValidateServerUrlOverrideAsync()
+    {
+        // Arrange - the ServerUrlOverride must be validated too, since it can be sourced from
+        // attacker-influenced configuration.
+        var operation = new RestApiOperation(
+            id: "test",
+            servers: [new RestApiServer("https://api.example.com")],
+            path: "/users",
+            method: HttpMethod.Get,
+            description: "test",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        var runOptions = new RestApiOperationRunOptions
+        {
+            ServerUrlOverride = new Uri("http://169.254.169.254/")
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, [], runOptions));
+        Assert.Contains("not allowed", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(this._httpMessageHandlerStub.RequestUri);
     }
 
     /// <summary>
