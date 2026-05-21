@@ -25,10 +25,13 @@ internal static class ServerUrlValidator
     /// <param name="options">The validation policy. If <see langword="null"/>, the secure
     /// default policy (https-only and private/loopback/link-local IPs blocked) is applied.</param>
     /// <param name="cancellationToken">Cancellation token for the asynchronous DNS resolution.</param>
+    /// <param name="dnsResolver">Optional DNS resolver for testing. When <see langword="null"/>,
+    /// <see cref="Dns.GetHostAddressesAsync(string)"/> is used.</param>
     public static async Task ValidateAsync(
         Uri url,
         RestApiOperationServerUrlValidationOptions? options,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Func<string, CancellationToken, Task<IPAddress[]>>? dnsResolver = null)
     {
         if (url is null)
         {
@@ -58,7 +61,7 @@ internal static class ServerUrlValidator
             throw new InvalidOperationException(
                 $"The request URI scheme '{url.Scheme}' is not allowed. " +
                 $"Only '{ImplicitAllowedScheme}' is permitted by default. " +
-                $"To allow this URL, add it to " +
+                "To allow this URL, add it to " +
                 $"{nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowedBaseUrls)}.");
         }
 
@@ -68,7 +71,7 @@ internal static class ServerUrlValidator
             return;
         }
 
-        await EnsurePublicHostAsync(url, cancellationToken).ConfigureAwait(false);
+        await EnsurePublicHostAsync(url, cancellationToken, dnsResolver).ConfigureAwait(false);
     }
 
     private static bool TryMatchAllowedBaseUrl(Uri url, IReadOnlyList<Uri>? allowedBaseUrls)
@@ -110,7 +113,10 @@ internal static class ServerUrlValidator
         return false;
     }
 
-    private static async Task EnsurePublicHostAsync(Uri url, CancellationToken cancellationToken)
+    private static async Task EnsurePublicHostAsync(
+        Uri url,
+        CancellationToken cancellationToken,
+        Func<string, CancellationToken, Task<IPAddress[]>>? dnsResolver)
     {
         var host = url.DnsSafeHost;
 
@@ -133,25 +139,41 @@ internal static class ServerUrlValidator
         IPAddress[] addresses;
         try
         {
+            if (dnsResolver is not null)
+            {
+                addresses = await dnsResolver(host, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
 #if NET
-            addresses = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
+                addresses = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
 #else
-            addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
+                addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
 #endif
+            }
         }
         catch (SocketException)
         {
-            // DNS resolution failed. Fall through and let the HTTP layer surface the error.
-            // This does not create an SSRF risk: an unresolvable host cannot reach a private
-            // address either. Throwing here would also break legitimate scenarios where the
-            // host is temporarily unreachable from the validating machine but resolvable later.
-            return;
+            // DNS resolution failed. Fail closed: block the request rather than allowing
+            // it to proceed unvalidated. A TOCTOU race could otherwise allow a private
+            // target to be reached if DNS fails here but succeeds when HttpClient resolves.
+            throw new InvalidOperationException(
+                $"The request URI '{url}' is not allowed: DNS resolution for host '{host}' failed. " +
+                "The request is blocked as a precaution to prevent potential access to private network addresses. " +
+                "To allow this URL, add it to " +
+                $"{nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowedBaseUrls)} " +
+                $"or set {nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowPrivateNetworkAccess)} = true.");
         }
 
         if (addresses is null || addresses.Length == 0)
         {
-            return;
+            // No addresses returned. Fail closed for the same TOCTOU reason.
+            throw new InvalidOperationException(
+                $"The request URI '{url}' is not allowed: DNS resolution for host '{host}' returned no addresses. " +
+                "The request is blocked as a precaution. To allow this URL, add it to " +
+                $"{nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowedBaseUrls)} " +
+                $"or set {nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowPrivateNetworkAccess)} = true.");
         }
 
         foreach (var address in addresses)
@@ -166,8 +188,8 @@ internal static class ServerUrlValidator
         {
             throw new InvalidOperationException(
                 $"The request URI '{url}' is not allowed: host resolves to a {category} address ({address}), " +
-                $"which is blocked by default to prevent Server-Side Request Forgery (SSRF). " +
-                $"To allow this URL, add it to " +
+                "which is blocked by default to prevent Server-Side Request Forgery (SSRF). " +
+                "To allow this URL, add it to " +
                 $"{nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowedBaseUrls)} " +
                 $"or set {nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowPrivateNetworkAccess)} = true.");
         }

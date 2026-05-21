@@ -35,7 +35,18 @@ public sealed class OpenApiKernelPluginFactoryTests
     /// </summary>
     public OpenApiKernelPluginFactoryTests()
     {
-        this._executionParameters = new OpenApiFunctionExecutionParameters() { EnableDynamicPayload = false };
+        this._executionParameters = new OpenApiFunctionExecutionParameters()
+        {
+            EnableDynamicPayload = false,
+            ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+            {
+                AllowedBaseUrls =
+                [
+                    new Uri("https://my-key-vault.vault.azure.net"),
+                    new Uri("https://server-override.com")
+                ]
+            }
+        };
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
     }

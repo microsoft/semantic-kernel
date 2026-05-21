@@ -41,6 +41,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     private readonly HttpClient _httpClient;
 
     /// <summary>
+    /// Default validation options that allowlist the fake test host used by most tests.
+    /// </summary>
+    private readonly RestApiOperationServerUrlValidationOptions _defaultValidationOptions = new()
+    {
+        AllowedBaseUrls = [new Uri("https://fake-random-test-host")]
+    };
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunnerTests"/> class.
     /// </summary>
     public RestApiOperationRunnerTests()
@@ -91,7 +99,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -161,7 +169,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "text/plain"}
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -238,7 +246,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             ["X-HD-3"] = new DateTimeOffset(2023, 12, 06, 11, 53, 36, TimeSpan.FromHours(-2)),
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, userAgent: "fake-agent");
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, userAgent: "fake-agent", serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -294,7 +302,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "fake-header", "fake-header-value" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent", serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -343,7 +351,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "enabled", true }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -413,7 +421,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "params", "[1,2,3]" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -506,7 +514,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: true,
+            serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -571,7 +580,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(
             this._httpClient,
             this._authenticationHandlerMock.Object,
-            enableDynamicPayload: true);
+            enableDynamicPayload: true,
+            serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await sut.RunAsync(operation, arguments));
@@ -600,7 +610,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(
             this._httpClient,
             this._authenticationHandlerMock.Object,
-            enableDynamicPayload: false);
+            enableDynamicPayload: false,
+            serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await sut.RunAsync(operation, arguments));
@@ -633,7 +644,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "payload", "fake-input-value" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -676,7 +687,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", $"{contentType}" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -724,7 +735,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: true,
+            serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -772,7 +784,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
-            enablePayloadNamespacing: true);
+            enablePayloadNamespacing: true,
+            serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -828,7 +841,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", 28 },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -877,7 +890,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -925,7 +938,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" }, //Providing argument for the required parameter only
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -962,7 +975,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var arguments = new KernelArguments(); //Providing no arguments
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act and Assert
         await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
@@ -998,7 +1011,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1041,7 +1054,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1077,7 +1090,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act & Assert
         var kernelException = await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
@@ -1122,7 +1135,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "enabled", true }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1175,7 +1188,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "enabled", true }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1232,7 +1245,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             KernelArguments = arguments,
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments, options);
@@ -1271,7 +1284,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act & Assert
         var actualException = await Assert.ThrowsAsync(expectedExceptionType, () => sut.RunAsync(operation, arguments));
@@ -1316,7 +1329,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             return await context.Response.Content.ReadAsStreamAsync(cancellationToken);
         }
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var response = await sut.RunAsync(operation, [], cancellationToken: expectedCancellationToken);
@@ -1350,7 +1363,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             return Task.FromResult<object?>(null); // Return null to indicate that no content is returned
         }
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var response = await sut.RunAsync(operation, []);
@@ -1385,7 +1398,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             return contentStream;
         }
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, httpResponseContentReader: ReadHttpResponseContentAsync, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var response = await sut.RunAsync(operation, []);
@@ -1445,7 +1458,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             KernelArguments = arguments,
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments, options);
@@ -1510,7 +1523,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             KernelArguments = arguments,
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments, options);
@@ -1605,13 +1618,23 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             return ((JsonObject)JsonObject.Parse(json)!, new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json));
         }
 
+        var validationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls =
+            [
+                new Uri("https://fake-random-test-host"),
+                new Uri("https://fake-random-test-host-from-factory")
+            ]
+        };
+
         var sut = new RestApiOperationRunner(
             this._httpClient,
             enableDynamicPayload: true,
             enablePayloadNamespacing: true,
             urlFactory: CreateUrl,
             headersFactory: CreateHeaders,
-            payloadFactory: CreatePayload);
+            payloadFactory: CreatePayload,
+            serverUrlValidationOptions: validationOptions);
 
         // Act
         var result = await sut.RunAsync(expectedOperation, expectedArguments, expectedOptions);
@@ -1708,7 +1731,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             securityRequirements: []
         );
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, []);
@@ -1746,7 +1769,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", actualContentType },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1793,7 +1816,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "text/plain" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory, serverUrlValidationOptions: this._defaultValidationOptions);
 
         using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -1844,7 +1867,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "text/plain" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var response = await sut.RunAsync(operation, arguments);
@@ -1899,7 +1922,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "text/plain" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act
         var response = await sut.RunAsync(operation, arguments);
@@ -1923,7 +1946,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             securityRequirements: []
         );
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: this._defaultValidationOptions);
 
         // Act & Assert - secure-by-default policy blocks plaintext http.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
@@ -1962,7 +1985,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Arrange
         var operation = new RestApiOperation(
             id: "test",
-            servers: [new RestApiServer("https://api.example.com")],
+            servers: [new RestApiServer("https://1.1.1.1")],
             path: "/api/data",
             method: HttpMethod.Get,
             description: "test operation",
@@ -2256,7 +2279,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             securityRequirements: []
         );
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var validationOptions = new RestApiOperationServerUrlValidationOptions();
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.RunAsync(operation, []));
@@ -2290,7 +2315,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             securityRequirements: []
         );
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var validationOptions = new RestApiOperationServerUrlValidationOptions();
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
 
         // LLM-supplied host steers the request at the cloud metadata service.
         var arguments = new KernelArguments { { "host", "169.254.169.254" } };
@@ -2374,7 +2401,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             securityRequirements: []
         );
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+        var validationOptions = new RestApiOperationServerUrlValidationOptions();
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, serverUrlValidationOptions: validationOptions);
 
         var runOptions = new RestApiOperationRunOptions
         {
@@ -2437,3 +2466,4 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         }
     }
 }
+

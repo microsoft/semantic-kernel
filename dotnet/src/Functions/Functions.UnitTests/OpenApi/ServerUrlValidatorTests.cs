@@ -2,6 +2,8 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
@@ -148,5 +150,83 @@ public class ServerUrlValidatorTests
         var options = new RestApiOperationServerUrlValidationOptions { AllowPrivateNetworkAccess = true };
 
         await ServerUrlValidator.ValidateAsync(url, options);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockHostnameResolvingToPrivateIpAsync()
+    {
+        // Simulates an attacker-controlled hostname (e.g., evil.com) resolving to the
+        // cloud metadata address — the most realistic SSRF vector.
+        var url = new Uri("https://evil.example.com/latest/meta-data/");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => Task.FromResult(new[] { IPAddress.Parse("169.254.169.254") });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+        Assert.Contains("link-local", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockHostnameResolvingToLoopbackAsync()
+    {
+        var url = new Uri("https://attacker.example.com/api");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => Task.FromResult(new[] { IPAddress.Parse("127.0.0.1") });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+        Assert.Contains("loopback", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockWhenAnyResolvedAddressIsPrivateAsync()
+    {
+        // DNS rebinding defense: even if one address is public, a private one must block.
+        var url = new Uri("https://rebind.example.com/");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => Task.FromResult(new[]
+            {
+                IPAddress.Parse("93.184.216.34"),  // public
+                IPAddress.Parse("10.0.0.1")        // private
+            });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+        Assert.Contains("private", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldAllowHostnameResolvingToPublicIpAsync()
+    {
+        var url = new Uri("https://api.example.com/");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") });
+
+        // Should not throw.
+        await ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockWhenDnsResolutionFailsAsync()
+    {
+        var url = new Uri("https://unreachable.example.com/");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => throw new SocketException();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+        Assert.Contains("DNS resolution", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldBlockWhenDnsReturnsEmptyAsync()
+    {
+        var url = new Uri("https://empty-dns.example.com/");
+        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
+            (_, _) => Task.FromResult(Array.Empty<IPAddress>());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+        Assert.Contains("no addresses", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
