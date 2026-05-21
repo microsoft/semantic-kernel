@@ -158,11 +158,11 @@ public class ServerUrlValidatorTests
         // Simulates an attacker-controlled hostname (e.g., evil.com) resolving to the
         // cloud metadata address — the most realistic SSRF vector.
         var url = new Uri("https://evil.example.com/latest/meta-data/");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => Task.FromResult(new[] { IPAddress.Parse("169.254.169.254") });
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            Task.FromResult(new[] { IPAddress.Parse("169.254.169.254") });
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("link-local", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -170,11 +170,11 @@ public class ServerUrlValidatorTests
     public async Task ItShouldBlockHostnameResolvingToLoopbackAsync()
     {
         var url = new Uri("https://attacker.example.com/api");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => Task.FromResult(new[] { IPAddress.Parse("127.0.0.1") });
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            Task.FromResult(new[] { IPAddress.Parse("127.0.0.1") });
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("loopback", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -183,15 +183,15 @@ public class ServerUrlValidatorTests
     {
         // DNS rebinding defense: even if one address is public, a private one must block.
         var url = new Uri("https://rebind.example.com/");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => Task.FromResult(new[]
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            Task.FromResult(new[]
             {
                 IPAddress.Parse("93.184.216.34"),  // public
                 IPAddress.Parse("10.0.0.1")        // private
             });
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("private", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -199,22 +199,22 @@ public class ServerUrlValidatorTests
     public async Task ItShouldAllowHostnameResolvingToPublicIpAsync()
     {
         var url = new Uri("https://api.example.com/");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") });
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") });
 
         // Should not throw.
-        await ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver);
+        await ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver);
     }
 
     [Fact]
     public async Task ItShouldBlockWhenDnsResolutionFailsAsync()
     {
         var url = new Uri("https://unreachable.example.com/");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => throw new SocketException();
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            throw new SocketException();
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("DNS resolution", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -222,11 +222,11 @@ public class ServerUrlValidatorTests
     public async Task ItShouldBlockWhenDnsReturnsEmptyAsync()
     {
         var url = new Uri("https://empty-dns.example.com/");
-        Func<string, CancellationToken, Task<IPAddress[]>> fakeResolver =
-            (_, _) => Task.FromResult(Array.Empty<IPAddress>());
+        Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
+            Task.FromResult(Array.Empty<IPAddress>());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: fakeResolver));
+            ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("no addresses", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
