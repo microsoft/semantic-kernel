@@ -27,72 +27,70 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
     /// <inheritdoc />
     public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        // Convert the provided record into a JsonNode object and try to get the key field for it.
-        // Since we already checked that the key field is a string in the constructor, and that it exists on the model,
-        // the only edge case we have to be concerned about is if the key field is null.
-        var jsonNode = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
+        // Extract the key. The constructor has already validated that the key property is a string.
+        var keyValue = model.KeyProperty.GetValueAsObject(dataModel) as string
+            ?? throw new InvalidOperationException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
 
-        if (!(jsonNode.TryGetPropertyValue(this._keyPropertyStorageName, out var keyField) && keyField is JsonValue jsonValue))
+        // Build the JSON payload from the model's data properties only, so that properties on the POCO that are not
+        // part of the vector-store schema (no [VectorStoreData]/[VectorStoreVector]/[VectorStoreKey] attribute and not
+        // in the collection definition) are not persisted in Redis.
+        var jsonNode = new JsonObject();
+
+        foreach (var dataProperty in model.DataProperties)
         {
-            throw new InvalidOperationException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
+            var value = dataProperty.GetValueAsObject(dataModel);
+            jsonNode.Add(
+                dataProperty.StorageName,
+                value is null
+                    ? null
+                    : JsonSerializer.SerializeToNode(value, dataProperty.Type, jsonSerializerOptions));
         }
 
-        // Remove the key field from the JSON object since we don't want to store it in the redis payload.
-        var keyValue = jsonValue.ToString();
-        jsonNode.Remove(this._keyPropertyStorageName);
-
-        // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
-        // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
         for (var i = 0; i < model.VectorProperties.Count; i++)
         {
             var property = model.VectorProperties[i];
 
-            Embedding? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge ? ge : null;
+            var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                ? (object)ge
+                : property.GetValueAsObject(dataModel);
 
-            if (embedding is null)
+            if (vector is null)
             {
-                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
-                {
-                    case var t when t == typeof(ReadOnlyMemory<float>):
-                    case var t2 when t2 == typeof(float[]):
-                    case var t3 when t3 == typeof(ReadOnlyMemory<double>):
-                    case var t4 when t4 == typeof(double[]):
-                        // The .NET vector property is a ReadOnlyMemory<T> or T[] (not an Embedding), which means that JsonSerializer
-                        // already serialized it correctly above.
-                        // In addition, there's no generated embedding (which would be an Embedding which we'd need to handle manually).
-                        // So there's nothing for us to do.
-                        continue;
-
-                    case var t when t == typeof(Embedding<float>):
-                    case var t1 when t1 == typeof(Embedding<double>):
-                        embedding = (Embedding)property.GetValueAsObject(dataModel)!;
-                        break;
-
-                    default:
-                        throw new UnreachableException();
-                }
+                jsonNode[property.StorageName] = null;
+                continue;
             }
 
             var jsonArray = new JsonArray();
 
-            switch (embedding)
+            if (vector switch
             {
-                case Embedding<float> e:
-                    foreach (var item in e.Vector.Span)
-                    {
-                        jsonArray.Add(JsonValue.Create(item));
-                    }
-                    break;
-
-                case Embedding<double> e:
-                    foreach (var item in e.Vector.Span)
-                    {
-                        jsonArray.Add(JsonValue.Create(item));
-                    }
-                    break;
-
-                default:
-                    throw new UnreachableException();
+                ReadOnlyMemory<float> m => m,
+                Embedding<float> e => e.Vector,
+                float[] a => new ReadOnlyMemory<float>(a),
+                _ => (ReadOnlyMemory<float>?)null
+            } is ReadOnlyMemory<float> floatMemory)
+            {
+                foreach (var item in floatMemory.Span)
+                {
+                    jsonArray.Add(JsonValue.Create(item));
+                }
+            }
+            else if (vector switch
+            {
+                ReadOnlyMemory<double> m => m,
+                Embedding<double> e => e.Vector,
+                double[] a => new ReadOnlyMemory<double>(a),
+                _ => null
+            } is ReadOnlyMemory<double> doubleMemory)
+            {
+                foreach (var item in doubleMemory.Span)
+                {
+                    jsonArray.Add(JsonValue.Create(item));
+                }
+            }
+            else
+            {
+                throw new UnreachableException();
             }
 
             jsonNode[property.StorageName] = jsonArray;
