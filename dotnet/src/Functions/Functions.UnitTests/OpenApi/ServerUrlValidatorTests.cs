@@ -58,7 +58,7 @@ public class ServerUrlValidatorTests
         var ip = IPAddress.Parse(address);
 
         // Act
-        var blocked = ServerUrlValidator.TryClassifyNonPublic(ip, out var category);
+        var blocked = ServerUrlValidator.TryCategorizeNonPublicAddress(ip, out var category);
 
         // Assert
         Assert.True(blocked, $"Expected {address} to be classified as non-public.");
@@ -84,7 +84,7 @@ public class ServerUrlValidatorTests
         var ip = IPAddress.Parse(address);
 
         // Act
-        var blocked = ServerUrlValidator.TryClassifyNonPublic(ip, out _);
+        var blocked = ServerUrlValidator.TryCategorizeNonPublicAddress(ip, out _);
 
         // Assert
         Assert.False(blocked, $"Expected {address} to be treated as public.");

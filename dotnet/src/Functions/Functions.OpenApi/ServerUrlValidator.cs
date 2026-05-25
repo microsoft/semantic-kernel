@@ -184,7 +184,7 @@ internal static class ServerUrlValidator
 
     private static void EnsurePublicAddress(Uri url, IPAddress address)
     {
-        if (TryClassifyNonPublic(address, out var category))
+        if (TryCategorizeNonPublicAddress(address, out var category))
         {
             throw new InvalidOperationException(
                 $"The request URI '{url}' is not allowed: host resolves to a {category} address ({address}), " +
@@ -199,7 +199,7 @@ internal static class ServerUrlValidator
     /// Returns true and sets <paramref name="category"/> to a human-readable label when the
     /// supplied address is in a non-public IP range that should be blocked by default.
     /// </summary>
-    internal static bool TryClassifyNonPublic(IPAddress address, out string category)
+    internal static bool TryCategorizeNonPublicAddress(IPAddress address, out string category)
     {
         // Normalize IPv4-mapped IPv6 (::ffff:a.b.c.d) to its IPv4 form so the v4 checks apply.
         if (address.AddressFamily == AddressFamily.InterNetworkV6 && IsIPv4MappedToIPv6(address))
