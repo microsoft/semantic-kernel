@@ -62,35 +62,28 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
 
             var jsonArray = new JsonArray();
 
-            if (vector switch
+            switch (vector)
             {
-                ReadOnlyMemory<float> m => m,
-                Embedding<float> e => e.Vector,
-                float[] a => new ReadOnlyMemory<float>(a),
-                _ => (ReadOnlyMemory<float>?)null
-            } is ReadOnlyMemory<float> floatMemory)
-            {
-                foreach (var item in floatMemory.Span)
-                {
-                    jsonArray.Add(JsonValue.Create(item));
-                }
-            }
-            else if (vector switch
-            {
-                ReadOnlyMemory<double> m => m,
-                Embedding<double> e => e.Vector,
-                double[] a => new ReadOnlyMemory<double>(a),
-                _ => null
-            } is ReadOnlyMemory<double> doubleMemory)
-            {
-                foreach (var item in doubleMemory.Span)
-                {
-                    jsonArray.Add(JsonValue.Create(item));
-                }
-            }
-            else
-            {
-                throw new UnreachableException();
+                case ReadOnlyMemory<float> m:
+                    AppendVector(jsonArray, m.Span);
+                    break;
+                case Embedding<float> e:
+                    AppendVector(jsonArray, e.Vector.Span);
+                    break;
+                case float[] a:
+                    AppendVector(jsonArray, a.AsSpan());
+                    break;
+                case ReadOnlyMemory<double> m:
+                    AppendVector(jsonArray, m.Span);
+                    break;
+                case Embedding<double> e:
+                    AppendVector(jsonArray, e.Vector.Span);
+                    break;
+                case double[] a:
+                    AppendVector(jsonArray, a.AsSpan());
+                    break;
+                default:
+                    throw new UnreachableException();
             }
 
             jsonNode[property.StorageName] = jsonArray;
@@ -155,5 +148,13 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
         }
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject, jsonSerializerOptions)!;
+    }
+
+    private static void AppendVector<T>(JsonArray jsonArray, ReadOnlySpan<T> span)
+    {
+        foreach (var item in span)
+        {
+            jsonArray.Add(JsonValue.Create(item));
+        }
     }
 }
