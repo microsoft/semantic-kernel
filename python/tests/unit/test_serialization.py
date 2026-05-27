@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+# Test: verify coverage workflow token access
 
 import typing as t
 
