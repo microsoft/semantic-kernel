@@ -241,7 +241,10 @@ class RedisCollection(
             definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator,
-            redis_database=Redis.from_url(redis_settings.connection_string.get_secret_value()),
+            redis_database=Redis.from_url(
+                redis_settings.connection_string.get_secret_value(),
+                client_name="semantic_kernel_vector_store_client",
+            ),
             prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
             collection_type=collection_type,
             **kwargs,
@@ -786,7 +789,10 @@ class RedisStore(VectorStore):
         except ValidationError as ex:
             raise VectorStoreInitializationException("Failed to create Redis settings.", ex) from ex
         super().__init__(
-            redis_database=Redis.from_url(redis_settings.connection_string.get_secret_value()),
+            redis_database=Redis.from_url(
+                redis_settings.connection_string.get_secret_value(),
+                client_name="semantic_kernel_vector_store_client",
+            ),
             embedding_generator=embedding_generator,
             **kwargs,
         )
