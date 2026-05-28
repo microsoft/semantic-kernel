@@ -207,6 +207,7 @@ class RedisCollection(
         connection_string: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        client_name: str | None = None,
         **kwargs: Any,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -214,6 +215,19 @@ class RedisCollection(
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
         See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors.
 
+        Args:
+            record_type: The type of the data model.
+            definition: The model fields, optional.
+            collection_name: The name of the collection.
+            embedding_generator: The embedding generator to use.
+            redis_database: The Redis database connection, if provided will use this instead of creating a new one.
+            prefix_collection_name_to_key_names: Whether to prefix the collection name to key names.
+            collection_type: The type of collection to use (HASHSET or JSON).
+            connection_string: The connection string for Redis.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+            client_name: The client name to use for the Redis connection. Defaults to
+                "semantic_kernel_vector_store_client".
         """
         if redis_database:
             super().__init__(
@@ -243,7 +257,7 @@ class RedisCollection(
             embedding_generator=embedding_generator,
             redis_database=Redis.from_url(
                 redis_settings.connection_string.get_secret_value(),
-                client_name="semantic_kernel_vector_store_client",
+                client_name=client_name or "semantic_kernel_vector_store_client",
             ),
             prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
             collection_type=collection_type,
@@ -770,9 +784,20 @@ class RedisStore(VectorStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         redis_database: Redis | None = None,
+        client_name: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """RedisMemoryStore is an abstracted interface to interact with a Redis instance."""
+        """RedisMemoryStore is an abstracted interface to interact with a Redis instance.
+
+        Args:
+            connection_string: The connection string for Redis.
+            embedding_generator: The embedding generator to use.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+            redis_database: The Redis database connection, if provided will use this instead of creating a new one.
+            client_name: The client name to use for the Redis connection. Defaults to
+                "semantic_kernel_vector_store_client".
+        """
         if redis_database:
             super().__init__(
                 redis_database=redis_database,
@@ -791,7 +816,7 @@ class RedisStore(VectorStore):
         super().__init__(
             redis_database=Redis.from_url(
                 redis_settings.connection_string.get_secret_value(),
-                client_name="semantic_kernel_vector_store_client",
+                client_name=client_name or "semantic_kernel_vector_store_client",
             ),
             embedding_generator=embedding_generator,
             **kwargs,
