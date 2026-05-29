@@ -22,7 +22,7 @@ is the native hook for security and observability. Vaultak registers two filters
 
 | Filter type | When it runs | Vaultak action |
 |---|---|---|
-| `FunctionInvocationFilter` | Every `kernel.invoke()` call | Risk-scores the call; raises `KernelFunctionCancelledError` if above threshold; masks PII in output |
+| `FunctionInvocationFilter` | Every `kernel.invoke()` call | Risk-scores the call; raises `KernelFunctionCancelledError` if score meets or exceeds threshold; masks PII in output |
 | `AutoFunctionInvocationFilter` | Each LLM-selected tool call (auto function calling) | Risk-scores the call; sets `context.terminate = True` to stop the loop if above threshold |
 
 ## Installation
@@ -47,12 +47,19 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAICh
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.exceptions import KernelFunctionCancelledError
 from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions import FunctionResult, KernelArguments
 
 from vaultak import Vaultak
 
+_api_key = os.environ.get("VAULTAK_API_KEY")
+if not _api_key:
+    raise ValueError(
+        "VAULTAK_API_KEY environment variable is not set. "
+        "Sign up at https://vaultak.com to get your API key."
+    )
+
 RISK_THRESHOLD = 7.0
-vt = Vaultak(api_key=os.environ["VAULTAK_API_KEY"], agent_name="sk-agent")
+vt = Vaultak(api_key=_api_key, agent_name="sk-agent")
 
 kernel = Kernel()
 kernel.add_service(OpenAIChatCompletion(service_id="chat"))
@@ -65,16 +72,18 @@ async def vaultak_function_filter(
     context: FunctionInvocationContext,
     next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
 ) -> None:
-    action = f"{context.function.plugin_name}-{context.function.name}"
-    result = vt.score_action(action=action, context=dict(context.arguments or {}))
+    action = f"{context.function.plugin_name or 'kernel'}-{context.function.name}"
+    result = await asyncio.to_thread(vt.score_action, action=action, context=dict(context.arguments or {}))
     if result.score >= RISK_THRESHOLD:
         raise KernelFunctionCancelledError(
-            f"[Vaultak] '{action}' blocked — risk {result.score:.1f}/10"
+            f"[Vaultak] '{action}' blocked — risk {result.score:.1f}/10 "
+            f"meets or exceeds threshold {RISK_THRESHOLD}. Review at app.vaultak.com"
         )
-    vt.check_policy(tool_name=action, input_data=str(context.arguments))
+    await asyncio.to_thread(vt.check_policy, tool_name=action, input_data=str(context.arguments))
     await next(context)
     if context.result and context.result.value:
-        context.result._value = vt.mask_pii(str(context.result.value))
+        masked = await asyncio.to_thread(vt.mask_pii, str(context.result.value))
+        context.result = FunctionResult(function=context.function, value=masked)
 
 
 @kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
@@ -82,8 +91,8 @@ async def vaultak_auto_filter(
     context: AutoFunctionInvocationContext,
     next: Callable[[AutoFunctionInvocationContext], Coroutine[Any, Any, None]],
 ) -> None:
-    action = f"{context.function.plugin_name}-{context.function.name}"
-    result = vt.score_action(action=action, context={"auto_invoke": "true"})
+    action = f"{context.function.plugin_name or 'kernel'}-{context.function.name}"
+    result = await asyncio.to_thread(vt.score_action, action=action, context={"auto_invoke": "true"})
     if result.score >= RISK_THRESHOLD:
         context.terminate = True  # Stop auto-invocation loop cleanly
         return
