@@ -22,7 +22,7 @@ is the native hook for security and observability. Vaultak registers two filters
 
 | Filter type | When it runs | Vaultak action |
 |---|---|---|
-| `FunctionInvocationFilter` | Every `kernel.invoke()` call | Risk-scores the call; raises `KernelFunctionCancelledError` if score meets or exceeds threshold; masks PII in output |
+| `FunctionInvocationFilter` | Every `kernel.invoke()` call (plugin functions only) | Risk-scores the call; raises `OperationCancelledException` if score meets or exceeds threshold; masks PII in output |
 | `AutoFunctionInvocationFilter` | Each LLM-selected tool call (auto function calling) | Risk-scores the call; sets `context.terminate = True` to stop the loop if above threshold |
 
 ## Installation
@@ -45,7 +45,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.exceptions import KernelFunctionCancelledError
+from semantic_kernel.exceptions import OperationCancelledException
 from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import FunctionResult, KernelArguments
 
@@ -72,10 +72,14 @@ async def vaultak_function_filter(
     context: FunctionInvocationContext,
     next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
 ) -> None:
-    action = f"{context.function.plugin_name or 'kernel'}-{context.function.name}"
+    # Skip inline prompt functions — only score real plugin calls
+    if context.function.plugin_name is None:
+        await next(context)
+        return
+    action = f"{context.function.plugin_name}-{context.function.name}"
     result = await asyncio.to_thread(vt.score_action, action=action, context=dict(context.arguments or {}))
     if result.score >= RISK_THRESHOLD:
-        raise KernelFunctionCancelledError(
+        raise OperationCancelledException(
             f"[Vaultak] '{action}' blocked — risk {result.score:.1f}/10 "
             f"meets or exceeds threshold {RISK_THRESHOLD}. Review at app.vaultak.com"
         )

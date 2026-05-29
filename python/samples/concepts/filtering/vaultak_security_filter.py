@@ -7,7 +7,7 @@ Demonstrates how to integrate Vaultak (https://vaultak.com) with Semantic Kernel
 using two filter types:
 
 - FunctionInvocationFilter  — risk-scores every plugin function call before it
-  executes and raises KernelFunctionCancelledError when the score meets or
+  executes and raises OperationCancelledException when the score meets or
   exceeds the threshold.
 - AutoFunctionInvocationFilter — intercepts each tool call chosen by the LLM
   during auto-function-calling, allowing per-call blocking without stopping
@@ -31,7 +31,7 @@ from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.exceptions import KernelFunctionCancelledError
+from semantic_kernel.exceptions import OperationCancelledException
 from semantic_kernel.filters import AutoFunctionInvocationContext, FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import FunctionResult, KernelArguments
 
@@ -65,7 +65,12 @@ async def vaultak_function_filter(
     next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
 ) -> None:
     """Risk-score every kernel function call before executing it."""
-    plugin_name = context.function.plugin_name or "kernel"
+    # Skip prompt functions (plugin_name is None for inline prompts)
+    if context.function.plugin_name is None:
+        await next(context)
+        return
+
+    plugin_name = context.function.plugin_name
     function_name = context.function.name
     action = f"{plugin_name}-{function_name}"
 
@@ -76,7 +81,7 @@ async def vaultak_function_filter(
     result = await asyncio.to_thread(vt.score_action, action=action, context=args_context)
 
     if result.score >= RISK_THRESHOLD:
-        raise KernelFunctionCancelledError(
+        raise OperationCancelledException(
             f"[Vaultak] Function '{action}' blocked — risk score {result.score:.1f}/10 "
             f"meets or exceeds threshold {RISK_THRESHOLD}. Review at app.vaultak.com"
         )
