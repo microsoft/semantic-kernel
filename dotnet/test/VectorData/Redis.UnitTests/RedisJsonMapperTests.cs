@@ -34,6 +34,7 @@ public sealed class RedisJsonMapperTests
         Assert.Equal("data 2", jsonObject?["Data2"]?.ToString());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject?["Vector1"]?.AsArray().GetValues<float>().ToArray());
         Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject?["Vector2"]?.AsArray().GetValues<float>().ToArray());
+        Assert.False(jsonObject!.ContainsKey("NotAnnotated"), "Unannotated properties should not be included in the storage model.");
     }
 
     [Fact]
@@ -56,6 +57,7 @@ public sealed class RedisJsonMapperTests
         Assert.Equal("data 2", jsonObject?["data2"]?.ToString());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject?["vector1"]?.AsArray().GetValues<float>().ToArray());
         Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject?["vector2"]?.AsArray().GetValues<float>().ToArray());
+        Assert.False(jsonObject!.ContainsKey("notAnnotated"), "Unannotated properties should not be included in the storage model.");
     }
 
     [Fact]
