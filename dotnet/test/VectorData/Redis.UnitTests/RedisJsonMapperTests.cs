@@ -30,11 +30,11 @@ public sealed class RedisJsonMapperTests
         Assert.NotNull(actual.Node);
         Assert.Equal("test key", actual.Key);
         var jsonObject = actual.Node.AsObject();
-        Assert.Equal("data 1", jsonObject?["Data1"]?.ToString());
-        Assert.Equal("data 2", jsonObject?["Data2"]?.ToString());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject?["Vector1"]?.AsArray().GetValues<float>().ToArray());
-        Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject?["Vector2"]?.AsArray().GetValues<float>().ToArray());
         Assert.NotNull(jsonObject);
+        Assert.Equal("data 1", jsonObject["Data1"]?.ToString());
+        Assert.Equal("data 2", jsonObject["Data2"]?.ToString());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject["Vector1"]?.AsArray().GetValues<float>().ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject["Vector2"]?.AsArray().GetValues<float>().ToArray());
         Assert.False(jsonObject.ContainsKey("NotAnnotated"), "Unannotated properties should not be included in the storage model.");
     }
 
@@ -54,11 +54,11 @@ public sealed class RedisJsonMapperTests
         Assert.NotNull(actual.Node);
         Assert.Equal("test key", actual.Key);
         var jsonObject = actual.Node.AsObject();
-        Assert.Equal("data 1", jsonObject?["data1"]?.ToString());
-        Assert.Equal("data 2", jsonObject?["data2"]?.ToString());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject?["vector1"]?.AsArray().GetValues<float>().ToArray());
-        Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject?["vector2"]?.AsArray().GetValues<float>().ToArray());
         Assert.NotNull(jsonObject);
+        Assert.Equal("data 1", jsonObject["data1"]?.ToString());
+        Assert.Equal("data 2", jsonObject["data2"]?.ToString());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject["vector1"]?.AsArray().GetValues<float>().ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject["vector2"]?.AsArray().GetValues<float>().ToArray());
         Assert.False(jsonObject.ContainsKey("notAnnotated"), "Unannotated properties should not be included in the storage model.");
     }
 
