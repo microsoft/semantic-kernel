@@ -47,10 +47,21 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
         jsonNode.Remove(this._keyPropertyStorageName);
 
         // Remove any properties that are not part of the data model.
-        var propertiesToRemove = jsonNode.Select(x => x.Key).Where(key => !this._allowedStorageNames.Contains(key)).ToList();
-        foreach (var keyToRemove in propertiesToRemove)
+        List<string>? propertiesToRemove = null;
+        foreach (var kvp in jsonNode)
         {
-            jsonNode.Remove(keyToRemove);
+            if (!this._allowedStorageNames.Contains(kvp.Key))
+            {
+                (propertiesToRemove ??= new()).Add(kvp.Key);
+            }
+        }
+
+        if (propertiesToRemove is not null)
+        {
+            foreach (var keyToRemove in propertiesToRemove)
+            {
+                jsonNode.Remove(keyToRemove);
+            }
         }
 
         // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.

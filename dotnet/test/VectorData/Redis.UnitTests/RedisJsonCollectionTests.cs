@@ -320,7 +320,6 @@ public class RedisJsonCollectionTests
         await sut.UpsertAsync(model);
 
         // Assert
-        // (Fixed) Removed TODO regarding NotAnnotated being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", expectedUpsertedJson };
         this._redisDatabaseMock
             .Verify(
@@ -346,7 +345,6 @@ public class RedisJsonCollectionTests
         await sut.UpsertAsync([model1, model2]);
 
         // Assert
-        // (Fixed) Removed TODO regarding NotAnnotated being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""", TestRecordKey2, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""" };
         this._redisDatabaseMock
             .Verify(
