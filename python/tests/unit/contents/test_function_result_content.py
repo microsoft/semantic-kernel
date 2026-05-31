@@ -116,6 +116,25 @@ def test_from_fcc_and_result(result: any):
     assert frc.metadata == {"test": "test", "test2": "test2"}
 
 
+def test_from_fcc_and_result_preserves_image_and_nested_content():
+    # When the result is a ChatMessageContent whose first item is an
+    # ImageContent or a nested FunctionResultContent, that item's data must be
+    # surfaced - not overwritten by str(result).
+    fcc = FunctionCallContent(id="test", name="test-function", arguments="{}")
+
+    img = ImageContent(data=b"\x89PNG\r\n", mime_type="image/png", data_format="base64")
+    frc_img = FunctionResultContent.from_function_call_content_and_result(
+        fcc, ChatMessageContent(role="tool", items=[img])
+    )
+    assert frc_img.result == img.data_uri
+
+    nested = FunctionResultContent(id="n", name="p-f", result={"k": "v"})
+    frc_nested = FunctionResultContent.from_function_call_content_and_result(
+        fcc, ChatMessageContent(role="tool", items=[nested])
+    )
+    assert frc_nested.result == {"k": "v"}
+
+
 def test_to_cmc():
     frc = FunctionResultContent(id="test", name="test-function", result="test-result")
     cmc = frc.to_chat_message_content()

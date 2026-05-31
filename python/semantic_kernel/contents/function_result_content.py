@@ -144,7 +144,8 @@ class FunctionResultContent(KernelContent):
                 res = result.items[0].data_uri
             elif isinstance(result.items[0], FunctionResultContent):
                 res = result.items[0].result
-            res = str(result)
+            else:
+                res = str(result)
         else:
             res = result
         return cls(
