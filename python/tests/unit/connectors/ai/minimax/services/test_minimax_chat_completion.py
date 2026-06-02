@@ -26,7 +26,7 @@ def minimax_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     if override_env_param_dict is None:
         override_env_param_dict = {}
 
-    env_vars = {"MINIMAX_API_KEY": "test_api_key", "MINIMAX_CHAT_MODEL_ID": "MiniMax-M2.7"}
+    env_vars = {"MINIMAX_API_KEY": "test_api_key", "MINIMAX_CHAT_MODEL_ID": "MiniMax-M3"}
 
     env_vars.update(override_env_param_dict)
 
@@ -52,7 +52,7 @@ def _create_mock_chat_completion(content: str = "Hello!") -> ChatCompletion:
         id="test-id",
         choices=[choice],
         created=1234567890,
-        model="MiniMax-M2.7",
+        model="MiniMax-M3",
         object="chat.completion",
         usage=usage,
     )

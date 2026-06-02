@@ -18,7 +18,7 @@ You can provide your API key directly or through environment variables.
 from semantic_kernel.connectors.ai.minimax import MiniMaxChatCompletion
 
 chat_service = MiniMaxChatCompletion(
-    ai_model_id="MiniMax-M2.7",  # Default model if not specified
+    ai_model_id="MiniMax-M3",  # Default model if not specified
     api_key="your-minimax-api-key",  # Can also use MINIMAX_API_KEY env variable
     service_id="minimax-chat"  # Optional service identifier
 )
@@ -46,10 +46,9 @@ print(response.content)
 
 ## Available Models
 
-- `MiniMax-M2.7` - Latest flagship model with enhanced reasoning and coding (default)
+- `MiniMax-M3` - Latest flagship model with 512K context, 128K max output, and image input support (default)
+- `MiniMax-M2.7` - Previous generation flagship model with enhanced reasoning and coding
 - `MiniMax-M2.7-highspeed` - High-speed version of M2.7 for low-latency scenarios
-- `MiniMax-M2.5` - Standard model with 204K context window
-- `MiniMax-M2.5-highspeed` - High-speed variant with 204K context window
 
 ## Environment Variables
 
