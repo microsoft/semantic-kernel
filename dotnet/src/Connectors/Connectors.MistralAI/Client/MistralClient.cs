@@ -55,6 +55,14 @@ internal sealed class MistralClient
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
+        // Aggregation state for multi-iteration function calling loops.
+        // Text content from intermediate iterations (before tool calls) would otherwise be lost.
+        // Token usage must be summed across all API calls to report accurate totals.
+        StringBuilder? aggregatedContent = null;
+        int totalPromptTokens = 0;
+        int totalCompletionTokens = 0;
+        bool hadMultipleIterations = false;
+
         for (int requestIndex = 1; ; requestIndex++)
         {
             var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
@@ -105,10 +113,16 @@ internal sealed class MistralClient
                 activity?.SetCompletionResponse(responseContent, responseData.Usage?.PromptTokens, responseData.Usage?.CompletionTokens);
             }
 
+            // Aggregate usage across all iterations.
+            totalPromptTokens += responseData.Usage?.PromptTokens ?? 0;
+            totalCompletionTokens += responseData.Usage?.CompletionTokens ?? 0;
+
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
+                // Apply aggregated content and usage to the final message.
+                ApplyAggregatedState(responseContent, aggregatedContent, totalPromptTokens, totalCompletionTokens, hadMultipleIterations);
                 return responseContent;
             }
 
@@ -120,7 +134,25 @@ internal sealed class MistralClient
             MistralChatChoice chatChoice = responseData.Choices[0]; // TODO Handle multiple choices
             if (!chatChoice.IsToolCall)
             {
+                // Apply aggregated content and usage to the final message.
+                ApplyAggregatedState(responseContent, aggregatedContent, totalPromptTokens, totalCompletionTokens, hadMultipleIterations);
                 return responseContent;
+            }
+
+            // We're about to process tool calls and continue the loop - mark that we have multiple iterations.
+            hadMultipleIterations = true;
+
+            // Accumulate text content from this iteration before processing tool calls.
+            // The LLM may generate text (e.g., "Let me check that for you...") before tool calls.
+            var currentContent = responseContent.Count > 0 ? responseContent[0].Content : null;
+            if (!string.IsNullOrEmpty(currentContent))
+            {
+                aggregatedContent ??= new StringBuilder();
+                if (aggregatedContent.Length > 0)
+                {
+                    aggregatedContent.Append("\n\n");
+                }
+                aggregatedContent.Append(currentContent);
             }
 
             if (this._logger.IsEnabled(LogLevel.Debug))
@@ -226,7 +258,10 @@ internal sealed class MistralClient
                         this._logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
-                    return [chatHistory.Last()];
+                    var lastMessage = chatHistory.Last();
+                    // Apply aggregated content and usage to the filter-terminated message.
+                    ApplyAggregatedState(lastMessage, aggregatedContent, totalPromptTokens, totalCompletionTokens, hadMultipleIterations);
+                    return [lastMessage];
                 }
             }
 
@@ -1086,6 +1121,74 @@ internal sealed class MistralClient
         else
         {
             await functionCallCallback(context).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Applies aggregated text content and usage from previous iterations to the final message(s).
+    /// This ensures that text generated before tool calls is not lost and that token usage
+    /// reflects the total across all API calls in the function calling loop.
+    /// </summary>
+    /// <param name="messages">The list of messages to update.</param>
+    /// <param name="aggregatedContent">Accumulated text content from previous iterations, or null if none.</param>
+    /// <param name="totalPromptTokens">Total prompt tokens across all iterations.</param>
+    /// <param name="totalCompletionTokens">Total completion tokens across all iterations.</param>
+    /// <param name="hadMultipleIterations">Whether the function calling loop had multiple iterations.</param>
+    private static void ApplyAggregatedState(
+        List<ChatMessageContent> messages,
+        StringBuilder? aggregatedContent,
+        int totalPromptTokens,
+        int totalCompletionTokens,
+        bool hadMultipleIterations)
+    {
+        if (messages.Count == 0)
+        {
+            return;
+        }
+
+        ApplyAggregatedState(messages[0], aggregatedContent, totalPromptTokens, totalCompletionTokens, hadMultipleIterations);
+    }
+
+    /// <summary>
+    /// Applies aggregated text content and usage from previous iterations to a single message.
+    /// </summary>
+    /// <param name="message">The message to update.</param>
+    /// <param name="aggregatedContent">Accumulated text content from previous iterations, or null if none.</param>
+    /// <param name="totalPromptTokens">Total prompt tokens across all iterations.</param>
+    /// <param name="totalCompletionTokens">Total completion tokens across all iterations.</param>
+    /// <param name="hadMultipleIterations">Whether the function calling loop had multiple iterations.</param>
+    private static void ApplyAggregatedState(
+        ChatMessageContent message,
+        StringBuilder? aggregatedContent,
+        int totalPromptTokens,
+        int totalCompletionTokens,
+        bool hadMultipleIterations)
+    {
+        // Prepend aggregated content from previous iterations.
+        if (aggregatedContent is { Length: > 0 })
+        {
+            if (!string.IsNullOrEmpty(message.Content))
+            {
+                aggregatedContent.Append("\n\n");
+                aggregatedContent.Append(message.Content);
+            }
+            message.Content = aggregatedContent.ToString();
+        }
+
+        // Update metadata with aggregated usage if we had multiple iterations.
+        // This ensures token counts are accurate even when intermediate iterations had no text content.
+        if (hadMultipleIterations && message.Metadata is not null)
+        {
+            var updatedMetadata = new Dictionary<string, object?>(message.Metadata)
+            {
+                ["AggregatedUsage"] = new Dictionary<string, int>
+                {
+                    ["PromptTokens"] = totalPromptTokens,
+                    ["CompletionTokens"] = totalCompletionTokens,
+                    ["TotalTokens"] = totalPromptTokens + totalCompletionTokens
+                }
+            };
+            message.Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, object?>(updatedMetadata);
         }
     }
     #endregion
