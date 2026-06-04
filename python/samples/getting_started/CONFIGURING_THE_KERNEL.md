@@ -62,6 +62,28 @@ chat_completion = AzureChatCompletion(service_id="test", env_file_path=env_file_
 - Manually configure the `api_key` or required parameters on either the `OpenAIChatCompletion` or `AzureChatCompletion` constructor with keyword arguments.
 - This requires the user to manage their own keys/secrets as they aren't relying on the underlying environment variables or `.env` file.
 
+You can also pass a custom OpenAI-compatible client to `OpenAIChatCompletion` when your organization routes model calls through a gateway or control plane for centralized model access, policy, audit trails, quota enforcement, or cost reporting.
+
+For example, [Tuning Engines](https://www.tuningengines.com/) exposes an OpenAI-compatible endpoint:
+
+```python
+import os
+
+from openai import AsyncOpenAI
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+
+client = AsyncOpenAI(
+    api_key=os.environ["TUNING_ENGINES_API_KEY"],
+    base_url="https://api.tuningengines.com/v1",
+)
+
+chat_completion = OpenAIChatCompletion(
+    service_id="tuning-engines",
+    ai_model_id=os.environ.get("TUNING_ENGINES_MODEL", "your-model-alias"),
+    async_client=client,
+)
+```
+
 ### 4. Microsoft Entra Authentication
 
 To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#microsoft-entra-token-authentication).
