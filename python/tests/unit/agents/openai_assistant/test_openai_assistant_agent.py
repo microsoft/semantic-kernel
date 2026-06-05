@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError
 from semantic_kernel.agents import AgentRegistry, AgentResponseItem, OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.openai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -502,8 +503,6 @@ name: ShouldFail
 async def test_openai_assistant_agent_get_response_passes_function_choice_behavior(
     openai_client, assistant_definition
 ):
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     thread = AsyncMock(spec=AssistantAgentThread)
     fcb = FunctionChoiceBehavior.Auto()
@@ -523,8 +522,6 @@ async def test_openai_assistant_agent_get_response_passes_function_choice_behavi
 
 
 async def test_openai_assistant_agent_invoke_passes_function_choice_behavior(openai_client, assistant_definition):
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     thread = AsyncMock(spec=AssistantAgentThread)
     fcb = FunctionChoiceBehavior.Auto()
@@ -547,8 +544,6 @@ async def test_openai_assistant_agent_invoke_passes_function_choice_behavior(ope
 async def test_openai_assistant_agent_invoke_stream_passes_function_choice_behavior(
     openai_client, assistant_definition
 ):
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     thread = AsyncMock(spec=AssistantAgentThread)
     fcb = FunctionChoiceBehavior.Auto()

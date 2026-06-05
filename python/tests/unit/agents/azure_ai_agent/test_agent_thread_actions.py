@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from azure.ai.agents.models import (
     MessageTextContent,
     MessageTextDetails,
@@ -26,9 +28,11 @@ from pytest import fixture
 
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents import FunctionCallContent, FunctionResultContent, TextContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -358,12 +362,6 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
 
 
 # region Security tests for tools override and function_choice_behavior
-
-
-import pytest
-
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 
 
 async def test_validate_function_choice_behavior_rejects_required():
