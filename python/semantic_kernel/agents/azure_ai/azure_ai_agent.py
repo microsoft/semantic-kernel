@@ -40,6 +40,7 @@ from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActi
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -647,6 +648,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -671,6 +673,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             parallel_tool_calls: Whether to allow parallel tool calls.
             metadata: Metadata for the agent.
             polling_options: The polling options for the agent.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -716,6 +720,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             if is_visible and response.metadata.get("code") is not True:
@@ -752,6 +757,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent on the specified thread.
@@ -777,6 +783,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             parallel_tool_calls: Whether to allow parallel tool calls.
             polling_options: The polling options for the agent.
             metadata: Metadata for the agent.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             **kwargs: Additional keyword arguments.
 
         Yields:
@@ -821,6 +829,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             message.metadata["thread_id"] = thread.id
@@ -856,6 +865,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         response_format: AgentsApiResponseFormatOption | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
         """Invoke the agent on the specified thread with a stream of messages.
@@ -881,6 +891,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             response_format: Response format for the agent.
             parallel_tool_calls: Whether to allow parallel tool calls.
             metadata: Metadata for the agent.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             **kwargs: Additional keyword arguments.
 
         Yields:
@@ -928,6 +940,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             output_messages=collected_messages,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             # Before yielding the current streamed message, emit any new full messages first
