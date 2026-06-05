@@ -293,6 +293,14 @@ class MCPPluginBase:
         try:
             self._current_task = asyncio.create_task(self._inner_connect(ready_event))
             await ready_event.wait()
+            # If the background task finished before (or exactly when) ready_event was
+            # set, it means it raised an exception on an error path.  Re-raise it here
+            # so callers always receive the error rather than silently succeeding with a
+            # broken connection state.
+            if self._current_task.done():
+                exc = self._current_task.exception()
+                if exc is not None:
+                    raise exc
         except KernelPluginInvalidConfigurationError:
             ready_event.clear()
             raise
@@ -336,6 +344,7 @@ class MCPPluginBase:
                 )
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to create a session. Please check your configuration."
                 ) from ex
@@ -343,6 +352,7 @@ class MCPPluginBase:
                 await session.initialize()
             except Exception as ex:
                 await self._exit_stack.aclose()
+                ready_event.set()
                 raise KernelPluginInvalidConfigurationError(
                     "Failed to initialize session. Please check your configuration."
                 ) from ex
