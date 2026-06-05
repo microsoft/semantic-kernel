@@ -25,7 +25,7 @@ else:
 
 @deprecated("This class will be removed in a future release.")
 class MongoStoreApi(AzureCosmosDBStoreApi):
-    """MongoStoreApi class for the Azure Cosmos DB Mongo store."""
+    """MongoStoreApi class for the Azure DocumentDB (with MongoDB compatibility) store."""
 
     database = None
     collection_name: str
@@ -41,7 +41,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     """
     Args:
-        collection_name: Name of the collection for the azure cosmos db mongo store
+        collection_name: Name of the collection for the Azure DocumentDB store
         index_name: Index for the collection
         vector_dimensions: Number of dimensions for vector similarity.
             The maximum number of supported dimensions is 2000
@@ -74,7 +74,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                         ef_construction has to be at least 2 * m
        ef_search: The size of the dynamic candidate list for search (40 by default).
                   A higher value provides better recall at  the cost of speed.
-       database: The Mongo Database object of the azure cosmos db mongo store
+       database: The Mongo Database object of the Azure DocumentDB store
     """
 
     def __init__(
