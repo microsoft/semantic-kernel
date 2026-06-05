@@ -853,3 +853,188 @@ async def test_handle_streaming_requires_action_returns_none():
             dummy_args,
         )
         assert result is None
+
+
+# region Security tests for tools override and function_choice_behavior
+
+
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+
+async def test_validate_function_choice_behavior_rejects_required():
+    """Required FCB is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        AssistantThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.Required()
+        )
+
+
+async def test_validate_function_choice_behavior_accepts_auto():
+    """Auto FCB should be accepted without error."""
+    AssistantThreadActions._validate_function_choice_behavior(
+        FunctionChoiceBehavior.Auto()
+    )
+
+
+async def test_validate_function_choice_behavior_rejects_none_invoke():
+    """NoneInvoke FCB is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        AssistantThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.NoneInvoke()
+        )
+
+
+async def test_validate_function_choice_behavior_accepts_none():
+    """None (no FCB) should be accepted."""
+    AssistantThreadActions._validate_function_choice_behavior(None)
+
+
+async def test_validate_function_choice_behavior_rejects_auto_invoke_false():
+    """Auto with auto_invoke=False is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="auto_invoke"):
+        AssistantThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.Auto(auto_invoke=False)
+        )
+
+
+async def test_get_tools_with_tools_override():
+    """When tools_override is provided, it should replace agent.definition.tools."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = [CodeInterpreterTool(type="code_interpreter")]
+    agent.kernel = MagicMock(spec=Kernel)
+
+    kernel = MagicMock(spec=Kernel)
+    kernel.get_full_list_of_function_metadata.return_value = []
+
+    # Override with file_search only
+    override_tools = [FileSearchTool(type="file_search")]
+    tools = AssistantThreadActions._get_tools(
+        agent=agent, kernel=kernel, tools_override=override_tools
+    )
+    # Should contain file_search from override, not code_interpreter from agent
+    tool_types = [t.get("type") if isinstance(t, dict) else None for t in tools]
+    assert "file_search" in tool_types
+    # Agent's code_interpreter should NOT be in the result
+    assert "code_interpreter" not in tool_types
+
+
+async def test_get_tools_with_fcb_filters():
+    """When function_choice_behavior has filters, only matching functions should be included."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = []
+    agent.kernel = MagicMock(spec=Kernel)
+
+    kernel = MagicMock(spec=Kernel)
+
+    mock_metadata = MagicMock()
+    mock_metadata.fully_qualified_name = "Plugin-AllowedFunc"
+    mock_metadata.name = "AllowedFunc"
+    mock_metadata.plugin_name = "Plugin"
+    mock_metadata.description = "An allowed function"
+    mock_metadata.parameters = []
+    mock_metadata.is_prompt = False
+    mock_metadata.return_parameter = MagicMock()
+    mock_metadata.return_parameter.description = ""
+    mock_metadata.return_parameter.type_ = "str"
+    mock_metadata.additional_properties = {}
+
+    kernel.get_list_of_function_metadata.return_value = [mock_metadata]
+
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-AllowedFunc"]}
+    )
+    tools = AssistantThreadActions._get_tools(
+        agent=agent, kernel=kernel, function_choice_behavior=fcb
+    )
+    kernel.get_list_of_function_metadata.assert_called_once_with(fcb.filters)
+
+
+async def test_get_tools_with_fcb_disable_kernel_functions():
+    """When enable_kernel_functions=False, no kernel functions should be included."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = []
+    agent.kernel = MagicMock(spec=Kernel)
+
+    kernel = MagicMock(spec=Kernel)
+
+    fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
+    tools = AssistantThreadActions._get_tools(
+        agent=agent, kernel=kernel, function_choice_behavior=fcb
+    )
+    kernel.get_full_list_of_function_metadata.assert_not_called()
+    kernel.get_list_of_function_metadata.assert_not_called()
+
+
+async def test_invoke_function_calls_passes_function_behavior():
+    """_invoke_function_calls should pass function_behavior to kernel.invoke_function_call."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke_function_call.return_value = None
+
+    fcc = FunctionCallContent(name="Plugin-Func", arguments={}, id="call1")
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+    chat_history = ChatHistory()
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-Func"]}
+    )
+
+    await AssistantThreadActions._invoke_function_calls(
+        kernel=mock_kernel,
+        fccs=[fcc],
+        chat_history=chat_history,
+        arguments=KernelArguments(),
+        function_choice_behavior=fcb,
+    )
+
+    mock_kernel.invoke_function_call.assert_awaited_once()
+    call_kwargs = mock_kernel.invoke_function_call.call_args
+    assert call_kwargs.kwargs.get("function_behavior") is fcb
+
+
+async def test_invoke_function_calls_passes_disabled_kernel_functions():
+    """_invoke_function_calls should pass enable_kernel_functions=False FCB to kernel."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke_function_call.return_value = None
+
+    fcc = FunctionCallContent(name="Plugin-Func", arguments={}, id="call1")
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+    chat_history = ChatHistory()
+    fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
+
+    await AssistantThreadActions._invoke_function_calls(
+        kernel=mock_kernel,
+        fccs=[fcc],
+        chat_history=chat_history,
+        arguments=KernelArguments(),
+        function_choice_behavior=fcb,
+    )
+
+    mock_kernel.invoke_function_call.assert_awaited_once()
+    call_kwargs = mock_kernel.invoke_function_call.call_args
+    passed_behavior = call_kwargs.kwargs.get("function_behavior")
+    assert passed_behavior is fcb
+    assert not passed_behavior.enable_kernel_functions
+
+
+async def test_get_tools_uses_passed_kernel_not_agent_kernel():
+    """_get_tools should use the passed kernel parameter, not agent.kernel."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = []
+    agent.kernel = MagicMock(spec=Kernel)
+    agent.kernel.get_full_list_of_function_metadata.return_value = ["should_not_be_used"]
+
+    kernel = MagicMock(spec=Kernel)
+    kernel.get_full_list_of_function_metadata.return_value = []
+
+    AssistantThreadActions._get_tools(agent=agent, kernel=kernel)
+    # Should call the passed kernel, not agent.kernel
+    kernel.get_full_list_of_function_metadata.assert_called_once()
+    agent.kernel.get_full_list_of_function_metadata.assert_not_called()
+
+
+# endregion

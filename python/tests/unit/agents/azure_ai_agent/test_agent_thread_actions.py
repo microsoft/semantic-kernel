@@ -29,6 +29,7 @@ from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
 from semantic_kernel.contents import FunctionCallContent, FunctionResultContent, TextContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 
@@ -354,3 +355,167 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
             collected_messages.append(content)
             assert isinstance(content, ChatMessageContent)
             assert content.metadata.get("message_id") == "msg_1"
+
+
+# region Security tests for tools override and function_choice_behavior
+
+
+import pytest
+
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+
+
+async def test_validate_function_choice_behavior_rejects_required():
+    """Required FCB is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        AgentThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.Required()
+        )
+
+
+async def test_validate_function_choice_behavior_accepts_auto():
+    """Auto FCB should be accepted without error."""
+    AgentThreadActions._validate_function_choice_behavior(
+        FunctionChoiceBehavior.Auto()
+    )
+
+
+async def test_validate_function_choice_behavior_rejects_none_invoke():
+    """NoneInvoke FCB is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        AgentThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.NoneInvoke()
+        )
+
+
+async def test_validate_function_choice_behavior_accepts_none():
+    """None (no FCB) should be accepted."""
+    AgentThreadActions._validate_function_choice_behavior(None)
+
+
+async def test_validate_function_choice_behavior_rejects_auto_invoke_false():
+    """Auto with auto_invoke=False is not supported for agent invocations."""
+    with pytest.raises(AgentInvokeException, match="auto_invoke"):
+        AgentThreadActions._validate_function_choice_behavior(
+            FunctionChoiceBehavior.Auto(auto_invoke=False)
+        )
+
+
+async def test_get_tools_with_tools_override(ai_project_client, ai_agent_definition):
+    """When tools_override is provided, it should replace agent.definition.tools."""
+    from azure.ai.agents.models import CodeInterpreterToolDefinition
+
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    kernel = MagicMock(spec=Kernel)
+    kernel.get_full_list_of_function_metadata.return_value = []
+
+    override_tool = CodeInterpreterToolDefinition()
+    tools = AgentThreadActions._get_tools(
+        agent=agent, kernel=kernel, tools_override=[override_tool]
+    )
+    # Should contain the override tool, not agent.definition.tools
+    assert any(
+        (isinstance(t, CodeInterpreterToolDefinition) or (isinstance(t, dict) and t.get("type") == "code_interpreter"))
+        for t in tools
+    )
+
+
+async def test_get_tools_with_fcb_filters(ai_project_client, ai_agent_definition):
+    """When function_choice_behavior has filters, only matching functions should be included."""
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    kernel = MagicMock(spec=Kernel)
+
+    # Simulate filtered metadata
+    mock_metadata = MagicMock()
+    mock_metadata.fully_qualified_name = "Plugin-AllowedFunc"
+    mock_metadata.name = "AllowedFunc"
+    mock_metadata.plugin_name = "Plugin"
+    mock_metadata.description = "An allowed function"
+    mock_metadata.parameters = []
+    mock_metadata.is_prompt = False
+    mock_metadata.return_parameter = MagicMock()
+    mock_metadata.return_parameter.description = ""
+    mock_metadata.return_parameter.type_ = "str"
+    mock_metadata.additional_properties = {}
+
+    kernel.get_list_of_function_metadata.return_value = [mock_metadata]
+    kernel.get_full_list_of_function_metadata.return_value = []
+
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-AllowedFunc"]}
+    )
+    tools = AgentThreadActions._get_tools(
+        agent=agent, kernel=kernel, function_choice_behavior=fcb
+    )
+    # Should have called get_list_of_function_metadata with the filters
+    kernel.get_list_of_function_metadata.assert_called_once_with(fcb.filters)
+
+
+async def test_get_tools_with_fcb_disable_kernel_functions(ai_project_client, ai_agent_definition):
+    """When enable_kernel_functions=False, no kernel functions should be included."""
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    kernel = MagicMock(spec=Kernel)
+
+    fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
+    tools = AgentThreadActions._get_tools(
+        agent=agent, kernel=kernel, function_choice_behavior=fcb
+    )
+    # Should NOT have called any function metadata methods
+    kernel.get_full_list_of_function_metadata.assert_not_called()
+    kernel.get_list_of_function_metadata.assert_not_called()
+
+
+async def test_invoke_function_calls_passes_function_behavior():
+    """_invoke_function_calls should pass function_behavior to kernel.invoke_function_call."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke_function_call.return_value = None
+
+    fcc = FunctionCallContent(name="Plugin-Func", arguments={}, id="call1")
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+    chat_history = ChatHistory()
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-Func"]}
+    )
+
+    await AgentThreadActions._invoke_function_calls(
+        kernel=mock_kernel,
+        fccs=[fcc],
+        chat_history=chat_history,
+        arguments=KernelArguments(),
+        function_choice_behavior=fcb,
+    )
+
+    mock_kernel.invoke_function_call.assert_awaited_once()
+    call_kwargs = mock_kernel.invoke_function_call.call_args
+    assert call_kwargs.kwargs.get("function_behavior") is fcb
+
+
+async def test_invoke_function_calls_passes_disabled_kernel_functions():
+    """_invoke_function_calls should pass enable_kernel_functions=False FCB to kernel."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke_function_call.return_value = None
+
+    fcc = FunctionCallContent(name="Plugin-Func", arguments={}, id="call1")
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+    chat_history = ChatHistory()
+    fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
+
+    await AgentThreadActions._invoke_function_calls(
+        kernel=mock_kernel,
+        fccs=[fcc],
+        chat_history=chat_history,
+        arguments=KernelArguments(),
+        function_choice_behavior=fcb,
+    )
+
+    mock_kernel.invoke_function_call.assert_awaited_once()
+    call_kwargs = mock_kernel.invoke_function_call.call_args
+    passed_behavior = call_kwargs.kwargs.get("function_behavior")
+    assert passed_behavior is fcb
+    assert not passed_behavior.enable_kernel_functions
+
+
+# endregion
