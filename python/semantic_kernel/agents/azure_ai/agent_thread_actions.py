@@ -243,7 +243,11 @@ class AgentThreadActions:
 
                         chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
                         _ = await cls._invoke_function_calls(
-                            kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments, function_choice_behavior=function_choice_behavior
+                            kernel=kernel,
+                            fccs=fccs,
+                            chat_history=chat_history,
+                            arguments=arguments,
+                            function_choice_behavior=function_choice_behavior,
                         )
 
                         tool_outputs = cls._format_tool_outputs(fccs, chat_history)

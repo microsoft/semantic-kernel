@@ -943,7 +943,7 @@ async def test_get_tools_with_fcb_filters():
     fcb = FunctionChoiceBehavior.Auto(
         filters={"included_functions": ["Plugin-AllowedFunc"]}
     )
-    tools = AssistantThreadActions._get_tools(
+    AssistantThreadActions._get_tools(
         agent=agent, kernel=kernel, function_choice_behavior=fcb
     )
     kernel.get_list_of_function_metadata.assert_called_once_with(fcb.filters)
@@ -959,7 +959,7 @@ async def test_get_tools_with_fcb_disable_kernel_functions():
     kernel = MagicMock(spec=Kernel)
 
     fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
-    tools = AssistantThreadActions._get_tools(
+    AssistantThreadActions._get_tools(
         agent=agent, kernel=kernel, function_choice_behavior=fcb
     )
     kernel.get_full_list_of_function_metadata.assert_not_called()

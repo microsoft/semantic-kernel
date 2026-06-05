@@ -443,7 +443,7 @@ async def test_get_tools_with_fcb_filters(ai_project_client, ai_agent_definition
     fcb = FunctionChoiceBehavior.Auto(
         filters={"included_functions": ["Plugin-AllowedFunc"]}
     )
-    tools = AgentThreadActions._get_tools(
+    AgentThreadActions._get_tools(
         agent=agent, kernel=kernel, function_choice_behavior=fcb
     )
     # Should have called get_list_of_function_metadata with the filters
@@ -456,7 +456,7 @@ async def test_get_tools_with_fcb_disable_kernel_functions(ai_project_client, ai
     kernel = MagicMock(spec=Kernel)
 
     fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
-    tools = AgentThreadActions._get_tools(
+    AgentThreadActions._get_tools(
         agent=agent, kernel=kernel, function_choice_behavior=fcb
     )
     # Should NOT have called any function metadata methods
