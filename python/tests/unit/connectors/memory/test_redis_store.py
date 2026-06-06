@@ -276,6 +276,26 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_delete_with_prefix(
+    collection_with_prefix_hash, collection_with_prefix_json, mock_delete_hash, mock_delete_json, type_
+):
+    if type_ == "hashset":
+        collection = collection_with_prefix_hash
+        mock_delete = mock_delete_hash
+    else:
+        collection = collection_with_prefix_json
+        mock_delete = mock_delete_json
+
+    await collection._inner_delete(["id1"])
+
+    # Verify the collection-name prefix was applied to the key
+    if type_ == "hashset":
+        mock_delete.assert_called_once_with("test:id1")
+    else:
+        mock_delete.assert_called_once_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
