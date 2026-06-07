@@ -10,6 +10,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     """Format a user message to the expected object for the Anthropic client.
 
@@ -30,10 +32,21 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     Returns:
         The formatted user message.
     """
-    return {
-        "role": "user",
-        "content": message.content,
-    }
+    if not any(isinstance(item, (ImageContent)) for item in message.items):
+            return {"role": "user","content": message.content}
+    else:
+        content_items :list[dict] = []
+        for item in message.items:
+            if isinstance(item, TextContent):
+                content_items.append({"type": "text", "text": item.text})
+            elif isinstance(item, ImageContent) and (item.data):
+                content_items.append({"type":item.content_type,"source":{"data":item.data_string,"type": "base64","media_type":item.mime_type if item.mime_type else item.default_mime_type}})
+            else:
+                logger.warning(
+                    "Unsupported item type in User message while formatting chat history for Azure AI"
+                    f" Inference: {type(item)}"
+                )
+        return {"role": "user","content": content_items}
 
 
 def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
