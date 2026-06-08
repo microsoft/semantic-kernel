@@ -276,6 +276,17 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+@mark.parametrize("type_", ["hash", "json"])
+async def test_delete_with_prefix(request, type_):
+    collection = request.getfixturevalue(f"collection_with_prefix_{type_}")
+    mock_delete = request.getfixturevalue(f"mock_delete_{type_}")
+
+    await collection._inner_delete(["id1"])
+
+    # Verify the collection-name prefix was applied to the key
+    mock_delete.assert_called_once_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
