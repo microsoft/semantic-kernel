@@ -576,7 +576,10 @@ async def test_invoke_function_calls_blocks_disallowed_function():
     )
 
     # Call a function NOT in the allowlist
-    fcc = FunctionCallContent(name="Plugin-disallowed_func", plugin_name="Plugin", function_name="disallowed_func", arguments={}, id="call1")
+    fcc = FunctionCallContent(
+        name="Plugin-disallowed_func", plugin_name="Plugin",
+        function_name="disallowed_func", arguments={}, id="call1",
+    )
     chat_history = ChatHistory()
 
     result = await kernel.invoke_function_call(
@@ -620,7 +623,10 @@ async def test_invoke_function_calls_allows_permitted_function():
         filters={"included_functions": ["Plugin-allowed_func"]}
     )
 
-    fcc = FunctionCallContent(name="Plugin-allowed_func", plugin_name="Plugin", function_name="allowed_func", arguments={}, id="call1")
+    fcc = FunctionCallContent(
+        name="Plugin-allowed_func", plugin_name="Plugin",
+        function_name="allowed_func", arguments={}, id="call1",
+    )
     chat_history = ChatHistory()
 
     await kernel.invoke_function_call(
