@@ -459,8 +459,8 @@ async def test_get_tools_with_fcb_disable_kernel_functions(ai_project_client, ai
     AgentThreadActions._get_tools(
         agent=agent, kernel=kernel, function_choice_behavior=fcb
     )
-    # Should NOT have called any function metadata methods
-    kernel.get_full_list_of_function_metadata.assert_not_called()
+    # Full list is called for validation, but filtered list should not be called
+    kernel.get_full_list_of_function_metadata.assert_called_once()
     kernel.get_list_of_function_metadata.assert_not_called()
 
 

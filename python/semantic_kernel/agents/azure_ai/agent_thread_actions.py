@@ -1023,15 +1023,18 @@ class AgentThreadActions:
         """
         tools: list[Any] = list(tools_override) if tools_override is not None else list(agent.definition.tools)
 
-        # Determine kernel function metadata based on function_choice_behavior
+        # Always validate against the full kernel function list to catch truly
+        # unregistered functions, regardless of FCB filtering.
+        all_funcs = kernel.get_full_list_of_function_metadata()
+        cls._validate_function_tools_registered(tools, all_funcs)
+
+        # Determine which kernel functions to advertise based on function_choice_behavior
         if function_choice_behavior is not None and not function_choice_behavior.enable_kernel_functions:
-            funcs = []
+            funcs: list[KernelFunctionMetadata] = []
         elif function_choice_behavior is not None and function_choice_behavior.filters:
             funcs = kernel.get_list_of_function_metadata(function_choice_behavior.filters)
         else:
-            funcs = kernel.get_full_list_of_function_metadata()
-
-        cls._validate_function_tools_registered(tools, funcs)
+            funcs = all_funcs
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
         deduped_defs = cls._deduplicate_tools(tools, dict_defs)
         tools.extend(deduped_defs)
