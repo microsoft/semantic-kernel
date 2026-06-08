@@ -87,7 +87,7 @@ class OrchestrationHandoffs(dict[str, AgentHandoffs]):
         return self._add(
             source_agent=source_agent if isinstance(source_agent, str) else source_agent.name,
             target_agent=target_agent if isinstance(target_agent, str) else target_agent.name,
-            description=description or target_agent.description or "" if isinstance(target_agent, Agent) else "",
+            description=description or (target_agent.description or "" if isinstance(target_agent, Agent) else ""),
         )
 
     def add_many(self, source_agent: str | Agent, target_agents: list[str | Agent] | AgentHandoffs) -> "Self":
