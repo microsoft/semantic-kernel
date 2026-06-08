@@ -1006,7 +1006,7 @@ class AgentThreadActions:
                 "FunctionChoiceBehavior.Auto(auto_invoke=False) is not supported for agent invocations. "
                 "The agent run loop manages tool invocation; disabling auto_invoke is not compatible."
             )
-        valid_filter_keys = {"excluded_plugins", "included_plugins", "excluded_functions", "included_functions"}
+        valid_filter_keys: set[str] = {"excluded_plugins", "included_plugins", "excluded_functions", "included_functions"}
         if function_choice_behavior.filters is not None:
             if not function_choice_behavior.filters:
                 raise AgentInvokeException(
