@@ -1058,5 +1058,131 @@ async def test_get_tools_uses_passed_kernel_not_agent_kernel():
     kernel.get_full_list_of_function_metadata.assert_called_once()
     agent.kernel.get_full_list_of_function_metadata.assert_not_called()
 
+async def test_invoke_function_calls_blocks_disallowed_function():
+    """A real Kernel should block a function call not in the FCB allowlist.
+
+    This verifies that the enforcement in kernel.invoke_function_call actually
+    rejects a disallowed function name when filters are provided, rather than
+    only asserting that the kwarg is forwarded.
+    """
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+
+    @kernel_function
+    def allowed_func() -> str:
+        return "allowed"
+
+    @kernel_function
+    def disallowed_func() -> str:
+        return "disallowed"
+
+    kernel = Kernel()
+    kernel.add_plugin(
+        KernelPlugin(
+            name="Plugin",
+            functions=[
+                KernelFunctionFromMethod(method=allowed_func, plugin_name="Plugin"),
+                KernelFunctionFromMethod(method=disallowed_func, plugin_name="Plugin"),
+            ],
+        )
+    )
+
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-allowed_func"]}
+    )
+
+    # Call a function NOT in the allowlist
+    fcc = FunctionCallContent(name="Plugin-disallowed_func", plugin_name="Plugin", function_name="disallowed_func", arguments={}, id="call1")
+    chat_history = ChatHistory()
+
+    result = await kernel.invoke_function_call(
+        function_call=fcc,
+        chat_history=chat_history,
+        function_behavior=fcb,
+    )
+    # invoke_function_call catches the FunctionExecutionException and returns None,
+    # adding an error message to chat_history instead of raising.
+    assert result is None
+    assert len(chat_history.messages) == 1
+    result_item = chat_history.messages[0].items[0]
+    assert "not part of the provided tools" in str(result_item.result)
+
+
+async def test_invoke_function_calls_allows_permitted_function():
+    """A real Kernel should allow a function call that IS in the FCB allowlist."""
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+
+    @kernel_function
+    def allowed_func() -> str:
+        return "ok"
+
+    @kernel_function
+    def other_func() -> str:
+        return "other"
+
+    kernel = Kernel()
+    kernel.add_plugin(
+        KernelPlugin(
+            name="Plugin",
+            functions=[
+                KernelFunctionFromMethod(method=allowed_func, plugin_name="Plugin"),
+                KernelFunctionFromMethod(method=other_func, plugin_name="Plugin"),
+            ],
+        )
+    )
+
+    fcb = FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["Plugin-allowed_func"]}
+    )
+
+    fcc = FunctionCallContent(name="Plugin-allowed_func", plugin_name="Plugin", function_name="allowed_func", arguments={}, id="call1")
+    chat_history = ChatHistory()
+
+    await kernel.invoke_function_call(
+        function_call=fcc,
+        chat_history=chat_history,
+        function_behavior=fcb,
+    )
+    # Should succeed — the function result should be in chat_history
+    assert len(chat_history.messages) == 1
+    result_item = chat_history.messages[0].items[0]
+    assert "ok" in str(result_item.result)
+
+async def test_invoke_raises_for_non_auto_fcb():
+    """Calling AssistantThreadActions.invoke() with a non-Auto FCB should raise before any API call."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = []
+    agent.kernel = Kernel()
+    agent.format_instructions = AsyncMock(return_value="")
+
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        async for _ in AssistantThreadActions.invoke(
+            agent=agent,
+            thread_id="thread123",
+            kernel=Kernel(),
+            function_choice_behavior=FunctionChoiceBehavior.Required(),
+        ):
+            pass
+
+
+async def test_invoke_stream_raises_for_non_auto_fcb():
+    """Calling AssistantThreadActions.invoke_stream() with a non-Auto FCB should raise before any API call."""
+    agent = MagicMock(spec=OpenAIAssistantAgent)
+    agent.definition = MagicMock()
+    agent.definition.tools = []
+    agent.kernel = Kernel()
+    agent.format_instructions = AsyncMock(return_value="")
+
+    with pytest.raises(AgentInvokeException, match="not supported"):
+        async for _ in AssistantThreadActions.invoke_stream(
+            agent=agent,
+            thread_id="thread123",
+            kernel=Kernel(),
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
+        ):
+            pass
+
 
 # endregion
