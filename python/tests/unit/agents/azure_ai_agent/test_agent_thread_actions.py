@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from azure.ai.agents.models import (
     MessageTextContent,
     MessageTextDetails,
@@ -638,6 +637,7 @@ async def test_invoke_function_calls_allows_permitted_function():
     assert len(chat_history.messages) == 1
     result_item = chat_history.messages[0].items[0]
     assert "ok" in str(result_item.result)
+
 
 async def test_invoke_raises_for_non_auto_fcb(ai_project_client, ai_agent_definition):
     """Calling AgentThreadActions.invoke() with a non-Auto FCB should raise before any API call."""

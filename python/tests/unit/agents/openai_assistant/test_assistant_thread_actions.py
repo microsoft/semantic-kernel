@@ -1058,6 +1058,7 @@ async def test_get_tools_uses_passed_kernel_not_agent_kernel():
     kernel.get_full_list_of_function_metadata.assert_called_once()
     agent.kernel.get_full_list_of_function_metadata.assert_not_called()
 
+
 async def test_invoke_function_calls_blocks_disallowed_function():
     """A real Kernel should block a function call not in the FCB allowlist.
 
@@ -1154,6 +1155,7 @@ async def test_invoke_function_calls_allows_permitted_function():
     assert len(chat_history.messages) == 1
     result_item = chat_history.messages[0].items[0]
     assert "ok" in str(result_item.result)
+
 
 async def test_invoke_raises_for_non_auto_fcb():
     """Calling AssistantThreadActions.invoke() with a non-Auto FCB should raise before any API call."""

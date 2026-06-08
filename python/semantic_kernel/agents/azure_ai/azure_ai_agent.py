@@ -40,8 +40,8 @@ from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActi
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
