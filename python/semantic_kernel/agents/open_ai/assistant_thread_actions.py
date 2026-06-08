@@ -881,6 +881,20 @@ class AssistantThreadActions:
                 "FunctionChoiceBehavior.Auto(auto_invoke=False) is not supported for agent invocations. "
                 "The agent run loop manages tool invocation; disabling auto_invoke is not compatible."
             )
+        valid_filter_keys = {"excluded_plugins", "included_plugins", "excluded_functions", "included_functions"}
+        if function_choice_behavior.filters is not None:
+            if not function_choice_behavior.filters:
+                raise AgentInvokeException(
+                    "FunctionChoiceBehavior filters must not be empty. Provide at least one filter key "
+                    f"from {sorted(valid_filter_keys)}, or omit filters entirely to include all "
+                    "kernel functions."
+                )
+            unknown_keys = set(function_choice_behavior.filters.keys()) - valid_filter_keys
+            if unknown_keys:
+                raise AgentInvokeException(
+                    f"Unknown filter key(s): {sorted(unknown_keys)}. "
+                    f"Valid filter keys are: {sorted(valid_filter_keys)}."
+                )
 
     @classmethod
     def _get_tools(

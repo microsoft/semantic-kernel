@@ -400,6 +400,30 @@ async def test_validate_function_choice_behavior_rejects_auto_invoke_false():
         )
 
 
+async def test_validate_function_choice_behavior_rejects_empty_filters():
+    """Empty filters dict should be rejected."""
+    fcb = FunctionChoiceBehavior.Auto()
+    fcb.filters = {}
+    with pytest.raises(AgentInvokeException, match="must not be empty"):
+        AgentThreadActions._validate_function_choice_behavior(fcb)
+
+
+async def test_validate_function_choice_behavior_rejects_unknown_filter_keys():
+    """Unknown filter keys should be rejected."""
+    fcb = FunctionChoiceBehavior.Auto()
+    # Bypass Pydantic validation to simulate a mistyped key reaching the validator
+    object.__setattr__(fcb, "filters", {"include_functions": ["foo"]})
+    with pytest.raises(AgentInvokeException, match="Unknown filter key"):
+        AgentThreadActions._validate_function_choice_behavior(fcb)
+
+
+async def test_validate_function_choice_behavior_accepts_valid_filters():
+    """Valid filter keys should be accepted."""
+    AgentThreadActions._validate_function_choice_behavior(
+        FunctionChoiceBehavior.Auto(filters={"included_functions": ["plugin-func"]})
+    )
+
+
 async def test_get_tools_with_tools_override(ai_project_client, ai_agent_definition):
     """When tools_override is provided, it should replace agent.definition.tools."""
     from azure.ai.agents.models import CodeInterpreterToolDefinition
