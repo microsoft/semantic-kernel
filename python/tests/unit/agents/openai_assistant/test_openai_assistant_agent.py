@@ -500,9 +500,7 @@ name: ShouldFail
         await AgentRegistry.create_from_yaml(spec)
 
 
-async def test_openai_assistant_agent_get_response_passes_function_choice_behavior(
-    openai_client, assistant_definition
-):
+async def test_openai_assistant_agent_get_response_passes_function_choice_behavior(openai_client, assistant_definition):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
     thread = AsyncMock(spec=AssistantAgentThread)
     fcb = FunctionChoiceBehavior.Auto()

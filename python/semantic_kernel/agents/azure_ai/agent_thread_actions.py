@@ -168,8 +168,9 @@ class AgentThreadActions:
 
         cls._validate_function_choice_behavior(function_choice_behavior)
 
-        tools = cls._get_tools(agent=agent, kernel=kernel, tools_override=tools,
-                               function_choice_behavior=function_choice_behavior)  # type: ignore
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -525,8 +526,9 @@ class AgentThreadActions:
 
         cls._validate_function_choice_behavior(function_choice_behavior)
 
-        tools = cls._get_tools(agent=agent, kernel=kernel, tools_override=tools,
-                               function_choice_behavior=function_choice_behavior)  # type: ignore
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -1208,7 +1210,10 @@ class AgentThreadActions:
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             results = await cls._invoke_function_calls(
-                kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments,
+                kernel=kernel,
+                fccs=fccs,
+                chat_history=chat_history,
+                arguments=arguments,
                 function_choice_behavior=function_choice_behavior,
             )
 

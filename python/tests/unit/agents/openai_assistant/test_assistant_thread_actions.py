@@ -862,24 +862,18 @@ async def test_handle_streaming_requires_action_returns_none():
 async def test_validate_function_choice_behavior_rejects_required():
     """Required FCB is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="not supported"):
-        AssistantThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.Required()
-        )
+        AssistantThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Required())
 
 
 async def test_validate_function_choice_behavior_accepts_auto():
     """Auto FCB should be accepted without error."""
-    AssistantThreadActions._validate_function_choice_behavior(
-        FunctionChoiceBehavior.Auto()
-    )
+    AssistantThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Auto())
 
 
 async def test_validate_function_choice_behavior_rejects_none_invoke():
     """NoneInvoke FCB is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="not supported"):
-        AssistantThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.NoneInvoke()
-        )
+        AssistantThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.NoneInvoke())
 
 
 async def test_validate_function_choice_behavior_accepts_none():
@@ -890,9 +884,7 @@ async def test_validate_function_choice_behavior_accepts_none():
 async def test_validate_function_choice_behavior_rejects_auto_invoke_false():
     """Auto with auto_invoke=False is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="auto_invoke"):
-        AssistantThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.Auto(auto_invoke=False)
-        )
+        AssistantThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Auto(auto_invoke=False))
 
 
 async def test_validate_function_choice_behavior_rejects_empty_filters():
@@ -931,9 +923,7 @@ async def test_get_tools_with_tools_override():
 
     # Override with file_search only
     override_tools = [FileSearchTool(type="file_search")]
-    tools = AssistantThreadActions._get_tools(
-        agent=agent, kernel=kernel, tools_override=override_tools
-    )
+    tools = AssistantThreadActions._get_tools(agent=agent, kernel=kernel, tools_override=override_tools)
     # Should contain file_search from override, not code_interpreter from agent
     tool_types = [t.get("type") if isinstance(t, dict) else None for t in tools]
     assert "file_search" in tool_types
@@ -964,12 +954,8 @@ async def test_get_tools_with_fcb_filters():
 
     kernel.get_list_of_function_metadata.return_value = [mock_metadata]
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-AllowedFunc"]}
-    )
-    AssistantThreadActions._get_tools(
-        agent=agent, kernel=kernel, function_choice_behavior=fcb
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-AllowedFunc"]})
+    AssistantThreadActions._get_tools(agent=agent, kernel=kernel, function_choice_behavior=fcb)
     kernel.get_list_of_function_metadata.assert_called_once_with(fcb.filters)
 
 
@@ -983,9 +969,7 @@ async def test_get_tools_with_fcb_disable_kernel_functions():
     kernel = MagicMock(spec=Kernel)
 
     fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
-    AssistantThreadActions._get_tools(
-        agent=agent, kernel=kernel, function_choice_behavior=fcb
-    )
+    AssistantThreadActions._get_tools(agent=agent, kernel=kernel, function_choice_behavior=fcb)
     kernel.get_full_list_of_function_metadata.assert_not_called()
     kernel.get_list_of_function_metadata.assert_not_called()
 
@@ -999,9 +983,7 @@ async def test_invoke_function_calls_passes_function_behavior():
     from semantic_kernel.contents.chat_history import ChatHistory
 
     chat_history = ChatHistory()
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-Func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-Func"]})
 
     await AssistantThreadActions._invoke_function_calls(
         kernel=mock_kernel,
@@ -1088,14 +1070,15 @@ async def test_invoke_function_calls_blocks_disallowed_function():
         )
     )
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-allowed_func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-allowed_func"]})
 
     # Call a function NOT in the allowlist
     fcc = FunctionCallContent(
-        name="Plugin-disallowed_func", plugin_name="Plugin",
-        function_name="disallowed_func", arguments={}, id="call1",
+        name="Plugin-disallowed_func",
+        plugin_name="Plugin",
+        function_name="disallowed_func",
+        arguments={},
+        id="call1",
     )
     chat_history = ChatHistory()
 
@@ -1136,13 +1119,14 @@ async def test_invoke_function_calls_allows_permitted_function():
         )
     )
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-allowed_func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-allowed_func"]})
 
     fcc = FunctionCallContent(
-        name="Plugin-allowed_func", plugin_name="Plugin",
-        function_name="allowed_func", arguments={}, id="call1",
+        name="Plugin-allowed_func",
+        plugin_name="Plugin",
+        function_name="allowed_func",
+        arguments={},
+        id="call1",
     )
     chat_history = ChatHistory()
 

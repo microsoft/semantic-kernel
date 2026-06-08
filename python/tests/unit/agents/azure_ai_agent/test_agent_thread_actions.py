@@ -368,24 +368,18 @@ async def test_agent_thread_actions_invoke_stream(ai_project_client, ai_agent_de
 async def test_validate_function_choice_behavior_rejects_required():
     """Required FCB is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="not supported"):
-        AgentThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.Required()
-        )
+        AgentThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Required())
 
 
 async def test_validate_function_choice_behavior_accepts_auto():
     """Auto FCB should be accepted without error."""
-    AgentThreadActions._validate_function_choice_behavior(
-        FunctionChoiceBehavior.Auto()
-    )
+    AgentThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Auto())
 
 
 async def test_validate_function_choice_behavior_rejects_none_invoke():
     """NoneInvoke FCB is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="not supported"):
-        AgentThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.NoneInvoke()
-        )
+        AgentThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.NoneInvoke())
 
 
 async def test_validate_function_choice_behavior_accepts_none():
@@ -396,9 +390,7 @@ async def test_validate_function_choice_behavior_accepts_none():
 async def test_validate_function_choice_behavior_rejects_auto_invoke_false():
     """Auto with auto_invoke=False is not supported for agent invocations."""
     with pytest.raises(AgentInvokeException, match="auto_invoke"):
-        AgentThreadActions._validate_function_choice_behavior(
-            FunctionChoiceBehavior.Auto(auto_invoke=False)
-        )
+        AgentThreadActions._validate_function_choice_behavior(FunctionChoiceBehavior.Auto(auto_invoke=False))
 
 
 async def test_validate_function_choice_behavior_rejects_empty_filters():
@@ -434,9 +426,7 @@ async def test_get_tools_with_tools_override(ai_project_client, ai_agent_definit
     kernel.get_full_list_of_function_metadata.return_value = []
 
     override_tool = CodeInterpreterToolDefinition()
-    tools = AgentThreadActions._get_tools(
-        agent=agent, kernel=kernel, tools_override=[override_tool]
-    )
+    tools = AgentThreadActions._get_tools(agent=agent, kernel=kernel, tools_override=[override_tool])
     # Should contain the override tool, not agent.definition.tools
     assert any(
         (isinstance(t, CodeInterpreterToolDefinition) or (isinstance(t, dict) and t.get("type") == "code_interpreter"))
@@ -465,12 +455,8 @@ async def test_get_tools_with_fcb_filters(ai_project_client, ai_agent_definition
     kernel.get_list_of_function_metadata.return_value = [mock_metadata]
     kernel.get_full_list_of_function_metadata.return_value = []
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-AllowedFunc"]}
-    )
-    AgentThreadActions._get_tools(
-        agent=agent, kernel=kernel, function_choice_behavior=fcb
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-AllowedFunc"]})
+    AgentThreadActions._get_tools(agent=agent, kernel=kernel, function_choice_behavior=fcb)
     # Should have called get_list_of_function_metadata with the filters
     kernel.get_list_of_function_metadata.assert_called_once_with(fcb.filters)
 
@@ -481,9 +467,7 @@ async def test_get_tools_with_fcb_disable_kernel_functions(ai_project_client, ai
     kernel = MagicMock(spec=Kernel)
 
     fcb = FunctionChoiceBehavior.Auto(enable_kernel_functions=False)
-    AgentThreadActions._get_tools(
-        agent=agent, kernel=kernel, function_choice_behavior=fcb
-    )
+    AgentThreadActions._get_tools(agent=agent, kernel=kernel, function_choice_behavior=fcb)
     # Full list is called for validation, but filtered list should not be called
     kernel.get_full_list_of_function_metadata.assert_called_once()
     kernel.get_list_of_function_metadata.assert_not_called()
@@ -498,9 +482,7 @@ async def test_invoke_function_calls_passes_function_behavior():
     from semantic_kernel.contents.chat_history import ChatHistory
 
     chat_history = ChatHistory()
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-Func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-Func"]})
 
     await AgentThreadActions._invoke_function_calls(
         kernel=mock_kernel,
@@ -570,14 +552,15 @@ async def test_invoke_function_calls_blocks_disallowed_function():
         )
     )
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-allowed_func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-allowed_func"]})
 
     # Call a function NOT in the allowlist
     fcc = FunctionCallContent(
-        name="Plugin-disallowed_func", plugin_name="Plugin",
-        function_name="disallowed_func", arguments={}, id="call1",
+        name="Plugin-disallowed_func",
+        plugin_name="Plugin",
+        function_name="disallowed_func",
+        arguments={},
+        id="call1",
     )
     chat_history = ChatHistory()
 
@@ -618,13 +601,14 @@ async def test_invoke_function_calls_allows_permitted_function():
         )
     )
 
-    fcb = FunctionChoiceBehavior.Auto(
-        filters={"included_functions": ["Plugin-allowed_func"]}
-    )
+    fcb = FunctionChoiceBehavior.Auto(filters={"included_functions": ["Plugin-allowed_func"]})
 
     fcc = FunctionCallContent(
-        name="Plugin-allowed_func", plugin_name="Plugin",
-        function_name="allowed_func", arguments={}, id="call1",
+        name="Plugin-allowed_func",
+        plugin_name="Plugin",
+        function_name="allowed_func",
+        arguments={},
+        id="call1",
     )
     chat_history = ChatHistory()
 
