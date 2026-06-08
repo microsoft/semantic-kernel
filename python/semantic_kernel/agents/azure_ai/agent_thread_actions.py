@@ -1019,7 +1019,7 @@ class AgentThreadActions:
                     f"from {sorted(valid_filter_keys)}, or omit filters entirely to include all "
                     "kernel functions."
                 )
-            unknown_keys = set(function_choice_behavior.filters.keys()) - valid_filter_keys
+            unknown_keys = {str(k) for k in function_choice_behavior.filters} - valid_filter_keys
             if unknown_keys:
                 raise AgentInvokeException(
                     f"Unknown filter key(s): {sorted(unknown_keys)}. "
