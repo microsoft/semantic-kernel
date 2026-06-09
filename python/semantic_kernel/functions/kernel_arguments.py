@@ -44,7 +44,7 @@ class KernelArguments(dict):
         if settings:
             settings_dict = {}
             if isinstance(settings, dict):
-                settings_dict = settings
+                settings_dict = dict(settings)
             elif isinstance(settings, list):
                 settings_dict = {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
             else:
@@ -67,11 +67,9 @@ class KernelArguments(dict):
                 f"TypeError: unsupported operand type(s) for |: '{type(self).__name__}' and '{type(value).__name__}'"
             )
 
-        # Merge execution settings
         new_execution_settings = (self.execution_settings or {}).copy()
         if isinstance(value, KernelArguments) and value.execution_settings:
-            new_execution_settings |= value.execution_settings
-        # Create a new KernelArguments with merged dict values
+            new_execution_settings.update(value.execution_settings)
         return KernelArguments(settings=new_execution_settings, **(dict(self) | dict(value)))
 
     def __ror__(self, value: dict) -> "KernelArguments":
@@ -84,21 +82,17 @@ class KernelArguments(dict):
                 f"TypeError: unsupported operand type(s) for |: '{type(value).__name__}' and '{type(self).__name__}'"
             )
 
-        # Merge execution settings
         new_execution_settings = {}
         if isinstance(value, KernelArguments) and value.execution_settings:
             new_execution_settings = value.execution_settings.copy()
         if self.execution_settings:
-            new_execution_settings |= self.execution_settings
-
-        # Create a new KernelArguments with merged dict values
+            new_execution_settings.update(self.execution_settings)
         return KernelArguments(settings=new_execution_settings, **(dict(value) | dict(self)))
 
     def __ior__(self, value: "SupportsKeysAndGetItem[Any, Any] | Iterable[tuple[Any, Any]]") -> "KernelArguments":
         """Merges into this KernelArguments with another KernelArguments or dict (in-place)."""
         self.update(value)
 
-        # In-place merge execution settings
         if isinstance(value, KernelArguments) and value.execution_settings:
             if self.execution_settings:
                 self.execution_settings.update(value.execution_settings)
