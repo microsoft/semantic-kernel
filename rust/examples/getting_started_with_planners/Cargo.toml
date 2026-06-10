@@ -1,0 +1,24 @@
+[package]
+name = "getting_started_with_planners"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step01_sequential_planner"
+path = "step01_sequential_planner.rs"
+
+[[bin]]
+name = "step02_stepwise_planner"
+path = "step02_stepwise_planner.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-plan = { path = "../../sk-plan" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dotenv = { workspace = true }
+async-trait = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }

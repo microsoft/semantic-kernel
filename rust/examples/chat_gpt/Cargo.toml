@@ -1,0 +1,25 @@
+[package]
+name = "chat_gpt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Example demonstrating ChatGPT integration with semantic kernel"
+
+[[bin]]
+name = "chat_gpt"
+path = "src/main.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-openai = { path = "../../sk-openai" }
+tokio.workspace = true
+tracing-subscriber.workspace = true
+
+[features]
+default = []
+openai = []
