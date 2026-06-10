@@ -29,6 +29,7 @@ class Services(str, Enum):
     VERTEX_AI = "vertex_ai"
     DEEPSEEK = "deepseek"
     NVIDIA = "nvidia"
+    PERPLEXITY = "perplexity"
 
 
 service_id = "default"
@@ -66,6 +67,7 @@ def get_chat_completion_service_and_request_settings(
         Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
         Services.DEEPSEEK: lambda: get_deepseek_chat_completion_service_and_request_settings(),
         Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
+        Services.PERPLEXITY: lambda: get_perplexity_chat_completion_service_and_request_settings(),
     }
 
     # Call the appropriate lambda or function based on the service name
@@ -428,5 +430,32 @@ def get_nvidia_chat_completion_service_and_request_settings() -> tuple[
 
     chat_service = NvidiaChatCompletion(service_id=service_id)
     request_settings = NvidiaChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_perplexity_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return Perplexity chat completion service and request settings.
+
+    The service credentials can be read in 3 ways:
+    1. Via the constructor
+    2. Via the environment variables (PERPLEXITY_API_KEY, PERPLEXITY_CHAT_MODEL_ID)
+    3. Via an environment file
+
+    Perplexity exposes an OpenAI-compatible chat completions endpoint at
+    https://api.perplexity.ai/chat/completions. The default model is ``sonar-pro``.
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    """
+    from semantic_kernel.connectors.ai.perplexity import (
+        PerplexityChatCompletion,
+        PerplexityChatPromptExecutionSettings,
+    )
+
+    chat_service = PerplexityChatCompletion(service_id=service_id)
+    request_settings = PerplexityChatPromptExecutionSettings(service_id=service_id)
 
     return chat_service, request_settings
