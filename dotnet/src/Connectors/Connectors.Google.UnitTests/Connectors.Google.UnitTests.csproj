@@ -25,6 +25,7 @@
     </PackageReference>
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Google.GenAI" />
   </ItemGroup>
 
   <ItemGroup>

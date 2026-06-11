@@ -38,7 +38,7 @@ req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 chat_function = kernel.add_function(
     prompt_template_config=PromptTemplateConfig(
-        template="""{{system_message}}{% for item in chat_history %}{{ message(item) }}{% endfor %}""",
+        template="""{{system_message}}{% for item in chat_history %}{{ message_to_prompt(item) }}{% endfor %}""",
         template_format="jinja2",
         allow_dangerously_set_content=True,
     ),

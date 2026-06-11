@@ -14,20 +14,31 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
     };
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "int, long, string, Guid";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
 
-        return type == typeof(int) || type == typeof(long) || type == typeof(string) || type == typeof(Guid);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        base.ValidateKeyProperty(keyProperty);
+
+        var type = keyProperty.Type;
+
+        if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))
+        {
+            throw new NotSupportedException($"The property type '{type.FullName}' is not supported for key properties by the SqliteVec provider. Supported types are: int, long, string, Guid.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid";
+        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid, DateTime, DateTimeOffset"
+#if NET
+            + ", DateOnly, TimeOnly"
+#endif
+            ;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -42,7 +53,14 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
             || type == typeof(float)
             || type == typeof(double)
             || type == typeof(byte[])
-            || type == typeof(Guid);
+            || type == typeof(Guid)
+            || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset)
+#if NET
+            || type == typeof(DateOnly)
+            || type == typeof(TimeOnly)
+#endif
+            ;
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

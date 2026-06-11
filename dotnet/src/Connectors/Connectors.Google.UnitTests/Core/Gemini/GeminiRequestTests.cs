@@ -781,6 +781,264 @@ public sealed class GeminiRequestTests
         Assert.Equal("assistant-message-2", request.Contents[3].Parts![0].Text);
     }
 
+    [Fact]
+    public void FromChatHistoryImageContentInToolResultCreatesInlineDataPart()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG magic bytes
+        var imageContent = new ImageContent(imageBytes, "image/png");
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var part = request.Contents[0].Parts![0];
+        Assert.NotNull(part.FunctionResponse);
+        Assert.Equal("capture-screenshot", part.FunctionResponse.FunctionName);
+        Assert.NotNull(part.FunctionResponse.Parts);
+        Assert.Single(part.FunctionResponse.Parts);
+        Assert.NotNull(part.FunctionResponse.Parts[0].InlineData);
+        Assert.Equal("image/png", part.FunctionResponse.Parts[0].InlineData!.MimeType);
+        Assert.Equal(Convert.ToBase64String(imageBytes), part.FunctionResponse.Parts[0].InlineData!.InlineData);
+    }
+
+    [Fact]
+    public void FromChatHistoryImageContentWithoutDataThrowsInvalidOperationException()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var imageContent = new ImageContent(new Uri("https://example.com/image.png")) { MimeType = "image/png" };
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings));
+        Assert.Equal("ImageContent in function result must contain binary data.", exception.Message);
+    }
+
+    [Fact]
+    public void FromChatHistoryImageContentWithoutMimeTypeThrowsInvalidOperationException()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        ReadOnlyMemory<byte> imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var imageContent = new ImageContent(imageBytes, mimeType: null); // No MimeType
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => imageContent);
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "capture-screenshot" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, imageContent));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings));
+        Assert.Equal("Image content MimeType is empty.", exception.Message);
+    }
+
+    [Fact]
+    public void FromChatHistoryToolCallsWithThoughtSignatureIncludesSignatureInRequest()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var inputPart = new GeminiPart
+        {
+            FunctionCall = new GeminiPart.FunctionCallPart
+            {
+                FunctionName = "function-name",
+                Arguments = new JsonObject { ["key"] = "value" }
+            },
+            ThoughtSignature = "thought-signature-abc123"
+        };
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", [inputPart]));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var requestParts = request.Contents[0].Parts;
+        Assert.NotNull(requestParts);
+        var requestPart = Assert.Single(requestParts);
+        Assert.NotNull(requestPart.FunctionCall);
+        Assert.Equal("thought-signature-abc123", requestPart.ThoughtSignature);
+    }
+
+    [Fact]
+    public void FromChatHistoryToolCallsWithoutThoughtSignatureDoesNotIncludeSignature()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var functionCallPart = new GeminiPart.FunctionCallPart
+        {
+            FunctionName = "function-name",
+            Arguments = new JsonObject { ["key"] = "value" }
+        };
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [functionCallPart]));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var requestParts = request.Contents[0].Parts;
+        Assert.NotNull(requestParts);
+        var requestPart = Assert.Single(requestParts);
+        Assert.Null(requestPart.ThoughtSignature);
+    }
+
+    [Fact]
+    public void FromChatHistoryParallelToolCallsOnlyFirstHasThoughtSignature()
+    {
+        // Arrange - Parallel function calls: only first has ThoughtSignature per Google docs
+        ChatHistory chatHistory = [];
+        var geminiParts = new[]
+        {
+            new GeminiPart
+            {
+                FunctionCall = new GeminiPart.FunctionCallPart { FunctionName = "function1" },
+                ThoughtSignature = "signature-for-first-only"
+            },
+            new GeminiPart
+            {
+                FunctionCall = new GeminiPart.FunctionCallPart { FunctionName = "function2" },
+                ThoughtSignature = null
+            },
+            new GeminiPart
+            {
+                FunctionCall = new GeminiPart.FunctionCallPart { FunctionName = "function3" },
+                ThoughtSignature = null
+            }
+        };
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, null, "model-id", geminiParts));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var parts = request.Contents[0].Parts;
+        Assert.NotNull(parts);
+        Assert.Equal(3, parts.Count);
+        Assert.Equal("signature-for-first-only", parts[0].ThoughtSignature);
+        Assert.Null(parts[1].ThoughtSignature);
+        Assert.Null(parts[2].ThoughtSignature);
+    }
+
+    [Fact]
+    public void FromChatHistoryTextResponseWithThoughtSignatureIncludesSignatureInRequest()
+    {
+        // Arrange - Text response with ThoughtSignature in Metadata
+        ChatHistory chatHistory = [];
+        var metadata = new GeminiMetadata { ThoughtSignature = "text-response-signature" };
+        chatHistory.Add(new GeminiChatMessageContent(
+            AuthorRole.Assistant,
+            "This is a text response",
+            "model-id",
+            calledToolResults: null,
+            metadata));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var parts = request.Contents[0].Parts;
+        Assert.NotNull(parts);
+        var part = Assert.Single(parts);
+        Assert.Equal("This is a text response", part.Text);
+        Assert.Equal("text-response-signature", part.ThoughtSignature);
+    }
+
+    [Fact]
+    public void FromChatHistoryTextResponseWithoutThoughtSignatureDoesNotIncludeSignature()
+    {
+        // Arrange - Text response without ThoughtSignature (thinking disabled)
+        ChatHistory chatHistory = [];
+        chatHistory.AddAssistantMessage("This is a text response");
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents);
+        var parts = request.Contents[0].Parts;
+        Assert.NotNull(parts);
+        var part = Assert.Single(parts);
+        Assert.Null(part.ThoughtSignature);
+    }
+
+    [Fact]
+    public void FromChatHistoryMultiTurnWithThoughtSignaturesPreservesAllSignatures()
+    {
+        // Arrange - Multi-turn conversation with different ThoughtSignatures
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("Question 1");
+
+        var metadata1 = new GeminiMetadata { ThoughtSignature = "signature-turn-1" };
+        chatHistory.Add(new GeminiChatMessageContent(
+            AuthorRole.Assistant,
+            "Answer 1",
+            "model-id",
+            calledToolResults: null,
+            metadata1));
+
+        chatHistory.AddUserMessage("Question 2");
+
+        var metadata2 = new GeminiMetadata { ThoughtSignature = "signature-turn-2" };
+        chatHistory.Add(new GeminiChatMessageContent(
+            AuthorRole.Assistant,
+            "Answer 2",
+            "model-id",
+            calledToolResults: null,
+            metadata2));
+
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Equal(4, request.Contents.Count);
+        Assert.Null(request.Contents[0].Parts![0].ThoughtSignature); // User message
+        Assert.Equal("signature-turn-1", request.Contents[1].Parts![0].ThoughtSignature); // Assistant 1
+        Assert.Null(request.Contents[2].Parts![0].ThoughtSignature); // User message
+        Assert.Equal("signature-turn-2", request.Contents[3].Parts![0].ThoughtSignature); // Assistant 2
+    }
+
+    [Fact]
+    public void FromChatHistoryThoughtSignatureFromDictionaryMetadataFallback()
+    {
+        // Arrange - Simulate deserialized chat history where Metadata is a dictionary
+        ChatHistory chatHistory = [];
+        var metadata = new Dictionary<string, object?> { ["ThoughtSignature"] = "fallback-signature" };
+        chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, "Text response", "model-id", metadata));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert - Should NOT include signature because it's not a GeminiChatMessageContent
+        // The fallback only works for GeminiChatMessageContent with dictionary metadata
+        Assert.Single(request.Contents);
+        Assert.Null(request.Contents[0].Parts![0].ThoughtSignature);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 

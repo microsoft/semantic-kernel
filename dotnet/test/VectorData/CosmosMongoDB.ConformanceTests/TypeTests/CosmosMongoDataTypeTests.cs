@@ -22,6 +22,14 @@ public class CosmosMongoDataTypeTests(CosmosMongoDataTypeTests.Fixture fixture)
             new DateTime(2021, 2, 3, 13, 40, 55, DateTimeKind.Utc),
             instantiationExpression: () => new DateTime(2020, 1, 1, 12, 30, 45, DateTimeKind.Utc));
 
+    // MongoDB stores DateTimeOffset as UTC BsonDateTime; the offset is lost on round-trip.
+    public override Task DateTimeOffset()
+        => this.Test<DateTimeOffset>(
+            "DateTimeOffset",
+            new DateTimeOffset(2020, 1, 1, 12, 30, 45, TimeSpan.Zero),
+            new DateTimeOffset(2021, 2, 3, 13, 40, 55, TimeSpan.Zero),
+            instantiationExpression: () => new DateTimeOffset(2020, 1, 1, 12, 30, 45, TimeSpan.Zero));
+
     public new class Fixture : DataTypeTests<string, DataTypeTests<string>.DefaultRecord>.Fixture
     {
         public override TestStore TestStore => CosmosMongoTestStore.Instance;
@@ -34,9 +42,7 @@ public class CosmosMongoDataTypeTests(CosmosMongoDataTypeTests.Fixture fixture)
             typeof(byte),
             typeof(short),
             typeof(Guid),
-            typeof(DateTimeOffset),
 #if NET
-            typeof(DateOnly),
             typeof(TimeOnly)
 #endif
         ];

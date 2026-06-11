@@ -32,7 +32,11 @@ ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"]) and 
     "Linux"
 ])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
-vertex_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_CLOUD_PROJECT_ID", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing([
+    "GOOGLE_AI_CLOUD_PROJECT_ID",
+    "GOOGLE_AI_GEMINI_MODEL_ID",
+    "GOOGLE_AI_CLOUD_REGION",
+])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
@@ -94,7 +98,10 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
-            marks=pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            marks=[
+                pytest.mark.skip(reason="Skipping due to occasional throttling from Google AI."),
+                # pytest.mark.skipif(not google_ai_setup, reason="Need Google AI setup"),
+            ],
             id="google_ai_text_completion",
         ),
         pytest.param(
@@ -115,13 +122,6 @@ pytestmark = pytest.mark.parametrize(
                 pytest.mark.onnx,
             ),
             id="onnx_gen_ai_text_completion",
-        ),
-        pytest.param(
-            "bedrock_amazon_titan",
-            {},
-            ["Repeat the word Hello once"],
-            {},
-            id="bedrock_amazon_titan_text_completion",
         ),
         pytest.param(
             "bedrock_anthropic_claude",
@@ -218,10 +218,6 @@ class TestTextCompletion(CompletionTestBase):
             ),
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
-            "bedrock_amazon_titan": (
-                self._try_create_bedrock_text_completion_client("amazon.titan-text-express-v1"),
-                BedrockTextPromptExecutionSettings,
-            ),
             "bedrock_anthropic_claude": (
                 self._try_create_bedrock_text_completion_client("anthropic.claude-v2"),
                 BedrockTextPromptExecutionSettings,

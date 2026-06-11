@@ -6,7 +6,9 @@ using VectorData.ConformanceTests.Support;
 
 namespace CosmosMongoDB.ConformanceTests.Support;
 
+#pragma warning disable CA1001
 public sealed class CosmosMongoTestStore : TestStore
+#pragma warning restore CA1001
 {
     public static CosmosMongoTestStore Instance { get; } = new();
 

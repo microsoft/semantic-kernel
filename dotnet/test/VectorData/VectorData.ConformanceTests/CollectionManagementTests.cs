@@ -97,7 +97,7 @@ public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture
     }
 
     public virtual VectorStoreCollection<TKey, Record> GetCollection()
-        => fixture.TestStore.DefaultVectorStore.GetCollection<TKey, Record>(this.CollectionName, this.CreateRecordDefinition());
+        => fixture.TestStore.CreateCollection<TKey, Record>(this.CollectionName, this.CreateRecordDefinition());
 
     public virtual VectorStoreCollectionDefinition CreateRecordDefinition()
         => new()

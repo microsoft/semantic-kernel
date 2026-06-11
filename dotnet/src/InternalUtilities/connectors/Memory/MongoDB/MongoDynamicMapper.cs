@@ -30,13 +30,13 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             : keyValue switch
             {
                 string s => s,
-                Guid g => BsonValue.Create(g),
+                Guid g => new BsonBinaryData(g, GuidRepresentation.Standard),
                 ObjectId o => o,
                 long i => i,
                 int i => i,
 
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string, Guid, ObjectID, long or int.")
             }
         };
 
@@ -44,7 +44,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         {
             if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                document[property.StorageName] = BsonValue.Create(dataValue);
+                document[property.StorageName] = BsonValueFactory.Create(dataValue);
             }
         }
 
@@ -160,7 +160,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(int?) => value.AsNullableInt32,
             Type t when t == typeof(long) => value.AsInt64,
             Type t when t == typeof(long?) => value.AsNullableInt64,
-            Type t when t == typeof(float) => ((float)value.AsDouble),
+            Type t when t == typeof(float) => (float)value.AsDouble,
             Type t when t == typeof(float?) => ((float?)value.AsNullableDouble),
             Type t when t == typeof(double) => value.AsDouble,
             Type t when t == typeof(double?) => value.AsNullableDouble,
@@ -168,6 +168,16 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(decimal?) => value.AsNullableDecimal,
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
+            Type t when t == typeof(DateTimeOffset) => new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero),
+            Type t when t == typeof(DateTimeOffset?) => value.ToNullableUniversalTime() is DateTime dateTime
+                ? new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero)
+                : null,
+#if NET
+            Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.ToUniversalTime()),
+            Type t when t == typeof(DateOnly?) => value.ToNullableUniversalTime() is DateTime dateTime
+                ? DateOnly.FromDateTime(dateTime)
+                : null,
+#endif
 
             _ => (object?)null
         };

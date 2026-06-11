@@ -22,17 +22,24 @@ public sealed class OpenAIResponseAgent : Agent
     /// Initializes a new instance of the <see cref="OpenAIResponseAgent"/> class.
     /// </summary>
     /// <param name="client">The OpenAI provider for accessing the Responses API service.</param>
-    public OpenAIResponseAgent(OpenAIResponseClient client)
+    /// <param name="modelId">The model to use for generating responses.</param>
+    public OpenAIResponseAgent(ResponsesClient client, string? modelId = null)
     {
         Verify.NotNull(client);
 
         this.Client = client;
+        this.ModelId = modelId;
     }
 
     /// <summary>
     /// Expose client for additional use.
     /// </summary>
-    public OpenAIResponseClient Client { get; }
+    public ResponsesClient Client { get; }
+
+    /// <summary>
+    /// The model to use for generating responses.
+    /// </summary>
+    public string? ModelId { get; init; }
 
     /// <summary>
     /// Storing of messages is enabled.

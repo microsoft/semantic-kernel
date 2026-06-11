@@ -27,7 +27,7 @@
       ]
     },
     "MicrosoftGraph": {
-      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-sdk-powershell/dev/openApiDocs/v1.0/DirectoryObjects.yml",
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-sdk-powershell/main/openApiDocs/v1.0/DirectoryObjects.yml",
       "auth": {
         "clientIdentifier": "some-uuid-here",
         "access": [

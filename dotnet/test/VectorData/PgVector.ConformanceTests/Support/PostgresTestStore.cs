@@ -14,11 +14,12 @@ internal sealed class PostgresTestStore : TestStore
     public static PostgresTestStore Instance { get; } = new();
 
     private static readonly PostgreSqlContainer s_container = new PostgreSqlBuilder()
-        .WithImage("pgvector/pgvector:pg17")
+        .WithImage("pgvector/pgvector:pg18")
         .Build();
 
     private NpgsqlDataSource? _dataSource;
     private string? _connectionString;
+    private bool _useExternalInstance;
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
 
@@ -36,29 +37,33 @@ internal sealed class PostgresTestStore : TestStore
 
     protected override async Task StartAsync()
     {
-        await s_container.StartAsync();
-
-        NpgsqlConnectionStringBuilder connectionStringBuilder = new()
+        // Determine connection string source
+        if (PostgresTestEnvironment.IsConnectionStringDefined)
         {
-            Host = s_container.Hostname,
-            Port = s_container.GetMappedPublicPort(5432),
-            Username = PostgreSqlBuilder.DefaultUsername,
-            Password = PostgreSqlBuilder.DefaultPassword,
-            Database = PostgreSqlBuilder.DefaultDatabase
-        };
+            this._connectionString = PostgresTestEnvironment.ConnectionString!;
+            this._useExternalInstance = true;
+        }
+        else
+        {
+            // Use testcontainer if no external connection string is provided
+            await s_container.StartAsync();
 
-        this._connectionString = connectionStringBuilder.ConnectionString;
+            NpgsqlConnectionStringBuilder connectionStringBuilder = new()
+            {
+                Host = s_container.Hostname,
+                Port = s_container.GetMappedPublicPort(5432),
+                Username = PostgreSqlBuilder.DefaultUsername,
+                Password = PostgreSqlBuilder.DefaultPassword,
+                Database = PostgreSqlBuilder.DefaultDatabase
+            };
 
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ConnectionString);
+            this._connectionString = connectionStringBuilder.ConnectionString;
+            this._useExternalInstance = false;
+        }
+
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(this._connectionString!);
         dataSourceBuilder.UseVector();
-
         this._dataSource = dataSourceBuilder.Build();
-
-        await using var connection = this._dataSource.CreateConnection();
-        await connection.OpenAsync();
-        using var command = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection);
-        await command.ExecuteNonQueryAsync();
-        await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
         this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, ownsDataSource: false);
@@ -71,6 +76,10 @@ internal sealed class PostgresTestStore : TestStore
             await this._dataSource.DisposeAsync();
         }
 
-        await s_container.StopAsync();
+        // Only stop the container if we started it
+        if (!this._useExternalInstance)
+        {
+            await s_container.StopAsync();
+        }
     }
 }

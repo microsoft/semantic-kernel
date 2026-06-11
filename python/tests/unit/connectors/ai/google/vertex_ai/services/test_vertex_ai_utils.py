@@ -2,12 +2,13 @@
 
 import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Candidate
-from vertexai.generative_models import Part
+from vertexai.generative_models import FunctionDeclaration, Part
 
 from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     finish_reason_from_vertex_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
+    kernel_function_metadata_to_vertex_ai_function_call_format,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -17,6 +18,8 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
 def test_finish_reason_from_vertex_ai_to_semantic_kernel():
@@ -110,3 +113,87 @@ def test_format_assistant_message_with_unsupported_items() -> None:
 
     with pytest.raises(ServiceInvalidRequestError):
         format_assistant_message(assistant_message)
+
+
+def test_format_assistant_message_with_thought_signature() -> None:
+    """Test that thought_signature is preserved in function call parts for Vertex AI."""
+    import base64
+
+    thought_sig = base64.b64encode(b"test_thought_signature_data").decode("utf-8")
+    assistant_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(
+                name="test_function",
+                arguments={"arg1": "value1"},
+                metadata={"thought_signature": thought_sig},
+            ),
+        ],
+    )
+
+    formatted = format_assistant_message(assistant_message)
+    assert len(formatted) == 1
+    assert isinstance(formatted[0], Part)
+    assert formatted[0].function_call.name == "test_function"
+    assert formatted[0].function_call.args == {"arg1": "value1"}
+    part_dict = formatted[0].to_dict()
+    assert "thought_signature" in part_dict
+    assert part_dict["thought_signature"] == thought_sig
+
+
+def test_format_assistant_message_without_thought_signature() -> None:
+    """Test that function calls without thought_signature still work for Vertex AI."""
+    assistant_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(
+                name="test_function",
+                arguments={"arg1": "value1"},
+            ),
+        ],
+    )
+
+    formatted = format_assistant_message(assistant_message)
+    assert len(formatted) == 1
+    assert isinstance(formatted[0], Part)
+    assert formatted[0].function_call.name == "test_function"
+    assert formatted[0].function_call.args == {"arg1": "value1"}
+    part_dict = formatted[0].to_dict()
+    assert "thought_signature" not in part_dict
+
+
+def test_vertex_ai_function_call_format_sanitizes_anyof_schema() -> None:
+    """Integration test: anyOf in param schema_data is sanitized in the FunctionDeclaration."""
+    metadata = KernelFunctionMetadata(
+        name="test_func",
+        description="A test function",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="messages",
+                description="The user messages",
+                is_required=True,
+                schema_data={
+                    "anyOf": [
+                        {"type": "string"},
+                        {"type": "array", "items": {"type": "string"}},
+                    ],
+                    "description": "The user messages",
+                },
+            ),
+        ],
+    )
+    result = kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
+    assert isinstance(result, FunctionDeclaration)
+
+
+def test_vertex_ai_function_call_format_empty_parameters() -> None:
+    """Integration test: metadata with no parameters produces empty properties, no crash."""
+    metadata = KernelFunctionMetadata(
+        name="no_params_func",
+        description="No parameters",
+        is_prompt=False,
+        parameters=[],
+    )
+    result = kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
+    assert isinstance(result, FunctionDeclaration)

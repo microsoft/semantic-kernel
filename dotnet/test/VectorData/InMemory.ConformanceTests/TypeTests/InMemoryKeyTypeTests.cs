@@ -22,13 +22,13 @@ public class InMemoryKeyTypeTests(InMemoryKeyTypeTests.Fixture fixture)
     [ConditionalFact]
     public virtual Task String() => this.Test<string>("foo", "bar");
 
-    protected override async Task Test<TKey>(TKey key1, TKey key2)
+    protected override async Task Test<TKey>(TKey key1, TKey key2, bool supportsAutoGeneration = false)
     {
-        await base.Test(key1, key2);
+        await base.Test(key1, key2, supportsAutoGeneration);
 
         // For InMemory, delete the collection, otherwise the next test that runs will fail because the collection
         // already exists but with the previous key type.
-        using var collection = fixture.CreateCollection<TKey>();
+        using var collection = fixture.CreateCollection<TKey>(supportsAutoGeneration);
         await collection.EnsureCollectionDeletedAsync();
     }
 

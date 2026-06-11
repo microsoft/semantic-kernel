@@ -14,6 +14,16 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// A plugin that provides HTTP functionality.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. <see cref="AllowedDomains"/> must be explicitly configured
+/// before any HTTP requests are permitted. By default, all domains are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedDomains"/> is restricted to trusted values only.
+/// </para>
+/// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpPlugin
@@ -39,8 +49,12 @@ public sealed class HttpPlugin
         this._client = client ?? HttpClientProvider.GetHttpClient();
 
     /// <summary>
-    /// List of allowed domains to download from.
+    /// List of allowed domains to send requests to.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
+    /// with trusted domains before any requests will succeed.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
         get => this._allowedDomains;
@@ -100,7 +114,7 @@ public sealed class HttpPlugin
         this.SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
 
     #region private
-    private HashSet<string>? _allowedDomains;
+    private HashSet<string>? _allowedDomains = [];
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -110,7 +124,9 @@ public sealed class HttpPlugin
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is null || this._allowedDomains.Contains(uri.Host);
+        return this._allowedDomains is not null
+            && this._allowedDomains.Count > 0
+            && this._allowedDomains.Contains(uri.Host);
     }
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>

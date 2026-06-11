@@ -3,8 +3,50 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.get_AllowedSchemes</Target>
+    <Left>lib/net10.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/net10.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.set_AllowedSchemes(System.Collections.Generic.IReadOnlyList{System.String})</Target>
+    <Left>lib/net10.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/net10.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.get_AllowedSchemes</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.set_AllowedSchemes(System.Collections.Generic.IReadOnlyList{System.String})</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Microsoft.SemanticKernel.Plugins.OpenApi.OpenApiKernelFunctionContext.KernelFunctionContextKey</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.get_AllowedSchemes</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiOperationServerUrlValidationOptions.set_AllowedSchemes(System.Collections.Generic.IReadOnlyList{System.String})</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
 </Suppressions>

@@ -3,6 +3,8 @@
 using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
@@ -64,6 +66,52 @@ public abstract class TestsBase
             projectId: this.VertexAI.ProjectId),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
+
+    protected IChatClient GetGenAIChatClient(string? overrideModelId = null)
+    {
+        var modelId = overrideModelId ?? this.GoogleAI.Gemini.ModelId;
+        var apiKey = this.GoogleAI.ApiKey;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleGenAIChatClient(modelId, apiKey)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
+
+    protected IChatClient GetVertexAIChatClient(string? overrideModelId = null)
+    {
+        var modelId = overrideModelId ?? this.VertexAI.Gemini.ModelId;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleVertexAIChatClient(modelId, project: this.VertexAI.ProjectId, location: this.VertexAI.Location)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
+
+    protected IChatClient GetGenAIChatClientWithVision()
+    {
+        var modelId = this.GoogleAI.Gemini.VisionModelId;
+        var apiKey = this.GoogleAI.ApiKey;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleGenAIChatClient(modelId, apiKey)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
+
+    protected IChatClient GetVertexAIChatClientWithVision()
+    {
+        var modelId = this.VertexAI.Gemini.VisionModelId;
+
+        var kernel = Kernel.CreateBuilder()
+            .AddGoogleVertexAIChatClient(modelId, project: this.VertexAI.ProjectId, location: this.VertexAI.Location)
+            .Build();
+
+        return kernel.GetRequiredService<IChatClient>();
+    }
 
     [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     protected ITextEmbeddingGenerationService GetEmbeddingService(ServiceType serviceType) => serviceType switch

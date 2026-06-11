@@ -10,7 +10,7 @@ namespace CosmosMongoDB.ConformanceTests;
 public class CosmosMongoDistanceFunctionTests(CosmosMongoDistanceFunctionTests.Fixture fixture)
     : DistanceFunctionTests<int>(fixture), IClassFixture<CosmosMongoDistanceFunctionTests.Fixture>
 {
-    public override Task CosineDistance() => Assert.ThrowsAsync<NotSupportedException>(base.CosineDistance);
+    public override Task CosineSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.CosineSimilarity);
     public override Task EuclideanSquaredDistance() => Assert.ThrowsAsync<NotSupportedException>(base.EuclideanSquaredDistance);
     public override Task NegativeDotProductSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.NegativeDotProductSimilarity);
     public override Task HammingDistance() => Assert.ThrowsAsync<NotSupportedException>(base.HammingDistance);

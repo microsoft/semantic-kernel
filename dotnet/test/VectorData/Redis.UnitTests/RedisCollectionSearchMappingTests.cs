@@ -9,8 +9,6 @@ using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-
 /// <summary>
 /// Contains tests for the <see cref="RedisCollectionSearchMapping"/> class.
 /// </summary>
@@ -103,95 +101,6 @@ public class RedisCollectionSearchMappingTests
         // Assert.
         Assert.NotNull(query);
         Assert.Equal("*=>[KNN 8 @storage_Vector $embedding AS vector_score]", query.QueryString);
-    }
-
-    [Theory]
-    [InlineData("stringEquality")]
-    [InlineData("intEquality")]
-    [InlineData("longEquality")]
-    [InlineData("floatEquality")]
-    [InlineData("doubleEquality")]
-    [InlineData("tagContains")]
-    public void BuildFilterBuildsEqualityFilter(string filterType)
-    {
-        // Arrange.
-        var basicVectorSearchFilter = filterType switch
-        {
-            "stringEquality" => new VectorSearchFilter().EqualTo("Data1", "my value"),
-            "intEquality" => new VectorSearchFilter().EqualTo("Data1", 3),
-            "longEquality" => new VectorSearchFilter().EqualTo("Data1", 3L),
-            "floatEquality" => new VectorSearchFilter().EqualTo("Data1", 3.3f),
-            "doubleEquality" => new VectorSearchFilter().EqualTo("Data1", 3.3),
-            "tagContains" => new VectorSearchFilter().AnyTagEqualTo("Data1", "my value"),
-            _ => throw new InvalidOperationException(),
-        };
-
-        var model = BuildModel(
-        [
-            new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
-        ]);
-
-        // Act.
-        var filter = RedisCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, model);
-
-        // Assert.
-        switch (filterType)
-        {
-            case "stringEquality":
-                Assert.Equal("(@storage_Data1:{my value})", filter);
-                break;
-            case "intEquality":
-            case "longEquality":
-                Assert.Equal("(@storage_Data1:[3 3])", filter);
-                break;
-            case "floatEquality":
-            case "doubleEquality":
-                Assert.Equal("(@storage_Data1:[3.3 3.3])", filter);
-                break;
-            case "tagContains":
-                Assert.Equal("(@storage_Data1:{my value})", filter);
-                break;
-        }
-    }
-
-    [Fact]
-    public void BuildFilterThrowsForInvalidValueType()
-    {
-        // Arrange.
-        var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("Data1", true);
-        var model = BuildModel(
-        [
-            new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
-        ]);
-
-        // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var filter = RedisCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, model);
-        });
-    }
-
-    [Fact]
-    public void BuildFilterThrowsForUnknownFieldName()
-    {
-        // Arrange.
-        var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("UnknownData", "value");
-        var model = BuildModel(
-        [
-            new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
-        ]);
-
-        // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var filter = RedisCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, model);
-        });
     }
 
     [Fact]
