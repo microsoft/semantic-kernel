@@ -32,7 +32,7 @@ help:
 	echo ""
 	echo -e "\033[1mVARIABLES:\033[0m"
 	echo "  PYTHON_VERSION       - Python version to use. Default is 3.10"
-	echo "                        By default, 3.10, 3.11, 3.12 and 3.13 are installed as well."
+	echo "                        By default, 3.10, 3.11, 3.12, 3.13, and 3.14 are installed as well."
 
 ##############################
 #  INSTALL
@@ -75,7 +75,7 @@ endif
 .ONESHELL:
 install-python:
 	echo "Installing python versions"
-	uv python install 3.10 3.11 3.12 3.13
+	uv python install 3.10 3.11 3.12 3.13 3.14
 
 ##############################
 #  INSTALL-PRE-COMMIT
