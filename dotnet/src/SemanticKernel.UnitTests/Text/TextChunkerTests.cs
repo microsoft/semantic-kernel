@@ -563,7 +563,7 @@ public sealed class TextChunkerTests
     {
         var input = new[] { "123456789", "x" };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 10, tokenCounter: input => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 10, tokenCounter: text => text.Length);
 
         Assert.Equal(["123456789", "x"], result);
         Assert.All(result, paragraph => Assert.True(paragraph.Length <= 10, $"Paragraph exceeded token limit: {paragraph}"));
