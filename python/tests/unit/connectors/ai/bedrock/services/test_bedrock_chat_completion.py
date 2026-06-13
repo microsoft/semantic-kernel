@@ -13,6 +13,8 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -148,6 +150,61 @@ def test_prepare_chat_history_for_request(mock_client, bedrock_unit_test_env, ch
     assert isinstance(parsed_chat_history, list)
     assert len(parsed_chat_history) == len(chat_history) - 2  # Exclude system message
     assert all([item["role"] in ["user", "assistant"] for item in parsed_chat_history])
+
+
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_chat_history_for_request_merges_parallel_tool_results(mock_client, bedrock_unit_test_env) -> None:
+    """Test that parallel tool calls and their results are merged into single Bedrock messages.
+
+    When a model requests multiple tools in one turn, SK emits one assistant message per tool call
+    and one tool message per tool result. The Bedrock Converse API requires every toolUse block for a
+    turn to be in a single assistant message and every toolResult block to be in a single user message,
+    otherwise the request is rejected with an "Expected toolResult blocks ..." error.
+    """
+    chat_history = ChatHistory()
+    chat_history.add_user_message("What is the weather in Seattle and Tokyo?")
+    chat_history.add_message(
+        ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="call_1", name="get_weather", arguments={"city": "Seattle"})],
+        )
+    )
+    chat_history.add_message(
+        ChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            items=[FunctionCallContent(id="call_2", name="get_weather", arguments={"city": "Tokyo"})],
+        )
+    )
+    chat_history.add_message(
+        ChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=[FunctionResultContent(id="call_1", result="Sunny")],
+        )
+    )
+    chat_history.add_message(
+        ChatMessageContent(
+            role=AuthorRole.TOOL,
+            items=[FunctionResultContent(id="call_2", result="Rainy")],
+        )
+    )
+
+    bedrock_chat_completion = BedrockChatCompletion()
+    parsed_chat_history = bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
+
+    # user message + merged assistant message (2 toolUse) + merged user message (2 toolResult)
+    assert len(parsed_chat_history) == 3
+
+    assistant_message = parsed_chat_history[1]
+    assert assistant_message["role"] == "assistant"
+    tool_use_ids = [block["toolUse"]["toolUseId"] for block in assistant_message["content"] if "toolUse" in block]
+    assert tool_use_ids == ["call_1", "call_2"]
+
+    tool_result_message = parsed_chat_history[2]
+    assert tool_result_message["role"] == "user"
+    tool_result_ids = [
+        block["toolResult"]["toolUseId"] for block in tool_result_message["content"] if "toolResult" in block
+    ]
+    assert tool_result_ids == ["call_1", "call_2"]
 
 
 @patch.object(boto3, "client", return_value=Mock())
