@@ -559,6 +559,17 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    public void SplitTextParagraphsDoesNotMergeShortLastParagraphPastTokenLimit()
+    {
+        var input = new[] { "123456789", "x" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 10, tokenCounter: input => input.Length);
+
+        Assert.Equal(["123456789", "x"], result);
+        Assert.All(result, paragraph => Assert.True(paragraph.Length <= 10, $"Paragraph exceeded token limit: {paragraph}"));
+    }
+
+    [Fact]
     public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
     {
         List<string> input =
