@@ -208,6 +208,30 @@ def test_prepare_chat_history_for_request_merges_parallel_tool_results(mock_clie
 
 
 @patch.object(boto3, "client", return_value=Mock())
+def test_prepare_chat_history_for_request_merges_consecutive_same_role_messages(
+    mock_client, bedrock_unit_test_env
+) -> None:
+    """Test that consecutive same-role messages are merged even without tool content.
+
+    The merge applies to any consecutive messages mapping to the same Bedrock role, not just
+    tool-related ones, so two consecutive user text messages collapse into a single user
+    message whose content preserves both text blocks in order.
+    """
+    chat_history = ChatHistory()
+    chat_history.add_user_message("First question.")
+    chat_history.add_user_message("Second question.")
+
+    bedrock_chat_completion = BedrockChatCompletion()
+    parsed_chat_history = bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
+
+    assert len(parsed_chat_history) == 1
+    merged_message = parsed_chat_history[0]
+    assert merged_message["role"] == "user"
+    texts = [block["text"] for block in merged_message["content"] if "text" in block]
+    assert texts == ["First question.", "Second question."]
+
+
+@patch.object(boto3, "client", return_value=Mock())
 def test_prepare_system_message_for_request(mock_client, bedrock_unit_test_env, chat_history) -> None:
     """Test preparing system message for request"""
     bedrock_chat_completion = BedrockChatCompletion()
