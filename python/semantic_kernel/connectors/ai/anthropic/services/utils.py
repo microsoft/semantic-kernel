@@ -41,7 +41,7 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
                 content_items.append({"type": "text", "text": content.text})
             elif isinstance(content, ImageContent) and (content.data):
                 content_items.append({"type":"image","source":{"type": "base64","data":content.data_string,"media_type":content.mime_type if content.mime_type else content.default_mime_type}})
-            elif isinstance(item, ImageContent) and (content):
+            elif isinstance(content, ImageContent) and (content.uri):
                 content_items.append({"type":"image","source":{"type":"url","url":f"{content.uri}"}})
             else:
                 logger.warning(
