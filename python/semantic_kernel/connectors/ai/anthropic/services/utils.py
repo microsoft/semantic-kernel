@@ -33,19 +33,20 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
         The formatted user message.
     """
     if not any(isinstance(item, (ImageContent)) for item in message.items):
-            return {"role": "user","content": message.content}
+        return {"role": "user","content": message.content}
     else:
         content_items :list[dict] = []
-        for item in message.items:
-            if isinstance(item, TextContent):
-                content_items.append({"type": "text", "text": item.text})
-            elif isinstance(item, ImageContent) and (item.data):
-                content_items.append({"type":item.content_type,"source":{"data":item.data_string,"type": "base64","media_type":item.mime_type if item.mime_type else item.default_mime_type}})
+        for content in message.items:
+            if isinstance(content, TextContent):
+                content_items.append({"type": "text", "text": content.text})
+            elif isinstance(content, ImageContent) and (content.data):
+                content_items.append({"type":"image","source":{"type": "base64","data":content.data_string,"media_type":content.mime_type if content.mime_type else content.default_mime_type}})
+            elif isinstance(item, ImageContent) and (content):
+                content_items.append({"type":"image","source":{"type":"url","url":f"{content.uri}"}})
             else:
                 logger.warning(
-                    "Unsupported item type in User message while formatting chat history for Azure AI"
-                    f" Inference: {type(item)}"
-                )
+                    "Unsupported item type in User message while formatting chat history for Anthropic AI"
+                    f" Inference: {type(content)}")
         return {"role": "user","content": content_items}
 
 
