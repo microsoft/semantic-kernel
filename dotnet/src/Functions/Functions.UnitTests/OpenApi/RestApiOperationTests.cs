@@ -1315,4 +1315,182 @@ public class RestApiOperationTests
 
         Assert.Throws<NotSupportedException>(() => sut.Extensions.Add("x-fake", "fake_value"));
     }
+
+    [Fact]
+    public void ItShouldEncodeServerVariableValuesFromArguments()
+    {
+        // Arrange — variable value contains path-manipulation characters
+        var version = new RestApiServerVariable("v1", null, ["v1", "v2/../admin"]);
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{version}", new Dictionary<string, RestApiServerVariable> { { "version", version } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "version", "v2/../admin" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — reserved separators (/) must be percent-encoded so they are not interpreted as path delimiters
+        Assert.Equal("https://example.com/v2%2F..%2Fadmin/items", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldPreventServerVariableInjectionWithSpecialCharacters()
+    {
+        // Arrange — variable value contains path traversal and query string injection
+        var host = new RestApiServerVariable("api.example.com");
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://{host}/api", new Dictionary<string, RestApiServerVariable> { { "host", host } }),
+            ],
+            path: "/data",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "host", "evil.com/hijack?q=1#" } };
+
+        // Act & Assert — encoding turns /, ?, # into percent-encoded sequences (%2F, %3F, %23),
+        // which prevents them from being interpreted as structural URI delimiters.
+        // The Uri constructor rejects the resulting hostname, which is the desired outcome.
+        Assert.ThrowsAny<UriFormatException>(() => sut.BuildOperationUrl(arguments));
+    }
+
+    [Fact]
+    public void ItShouldRejectDotSegmentInPathParameter()
+    {
+        // Arrange — path parameter value is ".." (dot-segment traversal)
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "id",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple)
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/resources/{id}/details",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?> { { "id", ".." } };
+
+        // Act & Assert — dot-segments must be rejected
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("dot-segment", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldRejectSingleDotSegmentInPathParameter()
+    {
+        // Arrange — path parameter value is "." (single-dot segment)
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "id",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple)
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/resources/{id}/details",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?> { { "id", "." } };
+
+        // Act & Assert — single-dot segments must also be rejected
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("dot-segment", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldAllowDotsInNonSegmentPathParameterValues()
+    {
+        // Arrange — path parameter contains dots but is NOT a dot-segment (e.g., "file.txt")
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "filename",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple)
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/files/{filename}",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?> { { "filename", "report.v2.txt" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — dots within normal filenames should work fine
+        Assert.Equal("https://example.com/api/files/report.v2.txt", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldEncodeServerVariableValuesLookedUpByArgumentName()
+    {
+        // Arrange — variable uses ArgumentName and the argument contains path-manipulation characters
+        var version = new RestApiServerVariable("v1", null, ["v1", "v2/../admin"]) { ArgumentName = "alt_version" };
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [
+                new RestApiServer("https://example.com/{version}", new Dictionary<string, RestApiServerVariable> { { "version", version } }),
+            ],
+            path: "/items",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>() { { "alt_version", "v2/../admin" } };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — reserved separators must be percent-encoded even when looked up via ArgumentName
+        Assert.Equal("https://example.com/v2%2F..%2Fadmin/items", url.OriginalString);
+    }
 }

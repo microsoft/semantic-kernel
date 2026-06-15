@@ -73,7 +73,7 @@ aws = [
 azure = [
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
-    "azure-search-documents >= 11.6.0b4",
+    "azure-search-documents >= 11.6.0b4, < 12.0.0",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
@@ -103,7 +103,7 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 1.2,< 2.0"
+    "mistralai >= 1.2,< 2.4.6"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.16",
