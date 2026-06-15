@@ -1662,6 +1662,51 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(string.Empty, assistantMessageContent);
     }
 
+    [Fact]
+    public async Task ItSendsImageContentNotSupportedErrorWhenToolResultIsImageContentAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("call-id", "GetImage", BinaryData.FromString("{}"))];
+
+        var imageBytes = new ReadOnlyMemory<byte>([0x89, 0x50, 0x4E, 0x47]); // PNG magic bytes
+        var imageContent = new ImageContent(imageBytes, "image/png");
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "Show me the image", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("GetImage", "ImagePlugin", "call-id", imageContent)]
+            },
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonElement.Parse(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var toolMessage = messages.First(message => message.GetProperty("role").GetString() == "tool");
+        var toolMessageContent = toolMessage.GetProperty("content").GetString();
+
+        // OpenAI does not support multimodal tool results - expect the standard error message
+        Assert.Equal("Error: This model does not support image content in tool results.", toolMessageContent);
+    }
+
     [Theory]
     [MemberData(nameof(WebSearchOptionsData))]
     public async Task ItCreatesCorrectWebSearchOptionsAsync(object webSearchOptions, string expectedJson)

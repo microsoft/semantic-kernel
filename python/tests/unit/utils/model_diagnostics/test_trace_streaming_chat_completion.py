@@ -88,9 +88,9 @@ pytestmark = pytest.mark.parametrize(
 
 
 @patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
-@patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
 async def test_trace_streaming_chat_completion(
-    mock_span,
+    mock_tracer,
     mock_logger,
     execution_settings,
     mock_response,
@@ -98,6 +98,7 @@ async def test_trace_streaming_chat_completion(
     model_diagnostics_unit_test_env,
 ):
     # Setup
+    mock_span = mock_tracer.start_span.return_value
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
     iterable = MagicMock(spec=AsyncGenerator)
     iterable.__aiter__.return_value = [mock_response]
@@ -176,9 +177,9 @@ async def test_trace_streaming_chat_completion(
 
 
 @patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.logger")
-@patch("opentelemetry.trace.INVALID_SPAN")  # When no tracer provider is available, the span will be an INVALID_SPAN
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
 async def test_trace_streaming_chat_completion_exception(
-    mock_span,
+    mock_tracer,
     mock_logger,
     execution_settings,
     mock_response,
@@ -186,6 +187,7 @@ async def test_trace_streaming_chat_completion_exception(
     model_diagnostics_unit_test_env,
 ):
     # Setup
+    mock_span = mock_tracer.start_span.return_value
     chat_completion: ChatCompletionClientBase = MockChatCompletion(ai_model_id="ai_model_id")
 
     with patch.object(

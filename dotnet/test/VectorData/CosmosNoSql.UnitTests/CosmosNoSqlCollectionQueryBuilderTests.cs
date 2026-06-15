@@ -8,8 +8,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.CosmosNoSql.UnitTests;
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-
 /// <summary>
 /// Unit tests for <see cref="Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlCollectionQueryBuilder"/> class.
 /// </summary>
@@ -31,127 +29,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         defaultEmbeddingGenerator: null);
 
     [Fact]
-    public void BuildSearchQueryByDefaultReturnsValidQueryDefinition()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var vectorPropertyName = "test_property_1";
-
-        var filter = new VectorSearchFilter()
-            .EqualTo("TestProperty2", "test-value-2")
-            .AnyTagEqualTo("TestProperty3", "test-value-3");
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
-            vector,
-            keywords: null,
-            this._model,
-            vectorPropertyName,
-            distanceFunction: null,
-            textPropertyName: null,
-            ScorePropertyName,
-            oldFilter: filter,
-            filter: null,
-            scoreThreshold: null,
-            10,
-            5,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"test_property_1\"], @vector) AS TestScore", queryText);
-        Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
-        Assert.Contains("ORDER BY VectorDistance(x[\"test_property_1\"], @vector)", queryText);
-        Assert.Contains("OFFSET 5 LIMIT 10", queryText);
-
-        Assert.Equal("@vector", queryParameters[0].Name);
-        Assert.Equal(vector, queryParameters[0].Value);
-
-        Assert.Equal("@cv0", queryParameters[1].Name);
-        Assert.Equal("test-value-2", queryParameters[1].Value);
-
-        Assert.Equal("@cv1", queryParameters[2].Name);
-        Assert.Equal("test-value-3", queryParameters[2].Value);
-    }
-
-    [Fact]
-    public void BuildSearchQueryWithoutOffsetReturnsQueryDefinitionWithTopParameter()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var vectorPropertyName = "test_property_1";
-
-        var filter = new VectorSearchFilter()
-            .EqualTo("TestProperty2", "test-value-2")
-            .AnyTagEqualTo("TestProperty3", "test-value-3");
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
-            vector,
-            keywords: null,
-            this._model,
-            vectorPropertyName,
-            distanceFunction: null,
-            textPropertyName: null,
-            ScorePropertyName,
-            oldFilter: filter,
-            filter: null,
-            scoreThreshold: null,
-            10,
-            0,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Contains("SELECT TOP 10 x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"test_property_1\"], @vector) AS TestScore", queryText);
-        Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
-        Assert.Contains("ORDER BY VectorDistance(x[\"test_property_1\"], @vector)", queryText);
-
-        Assert.DoesNotContain("OFFSET 0 LIMIT 10", queryText);
-
-        Assert.Equal("@vector", queryParameters[0].Name);
-        Assert.Equal(vector, queryParameters[0].Value);
-
-        Assert.Equal("@cv0", queryParameters[1].Name);
-        Assert.Equal("test-value-2", queryParameters[1].Value);
-
-        Assert.Equal("@cv1", queryParameters[2].Name);
-        Assert.Equal("test-value-3", queryParameters[2].Value);
-    }
-
-    [Fact]
-    public void BuildSearchQueryWithInvalidFilterThrowsException()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var vectorPropertyName = "test_property_1";
-
-        var filter = new VectorSearchFilter().EqualTo("non-existent-property", "test-value-2");
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
-            vector,
-            keywords: null,
-            this._model,
-            vectorPropertyName,
-            distanceFunction: null,
-            textPropertyName: null,
-            ScorePropertyName,
-            oldFilter: filter,
-            filter: null,
-            scoreThreshold: null,
-            10,
-            5,
-            includeVectors: true));
-    }
-
-    [Fact]
     public void BuildSearchQueryWithoutFilterDoesNotContainWhereClause()
     {
         // Arrange
@@ -167,7 +44,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             distanceFunction: null,
             textPropertyName: null,
             ScorePropertyName,
-            oldFilter: null,
             filter: null,
             scoreThreshold: null,
             10,
@@ -183,55 +59,6 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
-    }
-
-    [Fact]
-    public void BuildSearchQueryWithHybridFieldsReturnsValidHybridQueryDefinition()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var keywordText = "hybrid";
-        var vectorPropertyName = "TestProperty1";
-        var textPropertyName = "TestProperty2";
-
-        var filter = new VectorSearchFilter()
-            .EqualTo("TestProperty2", "test-value-2")
-            .AnyTagEqualTo("TestProperty3", "test-value-3");
-
-        // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
-            vector,
-            [keywordText],
-            this._model,
-            vectorPropertyName,
-            distanceFunction: null,
-            textPropertyName,
-            ScorePropertyName,
-            oldFilter: filter,
-            filter: null,
-            scoreThreshold: null,
-            10,
-            5,
-            includeVectors: true);
-
-        var queryText = queryDefinition.QueryText;
-        var queryParameters = queryDefinition.GetQueryParameters();
-
-        // Assert
-        Assert.Contains("SELECT x[\"id\"],x[\"TestProperty1\"],x[\"TestProperty2\"],x[\"TestProperty3\"],VectorDistance(x[\"TestProperty1\"], @vector) AS TestScore", queryText);
-        Assert.Contains("FROM x", queryText);
-        Assert.Contains("WHERE x[\"TestProperty2\"] = @cv0 AND ARRAY_CONTAINS(x[\"TestProperty3\"], @cv1)", queryText);
-        Assert.Contains("ORDER BY RANK RRF(VectorDistance(x[\"TestProperty1\"], @vector), FullTextScore(x[\"TestProperty2\"], \"hybrid\"))", queryText);
-        Assert.Contains("OFFSET 5 LIMIT 10", queryText);
-
-        Assert.Equal("@vector", queryParameters[0].Name);
-        Assert.Equal(vector, queryParameters[0].Value);
-
-        Assert.Equal("@cv0", queryParameters[1].Name);
-        Assert.Equal("test-value-2", queryParameters[1].Value);
-
-        Assert.Equal("@cv1", queryParameters[2].Name);
-        Assert.Equal("test-value-3", queryParameters[2].Value);
     }
 
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.

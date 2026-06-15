@@ -27,9 +27,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         string? distanceFunction,
         string? textPropertyName,
         string scorePropertyName,
-#pragma warning disable CS0618 // Type or member is obsolete
-        VectorSearchFilter? oldFilter,
-#pragma warning restore CS0618 // Type or member is obsolete
         Expression<Func<TRecord, bool>>? filter,
         double? scoreThreshold,
         int top,
@@ -39,8 +36,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         Verify.NotNull(vector);
 
         const string VectorVariableName = "@vector";
-        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
-        //const string KeywordsVariableName = "@keywords";
+        const string KeywordVariablePrefix = "@keyword";
 
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
 
@@ -53,27 +49,12 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         var vectorDistanceArgument = $"VectorDistance({GeneratePropertyAccess(tableVariableName, vectorPropertyName)}, {VectorVariableName})";
         var vectorDistanceArgumentWithAlias = $"{vectorDistanceArgument} AS {scorePropertyName}";
 
-        // Passing keywords using a parameter is not yet supported for FullTextScore so doing some crude string sanitization in the mean time to frustrate script injection.
-        var sanitizedKeywords = keywords is not null ? keywords.Select(x => x.Replace("\"", "")) : null;
-        var formattedKeywords = sanitizedKeywords is not null ? $"\"{string.Join("\", \"", sanitizedKeywords)}\"" : null;
-        var fullTextScoreArgument = textPropertyName is not null && keywords is not null
-            ? $"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}, {formattedKeywords})"
-            : null;
-
-        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
-
         var selectClauseArguments = string.Join(",", [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var (filterClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => BuildSearchFilter(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new CosmosNoSqlFilterTranslator().Translate(newFilter, model),
-            _ => (null, [])
-        };
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        var (filterClause, filterParameters) = filter is not null
+            ? new CosmosNoSqlFilterTranslator().Translate(filter, model)
+            : ((string?)null, new Dictionary<string, object?>());
 
         var queryParameters = new Dictionary<string, object?>
         {
@@ -85,6 +66,25 @@ internal static class CosmosNoSqlCollectionQueryBuilder
                 _ => vector
             }
         };
+
+        string? fullTextScoreArgument = null;
+        if (textPropertyName is not null && keywords is not null)
+        {
+            var fullTextScoreBuilder = new StringBuilder();
+            fullTextScoreBuilder.Append($"FullTextScore({GeneratePropertyAccess(tableVariableName, textPropertyName)}");
+            var i = 0;
+            foreach (var keyword in keywords)
+            {
+                var paramName = $"{KeywordVariablePrefix}{i}";
+                fullTextScoreBuilder.Append(", ").Append(paramName);
+                queryParameters[paramName] = keyword;
+                i++;
+            }
+            fullTextScoreBuilder.Append(')');
+            fullTextScoreArgument = fullTextScoreBuilder.ToString();
+        }
+
+        var rankingArgument = fullTextScoreArgument is null ? vectorDistanceArgument : $"RANK RRF({vectorDistanceArgument}, {fullTextScoreArgument})";
 
         // Add score threshold filter if specified.
         // For similarity functions (CosineSimilarity, DotProductSimilarity), higher scores are better, so filter with >=.
@@ -143,12 +143,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
             // so directly add it to the query here.
             builder.AppendLine($"OFFSET {skip} LIMIT {top}");
         }
-
-        // TODO: Use parameterized query for keywords when FullTextScore with parameters is supported.
-        //if (fullTextScoreArgument is not null)
-        //{
-        //    queryParameters.Add(KeywordsVariableName, keywords!.ToArray());
-        //}
 
         var queryDefinition = new QueryDefinition(builder.ToString());
 
@@ -225,68 +219,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     }
 
     #region private
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    private static (string WhereClause, Dictionary<string, object?> Parameters) BuildSearchFilter(
-        VectorSearchFilter filter,
-        CollectionModel model)
-    {
-        const string ArrayContainsOperator = "ARRAY_CONTAINS";
-        const string ConditionValueVariableName = "@cv";
-
-        var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
-
-        var filterClauses = filter.FilterClauses.ToList();
-
-        var whereClauseBuilder = new StringBuilder();
-        var queryParameters = new Dictionary<string, object?>();
-
-        for (var i = 0; i < filterClauses.Count; i++)
-        {
-            if (i > 0)
-            {
-                whereClauseBuilder.Append(" AND ");
-            }
-            var filterClause = filterClauses[i];
-
-            string queryParameterName = $"{ConditionValueVariableName}{i}";
-            object queryParameterValue;
-
-            if (filterClause is EqualToFilterClause equalToFilterClause)
-            {
-                var propertyName = GetStoragePropertyName(equalToFilterClause.FieldName, model);
-                whereClauseBuilder
-                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
-                    .Append(" = ")
-                    .Append(queryParameterName);
-                queryParameterValue = equalToFilterClause.Value;
-            }
-            else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
-            {
-                var propertyName = GetStoragePropertyName(anyTagEqualToFilterClause.FieldName, model);
-                whereClauseBuilder.Append(ArrayContainsOperator)
-                    .Append('(')
-                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
-                    .Append(", ")
-                    .Append(queryParameterName)
-                    .Append(')');
-                queryParameterValue = anyTagEqualToFilterClause.Value;
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
-                        nameof(EqualToFilterClause),
-                        nameof(AnyTagEqualToFilterClause)])}");
-            }
-
-            queryParameters.Add(queryParameterName, queryParameterValue);
-        }
-
-        return (whereClauseBuilder.ToString(), queryParameters);
-    }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     private static string GetStoragePropertyName(string propertyName, CollectionModel model)
     {

@@ -330,15 +330,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // We have a vector property whose type isn't natively supported - we need to generate embeddings.
             Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var task))
-            {
-                generatedEmbedding = await task.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbedding = (Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(vectorProperty.GetValueAsObject(record), cancellationToken).ConfigureAwait(false);
         }
 
         var vector = this._mapper.MapFromDataToStorageModel(record, generatedEmbedding);
@@ -376,17 +368,9 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             records = recordsList;
 
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
-            {
-                generatedEmbeddings = await task.ConfigureAwait(false);
+            generatedEmbeddings = (GeneratedEmbeddings<Embedding<float>>)await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
 
-                Debug.Assert(generatedEmbeddings.Count == recordsList.Count);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            Debug.Assert(generatedEmbeddings.Count == recordsList.Count);
         }
 
         // Handle auto-generated keys (client-side for Pinecone, which doesn't support server-side auto-generation)
@@ -445,23 +429,17 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PineconeModelBuilder.SupportedVectorTypes))
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => PineconeCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new PineconeFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         QueryRequest request = new()
         {

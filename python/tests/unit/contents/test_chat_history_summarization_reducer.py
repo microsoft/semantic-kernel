@@ -226,3 +226,89 @@ async def test_summarization_reducer_private_summarize(mock_service):
     actual_summary = await reducer._summarize(chat_messages)
     assert actual_summary is not None, "We should get a summary message back."
     assert actual_summary.content == "Mock Summary", "We expect the mock summary content."
+
+
+async def test_summarization_preserves_system_message(mock_service):
+    """Verify that the summarization reducer preserves system messages."""
+    messages = [
+        ChatMessageContent(role=AuthorRole.SYSTEM, content="Important system prompt"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says hello"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says even more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds yet again"),
+    ]
+
+    reducer = ChatHistorySummarizationReducer(service=mock_service, target_count=3, threshold_count=0)
+    reducer.messages = messages
+
+    summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Summary of conversation.")
+    mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
+
+    result = await reducer.reduce()
+    assert result is not None
+    # System message must be preserved
+    roles = [msg.role for msg in result.messages]
+    assert AuthorRole.SYSTEM in roles, "System message was lost during summarization"
+    # System message should be first
+    assert result.messages[0].role == AuthorRole.SYSTEM
+    assert result.messages[0].content == "Important system prompt"
+
+
+async def test_summarization_does_not_preserve_summary_system_message(mock_service):
+    """A prior summary with SYSTEM role should NOT be treated as the system prompt to preserve."""
+    summary_sys = ChatMessageContent(
+        role=AuthorRole.SYSTEM, content="Previous summary", metadata={SUMMARY_METADATA_KEY: True}
+    )
+    messages = [
+        summary_sys,
+        ChatMessageContent(role=AuthorRole.USER, content="User says hello"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says even more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds yet again"),
+    ]
+
+    reducer = ChatHistorySummarizationReducer(service=mock_service, target_count=3, threshold_count=0)
+    reducer.messages = messages
+
+    summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="New summary.")
+    mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
+
+    result = await reducer.reduce()
+    assert result is not None
+    # The old summary-system message should NOT be preserved as a "system prompt"
+    # It should be replaced by the new summary
+    for msg in result.messages:
+        if msg.role == AuthorRole.SYSTEM:
+            assert msg.metadata.get(SUMMARY_METADATA_KEY) is not True or msg is not summary_sys
+
+
+async def test_summarization_preserves_developer_message(mock_service):
+    """Verify that developer messages are preserved during summarization."""
+    messages = [
+        ChatMessageContent(role=AuthorRole.DEVELOPER, content="Developer instructions"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says hello"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says even more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds yet again"),
+    ]
+
+    reducer = ChatHistorySummarizationReducer(service=mock_service, target_count=3, threshold_count=0)
+    reducer.messages = messages
+
+    summary_content = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Summary of conversation.")
+    mock_service.get_chat_message_content.return_value = summary_content
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
+
+    result = await reducer.reduce()
+    assert result is not None
+    # Developer message must be preserved
+    assert result.messages[0].role == AuthorRole.DEVELOPER
+    assert result.messages[0].content == "Developer instructions"
