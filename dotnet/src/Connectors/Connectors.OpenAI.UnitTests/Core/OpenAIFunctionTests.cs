@@ -309,7 +309,7 @@ public sealed class OpenAIFunctionTests
             parameters: [new KernelParameterMetadata("param1") { Description = "A nullable param", IsRequired = false, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
 
         // Act
-        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ChatTool result = f.ToFunctionDefinition(allowStrictSchemaAdherence: true);
         ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
 
         // Assert
@@ -331,7 +331,7 @@ public sealed class OpenAIFunctionTests
             parameters: [new KernelParameterMetadata("param1") { Description = "A nullable param", IsRequired = true, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
 
         // Act
-        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ChatTool result = f.ToFunctionDefinition(allowStrictSchemaAdherence: true);
         ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
 
         // Assert — "nullable" keyword is removed in strict mode, type array should not gain duplicate "null"
@@ -353,7 +353,7 @@ public sealed class OpenAIFunctionTests
             parameters: [new KernelParameterMetadata("param1") { Description = "An optional param", IsRequired = false, Schema = parameterSchema }]).Metadata.ToOpenAIFunction();
 
         // Act
-        ChatTool result = f.ToFunctionDefinition(strict: true);
+        ChatTool result = f.ToFunctionDefinition(allowStrictSchemaAdherence: true);
         ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
 
         // Assert — "null" should be added to the type array
