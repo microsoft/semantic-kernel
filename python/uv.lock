@@ -1,4 +1,5 @@
 version = 1
+revision = 3
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '4' and sys_platform == 'darwin'",
@@ -5102,11 +5103,14 @@ wheels = [
 
 [[package]]
 name = "pyjwt"
-version = "2.11.0"
+version = "2.13.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5c/5a/b46fa56bf322901eee5b0454a34343cdbdae202cd421775a8ee4e42fd519/pyjwt-2.11.0.tar.gz", hash = "sha256:35f95c1f0fbe5d5ba6e43f00271c275f7a1a4db1dab27bf708073b75318ea623", size = 98019, upload-time = "2026-01-30T19:59:55.694Z" }
+dependencies = [
+    { name = "typing-extensions", marker = "(python_full_version < '3.11' and sys_platform == 'darwin') or (python_full_version < '3.11' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform == 'win32')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3b/81/58d0ac84e1ef3a3843791d6954d94c0b33d526c75eeb1efbce9d0a4c4077/pyjwt-2.13.0.tar.gz", hash = "sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423", size = 107515, upload-time = "2026-05-21T19:54:36.618Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/01/c26ce75ba460d5cd503da9e13b21a33804d38c2165dec7b716d06b13010c/pyjwt-2.11.0-py3-none-any.whl", hash = "sha256:94a6bde30eb5c8e04fee991062b534071fd1439ef58d2adc9ccb823e7bcd0469", size = 28224, upload-time = "2026-01-30T19:59:54.539Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/5e/ecf12fdb62546d64385c158514e9b2b671f7832108ef2ecd2020ce0af2d1/pyjwt-2.13.0-py3-none-any.whl", hash = "sha256:66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728", size = 31274, upload-time = "2026-05-21T19:54:35.362Z" },
 ]
 
 [package.optional-dependencies]
@@ -6480,13 +6484,13 @@ requires-dist = [
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = ">=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4,<12.0.0" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.41.0" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.43.0" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<1.4" },
     { name = "cloudevents", specifier = "~=1.0" },
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "faiss-cpu", marker = "extra == 'faiss'", specifier = ">=1.10.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = ">=1.114,<1.134" },
-    { name = "google-genai", marker = "extra == 'google'", specifier = "~=1.51.0" },
+    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.51,<1.75" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = ">=6.29,<8.0" },
     { name = "jinja2", specifier = "~=3.1" },
     { name = "mcp", specifier = ">=1.26.0" },
@@ -6494,7 +6498,7 @@ requires-dist = [
     { name = "microsoft-agents-activity", marker = "extra == 'copilotstudio'", specifier = ">=0.3.1" },
     { name = "microsoft-agents-copilotstudio-client", marker = "extra == 'copilotstudio'", specifier = ">=0.3.1" },
     { name = "milvus", marker = "sys_platform != 'win32' and extra == 'milvus'", specifier = ">=2.3,<2.3.8" },
-    { name = "mistralai", marker = "extra == 'mistralai'", specifier = ">=1.2,<2.0" },
+    { name = "mistralai", marker = "extra == 'mistralai'", specifier = ">=1.2,<2.4.6" },
     { name = "motor", marker = "extra == 'mongo'", specifier = ">=3.3.2,<3.8.0" },
     { name = "nest-asyncio", specifier = "~=1.6" },
     { name = "numpy", marker = "python_full_version < '3.12'", specifier = ">=1.25.0" },
@@ -6514,7 +6518,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
     { name = "pyarrow", marker = "extra == 'usearch'", specifier = ">=12.0,<22.0" },
     { name = "pybars4", specifier = "~=0.9" },
-    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.13" },
+    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.14" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.7" },
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.16" },
