@@ -306,10 +306,13 @@ class RestApiOperation:
                 if unescaped == decoded:
                     break
                 decoded = unescaped
-            if decoded in (".", ".."):
-                raise FunctionExecutionException(
-                    f"Path '{path}' contains a dot-segment, which could lead to path traversal."
-                )
+            # A decoded segment may contain encoded separators ("%2f"/"%5c"), so re-split on
+            # both "/" and "\" and reject any resulting dot-segment.
+            for part in decoded.replace("\\", "/").split("/"):
+                if part in (".", ".."):
+                    raise FunctionExecutionException(
+                        f"Path '{path}' contains a dot-segment, which could lead to path traversal."
+                    )
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""

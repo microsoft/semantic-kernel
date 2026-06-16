@@ -435,9 +435,9 @@ def test_build_path_prevents_path_traversal():
         id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
     )
     arguments = {"id": "../../admin"}
-    result = operation.build_path(operation.path, arguments)
-    # The slashes must be encoded so ../../admin becomes a single path segment, not a traversal
-    assert result == "/resource/..%2F..%2Fadmin"
+    # Encoded separators that decode into dot-segments must be rejected, not silently encoded
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, arguments)
 
 
 def test_build_path_double_encodes_pre_encoded_values():
@@ -470,13 +470,12 @@ def test_build_path_encodes_unicode_characters():
         "/resources/%2e%2e/admin",
         "/resources/%2E%2E/admin",
         "/resources/%2e/admin",
+        "/resources/%2e%2e%2fadmin",
         "/resources/%252e%252e/admin",
     ],
 )
 def test_build_path_rejects_dot_segment_in_template(path):
-    operation = RestApiOperation(
-        id="test", method="GET", servers=["https://example.com/"], path=path, params=[]
-    )
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/"], path=path, params=[])
     with pytest.raises(FunctionExecutionException, match="dot-segment"):
         operation.build_path(operation.path, {})
 
