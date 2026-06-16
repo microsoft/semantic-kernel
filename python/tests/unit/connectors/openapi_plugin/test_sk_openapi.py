@@ -462,6 +462,41 @@ def test_build_path_encodes_unicode_characters():
     assert result == "/resource/caf%C3%A9%20r%C3%A9sum%C3%A9"
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/resources/../admin",
+        "/resources/./admin",
+        "/resources/%2e%2e/admin",
+        "/resources/%2E%2E/admin",
+        "/resources/%2e/admin",
+        "/resources/%252e%252e/admin",
+    ],
+)
+def test_build_path_rejects_dot_segment_in_template(path):
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path=path, params=[]
+    )
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {})
+
+
+def test_build_path_rejects_dot_segment_via_parameter():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}/details", params=parameters
+    )
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {"id": ".."})
+
+
+def test_build_path_allows_encoded_non_dot_segment_characters():
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resources/a%20b/details", params=[]
+    )
+    assert operation.build_path(operation.path, {}) == "/resources/a%20b/details"
+
+
 def test_build_query_string_with_required_parameter():
     parameters = [
         RestApiParameter(name="query", type="string", location=RestApiParameterLocation.QUERY, is_required=True)
