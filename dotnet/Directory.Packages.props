@@ -12,7 +12,7 @@
     <PackageVersion Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="9.9.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.0.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.3.0" />
     <PackageVersion Include="MessagePack" Version="3.1.7" /> <!-- Transitive dependency of Aspire pinned to newer version due to vulnerability in 2.5.192 -->
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.7.5" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.8.5" />
