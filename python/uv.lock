@@ -6532,7 +6532,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.14" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.7" },
-    { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.16" },
+    { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.17" },
     { name = "pyodbc", marker = "extra == 'sql'", specifier = ">=5.2" },
     { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = ">=6,<8" },
