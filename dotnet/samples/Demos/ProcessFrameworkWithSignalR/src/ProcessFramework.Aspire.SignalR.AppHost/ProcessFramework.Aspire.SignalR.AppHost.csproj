@@ -18,6 +18,7 @@
     <PackageReference Include="Aspire.Hosting.NodeJs" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Dapr" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" />
+    <PackageReference Include="MessagePack" /> <!-- Override vulnerable transitive dependency (2.5.192) from Aspire packages -->
   </ItemGroup>
 
   <ItemGroup>

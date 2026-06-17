@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="MessagePack" /> <!-- Override vulnerable transitive dependency (2.5.192) from Aspire packages -->
   </ItemGroup>
 
   <ItemGroup>
