@@ -223,7 +223,11 @@ async def test_create_functions_from_openapi_raises_exception(mock_parse):
     with pytest.raises(FunctionExecutionException, match="Error parsing OpenAPI document: test_openapi_document_path"):
         create_functions_from_openapi(plugin_name="test_plugin", openapi_document_path="test_openapi_document_path")
 
-    mock_parse.assert_called_once_with("test_openapi_document_path")
+    mock_parse.assert_called_once_with(
+        "test_openapi_document_path",
+        enable_file_ref_resolution=False,
+        enable_http_ref_resolution=False,
+    )
 
 
 async def test_run_operation_uses_timeout_from_run_options():
