@@ -2,7 +2,7 @@
 
 import re
 from typing import Any, Final
-from urllib.parse import ParseResult, ParseResultBytes, quote, urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import ParseResult, ParseResultBytes, quote, unquote, urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
     RestApiExpectedResponse,
@@ -289,7 +289,30 @@ class RestApiOperation:
                     )
                 continue
             path_template = path_template.replace(f"{{{parameter.name}}}", quote(str(argument), safe=""))
+        self._validate_path_segments(path_template)
         return path_template
+
+    @staticmethod
+    def _validate_path_segments(path: str) -> None:
+        """Reject dot-segments (. or ..), including percent-encoded forms, that enable path traversal.
+
+        The operation is selected using the raw path but the request URL is built from a canonicalized
+        path, so encoded dot-segments such as "%2e%2e" must be rejected before the URL is constructed.
+        """
+        for segment in path.split("/"):
+            decoded = segment
+            for _ in range(5):
+                unescaped = unquote(decoded)
+                if unescaped == decoded:
+                    break
+                decoded = unescaped
+            # A decoded segment may contain encoded separators ("%2f"/"%5c"), so re-split on
+            # both "/" and "\" and reject any resulting dot-segment.
+            for part in decoded.replace("\\", "/").split("/"):
+                if part in (".", ".."):
+                    raise FunctionExecutionException(
+                        f"Path '{path}' contains a dot-segment, which could lead to path traversal."
+                    )
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
