@@ -185,6 +185,7 @@ testpaths = 'tests'
 addopts = "-ra -q -r fEX"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
 filterwarnings = [
     'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
 ]
