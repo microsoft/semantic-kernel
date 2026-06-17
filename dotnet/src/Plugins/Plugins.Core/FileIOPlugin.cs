@@ -12,11 +12,26 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// Read and write from a file.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. <see cref="AllowedFolders"/> must be explicitly configured
+/// before any file operations are permitted. By default, all file paths are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedFolders"/> is restricted to trusted values only.
+/// </para>
+/// </remarks>
 public sealed class FileIOPlugin
 {
     /// <summary>
-    /// List of allowed folders to read from or write to.
+    /// List of allowed folders to read from or write to. Subdirectories of allowed folders are also permitted.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no folders allowed). Must be explicitly populated
+    /// with trusted directory paths before any file operations will succeed.
+    /// Paths are canonicalized before validation to prevent directory traversal.
+    /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
         get => this._allowedFolders;
@@ -24,9 +39,12 @@ public sealed class FileIOPlugin
     }
 
     /// <summary>
-    /// Set to true to disable overwriting existing files.
+    /// Set to false to allow overwriting existing files.
     /// </summary>
-    public bool DisableFileOverwrite { get; set; } = false;
+    /// <remarks>
+    /// Defaults to <c>true</c> (overwriting is disabled).
+    /// </remarks>
+    public bool DisableFileOverwrite { get; set; } = true;
 
     /// <summary>
     /// Read a file
@@ -67,6 +85,11 @@ public sealed class FileIOPlugin
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
+        if (this.DisableFileOverwrite && File.Exists(path))
+        {
+            throw new InvalidOperationException("Overwriting existing files is disabled.");
+        }
+
         byte[] text = Encoding.UTF8.GetBytes(content);
         var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
         using var writer = new FileStream(path, fileMode, FileAccess.Write, FileShare.None);
@@ -78,11 +101,12 @@ public sealed class FileIOPlugin
     }
 
     #region private
-    private HashSet<string>? _allowedFolders;
+    private HashSet<string>? _allowedFolders = [];
 
     /// <summary>
-    /// If a list of allowed folder has been provided, the folder of the provided path is checked
-    /// to verify it is in the allowed folder list.
+    /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
+    /// to verify it is in the allowed folder list. Paths are canonicalized before comparison.
+    /// Subdirectories of allowed folders are also permitted.
     /// </summary>
     private bool IsFilePathAllowed(string path)
     {
@@ -91,11 +115,6 @@ public sealed class FileIOPlugin
         if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        if (this.DisableFileOverwrite && File.Exists(path))
-        {
-            throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
 
         string? directoryPath = Path.GetDirectoryName(path);
@@ -111,7 +130,30 @@ public sealed class FileIOPlugin
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
-        return this._allowedFolders is null || this._allowedFolders.Contains(directoryPath);
+        if (this._allowedFolders is null || this._allowedFolders.Count == 0)
+        {
+            return false;
+        }
+
+        var canonicalDir = Path.GetFullPath(directoryPath);
+
+        foreach (var allowedFolder in this._allowedFolders)
+        {
+            var canonicalAllowed = Path.GetFullPath(allowedFolder);
+            var separator = Path.DirectorySeparatorChar.ToString();
+            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            {
+                canonicalAllowed += separator;
+            }
+
+            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
+                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     #endregion
 }

@@ -594,4 +594,76 @@ public class PostgresSqlBuilderTests
     }
 
     #endregion
+
+    #region NRT (Nullable Reference Type) detection
+
+#if NET // NRT detection via NullabilityInfoContext is only available on .NET 6+
+    [Fact]
+    public void TestBuildCreateTableCommand_WithNrtAnnotations()
+    {
+        var model = new PostgresModelBuilder().Build(
+            typeof(NrtTestRecord),
+            typeof(long),
+            definition: null,
+            defaultEmbeddingGenerator: null);
+
+        var sql = PostgresSqlBuilder.BuildCreateTableSql(schema: null, "testcollection", model, pgVersion: new Version(18, 0));
+
+        // Non-nullable reference types should be NOT NULL
+        Assert.Contains("\"NonNullableString\" TEXT NOT NULL", sql);
+        Assert.Contains("\"NonNullableByteArray\" BYTEA NOT NULL", sql);
+
+        // Nullable reference types should not have NOT NULL
+        Assert.Contains("\"NullableString\" TEXT", sql);
+        Assert.DoesNotContain("\"NullableString\" TEXT NOT NULL", sql);
+        Assert.Contains("\"NullableByteArray\" BYTEA", sql);
+        Assert.DoesNotContain("\"NullableByteArray\" BYTEA NOT NULL", sql);
+
+        // Non-nullable value types should be NOT NULL (unchanged from before)
+        Assert.Contains("\"NonNullableInt\" INTEGER NOT NULL", sql);
+        Assert.Contains("\"NonNullableBool\" BOOLEAN NOT NULL", sql);
+
+        // Nullable value types should not have NOT NULL (unchanged from before)
+        Assert.Contains("\"NullableInt\" INTEGER", sql);
+        Assert.DoesNotContain("\"NullableInt\" INTEGER NOT NULL", sql);
+
+        this._output.WriteLine(sql);
+    }
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
+#pragma warning disable CA1812 // Class is used via reflection
+    private sealed class NrtTestRecord
+    {
+        [VectorStoreKey]
+        public long Id { get; set; }
+
+        [VectorStoreData]
+        public string NonNullableString { get; set; }
+
+        [VectorStoreData]
+        public string? NullableString { get; set; }
+
+        [VectorStoreData]
+        public byte[] NonNullableByteArray { get; set; }
+
+        [VectorStoreData]
+        public byte[]? NullableByteArray { get; set; }
+
+        [VectorStoreData]
+        public int NonNullableInt { get; set; }
+
+        [VectorStoreData]
+        public int? NullableInt { get; set; }
+
+        [VectorStoreData]
+        public bool NonNullableBool { get; set; }
+
+        [VectorStoreVector(10)]
+        public ReadOnlyMemory<float> Embedding { get; set; }
+    }
+#pragma warning restore CA1812
+#pragma warning restore CS8618
+#endif
+
+    #endregion
 }

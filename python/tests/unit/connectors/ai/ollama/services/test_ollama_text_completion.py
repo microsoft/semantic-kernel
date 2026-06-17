@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from collections.abc import AsyncGenerator
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -70,7 +71,10 @@ async def test_custom_host_streaming(
     mock_completion_client, mock_client, model_id, service_id, host, chat_history, default_options
 ):
     """Test that the service initializes and generates streaming content correctly with a custom host."""
-    mock_completion_client.__aiter__.return_value = {"response": "test_response"}
+    # Create a proper async iterator mock for streaming
+    streaming_response = MagicMock(spec=AsyncGenerator)
+    streaming_response.__aiter__.return_value = [{"response": "test_response"}]
+    mock_completion_client.return_value = streaming_response
 
     ollama = OllamaTextCompletion(ai_model_id=model_id, host=host)
     async for _ in ollama.get_streaming_text_contents(

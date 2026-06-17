@@ -77,21 +77,8 @@ internal static class RedisFieldMapping
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>>(records, cancellationToken, out var doubleTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         return (records, generatedEmbeddings);

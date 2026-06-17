@@ -31,8 +31,8 @@ public sealed class WeaviateBuilder : ContainerBuilder<WeaviateBuilder, Weaviate
             .WithEnvironment("AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED", "true")
             .WithEnvironment("PERSISTENCE_DATA_PATH", "/var/lib/weaviate")
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(WeaviateHttpPort)
-                .UntilPortIsAvailable(WeaviateGrpcPort)
+                .UntilInternalTcpPortIsAvailable(WeaviateHttpPort)
+                .UntilInternalTcpPortIsAvailable(WeaviateGrpcPort)
                 .UntilHttpRequestIsSucceeded(r => r.ForPath("/v1/.well-known/ready").ForPort(WeaviateHttpPort)));
 
     protected override WeaviateBuilder Clone(IResourceConfiguration<CreateContainerParameters> resourceConfiguration)

@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -14,75 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 internal static class MongoCollectionSearchMapping
 {
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    /// <summary>
-    /// Build MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
-    /// </summary>
-    /// <param name="vectorSearchFilter">The <see cref="VectorSearchFilter"/> to build MongoDB filter from.</param>
-    /// <param name="model">The model.</param>
-    /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
-    public static BsonDocument? BuildLegacyFilter(
-        VectorSearchFilter vectorSearchFilter,
-        CollectionModel model)
-    {
-        const string EqualOperator = "$eq";
-
-        var filterClauses = vectorSearchFilter.FilterClauses.ToList();
-
-        if (filterClauses is not { Count: > 0 })
-        {
-            return null;
-        }
-
-        var filter = new BsonDocument();
-
-        foreach (var filterClause in filterClauses)
-        {
-            string propertyName;
-            BsonValue propertyValue;
-            string filterOperator;
-
-            if (filterClause is EqualToFilterClause equalToFilterClause)
-            {
-                propertyName = equalToFilterClause.FieldName;
-                propertyValue = BsonValueFactory.Create(equalToFilterClause.Value);
-                filterOperator = EqualOperator;
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
-                        nameof(EqualToFilterClause)])}");
-            }
-
-            if (!model.PropertyMap.TryGetValue(propertyName, out var property))
-            {
-                throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
-            }
-
-            if (filter.Contains(property.StorageName))
-            {
-                if (filter[property.StorageName] is BsonDocument document && document.Contains(filterOperator))
-                {
-                    throw new NotSupportedException(
-                        $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " +
-                        "Multiple filters of the same type in the same property are not supported.");
-                }
-
-                filter[property.StorageName][filterOperator] = propertyValue;
-            }
-            else
-            {
-                filter[property.StorageName] = new BsonDocument() { [filterOperator] = propertyValue };
-            }
-        }
-
-        return filter;
-    }
-#pragma warning restore CS0618
-
     /// <summary>Returns search part of the search query.</summary>
     public static BsonDocument GetSearchQuery<TVector>(
         TVector vector,

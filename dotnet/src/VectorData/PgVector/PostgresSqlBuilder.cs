@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using Microsoft.Extensions.AI;
@@ -469,44 +468,31 @@ internal static class PostgresSqlBuilder
         };
 
     /// <summary>
-    /// Generates filter clause from either legacy or new filter, returning condition and parameters.
+    /// Generates filter clause from the provided filter, returning condition and parameters.
     /// </summary>
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     private static (string Clause, List<object> Parameters) GenerateFilterClause<TRecord>(
         CollectionModel model,
-        VectorSearchFilter? legacyFilter,
-        Expression<Func<TRecord, bool>>? newFilter,
+        Expression<Func<TRecord, bool>>? filter,
         int startParamIndex)
-        => (oldFilter: legacyFilter, newFilter) switch
-        {
-            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            (not null, null) => GenerateLegacyFilterWhereClause(model, legacyFilter, startParamIndex),
-            (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex),
-            _ => (Clause: string.Empty, Parameters: new List<object>())
-        };
+        => filter is not null
+            ? TranslateFilterWhereClause(model, filter, startParamIndex)
+            : (Clause: string.Empty, Parameters: new List<object>());
 
     /// <summary>
-    /// Generates filter condition (without WHERE keyword) from either legacy or new filter.
+    /// Generates filter condition (without WHERE keyword) from the provided filter.
     /// </summary>
     private static (string Condition, List<object> Parameters) GenerateFilterCondition<TRecord>(
         CollectionModel model,
-        VectorSearchFilter? legacyFilter,
-        Expression<Func<TRecord, bool>>? newFilter,
+        Expression<Func<TRecord, bool>>? filter,
         int startParamIndex)
-        => (oldFilter: legacyFilter, newFilter) switch
-        {
-            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            (not null, null) => GenerateLegacyFilterCondition(model, legacyFilter, startParamIndex),
-            (null, not null) => GenerateNewFilterCondition(model, newFilter, startParamIndex),
-            _ => (Condition: string.Empty, Parameters: new List<object>())
-        };
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        => filter is not null
+            ? TranslateFilterCondition(model, filter, startParamIndex)
+            : (Condition: string.Empty, Parameters: new List<object>());
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
     internal static void BuildGetNearestMatchCommand<TRecord>(
         NpgsqlCommand command, string? schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
-        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit,
+        Expression<Func<TRecord, bool>>? filter, int? skip, bool includeVectors, int limit,
         double? scoreThreshold = null)
     {
         // Build column list with proper escaping
@@ -524,7 +510,7 @@ internal static class PostgresSqlBuilder
         var distanceOp = GetDistanceOperator(distanceFunction);
 
         // Start where clause params at 2, vector takes param 1.
-        var (where, parameters) = GenerateFilterClause(model, legacyFilter, newFilter, startParamIndex: 2);
+        var (where, parameters) = GenerateFilterClause(model, filter, startParamIndex: 2);
 
         StringBuilder sql = new();
         sql.Append("SELECT ").Append(columns).Append(", ").AppendIdentifier(vectorProperty.StorageName)
@@ -666,15 +652,15 @@ internal static class PostgresSqlBuilder
         }
     }
 
-    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(CollectionModel model, LambdaExpression newFilter, int startParamIndex)
+    private static (string Clause, List<object> Parameters) TranslateFilterWhereClause(CollectionModel model, LambdaExpression filter, int startParamIndex)
     {
-        var (condition, parameters) = GenerateNewFilterCondition(model, newFilter, startParamIndex);
+        var (condition, parameters) = TranslateFilterCondition(model, filter, startParamIndex);
         return (string.IsNullOrEmpty(condition) ? string.Empty : $"WHERE {condition}", parameters);
     }
 
-    internal static (string Condition, List<object> Parameters) GenerateNewFilterCondition(CollectionModel model, LambdaExpression newFilter, int startParamIndex)
+    private static (string Condition, List<object> Parameters) TranslateFilterCondition(CollectionModel model, LambdaExpression filter, int startParamIndex)
     {
-        PostgresFilterTranslator translator = new(model, newFilter, startParamIndex);
+        PostgresFilterTranslator translator = new(model, filter, startParamIndex);
         translator.Translate(appendWhere: false);
         return (translator.Clause.ToString(), translator.ParameterValues);
     }
@@ -692,63 +678,6 @@ internal static class PostgresSqlBuilder
         return sb.AppendIdentifier(tableName);
     }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
-    {
-        var (condition, parameters) = GenerateLegacyFilterCondition(model, legacyFilter, startParamIndex);
-        return ($"WHERE {condition}", parameters);
-    }
-
-    internal static (string Condition, List<object> Parameters) GenerateLegacyFilterCondition(CollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
-    {
-        StringBuilder condition = new();
-        var parameters = new List<object>();
-
-        var paramIndex = startParamIndex;
-        var first = true;
-
-        foreach (var filterClause in legacyFilter.FilterClauses)
-        {
-            if (!first)
-            {
-                condition.Append(" AND ");
-            }
-            first = false;
-
-            if (filterClause is EqualToFilterClause equalTo)
-            {
-                var property = model.Properties.FirstOrDefault(p => p.ModelName == equalTo.FieldName);
-                if (property == null) { throw new ArgumentException($"Property {equalTo.FieldName} not found in record definition."); }
-
-                condition.AppendIdentifier(property.StorageName).Append(" = $").Append(paramIndex);
-                parameters.Add(equalTo.Value);
-                paramIndex++;
-            }
-            else if (filterClause is AnyTagEqualToFilterClause anyTagEqualTo)
-            {
-                var property = model.Properties.FirstOrDefault(p => p.ModelName == anyTagEqualTo.FieldName);
-                if (property == null) { throw new ArgumentException($"Property {anyTagEqualTo.FieldName} not found in record definition."); }
-
-                if (property.Type != typeof(List<string>))
-                {
-                    throw new ArgumentException($"Property {anyTagEqualTo.FieldName} must be of type List<string> to use AnyTagEqualTo filter.");
-                }
-
-                condition.AppendIdentifier(property.StorageName).Append(" @> ARRAY[$").Append(paramIndex).Append("::TEXT]");
-                parameters.Add(anyTagEqualTo.Value);
-                paramIndex++;
-            }
-            else
-            {
-                throw new NotSupportedException($"Filter clause type {filterClause.GetType().Name} is not supported.");
-            }
-        }
-
-        return (condition.ToString(), parameters);
-    }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Builds a hybrid search command that combines vector similarity search with full-text keyword search using RRF (Reciprocal Rank Fusion).
     /// </summary>
@@ -756,7 +685,7 @@ internal static class PostgresSqlBuilder
         NpgsqlCommand command, string? schema, string tableName, CollectionModel model,
         VectorPropertyModel vectorProperty, DataPropertyModel textProperty,
         object vectorValue, ICollection<string> keywords,
-        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter,
+        Expression<Func<TRecord, bool>>? filter,
         int? skip, bool includeVectors, int top, double? scoreThreshold = null)
     {
         // RRF constant - higher values give more weight to lower-ranked results
@@ -783,7 +712,7 @@ internal static class PostgresSqlBuilder
 
         // Parameters: $1 = keywords, $2 = vector, $3 = RRF constant
         // Additional parameters start at $4 for filters
-        var (filterCondition, filterParameters) = GenerateFilterCondition(model, legacyFilter, newFilter, startParamIndex: 4);
+        var (filterCondition, filterParameters) = GenerateFilterCondition(model, filter, startParamIndex: 4);
 
         // Build the full table name
         var fullTableName = new StringBuilder()
@@ -883,5 +812,4 @@ internal static class PostgresSqlBuilder
             command.Parameters.Add(new NpgsqlParameter { Value = scoreThreshold.Value });
         }
     }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }
