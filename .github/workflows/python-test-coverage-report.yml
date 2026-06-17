@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pull-requests: write
 
 jobs:
@@ -23,7 +24,7 @@ jobs:
       - name: Download coverage report
         uses: actions/download-artifact@v5
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           path: ./python
           merge-multiple: true
@@ -35,13 +36,17 @@ jobs:
         # The PR number is needed to post the comment on the PR
         run: |
           PR_NUMBER=$(cat pr_number)
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "::error::PR number file contains invalid content"
+            exit 1
+          fi
           echo "PR number: $PR_NUMBER"
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@v1.1.57
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ github.token }}
           issue-number: ${{ env.PR_NUMBER }}
           pytest-xml-coverage-path: python/python-coverage.xml
           title: "Python Test Coverage Report"

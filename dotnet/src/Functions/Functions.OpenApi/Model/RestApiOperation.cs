@@ -412,19 +412,39 @@ public sealed class RestApiOperation
     };
 
     /// <summary>
-    /// Validates that the path does not contain dot-segments (. or ..) that could enable path traversal.
+    /// Validates that the path does not contain dot-segments (. or ..) that could enable path traversal,
+    /// including percent-encoded forms (e.g. "%2e%2e") that <see cref="Uri"/> canonicalizes at request time.
     /// ".." navigates up one path segment, enabling traversal to unintended endpoints.
     /// "." refers to the current directory — harmless but unexpected, so rejected to prevent misuse.
     /// </summary>
     /// <param name="path">The path to validate.</param>
     private static void ValidatePathSegments(string path)
     {
-        var segments = path.Split('/');
-        for (int i = 0; i < segments.Length; i++)
+        // Split on the structural path separator first.
+        foreach (var rawSegment in path.Split('/'))
         {
-            if (segments[i] == "." || segments[i] == "..")
+            // Decode percent-encoding until stable to catch encoded ("%2e") and
+            // double-encoded ("%252e") dot-segments before URI canonicalization.
+            var decoded = rawSegment;
+            for (int i = 0; i < 5; i++)
             {
-                throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+                var unescaped = Uri.UnescapeDataString(decoded);
+                if (string.Equals(unescaped, decoded, StringComparison.Ordinal))
+                {
+                    break;
+                }
+
+                decoded = unescaped;
+            }
+
+            // A decoded segment may itself contain encoded separators ("%2f"/"%5c"),
+            // so re-split on both '/' and '\' and reject any resulting dot-segment.
+            foreach (var segment in decoded.Split('/', '\\'))
+            {
+                if (segment == "." || segment == "..")
+                {
+                    throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+                }
             }
         }
     }
