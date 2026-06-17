@@ -1467,6 +1467,92 @@ public class RestApiOperationTests
         Assert.Equal("https://example.com/api/files/report.v2.txt", url.OriginalString);
     }
 
+    [Theory]
+    [InlineData("/resources/%2e%2e/admin")]
+    [InlineData("/resources/%2E%2E/admin")]
+    [InlineData("/resources/%2e./admin")]
+    [InlineData("/resources/.%2e/admin")]
+    [InlineData("/resources/%2e%2e%2fadmin")]
+    [InlineData("/resources/%252e%252e/admin")]
+    [InlineData("/resources/%2e/admin")]
+    public void ItShouldRejectEncodedDotSegmentInPathTemplate(string path)
+    {
+        // Arrange — operation path template contains an encoded dot-segment that
+        // System.Uri would canonicalize into a path-traversal at request time.
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: path,
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act & Assert — encoded dot-segments must be rejected before URL is built
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("dot-segment", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldRejectEncodedDotSegmentInPathParameter()
+    {
+        // Arrange — path parameter value is an encoded ".." (%2e%2e)
+        var parameters = new List<RestApiParameter> {
+            new(
+                name: "id",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiParameterLocation.Path,
+                style: RestApiParameterStyle.Simple)
+        };
+
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/resources/{id}/details",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: parameters,
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?> { { "id", "%2e%2e" } };
+
+        // Act & Assert — encoded dot-segments in parameter values must be rejected
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("dot-segment", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldAllowEncodedNonDotSegmentCharactersInPathTemplate()
+    {
+        // Arrange — path contains encoded characters that are NOT dot-segments
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/resources/a%20b/details",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — legitimate encoded characters must not be rejected
+        Assert.Equal("https://example.com/api/resources/a%20b/details", url.OriginalString);
+    }
+
     [Fact]
     public void ItShouldEncodeServerVariableValuesLookedUpByArgumentName()
     {
