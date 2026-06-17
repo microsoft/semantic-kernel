@@ -27,9 +27,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         string? distanceFunction,
         string? textPropertyName,
         string scorePropertyName,
-#pragma warning disable CS0618 // Type or member is obsolete
-        VectorSearchFilter? oldFilter,
-#pragma warning restore CS0618 // Type or member is obsolete
         Expression<Func<TRecord, bool>>? filter,
         double? scoreThreshold,
         int top,
@@ -54,16 +51,10 @@ internal static class CosmosNoSqlCollectionQueryBuilder
 
         var selectClauseArguments = string.Join(",", [.. fieldsArgument, vectorDistanceArgumentWithAlias]);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var (filterClause, filterParameters) = (OldFilter: oldFilter, Filter: filter) switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => BuildSearchFilter(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new CosmosNoSqlFilterTranslator().Translate(newFilter, model),
-            _ => (null, [])
-        };
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        var (filterClause, filterParameters) = filter is not null
+            ? new CosmosNoSqlFilterTranslator().Translate(filter, model)
+            : ((string?)null, new Dictionary<string, object?>());
 
         var queryParameters = new Dictionary<string, object?>
         {
@@ -228,68 +219,6 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     }
 
     #region private
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    private static (string WhereClause, Dictionary<string, object?> Parameters) BuildSearchFilter(
-        VectorSearchFilter filter,
-        CollectionModel model)
-    {
-        const string ArrayContainsOperator = "ARRAY_CONTAINS";
-        const string ConditionValueVariableName = "@cv";
-
-        var tableVariableName = CosmosNoSqlConstants.ContainerAlias;
-
-        var filterClauses = filter.FilterClauses.ToList();
-
-        var whereClauseBuilder = new StringBuilder();
-        var queryParameters = new Dictionary<string, object?>();
-
-        for (var i = 0; i < filterClauses.Count; i++)
-        {
-            if (i > 0)
-            {
-                whereClauseBuilder.Append(" AND ");
-            }
-            var filterClause = filterClauses[i];
-
-            string queryParameterName = $"{ConditionValueVariableName}{i}";
-            object queryParameterValue;
-
-            if (filterClause is EqualToFilterClause equalToFilterClause)
-            {
-                var propertyName = GetStoragePropertyName(equalToFilterClause.FieldName, model);
-                whereClauseBuilder
-                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
-                    .Append(" = ")
-                    .Append(queryParameterName);
-                queryParameterValue = equalToFilterClause.Value;
-            }
-            else if (filterClause is AnyTagEqualToFilterClause anyTagEqualToFilterClause)
-            {
-                var propertyName = GetStoragePropertyName(anyTagEqualToFilterClause.FieldName, model);
-                whereClauseBuilder.Append(ArrayContainsOperator)
-                    .Append('(')
-                    .Append(GeneratePropertyAccess(tableVariableName, propertyName))
-                    .Append(", ")
-                    .Append(queryParameterName)
-                    .Append(')');
-                queryParameterValue = anyTagEqualToFilterClause.Value;
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
-                        nameof(EqualToFilterClause),
-                        nameof(AnyTagEqualToFilterClause)])}");
-            }
-
-            queryParameters.Add(queryParameterName, queryParameterValue);
-        }
-
-        return (whereClauseBuilder.ToString(), queryParameters);
-    }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     private static string GetStoragePropertyName(string propertyName, CollectionModel model)
     {

@@ -379,15 +379,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new MongoFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
@@ -518,15 +512,9 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new MongoFilterTranslator().Translate(options.Filter, this._model)
+            : null;
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.

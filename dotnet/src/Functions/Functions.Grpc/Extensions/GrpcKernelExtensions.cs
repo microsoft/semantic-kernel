@@ -29,13 +29,15 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin ImportPluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
-        string pluginDirectoryName)
+        string pluginDirectoryName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
-        KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
+        KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName, executionParameters);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -46,13 +48,15 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin ImportPluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
-        string pluginName)
+        string pluginName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
-        KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName, executionParameters);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -63,13 +67,15 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin ImportPluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
-        string pluginName)
+        string pluginName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
-        KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
+        KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName, executionParameters);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -80,11 +86,13 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="parentDirectory">Directory containing the plugin directory.</param>
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin CreatePluginFromGrpcDirectory(
         this Kernel kernel,
         string parentDirectory,
-        string pluginDirectoryName)
+        string pluginDirectoryName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
         const string ProtoFile = "grpc.proto";
 
@@ -107,7 +115,7 @@ public static class GrpcKernelExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.CreatePluginFromGrpc(stream, pluginDirectoryName);
+        return kernel.CreatePluginFromGrpc(stream, pluginDirectoryName, executionParameters);
     }
 
     /// <summary>
@@ -116,11 +124,13 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="pluginName">Name of the plugin to register.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin CreatePluginFromGrpcFile(
         this Kernel kernel,
         string filePath,
-        string pluginName)
+        string pluginName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
         if (!File.Exists(filePath))
         {
@@ -135,7 +145,7 @@ public static class GrpcKernelExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.CreatePluginFromGrpc(stream, pluginName);
+        return kernel.CreatePluginFromGrpc(stream, pluginName, executionParameters);
     }
 
     /// <summary>
@@ -144,11 +154,13 @@ public static class GrpcKernelExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="pluginName">Plugin name.</param>
+    /// <param name="executionParameters">Optional gRPC function execution parameters.</param>
     /// <returns>A list of all the prompt functions representing the plugin.</returns>
     public static KernelPlugin CreatePluginFromGrpc(
         this Kernel kernel,
         Stream documentStream,
-        string pluginName)
+        string pluginName,
+        GrpcFunctionExecutionParameters? executionParameters = null)
     {
         Verify.NotNull(kernel);
         KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
@@ -162,9 +174,13 @@ public static class GrpcKernelExtensions
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
-        using var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
+        var client = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 
-        var runner = new GrpcOperationRunner(client);
+        var runner = new GrpcOperationRunner(
+            client,
+            executionParameters?.AddressOverride,
+            executionParameters?.AllowedAddresses,
+            executionParameters?.AllowedSchemes);
 
         ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) ?? NullLogger.Instance;
         foreach (var operation in operations)
