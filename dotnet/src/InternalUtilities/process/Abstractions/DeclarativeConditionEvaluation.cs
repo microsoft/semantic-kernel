@@ -32,12 +32,12 @@ internal static class JMESPathConditionEvaluator
             }
 
             // Handle different result types
-            if (result == "true" || result == "\"true\"")
+            if (result is "true" or "\"true\"")
             {
                 return true;
             }
 
-            if (result == "false" || result == "\"false\"")
+            if (result is "false" or "\"false\"")
             {
                 return false;
             }

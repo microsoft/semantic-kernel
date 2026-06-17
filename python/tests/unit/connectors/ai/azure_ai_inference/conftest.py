@@ -85,6 +85,17 @@ def model_diagnostics_test_env(monkeypatch, exclude_list, override_env_param_dic
     return env_vars
 
 
+@pytest.fixture()
+def disabled_model_diagnostics_test_env(monkeypatch):
+    """Fixture to disable diagnostics for tests that use mocking.
+
+    This is needed because AIInferenceInstrumentor's instrument/uninstrument
+    cycle interferes with class-level mocking of ChatCompletionsClient.complete.
+    """
+    monkeypatch.setenv("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS", "false")
+    monkeypatch.setenv("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE", "false")
+
+
 @pytest.fixture(scope="function")
 def azure_ai_inference_client(azure_ai_inference_unit_test_env, request) -> ChatCompletionsClient | EmbeddingsClient:
     """Fixture to create Azure AI Inference client for unit tests."""
@@ -164,8 +175,8 @@ def mock_azure_ai_inference_chat_completion_response_with_tool_call(model_id) ->
                         ChatCompletionsToolCall(
                             id="test_id",
                             function=FunctionCall(
-                                name="test_function",
-                                arguments={"test_arg": "test_value"},
+                                name="getLightStatus",
+                                arguments='{"arg1": "test_value"}',
                             ),
                         ),
                     ],
@@ -254,7 +265,7 @@ def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(mo
                                 id="test_id",
                                 function=FunctionCall(
                                     name="getLightStatus",
-                                    arguments={"arg1": "test_value"},
+                                    arguments='{"arg1": "test_value"}',
                                 ),
                             ),
                         ],

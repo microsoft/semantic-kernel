@@ -22,23 +22,26 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
     {
         Verify.NotNull(dataModel);
 
-        var jsonObject = new JsonObject();
-
-        jsonObject[model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+        var jsonObject = new JsonObject
+        {
+            [model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
             ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,
+                Guid g => g.ToString(),
+
                 null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            };
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string or Guid.")
+            }
+        };
 
         foreach (var dataProperty in model.DataProperties)
         {
             if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
             {
                 jsonObject[dataProperty.StorageName] = dataValue is not null ?
-                    JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :
+                    JsonSerializer.SerializeToNode(ConvertToStorageValue(dataValue), GetStorageType(dataProperty.Type), jsonSerializerOptions) :
                     null;
             }
         }
@@ -97,8 +100,15 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             switch (property)
             {
                 case KeyPropertyModel keyProperty:
-                    result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
+                    var key = (string?)storageModel[keyProperty.StorageName]
                         ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+
+                    result[keyProperty.ModelName] = keyProperty.Type switch
+                    {
+                        var t when t == typeof(string) => key,
+                        var t when t == typeof(Guid) => Guid.Parse(key),
+                        _ => throw new UnreachableException()
+                    };
 
                     continue;
 
@@ -173,6 +183,10 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             Type t when t == typeof(DateTime?) => value.GetValue<DateTime?>(),
             Type t when t == typeof(DateTimeOffset) => value.GetValue<DateTimeOffset>(),
             Type t when t == typeof(DateTimeOffset?) => value.GetValue<DateTimeOffset?>(),
+#if NET
+            Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
+            Type t when t == typeof(DateOnly?) => (DateOnly?)DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
+#endif
 
             _ => (object?)null
         };
@@ -232,4 +246,38 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
 
         throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.");
     }
+
+    /// <summary>
+    /// Converts a value to its storage representation for Azure AI Search.
+    /// Azure AI Search only supports <see cref="DateTimeOffset"/> for date/time types, and always internally
+    /// converts to UTC for storage.
+    /// </summary>
+    /// <summary>
+    /// Gets the storage type for a given property type. Azure AI Search stores DateTime and DateOnly as DateTimeOffset.
+    /// </summary>
+    private static Type GetStorageType(Type propertyType)
+    {
+        var underlying = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+        if (underlying == typeof(DateTime)
+#if NET
+            || underlying == typeof(DateOnly)
+#endif
+        )
+        {
+            return propertyType == underlying ? typeof(DateTimeOffset) : typeof(DateTimeOffset?);
+        }
+
+        return propertyType;
+    }
+
+    private static object ConvertToStorageValue(object value)
+        => value switch
+        {
+            DateTime dateTime => new DateTimeOffset(dateTime, TimeSpan.Zero),
+#if NET
+            DateOnly dateOnly => new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+#endif
+            _ => value
+        };
 }

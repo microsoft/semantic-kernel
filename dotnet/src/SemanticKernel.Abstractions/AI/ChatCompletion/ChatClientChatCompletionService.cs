@@ -89,7 +89,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             chatHistory = executionSettings.ChatClientPrepareChatHistoryForRequest(chatHistory);
         }
 
-        List<AIContent> fcContents = [];
         ChatRole? role = null;
 
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
@@ -99,24 +98,22 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         {
             role ??= update.Role;
 
-            fcContents.AddRange(update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent));
+            // Message tools and function calls should be individual messages in the history.
+            foreach (var fcc in update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent))
+            {
+                if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+                {
+                    chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
+                    continue;
+                }
+
+                if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+                {
+                    chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
+                }
+            }
 
             yield return update.ToStreamingChatMessageContent();
-        }
-
-        // Message tools and function calls should be individual messages in the history.
-        foreach (var fcc in fcContents)
-        {
-            if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
-            {
-                chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
-                continue;
-            }
-
-            if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
-            {
-                chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
-            }
         }
     }
 }

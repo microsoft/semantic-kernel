@@ -323,7 +323,6 @@ public class RedisHashSetCollectionTests
             Times.Once);
     }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -351,8 +350,6 @@ public class RedisHashSetCollectionTests
         });
         using var sut = this.CreateRecordCollection(useDefinition);
 
-        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
-
         // Act.
         var results = await sut.SearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
@@ -360,7 +357,7 @@ public class RedisHashSetCollectionTests
             new()
             {
                 IncludeVectors = includeVectors,
-                OldFilter = filter,
+                Filter = r => r.Data == "data 1",
                 Skip = 2
             }).ToListAsync();
 
@@ -368,7 +365,7 @@ public class RedisHashSetCollectionTests
         var expectedArgsPart1 = new object[]
         {
             "testcollection",
-            "(@data_storage_name:{data 1})=>[KNN 7 @vector_storage_name $embedding AS vector_score]",
+            "@data_storage_name:{\"data 1\"}=>[KNN 7 @vector_storage_name $embedding AS vector_score]",
             "WITHSCORES",
             "SORTBY",
             "vector_score",
@@ -416,7 +413,6 @@ public class RedisHashSetCollectionTests
             Assert.False(results.First().Record.Vector.HasValue);
         }
     }
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
@@ -429,12 +425,12 @@ public class RedisHashSetCollectionTests
         // Arrange.
         var definition = new VectorStoreCollectionDefinition()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
                 new VectorStoreDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
                 new VectorStoreVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
-            }
+            ]
         };
 
         // Act.

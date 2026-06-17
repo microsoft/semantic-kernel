@@ -19,7 +19,7 @@ In this example we setup two ONNX AI Services:
 
 ## Prerequisites
 
-- [.NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ## 1. Configuring the sample
 

@@ -25,7 +25,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private const string ListFilesTestDataFilePath = "./TestData/sessions_python_plugin_file_list.json";
     private const string UpdaloadFileTestDataFilePath = "./TestData/sessions_python_plugin_file_upload.json";
     private const string FileTestDataFilePath = "./TestData/sessions_python_plugin_file.txt";
-    private readonly static string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
+    private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
 
     private readonly SessionsPythonSettings _defaultSettings = new(
         sessionId: Guid.NewGuid().ToString(),
@@ -34,6 +34,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
         CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
     };
+
+    private readonly SessionsPythonSettings _settingsWithFileOperationsEnabled;
 
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -46,6 +48,18 @@ public sealed class SessionsPythonPluginTests : IDisposable
         httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(this._httpClient);
 
         this._httpClientFactory = httpClientFactoryMock.Object;
+
+        // Initialize settings with file operations enabled for tests that need them
+        this._settingsWithFileOperationsEnabled = new(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
+        {
+            CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! },
+            AllowedDownloadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
+        };
     }
 
     [Fact]
@@ -62,6 +76,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Act - Assert no exception occurs e.g. due to reflection
         Assert.NotNull(KernelPluginFactory.CreateFromObject(plugin));
+    }
+
+    [Fact]
+    public void ItExposesExpectedKernelFunctions()
+    {
+        // Arrange
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(plugin);
+
+        // Assert - Only ExecuteCode, UploadFile, and ListFiles should be exposed
+        // DownloadFile should NOT be exposed as a KernelFunction (matching Python behavior)
+        Assert.Equal(3, kernelPlugin.FunctionCount);
+        Assert.Contains(kernelPlugin, f => f.Name == "ExecuteCode");
+        Assert.Contains(kernelPlugin, f => f.Name == "UploadFile");
+        Assert.Contains(kernelPlugin, f => f.Name == "ListFiles");
+        Assert.DoesNotContain(kernelPlugin, f => f.Name == "DownloadFile");
     }
 
     [Fact]
@@ -106,7 +138,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new StringContent(""),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory, tokenProviderAsync);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory, tokenProviderAsync);
 
         // Act
         try
@@ -155,9 +187,9 @@ public sealed class SessionsPythonPluginTests : IDisposable
         });
 
         var expectedSessionId = Guid.NewGuid().ToString();
-        this._defaultSettings.SessionId = expectedSessionId;
+        this._settingsWithFileOperationsEnabled.SessionId = expectedSessionId;
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, httpClientFactoryMock.Object);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, httpClientFactoryMock.Object);
 
         // Act
         await plugin.ExecuteCodeAsync("print('hello world')");
@@ -229,7 +261,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new StringContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
 
         // Act
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
@@ -278,6 +310,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new ByteArrayContent(responseContent),
         };
 
+        // Downloads are permissive by default - no need for special settings
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
@@ -341,7 +374,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new StringContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory, (_) => Task.FromResult("test-auth-token"));
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory, (_) => Task.FromResult("test-auth-token"));
 
         // Act
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
@@ -356,6 +389,116 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var authorizationHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("Authorization");
         Assert.Single(authorizationHeaderValues, value => value == "Bearer test-auth-token");
+    }
+
+    [Fact]
+    public async Task ItShouldDenyUploadWhenFileOperationsDisabledAsync()
+    {
+        // Arrange - default settings have EnableDangerousFileUploads = false
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+
+        Assert.Contains("EnableDangerousFileUploads", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldDenyUploadWhenAllowedDirectoriesNotConfiguredAsync()
+    {
+        // Arrange - EnableDangerousFileUploads is true but AllowedUploadDirectories is null
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
+        {
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = null
+        };
+
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+
+        Assert.Contains("AllowedUploadDirectories", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldDenyUploadOutsideAllowedDirectoriesAsync()
+    {
+        // Arrange
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
+        {
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = new[] { "/some/allowed/directory" }
+        };
+
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+        // Act & Assert - FileTestDataFilePath is not in /some/allowed/directory
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+
+        Assert.Contains("not within allowed upload directories", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldDenyDownloadOutsideAllowedDirectoriesAsync()
+    {
+        // Arrange - AllowedDownloadDirectories is configured, so path validation applies
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
+        {
+            AllowedDownloadDirectories = new[] { "/some/allowed/directory" }
+        };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(new byte[] { 1, 2, 3 }),
+        };
+
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+        var downloadPath = Path.Combine(Path.GetTempPath(), "test_download.txt");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.DownloadFileAsync("test.txt", downloadPath));
+
+        Assert.Contains("not within allowed download directories", exception.Message);
+    }
+
+    [Fact]
+    public async Task ItShouldDenyUploadWithPathTraversalAsync()
+    {
+        // Arrange
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
+        {
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
+        };
+
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+        // Attempt path traversal
+        var traversalPath = Path.Combine(
+            Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))!,
+            "..",
+            "..",
+            "etc",
+            "passwd");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", traversalPath));
+
+        Assert.Contains("not within allowed upload directories", exception.Message);
     }
 
     public void Dispose()

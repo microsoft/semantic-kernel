@@ -219,6 +219,35 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         Assert.All(request.Requests, item => Assert.Null(item.Dimensions));
     }
 
+    [Fact]
+    public async Task GenerateEmbeddingsUsingEmbeddingGenerationOptionsShouldOverrideDimensionsAndModelAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        var dataToEmbed = new List<string>()
+        {
+            "First text to embed",
+            "Second text to embed",
+            "Third text to embed"
+        };
+
+        var options = new Microsoft.Extensions.AI.EmbeddingGenerationOptions { Dimensions = 10, ModelId = "override-model" };
+
+        // Act
+        await client.GenerateEmbeddingsAsync(dataToEmbed, options);
+
+        // Assert
+        var request = JsonSerializer.Deserialize<GoogleAIEmbeddingRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Equal(dataToEmbed.Count, request.Requests.Count);
+        Assert.All(request.Requests,
+            item =>
+            {
+                Assert.Contains(options.ModelId, item.Model);
+                Assert.Equal(options.Dimensions, item.Dimensions);
+            });
+    }
+
     private GoogleAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
         int? dimensions = null)

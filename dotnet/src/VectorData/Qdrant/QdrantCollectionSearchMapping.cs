@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -12,76 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal static class QdrantCollectionSearchMapping
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    /// <summary>
-    /// Build a Qdrant <see cref="Filter"/> from the provided <see cref="VectorSearchFilter"/>.
-    /// </summary>
-    /// <param name="basicVectorSearchFilter">The <see cref="VectorSearchFilter"/> to build a Qdrant <see cref="Filter"/> from.</param>
-    /// <param name="model">The model.</param>
-    /// <returns>The Qdrant <see cref="Filter"/>.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the provided filter contains unsupported types, values or unknown properties.</exception>
-    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
-    {
-        var filter = new Filter();
-
-        foreach (var filterClause in basicVectorSearchFilter.FilterClauses)
-        {
-            string fieldName;
-            object filterValue;
-
-            // In Qdrant, tag list contains is handled using a keyword match, which is the same as a string equality check.
-            // We can therefore just extract the field name and value from each clause and handle them the same.
-            if (filterClause is EqualToFilterClause equalityFilterClause)
-            {
-                fieldName = equalityFilterClause.FieldName;
-                filterValue = equalityFilterClause.Value;
-            }
-            else if (filterClause is AnyTagEqualToFilterClause tagListContainsClause)
-            {
-                fieldName = tagListContainsClause.FieldName;
-                filterValue = tagListContainsClause.Value;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
-            }
-
-            // Get the storage name for the field.
-            if (!model.PropertyMap.TryGetValue(fieldName, out var property))
-            {
-                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
-            }
-
-            // Map DateTimeOffset equality.
-            if (filterValue is DateTimeOffset dateTimeOffset)
-            {
-                var range = new global::Qdrant.Client.Grpc.DatetimeRange
-                {
-                    Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
-                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
-                };
-
-                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, DatetimeRange = range } });
-                continue;
-            }
-
-            // Map each type of filter value to the appropriate Qdrant match type.
-            var match = filterValue switch
-            {
-                string stringValue => new Match { Keyword = stringValue },
-                int intValue => new Match { Integer = intValue },
-                long longValue => new Match { Integer = longValue },
-                bool boolValue => new Match { Boolean = boolValue },
-                _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
-            };
-
-            filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, Match = match } });
-        }
-
-        return filter;
-    }
-#pragma warning restore CS0618 // Type or member is obsolete
-
     /// <summary>
     /// Map the given <see cref="ScoredPoint"/> to a <see cref="VectorSearchResult{TRecord}"/>.
     /// </summary>

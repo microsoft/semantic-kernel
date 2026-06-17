@@ -13,7 +13,7 @@ This sample demonstrates how to use the Semantic Kernel's Structured Data Plugin
 - OpenAI API key
 - Function Calling enabled model (e.g., gpt-4o)
 - Relational database (e.g., SQL Server)
-- .NET 8.0 or higher
+- .NET 10.0 or higher
 
 ## Database Setup
 

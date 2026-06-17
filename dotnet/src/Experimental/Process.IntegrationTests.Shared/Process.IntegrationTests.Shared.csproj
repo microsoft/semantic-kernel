@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Process.IntegrationTests.Shared</RootNamespace>
     <AssemblyName>SemanticKernel.Process.IntegrationTests.Shared</AssemblyName>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <IsTestProject>false</IsTestProject>
     <NoWarn>

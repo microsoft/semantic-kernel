@@ -37,17 +37,26 @@ internal partial class ClientCore
         var imageOptions = new ImageGenerationOptions()
         {
             Size = size,
-            ResponseFormat = GeneratedImageFormat.Uri
         };
 
         // The model is not required by the OpenAI API and defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
-        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to DALL-E 2 in the line below.
-        targetModel = string.IsNullOrEmpty(targetModel) ? "dall-e-2" : targetModel!;
+        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to gpt-image-1 in the line below.
+        targetModel = string.IsNullOrEmpty(targetModel) ? "gpt-image-1" : targetModel!;
 
         ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
-        return generatedImage.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
+        if (generatedImage.ImageUri is not null)
+        {
+            return generatedImage.ImageUri.ToString();
+        }
+
+        if (generatedImage.ImageBytes is not null)
+        {
+            return $"data:image/png;base64,{Convert.ToBase64String(generatedImage.ImageBytes.ToArray())}";
+        }
+
+        throw new KernelException("The generated image has no valid content.");
     }
 
     /// <summary>
@@ -113,6 +122,9 @@ internal partial class ClientCore
         {
             "STANDARD" => GeneratedImageQuality.Standard,
             "HIGH" or "HD" => GeneratedImageQuality.High,
+            "MEDIUM" => GeneratedImageQuality.MediumQuality,
+            "LOW" => GeneratedImageQuality.LowQuality,
+            "AUTO" => GeneratedImageQuality.Auto,
             _ => throw new NotSupportedException($"The provided quality '{quality}' is not supported.")
         };
     }

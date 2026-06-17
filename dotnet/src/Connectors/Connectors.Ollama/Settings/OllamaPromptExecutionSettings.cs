@@ -51,7 +51,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string>? Stop
+    public IList<string>? Stop
     {
         get => this._stop;
 
@@ -131,9 +131,42 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <inheritdoc/>
+    public override void Freeze()
+    {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
+        base.Freeze();
+
+        if (this._stop is not null)
+        {
+            this._stop = new System.Collections.ObjectModel.ReadOnlyCollection<string>(this._stop);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OllamaPromptExecutionSettings()
+        {
+            ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            TopK = this.TopK,
+            NumPredict = this.NumPredict,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+        };
+    }
+
     #region private
 
-    private List<string>? _stop;
+    private IList<string>? _stop;
     private float? _temperature;
     private float? _topP;
     private int? _topK;

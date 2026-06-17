@@ -3,7 +3,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.InMemory</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0;net462</TargetFrameworks>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
@@ -34,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup>

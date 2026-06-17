@@ -23,35 +23,44 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true,
     };
 
-    [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected override void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
+    protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty, Type? type)
     {
-        base.ProcessTypeProperties(type, definition);
+        base.ProcessProperty(clrProperty, definitionProperty, type);
 
-        foreach (var property in this.Properties)
+        if (clrProperty?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute
+            && this.PropertyMap.TryGetValue(clrProperty.Name, out var property))
         {
-            if (property.PropertyInfo?.GetCustomAttribute<BsonElementAttribute>() is { } bsonElementAttribute)
-            {
-                property.StorageName = bsonElementAttribute.ElementName;
-            }
+            property.StorageName = bsonElementAttribute.ElementName;
         }
     }
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "string, Guid, ObjectId";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(ObjectId);
 
-        return type == typeof(string) || type == typeof(Guid) || type == typeof(ObjectId);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        base.ValidateKeyProperty(keyProperty);
+
+        var type = keyProperty.Type;
+
+        if (type != typeof(string) && type != typeof(int) && type != typeof(long) && type != typeof(Guid) && type != typeof(ObjectId))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, int, long, Guid, ObjectId.");
+        }
     }
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -70,7 +79,12 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
                 type == typeof(float) ||
                 type == typeof(double) ||
                 type == typeof(decimal) ||
-                type == typeof(DateTime);
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+#if NET
+                type == typeof(DateOnly) ||
+#endif
+                false;
     }
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)

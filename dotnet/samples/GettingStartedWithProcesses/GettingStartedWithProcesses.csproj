@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithProcesses</AssemblyName>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -35,7 +35,6 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.abstractions" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />

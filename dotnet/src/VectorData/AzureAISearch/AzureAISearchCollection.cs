@@ -72,7 +72,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(AzureAISearchDynamicCollection)))
                 : new AzureAISearchModelBuilder()
-                    .Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+                    .Build(typeof(TRecord), typeof(TKey), options.Definition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }
@@ -83,9 +83,9 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         Verify.NotNull(searchIndexClient);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported.");
+            throw new NotSupportedException("Only string and Guid keys are supported.");
         }
 
         options ??= AzureAISearchCollectionOptions.Default;
@@ -270,7 +270,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         // Remove record.
         return this.RunOperationAsync(
@@ -287,7 +287,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             return Task.CompletedTask;
         }
 
-        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Select(GetStringKey);
 
         // Remove records.
         return this.RunOperationAsync(
@@ -343,7 +343,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             VectorSearch = new(),
             Size = top,
             Skip = options.Skip,
-            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._model),
+            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._model)
         };
 
         // Filter out vector fields if requested.
@@ -376,7 +376,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
-            .Select(result => result.Record, cancellationToken);
+            .Select(result => result.Record);
     }
 
     #region Search
@@ -400,11 +400,20 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             options,
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         await foreach (var record in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
+            // Azure AI Search threshold filtering is in preview:
+            // https://learn.microsoft.com/azure/search/vector-search-how-to-query#set-thresholds-to-exclude-low-scoring-results-preview
+            // See https://github.com/microsoft/semantic-kernel/issues/13500.
+            // For now, perform post-filtering on the client-side.
+            if (options.ScoreThreshold.HasValue && record.Score < options.ScoreThreshold.Value)
+            {
+                continue;
+            }
+
             yield return record;
         }
     }
@@ -433,23 +442,26 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             this._model,
             new()
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                OldFilter = options.OldFilter,
-#pragma warning restore CS0618 // Type or member is obsolete
                 Filter = options.Filter,
                 VectorProperty = options.VectorProperty,
                 Skip = options.Skip,
             },
             top,
             floatVector is null
-                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top + options.Skip, Fields = { vectorProperty.StorageName } });
 
         searchOptions.SearchFields.Add(textDataProperty.StorageName);
         var keywordsCombined = string.Join(" ", keywords);
 
         await foreach (var record in this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
+            // Azure AI Search returns scores where higher values indicate more relevant results.
+            if (options.ScoreThreshold.HasValue && record.Score < options.ScoreThreshold.Value)
+            {
+                continue;
+            }
+
             yield return record;
         }
     }
@@ -461,8 +473,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             // A string was passed without an embedding generator being configured; send the string to Azure AI Search for backend embedding generation.
             string when vectorProperty.EmbeddingGenerator is null => (ReadOnlyMemory<float>?)null,
@@ -504,7 +516,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         const string OperationName = "GetDocument";
 
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         var jsonObject = await this.RunOperationAsync(
             OperationName,
@@ -560,7 +572,19 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         (records, var generatedEmbeddings) = await ProcessEmbeddingsAsync(this._model, records, cancellationToken).ConfigureAwait(false);
 
-        var jsonObjects = records.Select((r, i) => this._mappper!.MapFromDataToStorageModel(r, i, generatedEmbeddings));
+        // Handle auto-generated keys (client-side for Azure AI Search, which doesn't support server-side auto-generation)
+        var keyProperty = this._model.KeyProperty;
+        var jsonObjects = new List<JsonObject>();
+        var recordIndex = 0;
+        foreach (var record in records)
+        {
+            if (keyProperty.IsAutoGenerated && keyProperty.GetValue<Guid>(record) == Guid.Empty)
+            {
+                keyProperty.SetValue(record, Guid.NewGuid());
+            }
+
+            jsonObjects.Add(this._mappper!.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
+        }
 
         return await this.RunOperationAsync(
             OperationName,
@@ -633,16 +657,10 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new AzureAISearchFilterTranslator().Translate(options.Filter, model)
+            : null;
 
         // Build search options.
         var searchOptions = new SearchOptions
@@ -712,16 +730,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         return (records, generatedEmbeddings);
@@ -787,11 +797,17 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             operationName,
             operation);
 
-    private string GetStringKey(TKey key)
+    private static string GetStringKey(TKey key)
     {
         Verify.NotNull(key);
 
-        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+        var stringKey = key switch
+        {
+            string s => s,
+            Guid g => g.ToString(),
+
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
 
         Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
 

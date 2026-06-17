@@ -2,8 +2,6 @@
  *   Copyright (c) 2025 Microsoft
  *   All rights reserved.
  */
-import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import {
     Button,
     Card,
@@ -18,10 +16,12 @@ import {
     Title2,
     useId,
 } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
+import { v4 as uuidv4 } from "uuid";
 import { ChatMessageContent, ChatUser } from "../common/ChatConstants";
-import SimpleChat from "./SimpleChat";
 import { CheckIcon, RejectIcon } from "./Icons";
+import SimpleChat from "./SimpleChat";
 
 export interface NewDocument {
     title?: string;
@@ -106,7 +106,7 @@ const GenerateDocsChat: React.FC<GenerateDocsChatProps> = ({
 
         return (
             <Card>
-                <CardHeader header={<Title2 weight="semibold">{header}</Title2>} />
+                <CardHeader header={<Title2>{header}</Title2>} />
                 <Markdown>{content}</Markdown>
             </Card>
         );

@@ -706,7 +706,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             A WebSearchToolParam dictionary with any passed-in parameters.
         """
         tool: WebSearchToolParam = {
-            "type": "web_search_preview",
+            "type": "web_search",
         }
         if context_size is not None:
             tool["search_context_size"] = context_size

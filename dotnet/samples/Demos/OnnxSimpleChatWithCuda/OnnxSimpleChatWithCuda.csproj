@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <NoWarn>$(NoWarn);CA2007,CA2208,CS1591,CA1024,IDE0009,IDE0055,IDE0073,IDE0211,VSTHRD111,SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>

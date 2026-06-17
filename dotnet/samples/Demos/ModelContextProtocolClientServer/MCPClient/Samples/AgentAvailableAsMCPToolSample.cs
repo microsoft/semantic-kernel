@@ -33,7 +33,7 @@ internal sealed class AgentAvailableAsMCPToolSample : BaseSample
         Console.WriteLine($"Running the {nameof(AgentAvailableAsMCPToolSample)} sample.");
 
         // Create an MCP client
-        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+        McpClient mcpClient = await CreateMcpClientAsync();
 
         // Retrieve and display the list provided by the MCP server
         IList<McpClientTool> tools = await mcpClient.ListToolsAsync();

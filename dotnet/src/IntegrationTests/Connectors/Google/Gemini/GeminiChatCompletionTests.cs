@@ -382,6 +382,32 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     }
 
     [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationWithBinaryFileDataAsync(ServiceType serviceType)
+    {
+        // Arrange
+        Memory<byte> file = await File.ReadAllBytesAsync(Path.Combine("TestData", "employees.pdf"));
+        var chatHistory = new ChatHistory();
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
+            new TextContent("What positions do the employees have?"),
+            new BinaryContent(file, "application/pdf")
+        ]);
+        chatHistory.Add(messageContent);
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("accountant", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "Currently GoogleAI always returns zero tokens.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsUsedTokensAsync(ServiceType serviceType)
@@ -409,6 +435,8 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         Assert.True(geminiMetadata.CandidatesTokenCount > 0);
         Assert.True(geminiMetadata.PromptTokenCount > 0);
         Assert.True(geminiMetadata.CurrentCandidateTokenCount > 0);
+        Assert.True(geminiMetadata.CachedContentTokenCount > 0);
+        Assert.True(geminiMetadata.ThoughtsTokenCount > 0);
     }
 
     [RetryTheory]
@@ -433,10 +461,14 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         this.Output.WriteLine($"TotalTokenCount: {geminiMetadata.TotalTokenCount}");
         this.Output.WriteLine($"CandidatesTokenCount: {geminiMetadata.CandidatesTokenCount}");
         this.Output.WriteLine($"PromptTokenCount: {geminiMetadata.PromptTokenCount}");
+        this.Output.WriteLine($"CachedContentTokenCount: {geminiMetadata.CachedContentTokenCount}");
+        this.Output.WriteLine($"ThoughtsTokenCount: {geminiMetadata.ThoughtsTokenCount}");
         this.Output.WriteLine($"CurrentCandidateTokenCount: {geminiMetadata.CurrentCandidateTokenCount}");
         Assert.True(geminiMetadata.TotalTokenCount > 0);
         Assert.True(geminiMetadata.CandidatesTokenCount > 0);
         Assert.True(geminiMetadata.PromptTokenCount > 0);
+        Assert.True(geminiMetadata.CachedContentTokenCount > 0);
+        Assert.True(geminiMetadata.ThoughtsTokenCount > 0);
         Assert.True(geminiMetadata.CurrentCandidateTokenCount > 0);
     }
 

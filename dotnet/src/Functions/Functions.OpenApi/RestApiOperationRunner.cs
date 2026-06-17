@@ -116,6 +116,11 @@ internal sealed class RestApiOperationRunner
     private readonly RestApiOperationPayloadFactory? _payloadFactory;
 
     /// <summary>
+    /// Options for validating server URLs before making HTTP requests.
+    /// </summary>
+    private readonly RestApiOperationServerUrlValidationOptions? _serverUrlValidationOptions;
+
+    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -131,6 +136,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="urlFactory">The external URL factory to use if provided if provided instead of the default one.</param>
     /// <param name="headersFactory">The external headers factory to use if provided instead of the default one.</param>
     /// <param name="payloadFactory">The external payload factory to use if provided instead of the default one.</param>
+    /// <param name="serverUrlValidationOptions">Options for validating server URLs before making HTTP requests.</param>
     public RestApiOperationRunner(
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
@@ -141,7 +147,8 @@ internal sealed class RestApiOperationRunner
         RestApiOperationResponseFactory? responseFactory = null,
         RestApiOperationUrlFactory? urlFactory = null,
         RestApiOperationHeadersFactory? headersFactory = null,
-        RestApiOperationPayloadFactory? payloadFactory = null)
+        RestApiOperationPayloadFactory? payloadFactory = null,
+        RestApiOperationServerUrlValidationOptions? serverUrlValidationOptions = null)
     {
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
@@ -152,6 +159,7 @@ internal sealed class RestApiOperationRunner
         this._urlFactory = urlFactory;
         this._headersFactory = headersFactory;
         this._payloadFactory = payloadFactory;
+        this._serverUrlValidationOptions = serverUrlValidationOptions;
 
         // If no auth callback provided, use empty function
         if (authCallback is null)
@@ -178,7 +186,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<RestApiOperationResponse> RunAsync(
+    public async Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         KernelArguments arguments,
         RestApiOperationRunOptions? options = null,
@@ -186,11 +194,13 @@ internal sealed class RestApiOperationRunner
     {
         var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
+        await ServerUrlValidator.ValidateAsync(url, this._serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
+
         var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
+        return await this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -217,7 +227,7 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
-#if NET5_0_OR_GREATER
+#if NET
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
 #else
         requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
@@ -633,7 +643,7 @@ internal sealed class RestApiOperationRunner
     {
         IDictionary<string, object?>? requestOptions = null;
 
-#if NET5_0_OR_GREATER
+#if NET
         requestOptions = requestMessage.Options;
 #else
         requestOptions = requestMessage.Properties;

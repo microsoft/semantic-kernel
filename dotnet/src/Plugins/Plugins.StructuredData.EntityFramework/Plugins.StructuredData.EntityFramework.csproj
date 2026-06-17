@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Plugins.StructuredData.EntityFramework</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <!-- EntityFramework 6.5 is not compatible with .Net Standard 2.0, adding all frameworks strictly after 4.6.2 for compatibility -->
-    <TargetFrameworks>net8.0;net462;</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;net462;</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
@@ -25,7 +25,7 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Schema/*.cs" Link="%(RecursiveDir)/InternalUtilities/Schema/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)" />
   </ItemGroup>
@@ -39,10 +39,10 @@
     <PackageReference Include="EntityFramework" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net8.0' AND '$(TargetFramework)' != 'net9.0'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="Community.OData.Linq" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <PackageReference Include="OData2Linq" />
   </ItemGroup>
 

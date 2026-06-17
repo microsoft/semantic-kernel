@@ -40,8 +40,8 @@
     <Project Path="samples/Demos/ModelContextProtocolPlugin/ModelContextProtocolPlugin.csproj" />
     <Project Path="samples/Demos/ModelContextProtocolPluginAuth/ModelContextProtocolPluginAuth.csproj" />
     <Project Path="samples/Demos/OllamaFunctionCalling/OllamaFunctionCalling.csproj" />
-    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OnnxSimpleChatWithCuda/OnnxSimpleChatWithCuda.csproj" />
+    <Project Path="samples/Demos/OnnxSimpleRAG/OnnxSimpleRAG.csproj" />
     <Project Path="samples/Demos/OpenAIRealtime/OpenAIRealtime.csproj" />
     <Project Path="samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj" />
     <Project Path="samples/Demos/QualityCheck/QualityCheckWithFilters/QualityCheckWithFilters.csproj" />
@@ -50,6 +50,7 @@
     <Project Path="samples/Demos/TelemetryWithAppInsights/TelemetryWithAppInsights.csproj" />
     <Project Path="samples/Demos/TimePlugin/TimePlugin.csproj" />
     <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
+    <Project Path="samples/Demos/VoiceChat/VoiceChat.csproj" />
   </Folder>
   <Folder Name="/samples/Demos/A2AClientServer/">
     <Project Path="samples/Demos/A2AClientServer/A2AClient/A2AClient.csproj" />
@@ -69,26 +70,6 @@
       <BuildDependency Project="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
     </Project>
     <Project Path="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessFrameworkWithAspire/">
-    <File Path="samples/Demos/ProcessFrameworkWithAspire/README.md" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost/ProcessFramework.Aspire.AppHost.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ServiceDefaults/ProcessFramework.Aspire.ServiceDefaults.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.Shared/ProcessFramework.Aspire.Shared.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.SummaryAgent/ProcessFramework.Aspire.SummaryAgent.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.TranslatorAgent/ProcessFramework.Aspire.TranslatorAgent.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/" />
-  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/src/">
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.AppHost/ProcessFramework.Aspire.SignalR.AppHost.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ProcessOrchestrator/ProcessFramework.Aspire.SignalR.ProcessOrchestrator.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ServiceDefaults/ProcessFramework.Aspire.SignalR.ServiceDefaults.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
-    <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
-    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
-    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Processes/ProcessWithCloudEvents.Processes.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/IntegrationTests/IntegrationTests.csproj" />

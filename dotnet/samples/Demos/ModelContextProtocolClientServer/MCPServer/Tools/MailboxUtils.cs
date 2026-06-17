@@ -17,7 +17,7 @@ internal sealed class MailboxUtils
     /// mechanism for summarization.
     /// </summary>
     [KernelFunction]
-    public static async Task<string> SummarizeUnreadEmailsAsync([FromKernelServices] IMcpServer server)
+    public static async Task<string> SummarizeUnreadEmailsAsync([FromKernelServices] McpServer server)
     {
         if (server.ClientCapabilities?.Sampling is null)
         {

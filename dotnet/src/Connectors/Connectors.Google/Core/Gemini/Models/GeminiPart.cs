@@ -48,6 +48,26 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     public FunctionResponsePart? FunctionResponse { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this part contains thinking content.
+    /// </summary>
+    [JsonPropertyName("thought")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Thought { get; set; }
+
+    /// <summary>
+    /// Gets or sets the thought signature for maintaining reasoning context across turns.
+    /// </summary>
+    /// <remarks>
+    /// When thinking is enabled, Gemini returns an opaque signature that must be included
+    /// in subsequent requests to maintain reasoning context. For function calls, this is
+    /// mandatory (HTTP 400 without it). For text responses, it is recommended for optimal
+    /// reasoning quality.
+    /// </remarks>
+    [JsonPropertyName("thoughtSignature")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ThoughtSignature { get; set; }
+
+    /// <summary>
     /// Checks whether only one property of the GeminiPart instance is not null.
     /// Returns true if only one property among Text, InlineData, FileData, FunctionCall, and FunctionResponse is not null,
     /// Otherwise, it returns false.
@@ -165,6 +185,14 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonRequired]
         public FunctionResponseEntity Response { get; set; } = null!;
 
+        /// <summary>
+        /// Optional. Nested parts for multimodal function responses (Gemini 3+ only).
+        /// Contains inlineData with image/binary data as part of tool results.
+        /// </summary>
+        [JsonPropertyName("parts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public FunctionResponsePartContent[]? Parts { get; set; }
+
         internal sealed class FunctionResponseEntity
         {
             [JsonConstructor]
@@ -181,6 +209,17 @@ internal sealed class GeminiPart : IJsonOnDeserialized
             [JsonPropertyName("content")]
             [JsonRequired]
             public JsonNode Arguments { get; set; } = null!;
+        }
+
+        /// <summary>
+        /// Represents a part within a Gemini function response (for multimodal content).
+        /// Used in Gemini 3+ to include images/binary data as part of tool results.
+        /// </summary>
+        internal sealed class FunctionResponsePartContent
+        {
+            [JsonPropertyName("inlineData")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public InlineDataPart? InlineData { get; set; }
         }
     }
 }

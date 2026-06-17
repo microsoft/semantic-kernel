@@ -20,7 +20,7 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
@@ -42,7 +42,7 @@ public sealed class RedisJsonMapperTests
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.
@@ -63,15 +63,17 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
-        var jsonObject = new JsonObject();
-        jsonObject.Add("Data1", "data 1");
-        jsonObject.Add("Data2", "data 2");
-        jsonObject.Add("Vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
-        jsonObject.Add("Vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
+        var jsonObject = new JsonObject
+        {
+            { "Data1", "data 1" },
+            { "Data2", "data 2" },
+            { "Vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()) },
+            { "Vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()) }
+        };
         var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), includeVectors: true);
 
         // Assert.
@@ -89,15 +91,17 @@ public sealed class RedisJsonMapperTests
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
-            .Build(typeof(MultiPropsModel), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+            .Build(typeof(MultiPropsModel), typeof(string), definition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.
-        var jsonObject = new JsonObject();
-        jsonObject.Add("data1", "data 1");
-        jsonObject.Add("data2", "data 2");
-        jsonObject.Add("vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
-        jsonObject.Add("vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
+        var jsonObject = new JsonObject
+        {
+            { "data1", "data 1" },
+            { "data2", "data 2" },
+            { "vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()) },
+            { "vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()) }
+        };
         var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), includeVectors: true);
 
         // Assert.

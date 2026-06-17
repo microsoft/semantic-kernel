@@ -238,7 +238,10 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(
+                ("openai", {"enable_kernel_function": True}),
+                marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
+            ),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-image-content-streaming", "openai-image-content-streaming"],
@@ -248,7 +251,7 @@ class TestChatCompletionAgentIntegration:
     ):
         """Test function calling streaming."""
         IMAGE_URI = (
-            "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+            "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/python/tests/assets/sample_image.jpg"
         )
         image_content_remote = ImageContent(uri=IMAGE_URI)
 

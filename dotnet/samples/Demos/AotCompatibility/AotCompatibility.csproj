@@ -3,14 +3,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>SemanticKernel.AotCompatibility</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <NoWarn>VSTHRD111,CA2007;IDE1006,SKEXP0120</NoWarn>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-    <IlcTrimMetadata>false</IlcTrimMetadata> <!-- This property should be dropped after SK migrates to STJ v9, which does not have the issue - https://github.com/eiriktsarpalis/stj-schema-mapper/issues/7. -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -161,7 +161,7 @@ public sealed partial class AzureAIAgent : Agent
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
         List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
 
         await foreach (var result in InternalInvokeAsync().ConfigureAwait(false))
@@ -264,7 +264,7 @@ public sealed partial class AzureAIAgent : Agent
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
 
         // Invoke the Agent with the thread that we already added our message to, and with

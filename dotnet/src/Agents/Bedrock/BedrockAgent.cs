@@ -144,7 +144,7 @@ public sealed class BedrockAgent : Agent
             };
         });
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, messages);
 
         // Invoke the agent
         var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
@@ -211,7 +211,7 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
         List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
 
         // Invoke the agent
@@ -297,7 +297,7 @@ public sealed class BedrockAgent : Agent
             };
         });
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
 
         // Invoke the agent
@@ -365,7 +365,7 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, []);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
 
         var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);

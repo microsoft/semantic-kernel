@@ -130,7 +130,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             // we don't know if the user will execute the call. They should add it themselves.
             // In the third case, we don't want to add the function call content to the thread either,
             // since the filter terminated the call, and therefore won't get executed.
-            if (!result.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (!result.Items.Any(i => i is FunctionCallContent or FunctionResultContent))
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
 
@@ -349,7 +349,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, kernel, chat);
 
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -402,7 +402,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         this.Logger.LogAgentChatServiceInvokingAgent(nameof(InvokeAsync), this.Id, agentName, serviceType);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, chat);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description, kernel, chat);
 
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(

@@ -330,7 +330,7 @@ public class DeclarativeEventHandlerGroupBuilder
     /// <summary>
     /// The list of state based handlers for this group of event handlers.
     /// </summary>
-    public List<DeclarativeEventHandlerBuilder>? EvalHandlers { get; init; } = new List<DeclarativeEventHandlerBuilder>();
+    public List<DeclarativeEventHandlerBuilder>? EvalHandlers { get; init; } = [];
 
     /// <summary>
     /// Builds the declarative process condition for this event handler group.

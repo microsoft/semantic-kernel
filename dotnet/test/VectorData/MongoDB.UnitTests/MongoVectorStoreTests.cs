@@ -26,7 +26,7 @@ public sealed class MongoVectorStoreTests
         using var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<long, MongoHotelModel>("collection"));
+        Assert.Throws<NotSupportedException>(() => sut.GetCollection<byte[], MongoHotelModel>("collection"));
     }
 
     [Fact]

@@ -60,13 +60,13 @@ public class RedisHashSetDynamicMappingTests
         // Arrange
         CollectionModel model = BuildModel(new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
-            },
+            ],
         });
 
         var dataModel = new Dictionary<string, object?>
@@ -127,13 +127,13 @@ public class RedisHashSetDynamicMappingTests
         // Arrange
         var model = BuildModel(new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
-            }
+            ]
         });
 
         var hashSet = new HashEntry[]
@@ -161,13 +161,13 @@ public class RedisHashSetDynamicMappingTests
         // Arrange.
         var model = BuildModel(new()
         {
-            Properties = new List<VectorStoreProperty>
-            {
+            Properties =
+            [
                 new VectorStoreKeyProperty("Key", typeof(string)),
                 new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
-            }
+            ]
         });
 
         var sut = new RedisHashSetMapper<Dictionary<string, object?>>(model);

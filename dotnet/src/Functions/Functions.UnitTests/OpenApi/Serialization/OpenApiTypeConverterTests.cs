@@ -164,6 +164,6 @@ public class OpenApiTypeConverterTests
     private static JsonElement CreateJsonElement(object value)
     {
         var json = JsonSerializer.Serialize(value);
-        return JsonSerializer.Deserialize<JsonElement>(json)!;
+        return JsonElement.Parse(json)!;
     }
 }

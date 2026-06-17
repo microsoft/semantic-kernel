@@ -195,7 +195,7 @@ public class AzureAISearchCollectionCreateMappingTests
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchCollectionCreateMapping.MapVectorField(vectorProperty));
+        Assert.Throws<NotSupportedException>(() => AzureAISearchCollectionCreateMapping.MapVectorField(vectorProperty));
     }
 
     [Theory]

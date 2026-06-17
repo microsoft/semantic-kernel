@@ -22,7 +22,7 @@ public sealed record MagenticProgressLedger(
     [property:Description("Is the task stuck in a loop?")]
     LedgerState IsTaskInLoop)
 {
-    private readonly static JsonSerializerOptions JsonOptions =
+    private static readonly JsonSerializerOptions JsonOptions =
         new()
         {
             WriteIndented = true

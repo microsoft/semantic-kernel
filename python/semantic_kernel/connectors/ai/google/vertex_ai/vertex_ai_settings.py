@@ -2,9 +2,12 @@
 
 from typing import ClassVar
 
+from typing_extensions import deprecated
+
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
+@deprecated("VertexAISettings is deprecated and will be removed after 01/01/2026. Use google_ai connectors instead.")
 class VertexAISettings(KernelBaseSettings):
     """Vertex AI settings.
 

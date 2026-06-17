@@ -6,10 +6,11 @@ import logging
 import re
 import sys
 from abc import abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from datetime import timedelta
 from functools import partial
+from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 from mcp import types
@@ -42,6 +43,9 @@ from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+from ..contents.function_call_content import FunctionCallContent
+from ..contents.function_result_content import FunctionResultContent
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -54,6 +58,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # region: Helpers
+
+SamplingConsentCallback = Callable[[str, types.CreateMessageRequestParams], Awaitable[bool]]
 
 LOG_LEVEL_MAPPING: dict[types.LoggingLevel, int] = {
     "debug": logging.DEBUG,
@@ -72,9 +78,14 @@ def _mcp_prompt_message_to_kernel_content(
     mcp_type: types.PromptMessage | types.SamplingMessage,
 ) -> ChatMessageContent:
     """Convert a MCP container type to a Semantic Kernel type."""
+    items = list(
+        chain(
+            *[_mcp_content_types_to_kernel_content(mcp_type.content)],
+        )
+    )
     return ChatMessageContent(
         role=AuthorRole(mcp_type.role),
-        items=[_mcp_content_types_to_kernel_content(mcp_type.content)],
+        items=items,  # type: ignore
         inner_content=mcp_type,
     )
 
@@ -82,40 +93,63 @@ def _mcp_prompt_message_to_kernel_content(
 @experimental
 def _mcp_call_tool_result_to_kernel_contents(
     mcp_type: types.CallToolResult,
-) -> list[TextContent | ImageContent | BinaryContent | AudioContent]:
+) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionResultContent | FunctionCallContent]:
     """Convert a MCP container type to a Semantic Kernel type."""
-    return [_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]
+    return list(chain(*[_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]))
 
 
 @experimental
 def _mcp_content_types_to_kernel_content(
-    mcp_type: types.ImageContent | types.TextContent | types.AudioContent | types.EmbeddedResource | types.ResourceLink,
-) -> TextContent | ImageContent | BinaryContent | AudioContent:
+    mcp_type: types.SamplingMessageContentBlock
+    | types.ContentBlock
+    | Sequence[types.SamplingMessageContentBlock | types.ContentBlock],
+) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionCallContent | FunctionResultContent]:
     """Convert a MCP type to a Semantic Kernel type."""
+    if isinstance(mcp_type, Sequence):
+        return list(chain(*[_mcp_content_types_to_kernel_content(item) for item in mcp_type]))
     if isinstance(mcp_type, types.TextContent):
-        return TextContent(text=mcp_type.text, inner_content=mcp_type)
+        return [TextContent(text=mcp_type.text, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ImageContent):
-        return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        return [ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
     if isinstance(mcp_type, types.AudioContent):
-        return AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        return [AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ResourceLink):
-        return BinaryContent(
-            uri=mcp_type.uri,  # type: ignore
-            mime_type=mcp_type.mimeType,
-            inner_content=mcp_type,
-        )
+        return [
+            BinaryContent(
+                uri=mcp_type.uri,  # type: ignore
+                mime_type=mcp_type.mimeType,
+                inner_content=mcp_type,
+            )
+        ]
+    if isinstance(mcp_type, types.ToolUseContent):
+        return [
+            FunctionCallContent(inner_content=mcp_type, name=mcp_type.name, arguments=mcp_type.input, id=mcp_type.id)
+        ]
+    if isinstance(mcp_type, types.ToolResultContent):
+        return [
+            FunctionResultContent(
+                inner_content=mcp_type,
+                name=mcp_type.type,
+                result=list(chain(*[_mcp_content_types_to_kernel_content(mcp_type.content)])),
+                call_id=mcp_type.toolUseId,
+            )
+        ]
     # subtypes of EmbeddedResource
     if isinstance(mcp_type.resource, types.TextResourceContents):
-        return TextContent(
-            text=mcp_type.resource.text,
+        return [
+            TextContent(
+                text=mcp_type.resource.text,
+                inner_content=mcp_type,
+                metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
+            )
+        ]
+    return [
+        BinaryContent(
+            data=mcp_type.resource.blob,
             inner_content=mcp_type,
             metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
         )
-    return BinaryContent(
-        data=mcp_type.resource.blob,
-        inner_content=mcp_type,
-        metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
-    )
+    ]
 
 
 @experimental
@@ -211,8 +245,23 @@ class MCPPluginBase:
         session: ClientSession | None = None,
         kernel: Kernel | None = None,
         request_timeout: int | None = None,
+        sampling_consent_callback: SamplingConsentCallback | None = None,
     ) -> None:
-        """Initialize the MCP Plugin Base."""
+        """Initialize the MCP Plugin Base.
+
+        Args:
+            name: The name of the plugin.
+            description: The description of the plugin.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
+            session: The session to use for the MCP connection.
+            kernel: The kernel instance with one or more Chat Completion clients.
+            request_timeout: The default timeout used for all requests.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
+        """
         self.name = name
         self.description = description
         self.load_tools_flag = load_tools
@@ -221,6 +270,9 @@ class MCPPluginBase:
         self.session = session
         self.kernel = kernel or None
         self.request_timeout = request_timeout
+        self.sampling_consent_callback = sampling_consent_callback
+        self._sampling_auto_approved_warning_logged = False
+        self._mcp_reserved_attribute_names: set[str] | None = None
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
@@ -329,9 +381,24 @@ class MCPPluginBase:
 
         This function is called when the MCP server needs to get a message completed.
 
-        This is a simple version of this function, it can be overridden to allow more complex sampling.
-        It get's added to the session at initialization time, so overriding it is the best way to do this.
+        If a sampling consent callback is configured, it is called before forwarding the request to the configured
+        chat completion service. Returning False denies the request. If no callback is configured, requests are
+        auto-approved and a warning is logged.
         """
+        if self.sampling_consent_callback is None:
+            if not self._sampling_auto_approved_warning_logged:
+                logger.warning(
+                    "MCP sampling request for plugin '%s' was auto-approved because no sampling consent callback "
+                    "was configured.",
+                    self.name,
+                )
+                self._sampling_auto_approved_warning_logged = True
+        elif not await self._is_sampling_approved(params):
+            return types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message="Sampling denied by policy.",
+            )
+
         if not self.kernel or not self.kernel.services:
             return types.ErrorData(
                 code=types.INTERNAL_ERROR,
@@ -399,6 +466,15 @@ class MCPPluginBase:
             model=service.ai_model_id,
         )
 
+    async def _is_sampling_approved(self, params: types.CreateMessageRequestParams) -> bool:
+        if self.sampling_consent_callback is None:
+            return True
+        try:
+            return await self.sampling_consent_callback(self.name, params)
+        except Exception:
+            logger.exception("MCP sampling consent callback failed for plugin '%s'.", self.name)
+            return False
+
     async def logging_callback(self, params: types.LoggingMessageNotificationParams) -> None:
         """Callback function for logging.
 
@@ -432,6 +508,19 @@ class MCPPluginBase:
                 case "notifications/prompts/list_changed":
                     await self.load_prompts()
 
+    def _has_mcp_function_name_conflict(self, item_type: str, remote_name: str, local_name: str) -> bool:
+        if self._mcp_reserved_attribute_names is None:
+            self._mcp_reserved_attribute_names = set(dir(self))
+        if local_name not in self._mcp_reserved_attribute_names:
+            return False
+        logger.warning(
+            "Skipping MCP %s '%s' because normalized name '%s' conflicts with an existing plugin attribute.",
+            item_type,
+            remote_name,
+            local_name,
+        )
+        return True
+
     async def load_prompts(self):
         """Load prompts from the MCP server."""
         try:
@@ -440,6 +529,8 @@ class MCPPluginBase:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
             local_name = _normalize_mcp_name(prompt.name)
+            if self._has_mcp_function_name_conflict("prompt", prompt.name, local_name):
+                continue
             func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
@@ -452,9 +543,11 @@ class MCPPluginBase:
             tool_list = await self.session.list_tools()
         except Exception:
             tool_list = None
-            # Create methods with the kernel_function decorator for each tool
+        # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             local_name = _normalize_mcp_name(tool.name)
+            if self._has_mcp_function_name_conflict("tool", tool.name, local_name):
+                continue
             func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)
@@ -464,7 +557,9 @@ class MCPPluginBase:
         """Get an MCP client."""
         pass
 
-    async def call_tool(self, tool_name: str, **kwargs: Any) -> list[TextContent | ImageContent | BinaryContent]:
+    async def call_tool(
+        self, tool_name: str, **kwargs: Any
+    ) -> list[TextContent | ImageContent | BinaryContent | AudioContent | FunctionResultContent | FunctionCallContent]:
         """Call a tool with the given arguments."""
         if not self.session:
             raise KernelPluginInvalidConfigurationError(
@@ -524,6 +619,7 @@ class MCPStdioPlugin(MCPPluginBase):
         env: dict[str, str] | None = None,
         encoding: str | None = None,
         kernel: Kernel | None = None,
+        sampling_consent_callback: SamplingConsentCallback | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP stdio plugin.
@@ -545,6 +641,10 @@ class MCPStdioPlugin(MCPPluginBase):
             env: The environment variables to set for the command.
             encoding: The encoding to use for the command output.
             kernel: The kernel instance with one or more Chat Completion clients.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
@@ -556,6 +656,7 @@ class MCPStdioPlugin(MCPPluginBase):
             load_tools=load_tools,
             load_prompts=load_prompts,
             request_timeout=request_timeout,
+            sampling_consent_callback=sampling_consent_callback,
         )
         self.command = command
         self.args = args or []
@@ -594,6 +695,7 @@ class MCPSsePlugin(MCPPluginBase):
         timeout: float | None = None,
         sse_read_timeout: float | None = None,
         kernel: Kernel | None = None,
+        sampling_consent_callback: SamplingConsentCallback | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP sse plugin.
@@ -616,6 +718,10 @@ class MCPSsePlugin(MCPPluginBase):
             timeout: The timeout for the request.
             sse_read_timeout: The timeout for reading from the SSE stream.
             kernel: The kernel instance with one or more Chat Completion clients.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the sse client.
 
         """
@@ -627,6 +733,7 @@ class MCPSsePlugin(MCPPluginBase):
             load_tools=load_tools,
             load_prompts=load_prompts,
             request_timeout=request_timeout,
+            sampling_consent_callback=sampling_consent_callback,
         )
         self.url = url
         self.headers = headers or {}
@@ -668,6 +775,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         sse_read_timeout: float | None = None,
         terminate_on_close: bool | None = None,
         kernel: Kernel | None = None,
+        sampling_consent_callback: SamplingConsentCallback | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP streamable http plugin.
@@ -691,6 +799,10 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             sse_read_timeout: The timeout for reading from the SSE stream.
             terminate_on_close: Close the transport when the MCP client is terminated.
             kernel: The kernel instance with one or more Chat Completion clients.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the sse client.
         """
         super().__init__(
@@ -701,6 +813,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             load_tools=load_tools,
             load_prompts=load_prompts,
             request_timeout=request_timeout,
+            sampling_consent_callback=sampling_consent_callback,
         )
         self.url = url
         self.headers = headers or {}
@@ -741,6 +854,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
         session: ClientSession | None = None,
         description: str | None = None,
         kernel: Kernel | None = None,
+        sampling_consent_callback: SamplingConsentCallback | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP websocket plugin.
@@ -760,6 +874,10 @@ class MCPWebsocketPlugin(MCPPluginBase):
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             kernel: The kernel instance with one or more Chat Completion clients.
+            sampling_consent_callback: Optional callback for approving MCP sampling requests.
+                Receives the plugin name and MCP sampling request params. Return
+                False to deny the request. When omitted, sampling requests are
+                auto-approved and a warning is logged.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
@@ -771,6 +889,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
             load_tools=load_tools,
             load_prompts=load_prompts,
             request_timeout=request_timeout,
+            sampling_consent_callback=sampling_consent_callback,
         )
         self.url = url
         self._client_kwargs = kwargs

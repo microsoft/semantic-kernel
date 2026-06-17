@@ -4,7 +4,7 @@
 @hostLogistics = http://localhost:5002
 
 ### Query agent card for the invoice agent
-GET {{hostInvoice}}/.well-known/agent.json
+GET {{hostInvoice}}/.well-known/agent-card.json
 
 ### Send a message to the invoice agent
 POST {{hostInvoice}}
@@ -17,6 +17,7 @@ Content-Type: application/json
     "params": {
         "id": "12345",
         "message": {
+            "kind": "message",
             "role": "user",
             "messageId": "msg_1",
             "parts": [
@@ -30,7 +31,7 @@ Content-Type: application/json
 }
 
 ### Query agent card for the policy agent
-GET {{hostPolicy}}/.well-known/agent.json
+GET {{hostPolicy}}/.well-known/agent-card.json
 
 ### Send a message to the policy agent
 POST {{hostPolicy}}
@@ -43,6 +44,7 @@ Content-Type: application/json
     "params": {
         "id": "12345",
         "message": {
+            "kind": "message",
             "role": "user",
             "messageId": "msg_1",
             "parts": [
@@ -56,7 +58,7 @@ Content-Type: application/json
 }
 
 ### Query agent card for the logistics agent
-GET {{hostLogistics}}/.well-known/agent.json
+GET {{hostLogistics}}/.well-known/agent-card.json
 
 ### Send a message to the logistics agent
 POST {{hostLogistics}}
@@ -69,6 +71,7 @@ Content-Type: application/json
     "params": {
         "id": "12345",
         "message": {
+            "kind": "message",
             "role": "user",
             "messageId": "msg_1",
             "parts": [
