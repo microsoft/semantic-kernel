@@ -116,6 +116,7 @@
     <PackageVersion Include="A2A" Version="0.3.1-preview" />
     <PackageVersion Include="A2A.AspNetCore" Version="0.3.1-preview" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="Scriban" Version="7.2.4" />
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
     <!-- Microsoft.Extensions.* -->
