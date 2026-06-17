@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 import re
 from typing import TYPE_CHECKING
@@ -226,6 +227,31 @@ async def test_mcp_plugin_failed_get_session():
                 args=["Hello"],
             ):
                 pass
+
+
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_streamable_http_initialization_failure_unblocks_connect(mock_session, mock_client):
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+    mock_callback = MagicMock()
+
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write, mock_callback)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write, mock_callback)
+    mock_client.return_value = mock_generator
+
+    mock_session.return_value.__aenter__.return_value.initialize.side_effect = RuntimeError("Unauthorized")
+
+    plugin = MCPStreamableHttpPlugin(
+        name="test",
+        url="http://localhost:8080/mcp",
+        load_tools=False,
+        load_prompts=False,
+    )
+
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to initialize session"):
+        await asyncio.wait_for(plugin.connect(), timeout=1)
 
 
 @patch("semantic_kernel.connectors.mcp.stdio_client")
