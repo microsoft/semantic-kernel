@@ -22,6 +22,9 @@
     "react-markdown": "^10.1.0",
     "uuid": "^11.1.0"
   },
+  "overrides": {
+    "@rollup/rollup-linux-x64-gnu": "4.59.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@protobuf-ts/plugin": "^2.9.6",
