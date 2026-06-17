@@ -22,7 +22,7 @@
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" />
     <PackageReference Include="Aspire.Hosting.Azure.Search" />
-    <PackageReference Include="MessagePack" />
+    <PackageReference Include="MessagePack" /> <!-- Override vulnerable transitive dependency (2.5.192) from Aspire packages -->
   </ItemGroup>
 
 </Project>
