@@ -32,21 +32,22 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     Returns:
         The formatted user message.
     """
-    if not any(isinstance(item, (ImageContent)) for item in message.items):
+    if not any(isinstance(item,ImageContent) for item in message.items):
         return {"role": "user","content": message.content}
     else:
-        content_items :list[dict] = []
+        content_items: list[dict[str, Any]] = []
         for content in message.items:
             if isinstance(content, TextContent):
                 content_items.append({"type": "text", "text": content.text})
-            elif isinstance(content, ImageContent) and (content.data):
-                content_items.append({"type":"image","source":{"type": "base64","data":content.data_string,"media_type":content.mime_type if content.mime_type else content.default_mime_type}})
-            elif isinstance(content, ImageContent) and (content.uri):
-                content_items.append({"type":"image","source":{"type":"url","url":f"{content.uri}"}})
-            else:
-                logger.warning(
-                    "Unsupported item type in User message while formatting chat history for Anthropic AI"
-                    f" Inference: {type(content)}")
+            elif isinstance(content, ImageContent):
+                if (content.data):
+                    content_items.append({"type":"image","source":{"type": "base64","data":content.data_string,"media_type":content.mime_type if content.mime_type else content.default_mime_type}})    
+                elif (content.uri):
+                    content_items.append({"type":"image","source":{"type":"url","url":f"{content.uri}"}})
+                else:
+                    logger.warning(
+                        "Unsupported item type in User message while formatting chat history for Anthropic AI"
+                        f" Inference: {type(content)}")
         return {"role": "user","content": content_items}
 
 
