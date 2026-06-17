@@ -546,15 +546,6 @@ wheels = [
 ]
 
 [[package]]
-name = "backoff"
-version = "2.2.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/d7/5bbeb12c44d7c4f2fb5b56abce497eb5ed9f34d85701de869acedd602619/backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba", size = 17001, upload-time = "2022-10-05T19:19:32.061Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/73/b6e24bd22e6720ca8ee9a85a0c4a2971af8497d8f3193fa05390cbd46e09/backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8", size = 15148, upload-time = "2022-10-05T19:19:30.546Z" },
-]
-
-[[package]]
 name = "bcrypt"
 version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -941,7 +932,7 @@ wheels = [
 
 [[package]]
 name = "chromadb"
-version = "1.0.21"
+version = "1.5.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bcrypt", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -960,9 +951,9 @@ dependencies = [
     { name = "opentelemetry-sdk", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "orjson", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "overrides", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "posthog", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pybase64", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "pydantic-settings", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pypika", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "rich", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -973,13 +964,13 @@ dependencies = [
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "uvicorn", extra = ["standard"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/65/d7/98fdccb25ae3642213ebd29ca2060387cc6abd1f3f0e96b24a36796aa4ba/chromadb-1.0.21.tar.gz", hash = "sha256:583f12f8005f5d197e3207c3b845bce79b8ea6b57781aea505e12b08d26fd508", size = 1301769, upload-time = "2025-09-11T22:34:14.632Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/d1/5e33b26985f0c7046a0be1cee2158ada1748ee700d2545057fde1468d74d/chromadb-1.5.9.tar.gz", hash = "sha256:5c20e62a455c28bacac927f26116a73fd8e1799e0d908be8e8a4f02197a54731", size = 2595635, upload-time = "2026-05-05T05:54:51.713Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3d/87/554ec13e21150a548071dbaa9f13867946b56a8603ae045e79c7abf38034/chromadb-1.0.21-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:de6df7ba7a08cc8e76caa1509fd7b4317fc34f5842b4077e35985bf9625c9bab", size = 19173157, upload-time = "2025-09-11T22:34:11.973Z" },
-    { url = "https://files.pythonhosted.org/packages/8d/dc/b01512adc298874613728176782772692f78b16fdb8cb59ae7d9bedbedbf/chromadb-1.0.21-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:b1a328a76ba1b1b199473db108ec7a22e048888d8d695f39aa503210082e80af", size = 18258590, upload-time = "2025-09-11T22:34:09.384Z" },
-    { url = "https://files.pythonhosted.org/packages/58/93/a95266dd4d81f1015bf5259c647bcf1a7430b3fba58d4f8b6a5a11d3e399/chromadb-1.0.21-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7817cddbd52296c3c71031e330c2dbcd5c5b4f4430895c19ccea1dfa814f9787", size = 18835250, upload-time = "2025-09-11T22:34:03.7Z" },
-    { url = "https://files.pythonhosted.org/packages/4a/57/3630d9d90d2b6988be01565386dce0c3a7e4d4eed2d276f849a0be792369/chromadb-1.0.21-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c6b1420248865b5d3b6d0aac50e2d014c0b849959b6952ddd140cac13bb84c9f", size = 19838029, upload-time = "2025-09-11T22:34:06.818Z" },
-    { url = "https://files.pythonhosted.org/packages/86/6f/2ea981d3cfae2b0388ec1e311bdfecf3cdc1d45f803305fb1d7ad0d0d9a0/chromadb-1.0.21-cp39-abi3-win_amd64.whl", hash = "sha256:3e44fcea9b5ce4e653cd32b0673fe5ecb99f9f737c0cf97414b1d096794a19f9", size = 19809949, upload-time = "2025-09-11T22:34:16.333Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/5b/3cced915244f43ed14b53fe9f63a37f05f865064f4e4fe7d9448d3f2a352/chromadb-1.5.9-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:60701011b5e6409647fa40d12c7c5a66b2b0bfcf33a52db2ad53a30a2abc4957", size = 22564540, upload-time = "2026-05-05T05:54:48.906Z" },
+    { url = "https://files.pythonhosted.org/packages/34/4c/adcef1f4e82a2ef69ccd3711d55fc289193d54c4c0ff7a0292a3631db46f/chromadb-1.5.9-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:814b9c95617377f6501e5757d63dfddb554a283a7739c87b9fa573850174e6f3", size = 21699698, upload-time = "2026-05-05T05:54:45.078Z" },
+    { url = "https://files.pythonhosted.org/packages/38/4e/937bc4d2e6f8ab9664ec79931fbbd69efff47e513ec2924b071e4b0ff774/chromadb-1.5.9-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9192d111bd662241625867962333d99369a00769a50f8b2f58cb388731274d7e", size = 22680924, upload-time = "2026-05-05T05:54:36.25Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/ec/0c42039e80b9acc534f67b73b7a42471948042859b3a64867b50a4a77fa3/chromadb-1.5.9-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cc09b3df76e5a5cb386aed2715a2eea152e3949f9e1ba93c7119505377749929", size = 23316203, upload-time = "2026-05-05T05:54:41.157Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/ce/0f7be6e5d0feafa2cda54b12e6542afeea7dea89d2d411e14da90f8abb96/chromadb-1.5.9-cp39-abi3-win_amd64.whl", hash = "sha256:4fd0b560e56761b7f3cb4d5c6205fd5f20814484b4a3e4e9af9038c2b428fc6c", size = 23542454, upload-time = "2026-05-05T05:54:54.942Z" },
 ]
 
 [[package]]
@@ -4361,22 +4352,6 @@ wheels = [
 ]
 
 [[package]]
-name = "posthog"
-version = "5.4.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "backoff", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "distro", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "six", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/48/20/60ae67bb9d82f00427946218d49e2e7e80fb41c15dc5019482289ec9ce8d/posthog-5.4.0.tar.gz", hash = "sha256:701669261b8d07cdde0276e5bc096b87f9e200e3b9589c5ebff14df658c5893c", size = 88076, upload-time = "2025-06-20T23:19:23.485Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/98/e480cab9a08d1c09b1c59a93dade92c1bb7544826684ff2acbfd10fcfbd4/posthog-5.4.0-py3-none-any.whl", hash = "sha256:284dfa302f64353484420b52d4ad81ff5c2c2d1d607c4e2db602ac72761831bd", size = 105364, upload-time = "2025-06-20T23:19:22.001Z" },
-]
-
-[[package]]
 name = "prance"
 version = "25.4.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -6481,13 +6456,13 @@ requires-dist = [
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = ">=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.41.0" },
-    { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<1.4" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.36.4,<1.43.0" },
+    { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.5,<1.6" },
     { name = "cloudevents", specifier = "~=1.0" },
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "faiss-cpu", marker = "extra == 'faiss'", specifier = ">=1.10.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = ">=1.114,<1.134" },
-    { name = "google-genai", marker = "extra == 'google'", specifier = "~=1.51.0" },
+    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.51,<1.75" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = ">=6.29,<8.0" },
     { name = "jinja2", specifier = "~=3.1" },
     { name = "mcp", specifier = ">=1.26.0" },
@@ -6515,7 +6490,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
     { name = "pyarrow", marker = "extra == 'usearch'", specifier = ">=12.0,<22.0" },
     { name = "pybars4", specifier = "~=0.9" },
-    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.13" },
+    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.14" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.7" },
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.16" },
