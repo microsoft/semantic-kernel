@@ -11,6 +11,18 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from pytest import fixture
 
+from semantic_kernel.data.vector import (
+    KernelSearchResults,
+    SearchType,
+    VectorSearch,
+    VectorSearchResult,
+    VectorStoreCollection,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+    vectorstoremodel,
+)
+from semantic_kernel.kernel_types import OptionalOneOrMany
+
 
 @fixture(autouse=True)
 def _ensure_event_loop():
@@ -28,18 +40,6 @@ def _ensure_event_loop():
     except RuntimeError:
         asyncio.set_event_loop(asyncio.new_event_loop())
     yield
-
-from semantic_kernel.data.vector import (
-    KernelSearchResults,
-    SearchType,
-    VectorSearch,
-    VectorSearchResult,
-    VectorStoreCollection,
-    VectorStoreCollectionDefinition,
-    VectorStoreField,
-    vectorstoremodel,
-)
-from semantic_kernel.kernel_types import OptionalOneOrMany
 
 
 @fixture
