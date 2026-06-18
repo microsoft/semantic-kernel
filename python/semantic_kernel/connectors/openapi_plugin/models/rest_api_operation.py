@@ -221,7 +221,7 @@ class RestApiOperation:
 
     def build_operation_url(self, arguments, server_url_override=None, api_host_url=None):
         """Build the URL for the operation."""
-        server_url = self.get_server_url(server_url_override, api_host_url)
+        server_url = self.get_server_url(server_url_override, api_host_url, arguments)
         path = self.build_path(self.path, arguments)
         try:
             return urljoin(server_url, path.lstrip("/"))

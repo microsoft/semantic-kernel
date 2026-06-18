@@ -896,3 +896,8 @@ def test_invalid_server_url_override():
     with pytest.raises(ValueError, match="Invalid server_url_override: invalid_url"):
         params = OpenAPIFunctionExecutionParameters(server_url_override="invalid_url")
         params.model_post_init(None)
+
+
+def test_invalid_server_url_validation_allowed_base_url():
+    with pytest.raises(ValueError, match="Invalid allowed_base_urls: invalid_url"):
+        OpenAPIFunctionExecutionParameters(server_url_validation_allowed_base_urls=["invalid_url"])
