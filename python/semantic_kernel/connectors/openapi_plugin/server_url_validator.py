@@ -36,7 +36,12 @@ async def validate_server_url(
 ) -> None:
     """Validate a fully resolved OpenAPI operation URL against the supplied policy."""
     options = options or ServerUrlValidationOptions()
-    parsed_url = _parse_absolute_url(url)
+    try:
+        parsed_url = _parse_absolute_url(url)
+    except ValueError as exc:
+        raise FunctionExecutionException(
+            f"The request URI '{url}' is not allowed because it is not a valid absolute URI."
+        ) from exc
 
     if _matches_allowed_base_url(parsed_url, options.allowed_base_urls):
         return

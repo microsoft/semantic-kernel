@@ -253,11 +253,11 @@ class RestApiOperation:
                 argument_name = variable_def.get("argument_name", variable_name)
                 if argument_name in arguments:
                     value = arguments[argument_name]
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", str(value))
                 elif "default" in variable_def and variable_def["default"] is not None:
                     # Use the default value if no argument is provided
                     value = variable_def["default"]
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", str(value))
                 else:
                     # Raise an exception if no value is available
                     raise FunctionExecutionException(

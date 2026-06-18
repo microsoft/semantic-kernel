@@ -93,6 +93,11 @@ async def test_validate_server_url_allows_public_https_literal_by_default():
     await validate_server_url("https://1.1.1.1/")
 
 
+async def test_validate_server_url_rejects_invalid_uri_with_function_execution_exception():
+    with pytest.raises(FunctionExecutionException, match="not a valid absolute URI"):
+        await validate_server_url("invalid_url")
+
+
 async def test_validate_server_url_allows_explicit_base_url_for_private_http_address():
     options = ServerUrlValidationOptions(allowed_base_urls=["http://192.168.1.100/v1"])
 
