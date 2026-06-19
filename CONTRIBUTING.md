@@ -99,6 +99,17 @@ We use and recommend the following workflow:
 8. Wait for feedback or approval of your changes from the code maintainers.
 9. When area owners have signed off, and all checks are green, your PR will be merged.
 
+### Enterprise deployment-readiness docs contributions
+
+For contributors proposing production-focused agent documentation updates, include a concise readiness checklist where applicable:
+
+- secret and credential boundaries
+- tool execution controls and approval boundaries
+- tracing/observability expectations for debugging and audits
+- rollback strategy for prompt/config changes
+
+When possible, link the motivating issue and include one realistic usage example to make review easier.
+
 ### Development scripts
 
 The scripts below are used to build, test, and lint within the project.
