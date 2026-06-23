@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
 import aiohttp
@@ -35,6 +35,9 @@ class HttpPlugin(KernelBaseModel):
         - When ``allow_all_domains`` is True, redirects are allowed regardless of
           whether ``allowed_domains`` is also set.
         - Only ``http`` and ``https`` URL schemes are permitted.
+        - Only standard ports (80, 443) are permitted by default. Set ``allowed_ports``
+          to permit additional ports. Port validation is skipped when
+          ``allow_all_domains`` is True.
     """
 
     allowed_domains: set[str] | None = None
@@ -43,7 +46,16 @@ class HttpPlugin(KernelBaseModel):
     allow_all_domains: bool = False
     """When True, requests to any domain are allowed. Must be explicitly set."""
 
+    allowed_ports: set[int] | None = None
+    """Set of ports permitted for outbound requests. Defaults to ``{80, 443}`` when not set.
+
+    Ignored when ``allow_all_domains`` is True. Set explicitly to permit non-standard ports
+    (e.g. ``allowed_ports={443, 8443}``).
+    """
+
     _ALLOWED_SCHEMES: frozenset[str] = frozenset({"http", "https"})
+    _DEFAULT_SCHEME_PORTS: ClassVar[dict[str, int]] = {"http": 80, "https": 443}
+    _DEFAULT_ALLOWED_PORTS: frozenset[int] = frozenset({80, 443})
 
     @property
     def _allow_redirects(self) -> bool:
@@ -78,6 +90,18 @@ class HttpPlugin(KernelBaseModel):
         if self.allow_all_domains:
             return True
 
+        # Validate port (deny-by-default to non-standard ports)
+        try:
+            port = parsed.port
+        except ValueError:
+            # Malformed or out-of-range port component
+            return False
+        if port is None:
+            port = self._DEFAULT_SCHEME_PORTS.get(parsed.scheme.lower())
+        allowed_ports = self.allowed_ports if self.allowed_ports is not None else self._DEFAULT_ALLOWED_PORTS
+        if port not in allowed_ports:
+            return False
+
         # If allowed_domains is set, check against it
         if self.allowed_domains is not None:
             return host.lower() in {domain.lower() for domain in self.allowed_domains}
@@ -86,13 +110,13 @@ class HttpPlugin(KernelBaseModel):
         return False
 
     def _validate_url(self, url: str) -> None:
-        """Validate the URL, checking scheme, emptiness, and allowed domains.
+        """Validate the URL, checking emptiness, scheme, port, and allowed domains.
 
         Args:
             url: The URL to validate.
 
         Raises:
-            FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
+            FunctionExecutionException: If the URL is empty, uses a disallowed scheme or port,
                 or targets a domain that is not allowed.
         """
         if not url:
