@@ -229,6 +229,12 @@ async def test_malformed_port_rejected():
     assert plugin._is_uri_allowed("https://example.com:99999/path") is False
 
 
+async def test_malformed_port_rejected_with_allow_all_domains():
+    """Test that a malformed/out-of-range port is rejected even when allow_all_domains is True."""
+    plugin = HttpPlugin(allow_all_domains=True)
+    assert plugin._is_uri_allowed("https://example.com:99999/path") is False
+
+
 async def test_allowed_domains_subdomain_not_matched():
     """Test that subdomains are not automatically matched."""
     plugin = HttpPlugin(allowed_domains={"example.com"})

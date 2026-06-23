@@ -53,9 +53,9 @@ class HttpPlugin(KernelBaseModel):
     (e.g. ``allowed_ports={443, 8443}``).
     """
 
-    _ALLOWED_SCHEMES: frozenset[str] = frozenset({"http", "https"})
+    _ALLOWED_SCHEMES: ClassVar[frozenset[str]] = frozenset({"http", "https"})
     _DEFAULT_SCHEME_PORTS: ClassVar[dict[str, int]] = {"http": 80, "https": 443}
-    _DEFAULT_ALLOWED_PORTS: frozenset[int] = frozenset({80, 443})
+    _DEFAULT_ALLOWED_PORTS: ClassVar[frozenset[int]] = frozenset({80, 443})
 
     @property
     def _allow_redirects(self) -> bool:
@@ -86,16 +86,19 @@ class HttpPlugin(KernelBaseModel):
         if not host:
             return False
 
-        # If allow_all_domains is set, skip domain check
-        if self.allow_all_domains:
-            return True
-
-        # Validate port (deny-by-default to non-standard ports)
+        # Validate that the port component is syntactically valid, regardless of
+        # allow_all_domains. Accessing parsed.port raises ValueError for a malformed
+        # or out-of-range port.
         try:
             port = parsed.port
         except ValueError:
-            # Malformed or out-of-range port component
             return False
+
+        # If allow_all_domains is set, skip the domain and port allow-list checks.
+        if self.allow_all_domains:
+            return True
+
+        # Enforce the port allow-list (deny-by-default to non-standard ports).
         if port is None:
             port = self._DEFAULT_SCHEME_PORTS.get(parsed.scheme.lower())
         allowed_ports = self.allowed_ports if self.allowed_ports is not None else self._DEFAULT_ALLOWED_PORTS
@@ -110,14 +113,19 @@ class HttpPlugin(KernelBaseModel):
         return False
 
     def _validate_url(self, url: str) -> None:
-        """Validate the URL, checking emptiness, scheme, port, and allowed domains.
+        """Validate the URL before sending a request.
+
+        Always checks that the URL is non-empty, uses an allowed scheme, and has a
+        syntactically valid port. When ``allow_all_domains`` is False, additionally
+        enforces the port and domain allow-lists.
 
         Args:
             url: The URL to validate.
 
         Raises:
-            FunctionExecutionException: If the URL is empty, uses a disallowed scheme or port,
-                or targets a domain that is not allowed.
+            FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
+                has a malformed port, or (unless ``allow_all_domains`` is True) targets
+                a port or domain that is not allowed.
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
