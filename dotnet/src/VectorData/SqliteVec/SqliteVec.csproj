@@ -35,6 +35,7 @@
     <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="sqlite-vec" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" /><!-- Pin to patched version; overrides transitive 2.1.11 from Microsoft.Data.Sqlite (GHSA-2m69-gcr7-jv3q) -->
   </ItemGroup>
 
   <ItemGroup>
