@@ -257,5 +257,5 @@ public sealed class TimePlugin
     public string TimeZoneName() =>
         // Example: PST
         // Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
-        TimeZoneInfo.Local.DisplayName;
+        this._timeProvider.LocalTimeZone.DisplayName;
 }

@@ -130,6 +130,13 @@ public class TimePluginTests
     }
 
     [Fact]
+    public void TimeZoneName()
+    {
+        // FixedUtcTimeProvider pins LocalTimeZone to TimeZoneInfo.Utc
+        Assert.Equal(TimeZoneInfo.Utc.DisplayName, CreatePlugin().TimeZoneName());
+    }
+
+    [Fact]
     public void DaysAgo()
     {
         // 2 days before 2025-06-15 is 2025-06-13 (Friday)
