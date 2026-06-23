@@ -342,6 +342,23 @@ def test_get_server_url_with_servers_and_variables():
     assert operation.get_server_url(arguments=arguments) == expected_url
 
 
+def test_get_server_url_with_servers_coerces_variable_argument_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://example.com/{version}",
+                "variables": {"version": {"default": "v1", "argument_name": "api_version"}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"api_version": 2}
+    expected_url = "https://example.com/2/"
+    assert operation.get_server_url(arguments=arguments) == expected_url
+
+
 def test_get_server_url_with_servers_and_default_variable():
     operation = RestApiOperation(
         id="test",
@@ -350,6 +367,17 @@ def test_get_server_url_with_servers_and_default_variable():
         path="/resource/{id}",
     )
     expected_url = "https://example.com/v1/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_servers_coerces_default_variable_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/{version}", "variables": {"version": {"default": 1}}}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/1/"
     assert operation.get_server_url() == expected_url
 
 
@@ -896,3 +924,8 @@ def test_invalid_server_url_override():
     with pytest.raises(ValueError, match="Invalid server_url_override: invalid_url"):
         params = OpenAPIFunctionExecutionParameters(server_url_override="invalid_url")
         params.model_post_init(None)
+
+
+def test_invalid_server_url_validation_allowed_base_url():
+    with pytest.raises(ValueError, match="Invalid allowed_base_urls: invalid_url"):
+        OpenAPIFunctionExecutionParameters(server_url_validation_allowed_base_urls=["invalid_url"])
