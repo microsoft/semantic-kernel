@@ -81,7 +81,7 @@ jobs:
       - name: Build dotnet solutions
         shell: bash
         run: |
-          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | grep -v "MEVD.slnx" | tr '\n' ' ')
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
             dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
           done
@@ -89,7 +89,7 @@ jobs:
       - name: Package install check
         shell: bash
         run: |
-          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | grep -v "MEVD.slnx" | tr '\n' ' ')
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.slnx" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
             dotnet pack $solution -c ${{ matrix.configuration }} --no-build --no-restore --output ./artifacts
           done

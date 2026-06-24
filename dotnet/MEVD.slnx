@@ -17,6 +17,7 @@
     <File Path="nuget/NUGET.md" />
     <File Path="nuget/VECTORDATA-CONNECTORS-NUGET.md" />
   </Folder>
+  <Folder Name="/src/" />
   <Folder Name="/src/VectorData/">
     <File Path="src/VectorData/Directory.Build.props" />
     <Project Path="src/VectorData/AzureAISearch/AzureAISearch.csproj" />
@@ -32,7 +33,6 @@
     <Project Path="src/VectorData/Redis/Redis.csproj" />
     <Project Path="src/VectorData/SqliteVec/SqliteVec.csproj" />
     <Project Path="src/VectorData/SqlServer/SqlServer.csproj" />
-    <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
     <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
   </Folder>
   <Folder Name="/test/" />
@@ -60,7 +60,6 @@
     <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
     <Project Path="test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj" />
     <Project Path="test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
     <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
     <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
   </Folder>
