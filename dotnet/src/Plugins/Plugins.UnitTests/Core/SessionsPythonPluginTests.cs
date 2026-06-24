@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -473,6 +474,141 @@ public sealed class SessionsPythonPluginTests : IDisposable
     }
 
     [Fact]
+    public async Task ItShouldDenyDownloadThroughSymlinkOutsideAllowedDirectoriesAsync()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"SessionsPythonPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+
+        try
+        {
+            var outsideFile = Path.Combine(outsideDir, "download.txt");
+            await File.WriteAllTextAsync(outsideFile, "existing");
+
+            var symlinkPath = Path.Combine(allowedDir, "download.txt");
+            try
+            {
+                File.CreateSymbolicLink(symlinkPath, outsideFile);
+            }
+            catch (IOException)
+            {
+                return;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return;
+            }
+
+            if (!File.Exists(symlinkPath))
+            {
+                return;
+            }
+
+            var settings = new SessionsPythonSettings(
+                sessionId: Guid.NewGuid().ToString(),
+                endpoint: new Uri("http://localhost:8888"))
+            {
+                AllowedDownloadDirectories = new[] { allowedDir }
+            };
+
+            var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => plugin.DownloadFileAsync("test.txt", symlinkPath));
+
+            Assert.Contains("not within allowed download directories", exception.Message);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldAllowDownloadDirectlyInsideAllowedDirectoryAsync()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"SessionsPythonPluginTests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var responseContent = new byte[] { 1, 2, 3 };
+            this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(responseContent),
+            };
+
+            var settings = new SessionsPythonSettings(
+                sessionId: Guid.NewGuid().ToString(),
+                endpoint: new Uri("http://localhost:8888"))
+            {
+                AllowedDownloadDirectories = new[] { tempDir }
+            };
+
+            var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+            var downloadPath = Path.Combine(tempDir, "download.txt");
+
+            // Act
+            var result = await plugin.DownloadFileAsync("test.txt", downloadPath);
+
+            // Assert
+            Assert.Equal(responseContent, result);
+            Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadPath));
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldDenyUploadWithDifferentPathCasingOnLinuxAsync()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
+
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"SessionsPythonPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "Allowed");
+        var disallowedDir = Path.Combine(tempDir, "allowed");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(disallowedDir);
+
+        try
+        {
+            var disallowedFile = Path.Combine(disallowedDir, "secret.txt");
+            await File.WriteAllTextAsync(disallowedFile, "secret");
+
+            var settings = new SessionsPythonSettings(
+                sessionId: Guid.NewGuid().ToString(),
+                endpoint: new Uri("http://localhost:8888"))
+            {
+                EnableDangerousFileUploads = true,
+                AllowedUploadDirectories = new[] { allowedDir }
+            };
+
+            var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => plugin.UploadFileAsync("test.txt", disallowedFile));
+
+            Assert.Contains("not within allowed upload directories", exception.Message);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task ItShouldDenyUploadWithPathTraversalAsync()
     {
         // Arrange
@@ -505,5 +641,19 @@ public sealed class SessionsPythonPluginTests : IDisposable
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            Directory.Delete(path, recursive: true);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
     }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -162,14 +161,8 @@ public sealed class DocumentPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return Path.GetFullPath(expanded);
+        return PathUtilities.GetSafeFullPath(expanded);
     }
-
-    // Use case-insensitive comparison on Windows (case-insensitive FS), case-sensitive on Linux/macOS.
-    private static readonly StringComparison s_pathComparison =
-        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed directories.
@@ -191,15 +184,15 @@ public sealed class DocumentPlugin
 
         foreach (var allowedDirectory in this._allowedDirectories)
         {
-            var canonicalAllowed = Path.GetFullPath(allowedDirectory);
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedDirectory);
             var separator = Path.DirectorySeparatorChar.ToString();
-            if (!canonicalAllowed.EndsWith(separator, s_pathComparison))
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (directoryPath.StartsWith(canonicalAllowed, s_pathComparison)
-                || (directoryPath + separator).Equals(canonicalAllowed, s_pathComparison))
+            if (directoryPath.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (directoryPath + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
                 return true;
             }
