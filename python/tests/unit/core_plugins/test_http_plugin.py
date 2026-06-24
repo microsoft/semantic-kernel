@@ -195,10 +195,44 @@ async def test_allowed_domains_multiple_domains():
 
 
 async def test_allowed_domains_with_port():
-    """Test that domain matching works with URLs containing ports."""
+    """Test that non-standard ports are rejected by default, even on an allowed domain."""
     plugin = HttpPlugin(allowed_domains={"example.com"})
-    # Port is not part of the host/hostname in urlparse
-    assert plugin._is_uri_allowed("https://example.com:8080/path") is True
+    # Standard ports on an allowed domain are permitted.
+    assert plugin._is_uri_allowed("https://example.com/path") is True
+    assert plugin._is_uri_allowed("https://example.com:443/path") is True
+    assert plugin._is_uri_allowed("http://example.com:80/path") is True
+    # Non-standard ports are rejected even though the host is allowed (SSRF hardening).
+    assert plugin._is_uri_allowed("https://example.com:8080/path") is False
+    assert plugin._is_uri_allowed("https://example.com:9200/_cat/indices") is False
+    assert plugin._is_uri_allowed("https://example.com:6379/") is False
+
+
+async def test_allowed_ports_custom():
+    """Test that custom allowed_ports permit additional ports."""
+    plugin = HttpPlugin(allowed_domains={"example.com"}, allowed_ports={443, 8443})
+    assert plugin._is_uri_allowed("https://example.com:8443/path") is True
+    assert plugin._is_uri_allowed("https://example.com/path") is True
+    # A port not in the custom set is still rejected.
+    assert plugin._is_uri_allowed("https://example.com:9200/path") is False
+
+
+async def test_allow_all_domains_ignores_port():
+    """Test that port validation is skipped when allow_all_domains is True."""
+    plugin = HttpPlugin(allow_all_domains=True)
+    assert plugin._is_uri_allowed("https://any-domain.com:9200/path") is True
+    assert plugin._is_uri_allowed("https://any-domain.com:6379/path") is True
+
+
+async def test_malformed_port_rejected():
+    """Test that a malformed/out-of-range port is rejected."""
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+    assert plugin._is_uri_allowed("https://example.com:99999/path") is False
+
+
+async def test_malformed_port_rejected_with_allow_all_domains():
+    """Test that a malformed/out-of-range port is rejected even when allow_all_domains is True."""
+    plugin = HttpPlugin(allow_all_domains=True)
+    assert plugin._is_uri_allowed("https://example.com:99999/path") is False
 
 
 async def test_allowed_domains_subdomain_not_matched():
