@@ -152,6 +152,7 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.VectorData.Abstractions" Version="10.1.0" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -200,6 +201,16 @@
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
+    <!-- VectorData Dependencies -->
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.CosmosMongoDB" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.CosmosNoSql" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Pinecone" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.74.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Weaviate" Version="1.74.0-preview" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->

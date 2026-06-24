@@ -14,13 +14,13 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.AI.OpenAI" />
     <PackageReference Include="Aspire.Azure.Search.Documents" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
-    <ProjectReference Include="..\..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
     <ProjectReference Include="..\..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

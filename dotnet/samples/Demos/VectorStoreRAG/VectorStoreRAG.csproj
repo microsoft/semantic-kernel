@@ -15,17 +15,17 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="PdfPig" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.CosmosMongoDB" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.CosmosNoSql" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Redis" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Weaviate" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\CosmosNoSql\CosmosNoSql.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\InMemory\InMemory.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Qdrant\Qdrant.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Redis\Redis.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
