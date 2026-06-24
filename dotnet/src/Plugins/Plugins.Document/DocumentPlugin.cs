@@ -145,7 +145,7 @@ public sealed class DocumentPlugin
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -156,12 +156,18 @@ public sealed class DocumentPlugin
 
         // Re-check after expansion: an env var could have expanded to a UNC
         // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(expanded))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
         return PathUtilities.GetSafeFullPath(expanded);
+    }
+
+    private static bool IsUncOrExtendedPath(string path)
+    {
+        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
