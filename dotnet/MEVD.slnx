@@ -1,0 +1,162 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/workflows/dotnet-format.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../nuget.config" />
+    <File Path="../README.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docs/EXPERIMENTS.md" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/Solution Items/nuget/">
+    <File Path="nuget/icon.png" />
+    <File Path="nuget/nuget-package.props" />
+    <File Path="nuget/NUGET.md" />
+    <File Path="nuget/VECTORDATA-CONNECTORS-NUGET.md" />
+  </Folder>
+  <Folder Name="/samples/">
+    <File Path="samples/README.md" />
+    <Project Path="samples/MemoryConcepts/MemoryConcepts.csproj" />
+  </Folder>
+  <Folder Name="/samples/Demos/">
+    <File Path="samples/Demos/README.md" />
+    <Project Path="samples/Demos/VectorStoreRAG/VectorStoreRAG.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SemanticKernel.Abstractions/SemanticKernel.Abstractions.csproj" />
+    <Project Path="src/SemanticKernel.Core/SemanticKernel.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/VectorData/">
+    <File Path="src/VectorData/Directory.Build.props" />
+    <Project Path="src/VectorData/AzureAISearch/AzureAISearch.csproj" />
+    <Project Path="src/VectorData/Chroma/Chroma.csproj" />
+    <Project Path="src/VectorData/CosmosMongoDB/CosmosMongoDB.csproj" />
+    <Project Path="src/VectorData/CosmosNoSql/CosmosNoSql.csproj" />
+    <Project Path="src/VectorData/InMemory/InMemory.csproj" />
+    <Project Path="src/VectorData/Milvus/Milvus.csproj" />
+    <Project Path="src/VectorData/MongoDB/MongoDB.csproj" />
+    <Project Path="src/VectorData/PgVector/PgVector.csproj" />
+    <Project Path="src/VectorData/Pinecone/Pinecone.csproj" />
+    <Project Path="src/VectorData/Qdrant/Qdrant.csproj" />
+    <Project Path="src/VectorData/Redis/Redis.csproj" />
+    <Project Path="src/VectorData/SqliteVec/SqliteVec.csproj" />
+    <Project Path="src/VectorData/SqlServer/SqlServer.csproj" />
+    <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
+    <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/connectors/Memory/" />
+  <Folder Name="/src/InternalUtilities/connectors/Memory/MongoDB/">
+    <File Path="src/InternalUtilities/connectors/Memory/MongoDB/MongoDBConstants.cs" />
+    <File Path="src/InternalUtilities/connectors/Memory/MongoDB/MongoDBGenericDataModelMapper.cs" />
+    <File Path="src/InternalUtilities/connectors/Memory/MongoDB/MongoDBVectorStoreRecordMapper.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/samples/">
+    <File Path="src/InternalUtilities/samples/ConfigurationNotFoundException.cs" />
+    <File Path="src/InternalUtilities/samples/EnumerableExtensions.cs" />
+    <File Path="src/InternalUtilities/samples/Env.cs" />
+    <File Path="src/InternalUtilities/samples/ObjectExtensions.cs" />
+    <File Path="src/InternalUtilities/samples/PlanExtensions.cs" />
+    <File Path="src/InternalUtilities/samples/RepoFiles.cs" />
+    <File Path="src/InternalUtilities/samples/SamplesInternalUtilities.props" />
+    <File Path="src/InternalUtilities/samples/TextOutputHelperExtensions.cs" />
+    <File Path="src/InternalUtilities/samples/XunitLogger.cs" />
+    <File Path="src/InternalUtilities/samples/YourAppException.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/">
+    <File Path="src/InternalUtilities/src/InternalUtilities.props" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Diagnostics/">
+    <File Path="src/InternalUtilities/src/Diagnostics/ActivityExtensions.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/ExceptionExtensions.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/KernelVerify.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/LoggingExtensions.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/RequiresDynamicCodeAttribute.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/UnreachableException.cs" />
+    <File Path="src/InternalUtilities/src/Diagnostics/Verify.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Functions/">
+    <File Path="src/InternalUtilities/src/Functions/FunctionName.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Http/">
+    <File Path="src/InternalUtilities/src/Http/HttpClientExtensions.cs" />
+    <File Path="src/InternalUtilities/src/Http/HttpClientProvider.cs" />
+    <File Path="src/InternalUtilities/src/Http/HttpContentExtensions.cs" />
+    <File Path="src/InternalUtilities/src/Http/HttpHeaderConstant.cs" />
+    <File Path="src/InternalUtilities/src/Http/HttpRequest.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Linq/">
+    <File Path="src/InternalUtilities/src/Linq/AsyncEnumerable.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Model/">
+    <File Path="src/InternalUtilities/src/Model/Freezable.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/System/">
+    <File Path="src/InternalUtilities/src/System/EnvExtensions.cs" />
+    <File Path="src/InternalUtilities/src/System/IListExtensions.cs" />
+    <File Path="src/InternalUtilities/src/System/IndexRange.cs" />
+    <File Path="src/InternalUtilities/src/System/InternalTypeConverter.cs" />
+    <File Path="src/InternalUtilities/src/System/NonNullCollection.cs" />
+    <File Path="src/InternalUtilities/src/System/TypeConverterFactory.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Text/">
+    <File Path="src/InternalUtilities/src/Text/BoolJsonConverter.cs" />
+    <File Path="src/InternalUtilities/src/Text/ExceptionJsonConverter.cs" />
+    <File Path="src/InternalUtilities/src/Text/JsonOptionsCache.cs" />
+    <File Path="src/InternalUtilities/src/Text/OptionalBoolJsonConverter.cs" />
+    <File Path="src/InternalUtilities/src/Text/SseData.cs" />
+    <File Path="src/InternalUtilities/src/Text/SseJsonParser.cs" />
+    <File Path="src/InternalUtilities/src/Text/SseLine.cs" />
+    <File Path="src/InternalUtilities/src/Text/SseReader.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/src/Type/">
+    <File Path="src/InternalUtilities/src/Type/TypeExtensions.cs" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/test/">
+    <File Path="src/InternalUtilities/test/AssertExtensions.cs" />
+    <File Path="src/InternalUtilities/test/HttpMessageHandlerStub.cs" />
+    <File Path="src/InternalUtilities/test/MultipleHttpMessageHandlerStub.cs" />
+    <File Path="src/InternalUtilities/test/TestInternalUtilities.props" />
+  </Folder>
+  <Folder Name="/src/InternalUtilities/test/Linq/">
+    <File Path="src/InternalUtilities/test/Linq/AsyncEnumerable.cs" />
+  </Folder>
+  <Folder Name="/test/" />
+  <Folder Name="/test/VectorData/">
+    <Project Path="test/VectorData/AzureAISearch.ConformanceTests/AzureAISearch.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj" />
+    <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
+    <Project Path="test/VectorData/CosmosMongoDB.ConformanceTests/CosmosMongoDB.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/CosmosMongoDB.UnitTests/CosmosMongoDB.UnitTests.csproj" />
+    <Project Path="test/VectorData/CosmosNoSql.ConformanceTests/CosmosNoSql.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/CosmosNoSql.UnitTests/CosmosNoSql.UnitTests.csproj" />
+    <Project Path="test/VectorData/InMemory.ConformanceTests/InMemory.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/InMemory.UnitTests/InMemory.UnitTests.csproj" />
+    <Project Path="test/VectorData/MongoDB.ConformanceTests/MongoDB.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/MongoDB.UnitTests/MongoDB.UnitTests.csproj" />
+    <Project Path="test/VectorData/PgVector.ConformanceTests/PgVector.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/PgVector.UnitTests/PgVector.UnitTests.csproj" />
+    <Project Path="test/VectorData/Pinecone.ConformanceTests/Pinecone.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Pinecone.UnitTests/Pinecone.UnitTests.csproj" />
+    <Project Path="test/VectorData/Qdrant.ConformanceTests/Qdrant.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Qdrant.UnitTests/Qdrant.UnitTests.csproj" />
+    <Project Path="test/VectorData/Redis.ConformanceTests/Redis.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Redis.UnitTests/Redis.UnitTests.csproj" />
+    <Project Path="test/VectorData/SqliteVec.ConformanceTests/SqliteVec.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
+    <Project Path="test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
+    <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
+    <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
+  </Folder>
+</Solution>

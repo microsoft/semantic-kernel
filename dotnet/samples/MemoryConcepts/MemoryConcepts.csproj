@@ -32,7 +32,6 @@
     </PackageReference>
     <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
-    <PackageReference Include="Azure.Search.Documents" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -72,7 +71,16 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Chroma\Chroma.csproj" />
     <ProjectReference Include="..\..\src\VectorData\InMemory\InMemory.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\MongoDB\MongoDB.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Pinecone\Pinecone.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\PgVector\PgVector.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Qdrant\Qdrant.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Redis\Redis.csproj" />
+    <ProjectReference Include="..\..\src\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
@@ -103,64 +111,6 @@
   
   <ItemGroup>
     <None Update="appsettings.Development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\Plugins\ApiManifestPlugins\**\apimanifest.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Plugins\EventPlugin\openapiV1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Plugins\EventPlugin\openapiV2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Plugins\PetsPlugin\allOfV3.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Plugins\PetsPlugin\anyOfV3.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Plugins\PetsPlugin\oneOfV3.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\Plugins\CopilotAgentPlugins\**\*.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\DeclarativeAgents\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Resources\Plugins\EventPlugin\openapiV1.json" />
-    <None Remove="Resources\Plugins\EventPlugin\openapiV2.json" />
-    <None Remove="Resources\Plugins\PetsPlugin\allOfV3.json" />
-    <None Remove="Resources\Plugins\PetsPlugin\anyOfV3.json" />
-    <None Remove="Resources\Plugins\PetsPlugin\oneOfV3.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Resources\Plugins\MoviePlugins\MoviePluginPrompt\TopMovies\config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Plugins\MoviePlugins\MoviePluginPrompt\TopMovies\skprompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Plugins\MoviePlugins\MoviePluginYaml\TopMovies.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Plugins\ProductsPlugin\openapi.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

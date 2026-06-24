@@ -47,66 +47,6 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         */
     }
 
-    /// <summary>
-    /// Executing similar requests two times using Redis caching store to compare execution time and results.
-    /// Second execution is faster, because the result is returned from cache.
-    /// How to run Redis on Docker locally: https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/.
-    /// </summary>
-    [Fact]
-    public async Task RedisCacheAsync()
-    {
-        var kernel = GetKernelWithCache(services =>
-        {
-            services.AddRedisVectorStore("localhost:6379");
-        });
-
-        var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
-        var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
-
-        Console.WriteLine($"Result 1: {result1}");
-        Console.WriteLine($"Result 2: {result2}");
-
-        /*
-        First run: What's the tallest building in New York?
-        Elapsed Time: 00:00:03.674
-        Second run: What is the highest building in New York City?
-        Elapsed Time: 00:00:00.292
-        Result 1: The tallest building in New York is One World Trade Center, also known as Freedom Tower. It stands at 1,776 feet (541 meters) tall, including its spire.
-        Result 2: The tallest building in New York is One World Trade Center, also known as Freedom Tower. It stands at 1,776 feet (541 meters) tall, including its spire.
-        */
-    }
-
-    /// <summary>
-    /// Executing similar requests two times using Azure Cosmos DB for MongoDB caching store to compare execution time and results.
-    /// Second execution is faster, because the result is returned from cache.
-    /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
-    /// </summary>
-    [Fact]
-    public async Task CosmosMongoDBCacheAsync()
-    {
-        var kernel = GetKernelWithCache(services =>
-        {
-            services.AddCosmosMongoVectorStore(
-                TestConfiguration.CosmosMongo.ConnectionString,
-                TestConfiguration.CosmosMongo.DatabaseName);
-        });
-
-        var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
-        var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
-
-        Console.WriteLine($"Result 1: {result1}");
-        Console.WriteLine($"Result 2: {result2}");
-
-        /*
-        First run: What's the tallest building in New York?
-        Elapsed Time: 00:00:05.485
-        Second run: What is the highest building in New York City?
-        Elapsed Time: 00:00:00.389
-        Result 1: The tallest building in New York is One World Trade Center, also known as Freedom Tower, which stands at 1,776 feet (541.3 meters) tall.
-        Result 2: The tallest building in New York is One World Trade Center, also known as Freedom Tower, which stands at 1,776 feet (541.3 meters) tall.
-        */
-    }
-
     #region Configuration
 
     /// <summary>
