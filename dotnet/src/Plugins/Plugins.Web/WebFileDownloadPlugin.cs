@@ -122,7 +122,7 @@ public sealed class WebFileDownloadPlugin
             throw new InvalidOperationException("Downloading from the provided location is not allowed.");
         }
 
-        var expandedFilePath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(filePath));
+        var expandedFilePath = CanonicalizePath(filePath);
         if (!this.IsFilePathAllowed(expandedFilePath))
         {
             throw new InvalidOperationException("Downloading to the provided location is not allowed.");
@@ -199,6 +199,30 @@ public sealed class WebFileDownloadPlugin
             && this._allowedDomains.Contains(uri.Host);
     }
 
+    private static string CanonicalizePath(string path)
+    {
+        Verify.NotNullOrWhiteSpace(path);
+
+        if (IsUncOrExtendedPath(path))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        var expanded = Environment.ExpandEnvironmentVariables(path);
+        if (IsUncOrExtendedPath(expanded))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(expanded);
+    }
+
+    private static bool IsUncOrExtendedPath(string path)
+    {
+        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
     /// to verify it is in the allowed folder list. Paths are canonicalized before comparison.
@@ -231,19 +255,19 @@ public sealed class WebFileDownloadPlugin
             return false;
         }
 
-        var canonicalDir = Path.GetFullPath(directoryPath);
+        var canonicalDir = PathUtilities.GetSafeFullPath(directoryPath);
 
         foreach (var allowedFolder in this._allowedFolders)
         {
-            var canonicalAllowed = Path.GetFullPath(allowedFolder);
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedFolder);
             var separator = Path.DirectorySeparatorChar.ToString();
-            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
                 return true;
             }
