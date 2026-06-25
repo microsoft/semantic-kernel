@@ -26,15 +26,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="NRedisStack" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Redis.UnitTests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
