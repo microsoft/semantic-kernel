@@ -342,6 +342,23 @@ def test_get_server_url_with_servers_and_variables():
     assert operation.get_server_url(arguments=arguments) == expected_url
 
 
+def test_get_server_url_with_servers_coerces_variable_argument_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://example.com/{version}",
+                "variables": {"version": {"default": "v1", "argument_name": "api_version"}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"api_version": 2}
+    expected_url = "https://example.com/2/"
+    assert operation.get_server_url(arguments=arguments) == expected_url
+
+
 def test_get_server_url_with_servers_and_default_variable():
     operation = RestApiOperation(
         id="test",
@@ -350,6 +367,17 @@ def test_get_server_url_with_servers_and_default_variable():
         path="/resource/{id}",
     )
     expected_url = "https://example.com/v1/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_servers_coerces_default_variable_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/{version}", "variables": {"version": {"default": 1}}}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/1/"
     assert operation.get_server_url() == expected_url
 
 
@@ -410,6 +438,90 @@ def test_build_path_with_optional_and_required_parameters():
     arguments = {"id": "123"}
     expected_path = "/resource/123/{optional}"
     assert operation.build_path(operation.path, arguments) == expected_path
+
+
+def test_build_path_encodes_special_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    # Characters like /, ?, #, and spaces must be percent-encoded to prevent traversal
+    arguments = {"id": "foo/bar?q=1#frag data"}
+    result = operation.build_path(operation.path, arguments)
+    encoded_part = result.split("/resource/")[1]
+    assert "/" not in encoded_part
+    assert "?" not in encoded_part
+    assert "#" not in encoded_part
+    assert " " not in encoded_part
+    # Python's quote(safe="") encodes all except unreserved chars (letters, digits, _, ., -, ~)
+    assert result == "/resource/foo%2Fbar%3Fq%3D1%23frag%20data"
+
+
+def test_build_path_prevents_path_traversal():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "../../admin"}
+    # Encoded separators that decode into dot-segments must be rejected, not silently encoded
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, arguments)
+
+
+def test_build_path_double_encodes_pre_encoded_values():
+    """Arguments must be raw/unencoded values. Pre-encoded values are double-encoded by design."""
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "hello%2Fworld"}
+    result = operation.build_path(operation.path, arguments)
+    # %2F in input becomes %252F — the % is encoded, preventing decode-based bypass
+    assert result == "/resource/hello%252Fworld"
+
+
+def test_build_path_encodes_unicode_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "café résumé"}
+    result = operation.build_path(operation.path, arguments)
+    assert result == "/resource/caf%C3%A9%20r%C3%A9sum%C3%A9"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/resources/../admin",
+        "/resources/./admin",
+        "/resources/%2e%2e/admin",
+        "/resources/%2E%2E/admin",
+        "/resources/%2e/admin",
+        "/resources/%2e%2e%2fadmin",
+        "/resources/%252e%252e/admin",
+    ],
+)
+def test_build_path_rejects_dot_segment_in_template(path):
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/"], path=path, params=[])
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {})
+
+
+def test_build_path_rejects_dot_segment_via_parameter():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}/details", params=parameters
+    )
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {"id": ".."})
+
+
+def test_build_path_allows_encoded_non_dot_segment_characters():
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resources/a%20b/details", params=[]
+    )
+    assert operation.build_path(operation.path, {}) == "/resources/a%20b/details"
 
 
 def test_build_query_string_with_required_parameter():
@@ -812,3 +924,8 @@ def test_invalid_server_url_override():
     with pytest.raises(ValueError, match="Invalid server_url_override: invalid_url"):
         params = OpenAPIFunctionExecutionParameters(server_url_override="invalid_url")
         params.model_post_init(None)
+
+
+def test_invalid_server_url_validation_allowed_base_url():
+    with pytest.raises(ValueError, match="Invalid allowed_base_urls: invalid_url"):
+        OpenAPIFunctionExecutionParameters(server_url_validation_allowed_base_urls=["invalid_url"])

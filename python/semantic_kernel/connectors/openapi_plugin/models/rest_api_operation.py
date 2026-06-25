@@ -2,7 +2,7 @@
 
 import re
 from typing import Any, Final
-from urllib.parse import ParseResult, ParseResultBytes, urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import ParseResult, ParseResultBytes, quote, unquote, urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response import (
     RestApiExpectedResponse,
@@ -221,7 +221,7 @@ class RestApiOperation:
 
     def build_operation_url(self, arguments, server_url_override=None, api_host_url=None):
         """Build the URL for the operation."""
-        server_url = self.get_server_url(server_url_override, api_host_url)
+        server_url = self.get_server_url(server_url_override, api_host_url, arguments)
         path = self.build_path(self.path, arguments)
         try:
             return urljoin(server_url, path.lstrip("/"))
@@ -253,11 +253,11 @@ class RestApiOperation:
                 argument_name = variable_def.get("argument_name", variable_name)
                 if argument_name in arguments:
                     value = arguments[argument_name]
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", str(value))
                 elif "default" in variable_def and variable_def["default"] is not None:
                     # Use the default value if no argument is provided
                     value = variable_def["default"]
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", value)
+                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", str(value))
                 else:
                     # Raise an exception if no value is available
                     raise FunctionExecutionException(
@@ -288,8 +288,31 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
+            path_template = path_template.replace(f"{{{parameter.name}}}", quote(str(argument), safe=""))
+        self._validate_path_segments(path_template)
         return path_template
+
+    @staticmethod
+    def _validate_path_segments(path: str) -> None:
+        """Reject dot-segments (. or ..), including percent-encoded forms, that enable path traversal.
+
+        The operation is selected using the raw path but the request URL is built from a canonicalized
+        path, so encoded dot-segments such as "%2e%2e" must be rejected before the URL is constructed.
+        """
+        for segment in path.split("/"):
+            decoded = segment
+            for _ in range(5):
+                unescaped = unquote(decoded)
+                if unescaped == decoded:
+                    break
+                decoded = unescaped
+            # A decoded segment may contain encoded separators ("%2f"/"%5c"), so re-split on
+            # both "/" and "\" and reject any resulting dot-segment.
+            for part in decoded.replace("\\", "/").split("/"):
+                if part in (".", ".."):
+                    raise FunctionExecutionException(
+                        f"Path '{path}' contains a dot-segment, which could lead to path traversal."
+                    )
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
