@@ -72,14 +72,9 @@ public sealed class PathUtilitiesTests : IDisposable
         {
             File.CreateSymbolicLink(symlinkPath, targetFile);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-
-        if (!File.Exists(symlinkPath))
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 
@@ -109,14 +104,9 @@ public sealed class PathUtilitiesTests : IDisposable
         {
             File.CreateSymbolicLink(symlinkInAllowedDir, sensitiveFile);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-
-        if (!File.Exists(symlinkInAllowedDir))
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 
@@ -149,14 +139,9 @@ public sealed class PathUtilitiesTests : IDisposable
         {
             Directory.CreateSymbolicLink(symlinkDir, outsideDir);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-
-        if (!Directory.Exists(symlinkDir))
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 
@@ -188,14 +173,9 @@ public sealed class PathUtilitiesTests : IDisposable
         {
             Directory.CreateSymbolicLink(symlinkDir, outsideDir);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-
-        if (!Directory.Exists(symlinkDir))
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 
@@ -224,14 +204,9 @@ public sealed class PathUtilitiesTests : IDisposable
             File.CreateSymbolicLink(link2, realTarget);
             File.CreateSymbolicLink(link1, link2);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-
-        if (!File.Exists(link1))
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 
@@ -253,13 +228,9 @@ public sealed class PathUtilitiesTests : IDisposable
         {
             File.CreateSymbolicLink(symlinkPath, missingTarget);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Symlink creation requires elevated privileges on Windows
-            return;
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
             return;
         }
 

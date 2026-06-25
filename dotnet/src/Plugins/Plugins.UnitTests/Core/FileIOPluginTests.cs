@@ -164,17 +164,9 @@ public class FileIOPluginTests
             {
                 File.CreateSymbolicLink(symlinkPath, outsideFile);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                return;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return;
-            }
-
-            if (!File.Exists(symlinkPath))
-            {
+                // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
                 return;
             }
 
@@ -209,17 +201,9 @@ public class FileIOPluginTests
             {
                 File.CreateSymbolicLink(symlinkPath, outsideFile);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                return;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return;
-            }
-
-            if (!File.Exists(symlinkPath))
-            {
+                // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
                 return;
             }
 
@@ -257,12 +241,9 @@ public class FileIOPluginTests
             {
                 File.CreateSymbolicLink(symlinkPath, outsideFile);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                return;
-            }
-            catch (UnauthorizedAccessException)
-            {
+                // Skip: this environment does not permit symbolic link creation (e.g., Windows without the required privilege).
                 return;
             }
 
