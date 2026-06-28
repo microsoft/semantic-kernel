@@ -22,14 +22,14 @@ jobs:
         configuration: [Debug]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         if: ${{ github.event_name != 'pull_request' }}
         with:
           dotnet-version: 10.0.x
@@ -60,7 +60,7 @@ jobs:
           done
 
       - name: Upload dotnet test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dotnet-testresults-${{ matrix.configuration }}
           path: ./TestResults
