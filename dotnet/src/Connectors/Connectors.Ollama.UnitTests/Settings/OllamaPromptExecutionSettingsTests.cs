@@ -41,6 +41,7 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Null(ollamaExecutionSettings.Temperature);
         Assert.Null(ollamaExecutionSettings.TopP);
         Assert.Null(ollamaExecutionSettings.TopK);
+        Assert.Null(ollamaExecutionSettings.Think);
     }
 
     [Fact]
@@ -185,6 +186,45 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(testSettings.ServiceId, cloned.ServiceId);
         Assert.Equal(testSettings.ModelId, cloned.ModelId);
         Assert.Equal(testSettings.Temperature, cloned.Temperature);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ThinkPropertyRoundTripsViaSerialization(bool thinkValue)
+    {
+        // Arrange
+        string jsonSettings = $$"""{ "think": {{thinkValue.ToString().ToLower()}} }""";
+
+        // Act
+        var executionSettings = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(jsonSettings);
+
+        // Assert
+        Assert.Equal(thinkValue, executionSettings!.Think);
+    }
+
+    [Fact]
+    public void ThinkPropertyIsPreservedByClone()
+    {
+        // Arrange
+        var settings = new OllamaPromptExecutionSettings { Think = false };
+
+        // Act
+        var clone = (OllamaPromptExecutionSettings)settings.Clone();
+
+        // Assert
+        Assert.Equal(false, clone.Think);
+    }
+
+    [Fact]
+    public void ThinkPropertyThrowsWhenFrozen()
+    {
+        // Arrange
+        var settings = new OllamaPromptExecutionSettings();
+        settings.Freeze();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => settings.Think = true);
     }
 
     [Fact]
