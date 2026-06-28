@@ -426,3 +426,9 @@ def vector_store_record_collection(
         collection_name="test",
         record_type=defs[item],
     )
+
+
+@fixture(scope="function")
+def event_loop_policy():
+    """Provide a fresh event loop policy per test to avoid Windows Python 3.10 asyncio state issues."""
+    return asyncio.DefaultEventLoopPolicy()
