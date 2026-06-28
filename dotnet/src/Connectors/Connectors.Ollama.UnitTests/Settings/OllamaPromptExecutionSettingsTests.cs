@@ -194,7 +194,7 @@ public class OllamaPromptExecutionSettingsTests
     public void ThinkPropertyRoundTripsViaSerialization(bool thinkValue)
     {
         // Arrange
-        string jsonSettings = $$"""{ "think": {{thinkValue.ToString().ToLower()}} }""";
+        string jsonSettings = $$"""{ "think": {{thinkValue.ToString().ToLowerInvariant()}} }""";
 
         // Act
         var executionSettings = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(jsonSettings);

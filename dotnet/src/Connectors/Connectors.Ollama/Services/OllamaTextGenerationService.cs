@@ -149,7 +149,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
             },
             Model = selectedModel,
             Stream = true,
-            Think = settings.Think.HasValue ? (OllamaSharp.Models.Chat.ThinkValue?)new OllamaSharp.Models.Chat.ThinkValue(settings.Think) : null
+            Think = settings.Think.HasValue ? (OllamaSharp.Models.Chat.ThinkValue?)settings.Think.Value : null
         };
 
         return request;
