@@ -795,9 +795,9 @@ class PostgresCollection(
 
         if where_clauses := self._build_filter(options.filter):  # type: ignore
             query += (
-                sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
+                sql.SQL(" WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
                 if isinstance(where_clauses, list)
-                else sql.SQL("WHERE {clause}").format(clause=where_clauses)
+                else sql.SQL(" WHERE {clause}").format(clause=where_clauses)
             )
 
         query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
@@ -849,7 +849,7 @@ class PostgresCollection(
         )
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> Any:
+    def _lambda_parser(self, node: ast.AST) -> sql.Composable:
         # Comparison operations
         match node:
             case ast.Compare():
@@ -861,41 +861,49 @@ class PostgresCollection(
                         right = node.comparators[idx]
                         op = node.ops[idx]
                         values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
-                    return f"({' AND '.join(values)})"
+                    return sql.SQL("({})").format(sql.SQL(" AND ").join(values))
                 left = self._lambda_parser(node.left)
                 right = self._lambda_parser(node.comparators[0])
                 op = node.ops[0]
                 match op:
                     case ast.In():
-                        return f"{left} IN {right}"
+                        return sql.SQL("{} IN {}").format(left, right)
                     case ast.NotIn():
-                        return f"{left} NOT IN {right}"
+                        return sql.SQL("{} NOT IN {}").format(left, right)
                     case ast.Eq():
-                        return f"{left} = {right}"
+                        if isinstance(node.comparators[0], ast.Constant) and node.comparators[0].value is None:
+                            return sql.SQL("{} IS NULL").format(left)
+                        if isinstance(node.left, ast.Constant) and node.left.value is None:
+                            return sql.SQL("{} IS NULL").format(right)
+                        return sql.SQL("{} = {}").format(left, right)
                     case ast.NotEq():
-                        return f"{left} <> {right}"
+                        if isinstance(node.comparators[0], ast.Constant) and node.comparators[0].value is None:
+                            return sql.SQL("{} IS NOT NULL").format(left)
+                        if isinstance(node.left, ast.Constant) and node.left.value is None:
+                            return sql.SQL("{} IS NOT NULL").format(right)
+                        return sql.SQL("{} <> {}").format(left, right)
                     case ast.Gt():
-                        return f"{left} > {right}"
+                        return sql.SQL("{} > {}").format(left, right)
                     case ast.GtE():
-                        return f"{left} >= {right}"
+                        return sql.SQL("{} >= {}").format(left, right)
                     case ast.Lt():
-                        return f"{left} < {right}"
+                        return sql.SQL("{} < {}").format(left, right)
                     case ast.LtE():
-                        return f"{left} <= {right}"
+                        return sql.SQL("{} <= {}").format(left, right)
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
                 op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
-                    return f"({' AND '.join(values)})"
+                    return sql.SQL("({})").format(sql.SQL(" AND ").join(values))
                 if isinstance(op, ast.Or):
-                    return f"({' OR '.join(values)})"
+                    return sql.SQL("({})").format(sql.SQL(" OR ").join(values))
                 raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
             case ast.UnaryOp():
                 match node.op:
                     case ast.Not():
                         operand = self._lambda_parser(node.operand)
-                        return f"NOT ({operand})"
+                        return sql.SQL("NOT ({})").format(operand)
                     case ast.UAdd() | ast.USub() | ast.Invert():
                         raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
             case ast.Attribute():
@@ -904,25 +912,19 @@ class PostgresCollection(
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
-                return f'"{node.attr}"'
+                return sql.Identifier(node.attr)
             case ast.Name():
                 # Only allow names that are in the data model
                 if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
-                return f'"{node.id}"'
+                return sql.Identifier(node.id)
             case ast.Constant():
-                if isinstance(node.value, str):
-                    return "'" + node.value.replace("'", "''") + "'"
-                if node.value is None:
-                    return "NULL"
-                if isinstance(node.value, bool):
-                    return "TRUE" if node.value else "FALSE"
-                return str(node.value)
-            case ast.List():
+                return sql.Literal(node.value)
+            case ast.List() | ast.Tuple():
                 # For IN/NOT IN lists
-                return "(" + ", ".join(self._lambda_parser(elt) for elt in node.elts) + ")"
+                return sql.SQL("({})").format(sql.SQL(", ").join(self._lambda_parser(elt) for elt in node.elts))
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
