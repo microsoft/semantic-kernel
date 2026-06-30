@@ -42,6 +42,7 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
 |           | [`GoogleAITextEmbedding`](./google/google_ai/services/google_ai_text_embedding.py) |
 | HuggingFace | [`HuggingFaceTextCompletion`](./hugging_face/services/hf_text_completion.py) |
 |             | [`HuggingFaceTextEmbedding`](./hugging_face/services/hf_text_embedding.py) |
+| [MiniMax](./minimax/README.md) | [`MiniMaxChatCompletion`](./minimax/services/minimax_chat_completion.py) |
 | Mistral AI | [`MistralAIChatCompletion`](./mistral_ai/services/mistral_ai_chat_completion.py) |
 |            | [`MistralAITextEmbedding`](./mistral_ai/services/mistral_ai_text_embedding.py) |
 | [Nvidia](./nvidia/README.md) | [`NvidiaTextEmbedding`](./nvidia/services/nvidia_text_embedding.py) |
