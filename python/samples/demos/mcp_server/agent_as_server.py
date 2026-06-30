@@ -112,9 +112,7 @@ class MenuPlugin:
         return "$9.99"
 
 
-async def run(
-    transport: Literal["sse", "stdio"] = "stdio", port: int | None = None, host: str = "127.0.0.1"
-) -> None:
+async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None, host: str = "127.0.0.1") -> None:
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
         AzureCliCredential() as creds,
