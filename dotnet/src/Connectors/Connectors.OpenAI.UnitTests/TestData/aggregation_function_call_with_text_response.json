@@ -1,0 +1,33 @@
+{
+  "id": "response-id-1",
+  "object": "chat.completion",
+  "created": 1699896916,
+  "model": "gpt-4",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Let me check that for you. I'll look up the current information.",
+        "tool_calls": [
+          {
+            "id": "call_1",
+            "type": "function",
+            "function": {
+              "name": "MyPlugin-Function1",
+              "arguments": "{\"parameter\": \"test-value\"}"
+            }
+          }
+        ]
+      },
+      "logprobs": null,
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 100,
+    "completion_tokens": 50,
+    "total_tokens": 150
+  }
+}
+
