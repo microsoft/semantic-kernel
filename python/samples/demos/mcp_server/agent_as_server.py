@@ -5,6 +5,7 @@
 # ///
 # Copyright (c) Microsoft. All rights reserved.
 import argparse
+import ipaddress
 import logging
 from typing import Annotated, Any, Literal
 
@@ -51,6 +52,16 @@ In both cases, uv will make sure to install semantic-kernel with the mcp extra f
 """
 
 
+def is_loopback_host(host: str) -> bool:
+    """Return True if the host refers to a loopback interface (incl. IPv6 ::1)."""
+    if host == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run the Semantic Kernel MCP server.")
     parser.add_argument(
@@ -76,7 +87,10 @@ def parse_arguments():
             "to the network and should only be done on a trusted network with authentication added."
         ),
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.transport == "sse" and args.port is None:
+        parser.error("--port is required when --transport is 'sse'.")
+    return args
 
 
 # Define a simple plugin for the sample
@@ -133,12 +147,21 @@ async def run(
             # Host/Origin validation a malicious web page could use DNS rebinding to reach this
             # loopback listener from the victim's browser and invoke the exposed MCP tools.
             # The MCP spec therefore requires servers to validate Origin and bind to loopback.
-            allowed_hosts = ["localhost", "127.0.0.1", f"localhost:{port}", f"127.0.0.1:{port}"]
+            allowed_hosts = [
+                "localhost",
+                "127.0.0.1",
+                "[::1]",
+                f"localhost:{port}",
+                f"127.0.0.1:{port}",
+                f"[::1]:{port}",
+            ]
             allowed_origins = {
                 "http://localhost",
                 "http://127.0.0.1",
+                "http://[::1]",
                 f"http://localhost:{port}",
                 f"http://127.0.0.1:{port}",
+                f"http://[::1]:{port}",
             }
 
             class OriginValidationMiddleware:
@@ -150,10 +173,15 @@ async def run(
                 async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
                     if scope["type"] == "http":
                         origin = dict(scope["headers"]).get(b"origin")
-                        if origin is not None and origin.decode() not in allowed_origins:
-                            response = PlainTextResponse("Forbidden: invalid Origin header", status_code=403)
-                            await response(scope, receive, send)
-                            return
+                        if origin is not None:
+                            try:
+                                origin_value = origin.decode("ascii")
+                            except UnicodeDecodeError:
+                                origin_value = None
+                            if origin_value not in allowed_origins:
+                                response = PlainTextResponse("Forbidden: invalid Origin header", status_code=403)
+                                await response(scope, receive, send)
+                                return
                     await self.app(scope, receive, send)
 
             sse = SseServerTransport("/messages/")
@@ -177,7 +205,7 @@ async def run(
                 ],
             )
 
-            if host not in ("127.0.0.1", "localhost"):
+            if not is_loopback_host(host):
                 logger.warning(
                     "Binding the MCP SSE server to %s exposes it beyond loopback. The bundled Host/Origin "
                     "checks only allow loopback callers; for a network-reachable or credentialed deployment "
