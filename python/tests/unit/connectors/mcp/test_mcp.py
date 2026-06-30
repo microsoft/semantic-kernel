@@ -453,7 +453,7 @@ async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
 
     # The call must fail (isError=True) with the correct error message
     assert result.root.isError is True, "Calling an excluded function should return an error"
-    assert any(
-        "Unknown tool" in c.text for c in result.root.content if hasattr(c, "text")
-    ), f"Expected 'Unknown tool' error, got: {result.root.content}"
+    assert any("Unknown tool" in c.text for c in result.root.content if hasattr(c, "text")), (
+        f"Expected 'Unknown tool' error, got: {result.root.content}"
+    )
     assert not side_effect_called, "Excluded function's side effect should not have fired"
