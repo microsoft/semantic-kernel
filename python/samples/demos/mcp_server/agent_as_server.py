@@ -66,6 +66,16 @@ def parse_arguments():
         default=None,
         help="Port to use for SSE transport (required if transport is 'sse').",
     )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help=(
+            "Host/interface to bind the SSE server to (default: 127.0.0.1). "
+            "Binding to anything other than loopback (e.g. 0.0.0.0) exposes the server "
+            "to the network and should only be done on a trusted network with authentication added."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -88,7 +98,9 @@ class MenuPlugin:
         return "$9.99"
 
 
-async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -> None:
+async def run(
+    transport: Literal["sse", "stdio"] = "stdio", port: int | None = None, host: str = "127.0.0.1"
+) -> None:
     async with (
         # 1. Login to Azure and create a Azure AI Project Client
         AzureCliCredential() as creds,
@@ -110,7 +122,39 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
             import uvicorn
             from mcp.server.sse import SseServerTransport
             from starlette.applications import Starlette
+            from starlette.middleware import Middleware
+            from starlette.middleware.trustedhost import TrustedHostMiddleware
+            from starlette.responses import PlainTextResponse
             from starlette.routing import Mount, Route
+            from starlette.types import ASGIApp, Receive, Scope, Send
+
+            # A local MCP server is a security boundary, not a generic web server: it exposes
+            # tools, plugins and model providers backed by the developer's credentials. Without
+            # Host/Origin validation a malicious web page could use DNS rebinding to reach this
+            # loopback listener from the victim's browser and invoke the exposed MCP tools.
+            # The MCP spec therefore requires servers to validate Origin and bind to loopback.
+            allowed_hosts = ["localhost", "127.0.0.1", f"localhost:{port}", f"127.0.0.1:{port}"]
+            allowed_origins = {
+                "http://localhost",
+                "http://127.0.0.1",
+                f"http://localhost:{port}",
+                f"http://127.0.0.1:{port}",
+            }
+
+            class OriginValidationMiddleware:
+                """Reject requests with an untrusted Origin header (DNS-rebinding defense)."""
+
+                def __init__(self, app: ASGIApp) -> None:
+                    self.app = app
+
+                async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+                    if scope["type"] == "http":
+                        origin = dict(scope["headers"]).get(b"origin")
+                        if origin is not None and origin.decode() not in allowed_origins:
+                            response = PlainTextResponse("Forbidden: invalid Origin header", status_code=403)
+                            await response(scope, receive, send)
+                            return
+                    await self.app(scope, receive, send)
 
             sse = SseServerTransport("/messages/")
 
@@ -122,14 +166,27 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
                     await server.run(read_stream, write_stream, server.create_initialization_options())
 
             starlette_app = Starlette(
-                debug=True,
+                debug=False,
                 routes=[
                     Route("/sse", endpoint=handle_sse),
                     Mount("/messages/", app=sse.handle_post_message),
                 ],
+                middleware=[
+                    Middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts),
+                    Middleware(OriginValidationMiddleware),
+                ],
             )
+
+            if host not in ("127.0.0.1", "localhost"):
+                logger.warning(
+                    "Binding the MCP SSE server to %s exposes it beyond loopback. The bundled Host/Origin "
+                    "checks only allow loopback callers; for a network-reachable or credentialed deployment "
+                    "add proper authentication (see the mcp_with_oauth sample) before doing this.",
+                    host,
+                )
+
             nest_asyncio.apply()
-            uvicorn.run(starlette_app, host="0.0.0.0", port=port)  # nosec
+            uvicorn.run(starlette_app, host=host, port=port)  # nosec
         elif transport == "stdio":
             from mcp.server.stdio import stdio_server
 
@@ -142,4 +199,4 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
 
 if __name__ == "__main__":
     args = parse_arguments()
-    anyio.run(run, args.transport, args.port)
+    anyio.run(run, args.transport, args.port, args.host)
