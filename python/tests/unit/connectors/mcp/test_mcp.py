@@ -406,3 +406,54 @@ async def test_mcp_normalization_function(mock_session, list_tool_calls_with_sla
     assert _normalize_mcp_name("weird\\name with spaces") == "weird-name-with-spaces"
     assert _normalize_mcp_name("simple_name") == "simple_name"
     assert _normalize_mcp_name("Name-With.Dots_And-Hyphens") == "Name-With.Dots_And-Hyphens"
+
+
+async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
+    """Test that excluded functions are rejected at call time, not just hidden from listing."""
+    from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
+    side_effect_called = False
+
+    @kernel_function(name="public_echo")
+    def public_echo(message: str) -> str:
+        return f"echo: {message}"
+
+    @kernel_function(name="secret_admin")
+    def secret_admin(target: str) -> str:
+        nonlocal side_effect_called
+        side_effect_called = True
+        return f"privileged action on {target}"
+
+    kernel.add_function(plugin_name="tools", function=public_echo)
+    kernel.add_function(plugin_name="tools", function=secret_admin)
+
+    server = create_mcp_server_from_kernel(kernel, excluded_functions=["secret_admin"])
+
+    # Verify the server was created with handlers
+    assert types.ListToolsRequest in server.request_handlers
+    assert types.CallToolRequest in server.request_handlers
+
+    # Mock _get_cached_tool_definition to bypass SDK request context requirements
+    # (normally set by a real MCP session transport)
+    async def _fake_get_cached_tool_definition(tool_name):
+        return None
+
+    server._get_cached_tool_definition = _fake_get_cached_tool_definition
+
+    # Build a proper CallToolRequest as the MCP SDK would send
+    call_tool_request = types.CallToolRequest(
+        method="tools/call",
+        params=types.CallToolRequestParams(name="secret_admin", arguments={}),
+    )
+
+    # The internal handler wraps our _call_tool; invoke via the registered handler
+    handler = server.request_handlers[types.CallToolRequest]
+    result = await handler(call_tool_request)
+
+    # The call must fail (isError=True) with the correct error message
+    assert result.root.isError is True, "Calling an excluded function should return an error"
+    assert any("Unknown tool" in c.text for c in result.root.content if hasattr(c, "text")), (
+        f"Expected 'Unknown tool' error, got: {result.root.content}"
+    )
+    assert not side_effect_called, "Excluded function's side effect should not have fired"
