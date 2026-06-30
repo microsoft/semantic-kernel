@@ -279,6 +279,7 @@ class HandoffAgentActor(AgentActorBase):
                 await self.publish_message(
                     HandoffRequestMessage(agent_name=self._handoff_agent_name),
                     TopicId(self._internal_topic_type, self.id.key),
+                    cancellation_token=cts.cancellation_token,
                 )
                 self._handoff_agent_name = None
                 break
