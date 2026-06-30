@@ -306,3 +306,28 @@ async def test_create_index_manual(collection_hash, mock_ensure_collection_exist
 async def test_create_index_fail(collection_hash, mock_ensure_collection_exists):
     with raises(VectorStoreOperationException, match="Invalid index type supplied."):
         await collection_hash.ensure_collection_exists(index_definition="index_definition", fields="fields")
+
+
+async def test_create_index_respects_prefix_flag(
+    collection_hash, collection_with_prefix_hash, mock_ensure_collection_exists
+):
+    from redis.commands.search.index_definition import IndexDefinition
+
+    # Without prefix flag: IndexDefinition should NOT contain the collection prefix
+    await collection_hash.ensure_collection_exists()
+    index_def = mock_ensure_collection_exists.call_args.kwargs["definition"]
+    assert isinstance(index_def, IndexDefinition)
+    assert "test:" not in index_def.args
+
+    mock_ensure_collection_exists.reset_mock()
+
+    # With prefix flag: IndexDefinition should include ["test:"] as prefix
+    await collection_with_prefix_hash.ensure_collection_exists()
+    index_def = mock_ensure_collection_exists.call_args.kwargs["definition"]
+    assert isinstance(index_def, IndexDefinition)
+    assert "test:" in index_def.args
+
+
+async def test_delete_json_with_prefix(collection_with_prefix_json, mock_delete_json):
+    await collection_with_prefix_json._inner_delete(["id1"])
+    mock_delete_json.assert_called_once_with("test:id1")
