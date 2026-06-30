@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
@@ -27,22 +26,28 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
     /// <inheritdoc />
     public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        // Convert the provided record into a JsonNode object and try to get the key field for it.
-        // Since we already checked that the key field is a string in the constructor, and that it exists on the model,
-        // the only edge case we have to be concerned about is if the key field is null.
-        var jsonNode = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
-
-        if (!(jsonNode.TryGetPropertyValue(this._keyPropertyStorageName, out var keyField) && keyField is JsonValue jsonValue))
+        // Get the key value from the key property.
+        var keyValue = model.KeyProperty.GetValueAsObject(dataModel) switch
         {
-            throw new InvalidOperationException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
+            string s => s,
+            Guid g => g.ToString(),
+            null => throw new InvalidOperationException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}."),
+            _ => throw new UnreachableException()
+        };
+
+        // Build the JSON object selectively from annotated data and vector properties only,
+        // so that unannotated public properties are not persisted into Redis.
+        var jsonObject = new JsonObject();
+
+        foreach (var dataProperty in model.DataProperties)
+        {
+            var value = dataProperty.GetValueAsObject(dataModel);
+            jsonObject[dataProperty.StorageName] = value is null
+                ? null
+                : JsonSerializer.SerializeToNode(value, dataProperty.Type, jsonSerializerOptions);
         }
 
-        // Remove the key field from the JSON object since we don't want to store it in the redis payload.
-        var keyValue = jsonValue.ToString();
-        jsonNode.Remove(this._keyPropertyStorageName);
-
-        // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
-        // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
+        // Serialize vector properties; generated embeddings (if any) override the property value.
         for (var i = 0; i < model.VectorProperties.Count; i++)
         {
             var property = model.VectorProperties[i];
@@ -57,20 +62,32 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
                     case var t2 when t2 == typeof(float[]):
                     case var t3 when t3 == typeof(ReadOnlyMemory<double>):
                     case var t4 when t4 == typeof(double[]):
-                        // The .NET vector property is a ReadOnlyMemory<T> or T[] (not an Embedding), which means that JsonSerializer
-                        // already serialized it correctly above.
-                        // In addition, there's no generated embedding (which would be an Embedding which we'd need to handle manually).
-                        // So there's nothing for us to do.
+                        // Serialize directly - JsonSerializer handles these types correctly.
+                        var rawValue = property.GetValueAsObject(dataModel);
+                        if (rawValue is null)
+                        {
+                            jsonObject[property.StorageName] = null;
+                        }
+                        else
+                        {
+                            jsonObject[property.StorageName] = JsonSerializer.SerializeToNode(rawValue, property.Type, jsonSerializerOptions);
+                        }
                         continue;
 
                     case var t when t == typeof(Embedding<float>):
                     case var t1 when t1 == typeof(Embedding<double>):
-                        embedding = (Embedding)property.GetValueAsObject(dataModel)!;
+                        embedding = (Embedding?)property.GetValueAsObject(dataModel);
                         break;
 
                     default:
                         throw new UnreachableException();
                 }
+            }
+
+            if (embedding is null)
+            {
+                jsonObject[property.StorageName] = null;
+                continue;
             }
 
             var jsonArray = new JsonArray();
@@ -95,10 +112,10 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
                     throw new UnreachableException();
             }
 
-            jsonNode[property.StorageName] = jsonArray;
+            jsonObject[property.StorageName] = jsonArray;
         }
 
-        return (keyValue, jsonNode);
+        return (keyValue, jsonObject);
     }
 
     /// <inheritdoc />
