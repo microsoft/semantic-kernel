@@ -1062,7 +1062,7 @@ def create_mcp_server_from_kernel(
             function_name, arguments = args[0], args[1]
             if function_name not in exposed_names:
                 raise McpError(
-                    types.ErrorData(
+                    error=types.ErrorData(
                         code=types.METHOD_NOT_FOUND,
                         message=f"Unknown tool: {function_name}",
                     )
