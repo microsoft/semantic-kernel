@@ -46,10 +46,25 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 
     @model_validator(mode="after")
     def validate_tool_choice(self) -> "AnthropicChatPromptExecutionSettings":
-        """Validate tool choice. Anthropic doesn't support NONE tool choice."""
-        tool_choice = self.tool_choice
+        """Validate tool choice payload.
 
-        if tool_choice and tool_choice.get("type") == FunctionChoiceType.NONE.value:
-            raise ServiceInvalidExecutionSettingsError("Tool choice 'none' is not supported by Anthropic.")
+        Anthropic supports disabling tool calls by setting {"type": "none"},
+        which is used when auto-invocation attempts are exhausted.
+        """
+        if self.tool_choice is None:
+            return self
 
+        allowed_tool_choice_types = {
+            FunctionChoiceType.AUTO.value,
+            FunctionChoiceType.NONE.value,
+            FunctionChoiceType.REQUIRED.value,
+            "any",
+            "tool",
+        }
+        tool_choice_type = self.tool_choice.get("type")
+        if tool_choice_type not in allowed_tool_choice_types:
+            raise ServiceInvalidExecutionSettingsError(
+                f"Invalid Anthropic tool_choice type '{tool_choice_type}'. "
+                f"Expected one of: {sorted(allowed_tool_choice_types)}."
+            )
         return self
