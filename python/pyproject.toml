@@ -139,7 +139,7 @@ qdrant = [
 redis = [
     "redis[hiredis] >= 6,< 8",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl ~= 0.4"
+    "redisvl ~= 0.5"
 ]
 realtime = [
     "websockets >= 13, < 16",
