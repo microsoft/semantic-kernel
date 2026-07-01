@@ -295,6 +295,13 @@ async def test_create_index(collection_hash, mock_ensure_collection_exists):
     await collection_hash.ensure_collection_exists()
 
 
+async def test_create_index_uses_single_prefix_entry(collection_json, mock_ensure_collection_exists):
+    await collection_json.ensure_collection_exists()
+
+    definition = mock_ensure_collection_exists.await_args.kwargs["definition"]
+    assert definition.args[:5] == ["ON", "JSON", "PREFIX", 1, "test:"]
+
+
 async def test_create_index_manual(collection_hash, mock_ensure_collection_exists):
     from redis.commands.search.index_definition import IndexDefinition, IndexType
 
