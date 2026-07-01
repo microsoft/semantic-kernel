@@ -14,10 +14,10 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.3.0" />
     <PackageVersion Include="MessagePack" Version="3.1.7" /> <!-- Transitive dependency of Aspire pinned to newer version due to vulnerability in 2.5.192 -->
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.7.5" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.8.5" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.8.5" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.14.5" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.3.8" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.6.1" />
     <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.19" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.5.6" />
