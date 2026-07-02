@@ -133,6 +133,53 @@ public sealed class HttpPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.DeleteAsync(invalidUri));
     }
 
+    [Fact]
+    public async Task ItDoesNotFollowRedirectsAsync()
+    {
+        // Arrange - start a local server that always returns a 302 redirect
+        using var listener = new System.Net.HttpListener();
+        var port = new Random().Next(49152, 65535);
+        listener.Prefixes.Add($"http://localhost:{port}/");
+        listener.Start();
+        bool redirectTargetContacted = false;
+
+        _ = Task.Run(async () =>
+        {
+            while (listener.IsListening)
+            {
+                try
+                {
+                    var ctx = await listener.GetContextAsync();
+                    if (ctx.Request.Url!.AbsolutePath == "/start")
+                    {
+                        ctx.Response.StatusCode = 302;
+                        ctx.Response.RedirectLocation = $"http://localhost:{port}/secret";
+                        ctx.Response.Close();
+                    }
+                    else if (ctx.Request.Url.AbsolutePath == "/secret")
+                    {
+                        redirectTargetContacted = true;
+                        ctx.Response.StatusCode = 200;
+                        ctx.Response.Close();
+                    }
+                }
+                catch (ObjectDisposedException) { break; }
+                catch (System.Net.HttpListenerException) { break; }
+            }
+        });
+
+        var plugin = new HttpPlugin()
+        {
+            AllowedDomains = ["localhost"]
+        };
+
+        // Act & Assert - the plugin should throw because 302 is a non-success status
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugin.GetAsync($"http://localhost:{port}/start"));
+        Assert.False(redirectTargetContacted, "The redirect target should not have been contacted.");
+
+        listener.Stop();
+    }
+
     private Mock<HttpMessageHandler> CreateMock()
     {
         var mockHandler = new Mock<HttpMessageHandler>();
