@@ -2,146 +2,172 @@
 
 """DakeraMemoryStore — Semantic Kernel memory connector for Dakera.
 
-Dakera is a self-hosted REST memory server (https://dakera.ai).
-Run it with:
+`Dakera <https://dakera.ai>`_ is a self-hosted memory server that adds
+persistent, decay-weighted vector recall across agent sessions: memories are
+importance-scored and decay over time, so stale context stops competing with
+fresh, relevant facts.
 
-    docker run -p 3300:3300 -e DAKERA_API_KEY=demo ghcr.io/dakera-ai/dakera:latest
+Run it locally with the public ``dakera-deploy`` docker-compose stack (the
+server needs the object store the compose file provisions, so a bare
+``docker run`` is not sufficient)::
 
-The SK ``collection_name`` concept maps to Dakera's ``agent_id`` namespace.
-Each collection is an independent agent memory silo inside the same Dakera
-instance, so you can have as many logical collections as you like without
-needing separate deployments.
+    git clone https://github.com/dakera-ai/dakera-deploy
+    cd dakera-deploy
+    docker compose up -d          # serves the REST API on http://localhost:3000
 
-Note: the legacy ``MemoryStoreBase`` API is deprecated upstream (it will be
-removed in a future SK release).  New code should prefer the VectorStore API.
-This connector targets the legacy API for maximum compatibility with existing
-pipelines that still use ``SemanticTextMemory``.
+Install the connector extra, which pulls the async Dakera SDK::
+
+    pip install semantic-kernel[dakera]
+
+The SK ``collection_name`` concept maps 1-to-1 to Dakera's ``agent_id``
+namespace: each collection is a fully isolated memory silo inside the same
+Dakera instance, so you can have as many logical collections as you like
+without deploying more than once.
+
+**Two retrieval paths**
+
+``MemoryStoreBase.get_nearest_matches`` only receives a query *embedding*
+(never the original query text), so this connector persists the SK-side
+embedding alongside each memory and ranks candidates client-side with cosine
+similarity. That keeps drop-in compatibility with ``SemanticTextMemory`` and
+ranks in the caller's own embedding space.
+
+For the richer, Dakera-native experience use :meth:`DakeraMemoryStore.search_text`,
+which sends the raw query text to Dakera's ``recall`` endpoint and benefits
+from server-side decay- and importance-weighted ranking.
+
+Note: the legacy ``MemoryStoreBase`` API is deprecated upstream and will be
+removed in a future SK release. New code should prefer the ``VectorStore`` API.
+This connector targets the legacy API for compatibility with existing pipelines
+that still use ``SemanticTextMemory``.
 """
 
-import json
 import logging
 import sys
-from copy import deepcopy
-from typing import Any
+from datetime import datetime
+from typing import Any, Final
 
-import aiohttp
+from dakera import AsyncDakeraClient
+from dakera.exceptions import DakeraError, NotFoundError
+from dakera.models import BatchForgetRequest, BatchMemoryFilter, BatchRecallRequest
 from numpy import array, linalg, ndarray
 
-if sys.version_info >= (3, 12):
-    from typing import override
-else:
-    from typing_extensions import override
+from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
 else:
     from typing_extensions import deprecated
 
-from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Metadata keys — SK record fields are round-tripped through Dakera's metadata
+# blob so a stored record can be reconstructed losslessly on read.
 # ---------------------------------------------------------------------------
 
-_DAKERA_ID_META_KEY = "_sk_id"
-_DAKERA_DESC_META_KEY = "_sk_description"
-_DAKERA_IS_REF_META_KEY = "_sk_is_reference"
-_DAKERA_EXT_SRC_META_KEY = "_sk_external_source_name"
-_DAKERA_ADD_META_KEY = "_sk_additional_metadata"
-_DAKERA_TIMESTAMP_META_KEY = "_sk_timestamp"
+_SK_ID: Final[str] = "_sk_id"
+_SK_DESCRIPTION: Final[str] = "_sk_description"
+_SK_IS_REFERENCE: Final[str] = "_sk_is_reference"
+_SK_EXTERNAL_SOURCE: Final[str] = "_sk_external_source_name"
+_SK_ADDITIONAL_METADATA: Final[str] = "_sk_additional_metadata"
+_SK_TIMESTAMP: Final[str] = "_sk_timestamp"
+_SK_EMBEDDING: Final[str] = "_sk_embedding"
+
+# Tag applied to every memory this connector writes. It doubles as the
+# collection marker (we also tag with the collection name) so a whole
+# collection can be listed or purged with a single tag filter.
+_SK_TAG: Final[str] = "sk"
+
+# How many memories to page in when listing/scanning a collection. Dakera's
+# batch-recall endpoint is filter-based (no query embedding required); this
+# bounds the working set for client-side cosine ranking and id resolution.
+_DEFAULT_FETCH_LIMIT: Final[int] = 1000
+
+# Backwards-compatible alias kept for callers/tests that imported the old name.
+_DAKERA_ID_META_KEY = _SK_ID
 
 
-def _record_to_payload(collection_name: str, record: MemoryRecord) -> dict[str, Any]:
-    """Convert a MemoryRecord into a Dakera ``/v1/memory/store`` payload."""
-    # Dakera content field receives the primary text.  We embed all SK
-    # metadata fields as a JSON blob in the Dakera ``metadata`` dict so
-    # they survive a round-trip through the API.
-    metadata: dict[str, Any] = {
-        _DAKERA_ID_META_KEY: record._id,
-        _DAKERA_DESC_META_KEY: record._description or "",
-        _DAKERA_IS_REF_META_KEY: record._is_reference,
-        _DAKERA_EXT_SRC_META_KEY: record._external_source_name or "",
-        _DAKERA_ADD_META_KEY: record._additional_metadata or "",
-        _DAKERA_TIMESTAMP_META_KEY: str(record._timestamp) if record._timestamp else "",
-    }
-
-    # Build a human-readable content string that contains both the text and
-    # the description, because Dakera's semantic search operates on ``content``.
-    parts = []
-    if record._text:
-        parts.append(record._text)
-    if record._description:
-        parts.append(record._description)
-    content = " | ".join(parts) if parts else record._id
-
-    return {
-        "content": content,
-        "agent_id": collection_name,
-        # Use the SK record id as the Dakera session_id so that
-        # ``get()``/``remove()`` can address individual records.
-        # This is a lightweight mapping; a production connector might
-        # use a dedicated index field instead.
-        "metadata": metadata,
-        # importance range 0–1; default to middle if not set
-        "importance": 0.5,
-        "tags": [collection_name, "sk"],
-    }
+# ---------------------------------------------------------------------------
+# Conversion helpers
+# ---------------------------------------------------------------------------
 
 
-def _payload_to_record(item: dict[str, Any], with_embedding: bool = False) -> MemoryRecord:
-    """Convert a Dakera memory item dict back into a MemoryRecord.
+def _record_to_metadata(record: MemoryRecord) -> dict[str, Any]:
+    """Serialize the SK-specific fields of a MemoryRecord into a metadata dict.
 
-    ``item`` is the ``memory`` object returned by Dakera's API, shaped as:
-    ``{id, content, agent_id, metadata, created_at, ...}``
+    The embedding is stored too (as a plain float list) so that
+    ``get_nearest_matches`` can rank client-side and ``with_embedding=True``
+    reads can hydrate the original vector.
     """
-    meta: dict[str, Any] = item.get("metadata") or {}
+    metadata: dict[str, Any] = {
+        _SK_ID: record._id,
+        _SK_DESCRIPTION: record._description or "",
+        _SK_IS_REFERENCE: bool(record._is_reference),
+        _SK_EXTERNAL_SOURCE: record._external_source_name or "",
+        _SK_ADDITIONAL_METADATA: record._additional_metadata or "",
+        _SK_TIMESTAMP: record._timestamp.isoformat() if record._timestamp else "",
+    }
+    embedding = record._embedding
+    if embedding is not None and getattr(embedding, "size", 0):
+        metadata[_SK_EMBEDDING] = array(embedding, dtype=float).tolist()
+    return metadata
 
-    sk_id: str = meta.get(_DAKERA_ID_META_KEY) or item.get("id", "")
-    description: str | None = meta.get(_DAKERA_DESC_META_KEY) or None
-    is_reference: bool = bool(meta.get(_DAKERA_IS_REF_META_KEY, False))
-    external_source_name: str | None = meta.get(_DAKERA_EXT_SRC_META_KEY) or None
-    additional_metadata: str | None = meta.get(_DAKERA_ADD_META_KEY) or None
-    timestamp_str: str = meta.get(_DAKERA_TIMESTAMP_META_KEY, "")
 
-    from datetime import datetime
+def _to_record(
+    dakera_id: str,
+    content: str,
+    metadata: dict[str, Any] | None,
+    with_embedding: bool,
+) -> MemoryRecord:
+    """Reconstruct a MemoryRecord from a Dakera memory (id + content + metadata).
 
-    timestamp = None
+    ``content`` maps straight back to ``MemoryRecord.text`` — the connector
+    never packs the description into the content, so the round-trip is exact.
+    """
+    meta: dict[str, Any] = metadata or {}
+
+    embedding: ndarray = array([])
+    if with_embedding:
+        raw = meta.get(_SK_EMBEDDING)
+        if raw:
+            embedding = array(raw, dtype=float)
+
+    timestamp: datetime | None = None
+    timestamp_str: str = meta.get(_SK_TIMESTAMP) or ""
     if timestamp_str:
         try:
             timestamp = datetime.fromisoformat(timestamp_str)
         except ValueError:
-            pass
-
-    # Dakera does not persist raw float vectors — it handles embedding
-    # internally.  We return a zero-length ndarray when embeddings are
-    # not available (which is normal for Dakera-backed stores).
-    embedding: ndarray = array([]) if not with_embedding else array([])
+            logger.debug("DakeraMemoryStore: could not parse timestamp %r", timestamp_str)
 
     return MemoryRecord(
-        is_reference=is_reference,
-        external_source_name=external_source_name,
-        id=sk_id,
-        description=description,
-        text=item.get("content", ""),
-        additional_metadata=additional_metadata,
+        is_reference=bool(meta.get(_SK_IS_REFERENCE)),
+        external_source_name=meta.get(_SK_EXTERNAL_SOURCE) or None,
+        id=meta.get(_SK_ID) or dakera_id,
+        description=meta.get(_SK_DESCRIPTION) or None,
+        text=content,
+        additional_metadata=meta.get(_SK_ADDITIONAL_METADATA) or None,
         embedding=embedding,
-        key=item.get("id"),  # Dakera UUID as the internal key
+        key=dakera_id,  # Dakera's server-assigned UUID
         timestamp=timestamp,
     )
 
 
 def _cosine_similarity(query: ndarray, vectors: ndarray) -> ndarray:
-    """Compute cosine similarity between a query vector and a matrix of vectors."""
+    """Cosine similarity between a query vector and a matrix of row vectors.
+
+    Rows whose norm is zero (or that mismatch the query dimensionality) score
+    ``-1.0`` so they sort last rather than raising.
+    """
     query_norm = linalg.norm(query)
     col_norms = linalg.norm(vectors, axis=1)
-    valid = (query_norm != 0) & (col_norms != 0)
     scores = array([-1.0] * vectors.shape[0])
+    valid = (query_norm != 0) & (col_norms != 0)
     if valid.any():
-        scores[valid] = query.dot(vectors[valid].T) / (query_norm * col_norms[valid])
+        scores[valid] = vectors[valid].dot(query) / (col_norms[valid] * query_norm)
     return scores
 
 
@@ -152,66 +178,53 @@ def _cosine_similarity(query: ndarray, vectors: ndarray) -> ndarray:
 
 @deprecated(
     "DakeraMemoryStore uses the deprecated MemoryStoreBase API which will be "
-    "removed in a future SK version.  Consider migrating to the VectorStore API."
+    "removed in a future SK version. Consider migrating to the VectorStore API."
 )
 class DakeraMemoryStore(MemoryStoreBase):
-    """Semantic Kernel memory store backed by Dakera.
+    """Semantic Kernel memory store backed by a Dakera server.
 
-    Dakera is a self-hosted, decay-weighted vector memory server.  This
-    connector bridges SK's legacy ``MemoryStoreBase`` contract to Dakera's
-    REST API so that any pipeline built on ``SemanticTextMemory`` can use
-    Dakera as its backing store with zero code changes outside the
-    constructor call.
+    This connector bridges SK's legacy ``MemoryStoreBase`` contract to Dakera's
+    REST API (via the official async ``dakera`` SDK) so that any pipeline built
+    on ``SemanticTextMemory`` can use Dakera as its backing store with no code
+    changes outside the constructor.
 
     **Collection → agent_id mapping**
 
-    SK's concept of a *collection* maps 1-to-1 to Dakera's ``agent_id``.
-    Each ``agent_id`` is a fully isolated memory namespace inside the
-    Dakera instance.  ``create_collection`` is a no-op (Dakera lazily
-    creates namespaces on first write); ``delete_collection`` calls
-    ``POST /v1/memory/forget`` with no specific memory IDs, which wipes
-    the entire agent namespace.
-
-    **Embedding / similarity**
-
-    Dakera manages its own HNSW embedding index server-side.
-    ``get_nearest_matches`` therefore delegates directly to Dakera's
-    ``POST /v1/memory/search`` endpoint and uses the returned relevance
-    scores.  The ``embedding`` ndarray parameter is accepted for API
-    compatibility but is **not** sent to Dakera (Dakera re-embeds the
-    query text internally).  If the caller also needs to use the raw
-    embedding for downstream cosine ranking (e.g. to re-rank Dakera
-    results), this can be layered on top, but by default the Dakera
-    relevance scores are used directly.
-
-    Args:
-        url: Base URL of the Dakera server, e.g. ``http://localhost:3300``.
-        api_key: Optional bearer token.  If ``None`` or empty, the
-            ``Authorization`` header is omitted (useful when Dakera is
-            deployed without auth).
-        agent_id: Default agent namespace used when no collection name is
-            passed explicitly.  In SK's usage pattern the collection name
-            always overrides this.
-        session: Optional existing ``aiohttp.ClientSession``.  If ``None``,
-            a new session is created and owned by this instance.
+    An SK *collection* maps 1-to-1 to a Dakera ``agent_id`` — a fully isolated
+    memory namespace. ``create_collection`` is a no-op registration (Dakera
+    creates namespaces lazily on first write); ``delete_collection`` purges the
+    namespace with a single tag-filtered batch forget.
     """
 
     def __init__(
         self,
-        url: str = "http://localhost:3300",
+        url: str = "http://localhost:3000",
         api_key: str | None = None,
-        agent_id: str = "sk-default",
-        session: aiohttp.ClientSession | None = None,
+        *,
+        client: AsyncDakeraClient | None = None,
+        fetch_limit: int = _DEFAULT_FETCH_LIMIT,
     ) -> None:
-        self._url = url.rstrip("/")
-        self._api_key = api_key or ""
-        self._default_agent_id = agent_id
-        self._owns_session = session is None
-        self._session = session  # may be None until first use
+        """Initialize a new instance of the DakeraMemoryStore class.
 
-        # Track which collections (agent_ids) we have seen so we can
-        # answer get_collections() and does_collection_exist() without a
-        # dedicated Dakera list-agents endpoint.
+        Args:
+            url: Base URL of the Dakera server, e.g. ``http://localhost:3000``.
+            api_key: Optional API key (looks like ``dk-...``). When ``None`` or
+                empty, requests are sent without an ``Authorization`` header,
+                which is fine for a Dakera instance deployed without auth.
+            client: An existing :class:`~dakera.AsyncDakeraClient` to reuse. When
+                provided, the store does not own its lifecycle and will not close
+                it. When omitted, a client is created and owned by this instance.
+            fetch_limit: Maximum number of memories paged in when listing or
+                scanning a collection (client-side cosine ranking and id
+                resolution). Defaults to ``1000``.
+        """
+        self._client: AsyncDakeraClient = client or AsyncDakeraClient(base_url=url, api_key=api_key or None)
+        self._owns_client: bool = client is None
+        self._fetch_limit: int = fetch_limit
+
+        # Dakera has no list-all-agents endpoint, so we track collections that
+        # have been created or written to during this store's lifetime to
+        # answer get_collections()/does_collection_exist() without a round-trip.
         self._known_collections: set[str] = set()
 
     # ------------------------------------------------------------------
@@ -219,194 +232,144 @@ class DakeraMemoryStore(MemoryStoreBase):
     # ------------------------------------------------------------------
 
     async def __aenter__(self) -> "DakeraMemoryStore":
-        if self._session is None:
-            self._session = self._make_session()
+        """Enter the async context, returning this store."""
         return self
 
     async def __aexit__(self, *args: Any) -> None:
+        """Exit the async context, closing an owned client."""
         await self.close()
 
     async def close(self) -> None:
-        """Close the underlying aiohttp session (only if we created it)."""
-        if self._owns_session and self._session is not None:
-            await self._session.close()
-            self._session = None
-
-    def _make_session(self) -> aiohttp.ClientSession:
-        headers: dict[str, str] = {"Content-Type": "application/json", "Accept": "application/json"}
-        if self._api_key:
-            headers["Authorization"] = f"Bearer {self._api_key}"
-        return aiohttp.ClientSession(headers=headers)
-
-    def _get_session(self) -> aiohttp.ClientSession:
-        """Return (and lazily create) the HTTP session."""
-        if self._session is None:
-            self._session = self._make_session()
-        return self._session
-
-    async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
-        """Execute a POST request and return the parsed JSON body.
-
-        Raises:
-            ServiceResponseException: if the server returns a non-2xx status.
-        """
-        session = self._get_session()
-        url = f"{self._url}{path}"
-        async with session.post(url, data=json.dumps(body)) as resp:
-            raw = await resp.text()
-            if resp.status >= 400:
-                raise ServiceResponseException(
-                    f"Dakera API error {resp.status} on POST {path}: {raw[:500]}"
-                )
-            try:
-                return json.loads(raw)
-            except json.JSONDecodeError as exc:
-                raise ServiceResponseException(
-                    f"Dakera returned non-JSON response on POST {path}: {raw[:200]}"
-                ) from exc
+        """Close the underlying Dakera client (only if this store created it)."""
+        if self._owns_client:
+            await self._client.close()
 
     # ------------------------------------------------------------------
     # Collection management
     # ------------------------------------------------------------------
 
-    @override
     async def create_collection(self, collection_name: str) -> None:
         """Register a collection name locally.
 
-        Dakera has no explicit collection-creation endpoint; namespaces
-        are created lazily on the first write.  We record the name so
-        ``get_collections`` and ``does_collection_exist`` can answer
-        without a round-trip.
+        Dakera creates namespaces lazily on the first write, so this only
+        records the name for ``get_collections``/``does_collection_exist``.
         """
         self._known_collections.add(collection_name)
         logger.debug("DakeraMemoryStore: registered collection '%s'", collection_name)
 
-    @override
     async def get_collections(self) -> list[str]:
-        """Return all collection names that have been used in this session.
+        """Return the collection names seen during this store's lifetime.
 
-        Note: Dakera does not currently expose a list-all-agents endpoint.
-        This method returns the in-process set of collections that were
-        created or written to since the store was instantiated.  For a
-        persistent view across restarts, callers should call
+        Dakera does not expose a list-all-agents endpoint, so this returns the
+        in-process set of collections created or written to since the store was
+        instantiated. For a persistent view across restarts, call
         ``create_collection`` for each known collection at startup.
         """
         return list(self._known_collections)
 
-    @override
     async def delete_collection(self, collection_name: str) -> None:
-        """Delete all memories in the Dakera agent namespace for this collection.
+        """Delete every memory this connector stored in the collection.
 
-        Calls ``POST /v1/memory/forget`` with only the ``agent_id`` set
-        (no specific memory IDs), which instructs Dakera to wipe all
-        memories for that agent.
+        Issues a single tag-filtered batch forget (``tags=[collection_name]``),
+        which satisfies Dakera's safety guard that a bulk delete must carry at
+        least one filter predicate.
         """
+        request = BatchForgetRequest(
+            agent_id=collection_name,
+            filter=BatchMemoryFilter(tags=[collection_name]),
+        )
         try:
-            await self._post("/v1/memory/forget", {"agent_id": collection_name})
-        except ServiceResponseException as exc:
-            # A 404 means there is nothing to delete — treat as success.
-            if "404" in str(exc):
-                pass
-            else:
-                raise
+            await self._client.batch_forget(request)
+        except NotFoundError:
+            # Nothing to delete — treat as success.
+            pass
+        except DakeraError as exc:
+            raise ServiceResponseException(f"Dakera batch_forget failed for '{collection_name}': {exc}") from exc
         self._known_collections.discard(collection_name)
         logger.debug("DakeraMemoryStore: deleted collection '%s'", collection_name)
 
-    @override
     async def does_collection_exist(self, collection_name: str) -> bool:
-        """Return True if we have previously seen this collection in the current session."""
+        """Return True if this collection has been seen during the store's lifetime."""
         return collection_name in self._known_collections
 
     # ------------------------------------------------------------------
     # Write operations
     # ------------------------------------------------------------------
 
-    @override
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Store a single MemoryRecord in Dakera.
 
         Returns:
-            str: The Dakera-assigned UUID for the stored memory.
+            str: The SK record id — the key that addresses this record in
+            subsequent ``get``/``remove`` calls. (Dakera's own server-assigned
+            UUID is retained on ``record._key`` for internal use.)
         """
-        payload = _record_to_payload(collection_name, record)
-        response = await self._post("/v1/memory/store", payload)
-
-        memory_obj = response.get("memory") or {}
-        dakera_id: str = memory_obj.get("id", "")
-        if not dakera_id:
-            raise ServiceResponseException(
-                f"Dakera did not return a memory id after store. Response: {response}"
+        content = record._text or record._description or record._id
+        try:
+            memory = await self._client.store_memory(
+                agent_id=collection_name,
+                content=content,
+                metadata=_record_to_metadata(record),
+                tags=[collection_name, _SK_TAG],
             )
+        except DakeraError as exc:
+            raise ServiceResponseException(f"Dakera store_memory failed: {exc}") from exc
 
-        # Keep the SK-level key pointing to the original record id.
-        record._key = record._id
+        dakera_id = memory.get("id") if isinstance(memory, dict) else None
+        if not dakera_id:
+            raise ServiceResponseException(f"Dakera did not return a memory id after store. Response: {memory!r}")
+
+        record._key = dakera_id
         self._known_collections.add(collection_name)
-        return record._key
+        return record._id
 
-    @override
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Store multiple MemoryRecords in Dakera.
-
-        Dakera has no batch-store endpoint, so we issue one POST per record.
-        For large batches consider chunking with asyncio.gather.
-        """
+        """Store multiple MemoryRecords, returning their SK ids in order."""
         import asyncio
 
-        tasks = [self.upsert(collection_name, record) for record in records]
-        return list(await asyncio.gather(*tasks))
+        return list(await asyncio.gather(*(self.upsert(collection_name, r) for r in records)))
 
     # ------------------------------------------------------------------
     # Read operations
     # ------------------------------------------------------------------
 
-    @override
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord | None:
         """Retrieve a single MemoryRecord by its SK id.
 
-        Dakera's ``/v1/memory/search`` is used with the ``key`` as the
-        query; we then match on the stored ``_sk_id`` metadata field.
-        This is an approximation: Dakera returns semantically similar
-        results, so we filter the list to find the exact match.
+        Resolves the SK id against the collection's stored ``_sk_id`` metadata
+        (Dakera addresses records by its own UUID, not the SK id).
 
         Returns:
-            MemoryRecord if found, None otherwise.
+            The MemoryRecord if found, otherwise ``None``.
         """
-        results = await self._search_by_query(
-            collection_name=collection_name,
-            query=key,
-            top_k=20,
-        )
-        for memory_obj, _score in results:
-            meta = memory_obj.get("metadata") or {}
-            if meta.get(_DAKERA_ID_META_KEY) == key:
-                return _payload_to_record(memory_obj, with_embedding)
+        for memory in await self._list_collection(collection_name):
+            meta = memory.metadata or {}
+            if meta.get(_SK_ID) == key:
+                return _to_record(memory.id, memory.content, meta, with_embedding)
         return None
 
-    @override
     async def get_batch(
         self,
         collection_name: str,
         keys: list[str],
         with_embeddings: bool = False,
     ) -> list[MemoryRecord]:
-        """Retrieve multiple MemoryRecords by their SK ids."""
-        import asyncio
-
-        tasks = [self.get(collection_name, key, with_embeddings) for key in keys]
-        results = await asyncio.gather(*tasks)
-        return [r for r in results if r is not None]
+        """Retrieve multiple MemoryRecords by their SK ids (single collection scan)."""
+        wanted = set(keys)
+        results: list[MemoryRecord] = []
+        for memory in await self._list_collection(collection_name):
+            meta = memory.metadata or {}
+            sk_id = meta.get(_SK_ID)
+            if sk_id in wanted:
+                results.append(_to_record(memory.id, memory.content, meta, with_embeddings))
+        return results
 
     # ------------------------------------------------------------------
     # Delete operations
     # ------------------------------------------------------------------
 
-    @override
     async def remove(self, collection_name: str, key: str) -> None:
-        """Remove a single MemoryRecord by its SK id.
-
-        We first search for the Dakera UUID that corresponds to this SK id,
-        then call ``POST /v1/memory/forget`` with that specific UUID.
-        """
+        """Remove a single MemoryRecord by its SK id (no-op if not found)."""
         dakera_id = await self._resolve_dakera_id(collection_name, key)
         if dakera_id is None:
             logger.warning(
@@ -415,33 +378,26 @@ class DakeraMemoryStore(MemoryStoreBase):
                 collection_name,
             )
             return
-        await self._post(
-            "/v1/memory/forget",
-            {"agent_id": collection_name, "memory_ids": [dakera_id]},
-        )
+        await self._forget(collection_name, dakera_id)
 
-    @override
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
-        """Remove multiple MemoryRecords by their SK ids."""
+        """Remove multiple MemoryRecords by their SK ids (single collection scan)."""
         import asyncio
 
-        tasks = [self._resolve_dakera_id(collection_name, key) for key in keys]
-        dakera_ids_or_none = await asyncio.gather(*tasks)
-        dakera_ids = [d for d in dakera_ids_or_none if d is not None]
-
+        wanted = set(keys)
+        dakera_ids = [
+            memory.id
+            for memory in await self._list_collection(collection_name)
+            if (memory.metadata or {}).get(_SK_ID) in wanted
+        ]
         if not dakera_ids:
             return
-
-        await self._post(
-            "/v1/memory/forget",
-            {"agent_id": collection_name, "memory_ids": dakera_ids},
-        )
+        await asyncio.gather(*(self._forget(collection_name, did) for did in dakera_ids))
 
     # ------------------------------------------------------------------
     # Similarity search
     # ------------------------------------------------------------------
 
-    @override
     async def get_nearest_matches(
         self,
         collection_name: str,
@@ -450,46 +406,54 @@ class DakeraMemoryStore(MemoryStoreBase):
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
     ) -> list[tuple[MemoryRecord, float]]:
-        """Find the nearest memories using Dakera's server-side vector search.
+        """Find the nearest memories to ``embedding`` by cosine similarity.
 
-        The ``embedding`` ndarray is accepted for interface compatibility but
-        is not forwarded to Dakera — Dakera re-embeds the query text on the
-        server side.  The query text is reconstructed from the description
-        metadata if available; otherwise a generic search is performed.
-
-        Note: because the embedding cannot be round-tripped through Dakera's
-        API, ``with_embeddings=True`` will return records with empty
-        embeddings (``array([])``).  If you need raw embeddings, maintain a
-        separate embedding store alongside Dakera.
+        ``MemoryStoreBase`` passes only the query embedding (not the query
+        text), so results are ranked client-side against the embeddings this
+        connector persisted at write time — i.e. in the caller's own embedding
+        space. For Dakera's native, server-side decay-weighted ranking over a
+        text query, use :meth:`search_text` instead.
 
         Args:
-            collection_name: The Dakera agent_id namespace to search in.
-            embedding: The query embedding (used for interface compat only).
+            collection_name: The Dakera ``agent_id`` namespace to search.
+            embedding: The query embedding.
             limit: Maximum number of matches to return.
-            min_relevance_score: Minimum relevance score threshold.
-            with_embeddings: If True, attempt to include embeddings (will be empty arrays).
+            min_relevance_score: Minimum cosine score (inclusive) to keep.
+            with_embeddings: When True, hydrate each result's stored embedding.
 
         Returns:
-            List of (MemoryRecord, score) tuples sorted by score descending.
+            ``(MemoryRecord, score)`` tuples sorted by score descending.
         """
-        raw_results = await self._search_by_query(
-            collection_name=collection_name,
-            query=collection_name,  # fallback: search by collection name itself
-            top_k=limit * 2,        # over-fetch to allow filtering
+        memories = await self._list_collection(collection_name)
+
+        scored: list[tuple[Any, list[float]]] = []
+        for memory in memories:
+            raw = (memory.metadata or {}).get(_SK_EMBEDDING)
+            if raw:
+                scored.append((memory, raw))
+        if not scored:
+            return []
+
+        query = array(embedding, dtype=float)
+        matrix = array([vec for _memory, vec in scored], dtype=float)
+        similarities = _cosine_similarity(query, matrix)
+
+        ranked = sorted(
+            zip((memory for memory, _vec in scored), similarities),
+            key=lambda pair: pair[1],
+            reverse=True,
         )
 
         output: list[tuple[MemoryRecord, float]] = []
-        for memory_obj, score in raw_results:
+        for memory, score in ranked:
+            score = float(score)
             if score < min_relevance_score:
                 continue
-            record = _payload_to_record(memory_obj, with_embeddings)
-            output.append((record, score))
+            output.append((_to_record(memory.id, memory.content, memory.metadata, with_embeddings), score))
             if len(output) >= limit:
                 break
-
         return output
 
-    @override
     async def get_nearest_match(
         self,
         collection_name: str,
@@ -497,11 +461,7 @@ class DakeraMemoryStore(MemoryStoreBase):
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
     ) -> tuple[MemoryRecord, float] | None:
-        """Find the single nearest memory.
-
-        Returns:
-            A (MemoryRecord, score) tuple or None if no match meets the threshold.
-        """
+        """Find the single nearest memory, or ``None`` if none meet the threshold."""
         results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
@@ -512,58 +472,7 @@ class DakeraMemoryStore(MemoryStoreBase):
         return results[0] if results else None
 
     # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
-    async def _search_by_query(
-        self,
-        collection_name: str,
-        query: str,
-        top_k: int = 10,
-    ) -> list[tuple[dict[str, Any], float]]:
-        """Execute ``POST /v1/memory/search`` and return (memory_obj, score) pairs."""
-        body: dict[str, Any] = {
-            "agent_id": collection_name,
-            "query": query,
-            "top_k": top_k,
-        }
-        try:
-            response = await self._post("/v1/memory/search", body)
-        except ServiceResponseException as exc:
-            if "404" in str(exc):
-                return []
-            raise
-
-        items = response.get("memories") or []
-        results: list[tuple[dict[str, Any], float]] = []
-        for item in items:
-            memory_obj = item.get("memory") or item
-            score = float(item.get("score", 0.0))
-            results.append((memory_obj, score))
-        return results
-
-    async def _resolve_dakera_id(
-        self,
-        collection_name: str,
-        sk_key: str,
-    ) -> str | None:
-        """Look up the Dakera internal UUID for a given SK record id.
-
-        Returns the Dakera UUID string, or None if not found.
-        """
-        candidates = await self._search_by_query(
-            collection_name=collection_name,
-            query=sk_key,
-            top_k=20,
-        )
-        for memory_obj, _score in candidates:
-            meta = memory_obj.get("metadata") or {}
-            if meta.get(_DAKERA_ID_META_KEY) == sk_key:
-                return memory_obj.get("id")
-        return None
-
-    # ------------------------------------------------------------------
-    # Convenience search method (extends base contract)
+    # Dakera-native text search (extends the base contract)
     # ------------------------------------------------------------------
 
     async def search_text(
@@ -573,27 +482,73 @@ class DakeraMemoryStore(MemoryStoreBase):
         top_k: int = 5,
         min_relevance_score: float = 0.0,
     ) -> list[tuple[MemoryRecord, float]]:
-        """Search Dakera using a raw text query (preferred over embedding-based search).
+        """Search Dakera with a raw text query (recommended for Dakera-native apps).
 
-        This method bypasses the SK embedding pipeline and sends the query
-        directly to Dakera, which handles embedding internally.  Use this
-        when you want the most natural integration with Dakera's own ranking.
+        Unlike :meth:`get_nearest_matches`, this sends the query text straight
+        to Dakera's ``recall`` endpoint, so ranking uses Dakera's server-side
+        decay- and importance-weighted scoring rather than a client-side
+        cosine over SK embeddings.
 
         Args:
-            collection_name: The agent namespace to search.
+            collection_name: The Dakera ``agent_id`` namespace to search.
             query: Plain-text search query.
             top_k: Number of results to return.
-            min_relevance_score: Minimum relevance threshold.
+            min_relevance_score: Minimum relevance score (inclusive) to keep.
 
         Returns:
-            List of (MemoryRecord, score) tuples sorted by score descending.
+            ``(MemoryRecord, score)`` tuples sorted by score descending.
         """
-        raw = await self._search_by_query(collection_name, query, top_k * 2)
+        try:
+            response = await self._client.recall(agent_id=collection_name, query=query, top_k=top_k)
+        except NotFoundError:
+            return []
+        except DakeraError as exc:
+            raise ServiceResponseException(f"Dakera recall failed for '{collection_name}': {exc}") from exc
+
         results: list[tuple[MemoryRecord, float]] = []
-        for memory_obj, score in raw:
+        for memory in response.memories:
+            score = float(memory.score)
             if score < min_relevance_score:
                 continue
-            results.append((_payload_to_record(memory_obj, False), score))
+            results.append((_to_record(memory.id, memory.content, memory.metadata, False), score))
             if len(results) >= top_k:
                 break
         return results
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    async def _list_collection(self, collection_name: str) -> list[Any]:
+        """List the memories this connector stored in a collection.
+
+        Uses Dakera's filter-based batch recall (``tags=[collection_name]``),
+        which needs no query embedding and returns deterministic results.
+        """
+        request = BatchRecallRequest(
+            agent_id=collection_name,
+            filter=BatchMemoryFilter(tags=[collection_name]),
+            limit=self._fetch_limit,
+        )
+        try:
+            response = await self._client.batch_recall(request)
+        except NotFoundError:
+            return []
+        except DakeraError as exc:
+            raise ServiceResponseException(f"Dakera batch_recall failed for '{collection_name}': {exc}") from exc
+        return list(response.memories)
+
+    async def _resolve_dakera_id(self, collection_name: str, sk_key: str) -> str | None:
+        """Return the Dakera UUID for an SK record id, or ``None`` if absent."""
+        for memory in await self._list_collection(collection_name):
+            if (memory.metadata or {}).get(_SK_ID) == sk_key:
+                return memory.id
+        return None
+
+    async def _forget(self, collection_name: str, dakera_id: str) -> None:
+        try:
+            await self._client.forget(collection_name, dakera_id)
+        except NotFoundError:
+            pass
+        except DakeraError as exc:
+            raise ServiceResponseException(f"Dakera forget failed for '{dakera_id}': {exc}") from exc

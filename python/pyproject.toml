@@ -80,7 +80,7 @@ chroma = [
     "chromadb >= 0.5,< 1.4"
 ]
 dakera = [
-    "aiohttp >= 3.9"
+    "dakera[async] >= 0.12.9, < 1.0"
 ]
 copilotstudio = [
     "microsoft-agents-copilotstudio-client >= 0.3.1",
