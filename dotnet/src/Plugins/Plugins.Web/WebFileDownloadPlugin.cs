@@ -29,6 +29,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// values only. Unrestricted configuration may allow unintended downloads to
 /// local paths.
 /// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
 /// </remarks>
 public sealed class WebFileDownloadPlugin
 {
@@ -42,7 +45,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(HttpClientProvider.GetHttpClient(), loggerFactory)
+        this(HttpClientProvider.GetNonRedirectingHttpClient(), loggerFactory)
     {
     }
 
@@ -51,6 +54,9 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <remarks>
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// </remarks>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
@@ -63,6 +69,7 @@ public sealed class WebFileDownloadPlugin
     /// <remarks>
     /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
     /// with trusted domains before any downloads will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
     /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
