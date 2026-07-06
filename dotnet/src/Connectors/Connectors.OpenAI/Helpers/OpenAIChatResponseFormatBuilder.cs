@@ -139,7 +139,7 @@ internal static class OpenAIChatResponseFormatBuilder
                             if (target is not null)
                             {
                                 definitionName = CreateDefinitionName(reference, usedDefinitionNames);
-                                GetOrCreateDefinitions(root)[definitionName] = JsonNode.Parse(target.ToJsonString());
+                                GetOrCreateDefinitions(root)[definitionName] = target.DeepClone();
                                 movedReferences[reference] = definitionName;
                                 moved = true;
                             }
