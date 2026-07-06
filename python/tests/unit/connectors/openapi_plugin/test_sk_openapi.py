@@ -524,6 +524,31 @@ def test_build_path_allows_encoded_non_dot_segment_characters():
     assert operation.build_path(operation.path, {}) == "/resources/a%20b/details"
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "https://evil.com/admin",
+        "https://example.com:8443/admin",
+        "http://example.com/admin",
+    ],
+)
+def test_build_operation_url_rejects_authority_changing_path(path):
+    # An operation path that is an absolute URI (changing scheme, host, or port) resolves to a
+    # request off the configured server after URL construction, so a credential-bearing request
+    # could be redirected to an unintended target even though it carries no dot-segment.
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/api"], path=path, params=[])
+    with pytest.raises(FunctionExecutionException, match="does not match the configured server"):
+        operation.build_operation_url({})
+
+
+def test_build_operation_url_allows_same_server_path():
+    # A normal relative operation path on the configured server must not be rejected.
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/api"], path="/resources/item", params=[]
+    )
+    assert operation.build_operation_url({}) == "https://example.com/api/resources/item"
+
+
 def test_build_query_string_with_required_parameter():
     parameters = [
         RestApiParameter(name="query", type="string", location=RestApiParameterLocation.QUERY, is_required=True)

@@ -168,7 +168,42 @@ public sealed class RestApiOperation
 
         var path = this.BuildPath(this.Path, arguments);
 
-        return new Uri(serverUrl, $"{path.TrimStart('/')}");
+        var url = new Uri(serverUrl, $"{path.TrimStart('/')}");
+
+        EnsureRequestTargetMatchesServer(serverUrl, url);
+
+        return url;
+    }
+
+    /// <summary>
+    /// Verifies that URI construction did not move the request off the configured server. A selected
+    /// operation path must resolve to a request on the same scheme, host, and port and within the
+    /// server's base path. Otherwise an absolute or authority-changing operation path (for example
+    /// "https://another-host/admin") could redirect a credential-bearing request to an unintended
+    /// target even though it carries no dot-segment. This complements <see cref="ValidatePathSegments"/>
+    /// so operation selection, path validation, and request construction share one canonical target.
+    /// </summary>
+    /// <param name="serverUrl">The configured server URL.</param>
+    /// <param name="requestUrl">The request URL produced by combining the server URL and operation path.</param>
+    private static void EnsureRequestTargetMatchesServer(Uri serverUrl, Uri requestUrl)
+    {
+        var serverAuthority = serverUrl.GetLeftPart(UriPartial.Authority);
+        var requestAuthority = requestUrl.GetLeftPart(UriPartial.Authority);
+
+        if (!string.Equals(serverAuthority, requestAuthority, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException($"The operation path resolves to '{requestAuthority}', which does not match the configured server '{serverAuthority}'.");
+        }
+
+        // GetServerUrl guarantees a trailing slash, so the server's base path always ends with '/'.
+        var basePath = serverUrl.AbsolutePath;
+        var requestPath = requestUrl.AbsolutePath;
+
+        if (!string.Equals(requestPath, basePath.TrimEnd('/'), StringComparison.Ordinal) &&
+            !requestPath.StartsWith(basePath, StringComparison.Ordinal))
+        {
+            throw new KernelException($"The operation path resolves to '{requestPath}', which is outside the configured server base path '{basePath}'.");
+        }
     }
 
     /// <summary>

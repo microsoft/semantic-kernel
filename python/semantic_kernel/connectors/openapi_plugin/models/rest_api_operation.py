@@ -224,9 +224,39 @@ class RestApiOperation:
         server_url = self.get_server_url(server_url_override, api_host_url, arguments)
         path = self.build_path(self.path, arguments)
         try:
-            return urljoin(server_url, path.lstrip("/"))
+            request_url = urljoin(server_url, path.lstrip("/"))
         except Exception as e:
             raise FunctionExecutionException(f"Error building the URL for the operation {self.id}: {e!s}") from e
+        self._ensure_request_target_matches_server(server_url, request_url)
+        return request_url
+
+    @staticmethod
+    def _ensure_request_target_matches_server(server_url: str, request_url: str) -> None:
+        """Verify URL construction did not move the request off the configured server.
+
+        A selected operation path must resolve to a request on the same scheme, host, and port and
+        within the server's base path. Otherwise an absolute or authority-changing operation path
+        (for example "https://another-host/admin") could redirect a credential-bearing request to an
+        unintended target even though it carries no dot-segment. This complements
+        `_validate_path_segments` so operation selection, path validation, and request construction
+        share one canonical target.
+        """
+        server = urlparse(server_url)
+        request = urlparse(request_url)
+
+        if (request.scheme, request.hostname, request.port) != (server.scheme, server.hostname, server.port):
+            raise FunctionExecutionException(
+                f"The operation path resolves to '{request.scheme}://{request.netloc}', which does not match "
+                f"the configured server '{server.scheme}://{server.netloc}'."
+            )
+
+        # get_server_url guarantees a trailing slash, so the server base path always ends with "/".
+        base_path = server.path
+        if request.path != base_path.rstrip("/") and not request.path.startswith(base_path):
+            raise FunctionExecutionException(
+                f"The operation path resolves to '{request.path}', which is outside the configured server "
+                f"base path '{base_path}'."
+            )
 
     def get_server_url(self, server_url_override=None, api_host_url=None, arguments=None):
         """Get the server URL for the operation."""
