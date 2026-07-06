@@ -1558,6 +1558,9 @@ public class RestApiOperationTests
     [InlineData("https://example.com:8443/admin")]
     [InlineData("http://example.com/admin")]
     [InlineData(@"\\evil.com\admin")]
+    [InlineData("https://user:pass@example.com/api/admin")]
+    [InlineData("https://user@example.com/api/data")]
+    [InlineData("https://example.com@evil.com/admin")]
     public void ItShouldRejectOperationPathThatChangesRequestAuthority(string path)
     {
         // Arrange — an operation path that is an absolute URI (or otherwise changes the scheme,

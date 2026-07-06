@@ -530,6 +530,9 @@ def test_build_path_allows_encoded_non_dot_segment_characters():
         "https://evil.com/admin",
         "https://example.com:8443/admin",
         "http://example.com/admin",
+        "https://user:pass@example.com/api/admin",
+        "https://user@example.com/api/data",
+        "https://example.com@evil.com/admin",
     ],
 )
 def test_build_operation_url_rejects_authority_changing_path(path):

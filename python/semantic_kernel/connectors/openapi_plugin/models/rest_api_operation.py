@@ -244,7 +244,13 @@ class RestApiOperation:
         server = urlparse(server_url)
         request = urlparse(request_url)
 
-        if (request.scheme, request.hostname, request.port) != (server.scheme, server.hostname, server.port):
+        if (request.scheme, request.username, request.password, request.hostname, request.port) != (
+            server.scheme,
+            server.username,
+            server.password,
+            server.hostname,
+            server.port,
+        ):
             raise FunctionExecutionException(
                 f"The operation path resolves to '{request.scheme}://{request.netloc}', which does not match "
                 f"the configured server '{server.scheme}://{server.netloc}'."
