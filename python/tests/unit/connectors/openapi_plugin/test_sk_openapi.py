@@ -898,6 +898,50 @@ def test_predicate_callback_applied(openapi_runner_with_predicate_callback):
         )
 
 
+def test_encoded_dot_segment_operations_excluded_from_selection():
+    # A regular operation and one whose path contains an encoded dot-segment ("%2e%2e") that
+    # canonicalizes to a path-traversal at request time. The encoded path must be excluded before
+    # the selection predicate is consulted so it cannot bypass an include/exclude filter.
+    parsed_document = {
+        "servers": [{"url": "https://example.com"}],
+        "paths": {
+            "/items": {
+                "get": {
+                    "operationId": "getItems",
+                    "summary": "Get items",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+            "/resources/%2e%2e/admin": {
+                "get": {
+                    "operationId": "getAdmin",
+                    "summary": "Get admin",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+
+    observed_paths: list[str] = []
+
+    def predicate_callback(context):
+        observed_paths.append(context.path)
+        return True
+
+    parser = OpenApiParser()
+    exec_settings = OpenAPIFunctionExecutionParameters(operation_selection_predicate=predicate_callback)
+    operations = parser.create_rest_api_operations(parsed_document, execution_settings=exec_settings)
+
+    # The regular operation is offered to the predicate and imported.
+    assert "/items" in observed_paths
+    assert "getItems" in operations
+
+    # The encoded dot-segment operation is excluded before the predicate is consulted,
+    # so it cannot slip past an include/exclude operation-selection filter.
+    assert "/resources/%2e%2e/admin" not in observed_paths
+    assert "getAdmin" not in operations
+
+
 @patch("aiohttp.ClientSession.request")
 async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner

@@ -420,6 +420,27 @@ public sealed class RestApiOperation
     /// <param name="path">The path to validate.</param>
     private static void ValidatePathSegments(string path)
     {
+        if (ContainsDotSegment(path))
+        {
+            throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the supplied path contains a dot-segment (. or ..), including percent-encoded
+    /// forms (e.g. "%2e%2e") that <see cref="Uri"/> canonicalizes at request time. This is used both to
+    /// reject such paths when building a request URL and to exclude them during operation selection so an
+    /// encoded dot-segment cannot bypass an include/exclude operation-selection filter.
+    /// </summary>
+    /// <param name="path">The path to inspect.</param>
+    /// <returns><see langword="true"/> if the path contains a dot-segment; otherwise, <see langword="false"/>.</returns>
+    internal static bool ContainsDotSegment(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
         // Split on the structural path separator first.
         foreach (var rawSegment in path.Split('/'))
         {
@@ -443,10 +464,12 @@ public sealed class RestApiOperation
             {
                 if (segment == "." || segment == "..")
                 {
-                    throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     private IDictionary<string, object?> _extensions = s_emptyDictionary;

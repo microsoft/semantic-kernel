@@ -299,6 +299,20 @@ class RestApiOperation:
         The operation is selected using the raw path but the request URL is built from a canonicalized
         path, so encoded dot-segments such as "%2e%2e" must be rejected before the URL is constructed.
         """
+        if RestApiOperation._contains_dot_segment(path):
+            raise FunctionExecutionException(
+                f"Path '{path}' contains a dot-segment, which could lead to path traversal."
+            )
+
+    @staticmethod
+    def _contains_dot_segment(path: str) -> bool:
+        """Return True if the path contains a dot-segment (. or ..), including percent-encoded forms.
+
+        Used both to reject such paths when building a request URL and to exclude them during operation
+        selection so an encoded dot-segment cannot bypass an include/exclude operation-selection filter.
+        """
+        if not path:
+            return False
         for segment in path.split("/"):
             decoded = segment
             for _ in range(5):
@@ -310,9 +324,8 @@ class RestApiOperation:
             # both "/" and "\" and reject any resulting dot-segment.
             for part in decoded.replace("\\", "/").split("/"):
                 if part in (".", ".."):
-                    raise FunctionExecutionException(
-                        f"Path '{path}' contains a dot-segment, which could lead to path traversal."
-                    )
+                    return True
+        return False
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""

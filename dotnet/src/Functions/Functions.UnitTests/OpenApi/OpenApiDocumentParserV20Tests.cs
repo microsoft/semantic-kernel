@@ -439,6 +439,73 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
+    public async Task ItShouldNotOfferEncodedDotSegmentOperationsToSelectionPredicateAsync()
+    {
+        // Arrange - one regular operation and one whose path contains an encoded dot-segment
+        // ("%2e%2e") that canonicalizes to a path-traversal at request time. The selection
+        // predicate must compare a normalized value, so the encoded path cannot bypass an
+        // allow/deny operation-selection filter.
+        var document =
+        """
+        {
+            "swagger": "2.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/items": {
+                    "get": {
+                        "operationId": "GetItems",
+                        "summary": "Get items",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
+                            }
+                        }
+                    }
+                },
+                "/resources/%2e%2e/admin": {
+                    "get": {
+                        "operationId": "GetAdmin",
+                        "summary": "Get admin",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """;
+
+        var observedPaths = new List<string>();
+        var options = new OpenApiDocumentParserOptions
+        {
+            OperationSelectionPredicate = (context) =>
+            {
+                observedPaths.Add(context.Path);
+                return true;
+            }
+        };
+
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(document));
+
+        // Act
+        var restApiSpec = await this._sut.ParseAsync(stream, options);
+
+        // Assert - the regular operation is offered to the predicate and imported.
+        Assert.Contains("/items", observedPaths);
+        Assert.Contains(restApiSpec.Operations, o => o.Path == "/items");
+
+        // The encoded dot-segment operation is excluded before the predicate is consulted,
+        // so it cannot slip past an include/exclude operation-selection filter.
+        Assert.DoesNotContain("/resources/%2e%2e/admin", observedPaths);
+        Assert.DoesNotContain(restApiSpec.Operations, o => o.Path == "/resources/%2e%2e/admin");
+    }
+
+    [Fact]
     public async Task ItCanParsePathItemPathParametersAsync()
     {
         var document =

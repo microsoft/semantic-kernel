@@ -265,6 +265,16 @@ class OpenApiParser:
                 summary = details.get("summary", None)
                 description = details.get("description", None)
 
+                # Exclude operations whose path contains an encoded or literal dot-segment before the
+                # selection predicate is consulted. Such a path is canonicalized into a different
+                # effective endpoint at request time, so offering it to an include/exclude predicate
+                # would let an encoded dot-segment bypass the operation-selection filter.
+                if RestApiOperation._contains_dot_segment(path):
+                    logger.warning(
+                        f"Skipping operation {operationId} at path '{path}' because it contains a dot-segment."
+                    )
+                    continue
+
                 context = OperationSelectionPredicateContext(operationId, path, method, description)
                 if (
                     execution_settings
