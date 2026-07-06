@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -58,7 +60,9 @@ internal static class OpenAIChatResponseFormatBuilder
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaCreateOptions);
-        var schemaBinaryData = BinaryData.FromString(schema.ToString());
+        var schemaNode = JsonNode.Parse(schema.ToString()) ?? throw new InvalidOperationException("Generated JSON schema cannot be parsed.");
+        MoveNestedReferencesToDefinitions(schemaNode);
+        var schemaBinaryData = BinaryData.FromString(schemaNode.ToJsonString());
 
         var typeName = GetTypeName(type);
 
@@ -85,6 +89,183 @@ internal static class OpenAIChatResponseFormatBuilder
 
         return $"{baseName}{argumentNames}";
     }
+
+    /// <summary>
+    /// Moves local references that point to nested schemas into top-level $defs entries.
+    /// </summary>
+    private static void MoveNestedReferencesToDefinitions(JsonNode schema)
+    {
+        if (schema is not JsonObject root)
+        {
+            return;
+        }
+
+        Dictionary<string, string> movedReferences = new(StringComparer.Ordinal);
+        HashSet<string> usedDefinitionNames = new(StringComparer.Ordinal);
+
+        if (root.TryGetPropertyValue("$defs", out JsonNode? existingDefinitions) && existingDefinitions is JsonObject definitions)
+        {
+            foreach (var definition in definitions)
+            {
+                usedDefinitionNames.Add(definition.Key);
+            }
+        }
+
+        while (MoveNestedReferencesToDefinitionsCore(schema, root, movedReferences, usedDefinitionNames))
+        {
+        }
+    }
+
+    private static bool MoveNestedReferencesToDefinitionsCore(
+        JsonNode? schema,
+        JsonObject root,
+        Dictionary<string, string> movedReferences,
+        HashSet<string> usedDefinitionNames)
+    {
+        bool moved = false;
+
+        switch (schema)
+        {
+            case JsonObject schemaObject:
+                if (schemaObject.TryGetPropertyValue("$ref", out JsonNode? referenceNode) &&
+                    referenceNode?.GetValueKind() == JsonValueKind.String)
+                {
+                    string reference = referenceNode.GetValue<string>();
+                    if (ShouldMoveReference(reference))
+                    {
+                        if (!movedReferences.TryGetValue(reference, out string? definitionName))
+                        {
+                            JsonNode? target = ResolveJsonPointer(root, reference);
+                            if (target is not null)
+                            {
+                                definitionName = CreateDefinitionName(reference, usedDefinitionNames);
+                                GetOrCreateDefinitions(root)[definitionName] = JsonNode.Parse(target.ToJsonString());
+                                movedReferences[reference] = definitionName;
+                                moved = true;
+                            }
+                        }
+
+                        if (definitionName is not null)
+                        {
+                            string topLevelReference = $"#/$defs/{EscapeJsonPointerSegment(definitionName)}";
+                            if (!StringComparer.Ordinal.Equals(reference, topLevelReference))
+                            {
+                                schemaObject["$ref"] = topLevelReference;
+                                moved = true;
+                            }
+                        }
+                    }
+                }
+
+                foreach (var property in new List<KeyValuePair<string, JsonNode?>>(schemaObject))
+                {
+                    moved |= MoveNestedReferencesToDefinitionsCore(property.Value, root, movedReferences, usedDefinitionNames);
+                }
+
+                break;
+
+            case JsonArray schemaArray:
+                foreach (JsonNode? item in schemaArray)
+                {
+                    moved |= MoveNestedReferencesToDefinitionsCore(item, root, movedReferences, usedDefinitionNames);
+                }
+
+                break;
+        }
+
+        return moved;
+    }
+
+    private static bool ShouldMoveReference(string reference)
+        => reference.StartsWith("#/", StringComparison.Ordinal) &&
+            !reference.StartsWith("#/$defs/", StringComparison.Ordinal) &&
+            !reference.StartsWith("#/definitions/", StringComparison.Ordinal);
+
+    private static JsonObject GetOrCreateDefinitions(JsonObject root)
+    {
+        if (root.TryGetPropertyValue("$defs", out JsonNode? definitionsNode) && definitionsNode is JsonObject definitions)
+        {
+            return definitions;
+        }
+
+        definitions = [];
+        root["$defs"] = definitions;
+
+        return definitions;
+    }
+
+    private static JsonNode? ResolveJsonPointer(JsonNode root, string reference)
+    {
+        JsonNode? current = root;
+        string[] segments = reference.Substring(2).Split('/');
+
+        foreach (string segment in segments)
+        {
+            string unescapedSegment = UnescapeJsonPointerSegment(segment);
+
+            switch (current)
+            {
+                case JsonObject currentObject when currentObject.TryGetPropertyValue(unescapedSegment, out JsonNode? propertyValue):
+                    current = propertyValue;
+                    break;
+
+                case JsonArray currentArray when int.TryParse(unescapedSegment, out int index) && index >= 0 && index < currentArray.Count:
+                    current = currentArray[index];
+                    break;
+
+                default:
+                    return null;
+            }
+        }
+
+        return current;
+    }
+
+    private static string CreateDefinitionName(string reference, HashSet<string> usedDefinitionNames)
+    {
+        string[] segments = reference.Substring(2).Split('/');
+        StringBuilder nameBuilder = new();
+
+        foreach (string segment in segments)
+        {
+            string unescapedSegment = UnescapeJsonPointerSegment(segment);
+
+            if (StringComparer.Ordinal.Equals(unescapedSegment, "properties"))
+            {
+                continue;
+            }
+
+            bool capitalizeNext = true;
+            foreach (char character in unescapedSegment)
+            {
+                if (!char.IsLetterOrDigit(character))
+                {
+                    capitalizeNext = true;
+                    continue;
+                }
+
+                nameBuilder.Append(capitalizeNext ? char.ToUpperInvariant(character) : character);
+                capitalizeNext = false;
+            }
+        }
+
+        string baseName = nameBuilder.Length > 0 ? nameBuilder.ToString() : "SchemaDefinition";
+        string name = baseName;
+        int suffix = 2;
+
+        while (!usedDefinitionNames.Add(name))
+        {
+            name = $"{baseName}{suffix++}";
+        }
+
+        return name;
+    }
+
+    private static string EscapeJsonPointerSegment(string segment)
+        => segment.Replace("~", "~0").Replace("/", "~1");
+
+    private static string UnescapeJsonPointerSegment(string segment)
+        => segment.Replace("~1", "/").Replace("~0", "~");
 
     #endregion
 }
