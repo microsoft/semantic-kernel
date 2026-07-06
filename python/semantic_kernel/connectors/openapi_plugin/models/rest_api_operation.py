@@ -363,6 +363,22 @@ class RestApiOperation:
                     return True
         return False
 
+    @staticmethod
+    def _is_non_relative_path(path: str) -> bool:
+        """Return True if the path is non-relative (absolute or authority-changing).
+
+        A conformant OpenAPI operation path is relative to the server URL. An absolute URI, a
+        protocol-relative reference ("//host"), or a backslash-authority reference changes the request
+        target once combined with the server URL, so such a path is excluded during operation selection
+        to keep selection and request construction on one canonical target.
+        """
+        if not path:
+            return False
+        if path.startswith(("//", "\\\\", "/\\", "\\/")):
+            return True
+        parsed = urlparse(path)
+        return bool(parsed.scheme or parsed.netloc)
+
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
         segments = []

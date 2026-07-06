@@ -1586,6 +1586,30 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldRejectSameAuthorityBasePathEscape()
+    {
+        // Arrange — an absolute path on the same authority but outside the configured base path must
+        // be rejected, so a request cannot be moved to a different route even when the scheme, host,
+        // and port all match the configured server.
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "https://example.com/other/admin",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act & Assert — the resolved request path must remain within the configured server base path.
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("outside the configured server base path", ex.Message);
+    }
+
+    [Fact]
     public void ItShouldBuildUrlForOperationPathOnTheConfiguredServer()
     {
         // Arrange — a normal relative operation path on the configured server.

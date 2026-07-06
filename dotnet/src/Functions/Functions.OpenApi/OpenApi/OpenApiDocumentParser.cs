@@ -200,7 +200,9 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 // Exclude operations whose path contains an encoded or literal dot-segment before the
                 // selection predicate is consulted. Such a path is canonicalized into a different
                 // effective endpoint at request time, so offering it to an include/exclude predicate
-                // would let an encoded dot-segment bypass the operation-selection filter.
+                // would let an encoded dot-segment bypass the operation-selection filter. Absolute or
+                // authority-changing path keys are already rejected by the OpenAPI reader, so a
+                // dot-segment check is sufficient here.
                 if (RestApiOperation.ContainsDotSegment(path))
                 {
                     logger.LogWarning("Operation '{OperationId}' at path '{Path}' contains a dot-segment and will be skipped during operation selection.", operationItem.OperationId, path);

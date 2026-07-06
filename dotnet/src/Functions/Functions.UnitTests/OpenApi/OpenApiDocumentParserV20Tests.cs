@@ -506,6 +506,42 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
+    public async Task ItShouldRejectDocumentWithNonRelativeOperationPathAsync()
+    {
+        // Arrange - an absolute / authority-changing operation path key would resolve to a request off
+        // the configured server. The OpenAPI reader rejects such a non-relative path key so it can
+        // never reach operation selection or request construction.
+        var document =
+        """
+        {
+            "swagger": "2.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "https://evil.com/admin": {
+                    "get": {
+                        "operationId": "GetAdmin",
+                        "summary": "Get admin",
+                        "responses": {
+                            "200": {
+                                "description": "Successful response"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """;
+
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(document));
+
+        // Act & Assert - a non-relative operation path key is rejected during parsing.
+        await Assert.ThrowsAsync<KernelException>(() => this._sut.ParseAsync(stream));
+    }
+
+    [Fact]
     public async Task ItCanParsePathItemPathParametersAsync()
     {
         var document =
