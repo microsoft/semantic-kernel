@@ -556,6 +556,86 @@ async def test_parse_function_call_arguments_done_fail(OpenAIWebsocket, kernel):
         iter += 1
 
 
+async def test_parse_function_call_arguments_done_passes_function_behavior(OpenAIWebsocket, kernel):
+    """Verify that the realtime path passes function_choice_behavior to invoke_function_call."""
+    func_result = "result"
+    event = ResponseFunctionCallArgumentsDoneEvent(
+        call_id="call_id",
+        arguments='{"x": "' + func_result + '"}',
+        event_id="event_id",
+        output_index=0,
+        item_id="item_id",
+        name="plugin_name-function_name",
+        response_id="response_id",
+        type="response.function_call_arguments.done",
+    )
+    function_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["plugin_name"]})
+    OpenAIWebsocket._current_settings = OpenAIRealtimeExecutionSettings(
+        instructions="instructions", ai_model_id="gpt-realtime"
+    )
+    OpenAIWebsocket._current_settings.function_choice_behavior = function_behavior
+    OpenAIWebsocket._call_id_to_function_map["call_id"] = "plugin_name-function_name"
+    func = kernel_function(name="function_name", description="function_description")(lambda x: x)
+    kernel.add_function(plugin_name="plugin_name", function_name="function_name", function=func)
+    OpenAIWebsocket._kernel = kernel
+
+    # Capture the kwargs passed to invoke_function_call
+    captured_kwargs = {}
+    original_invoke = Kernel.invoke_function_call
+
+    async def spy_invoke(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        return await original_invoke(self, *args, **kwargs)
+
+    with (
+        patch.object(Kernel, "invoke_function_call", spy_invoke),
+        patch.object(OpenAIWebsocket, "_send"),
+    ):
+        async for _ in OpenAIWebsocket._parse_function_call_arguments_done(event):
+            pass
+
+    assert "function_behavior" in captured_kwargs
+    assert captured_kwargs["function_behavior"] is function_behavior
+
+
+async def test_parse_function_call_arguments_done_filters_block_unallowed(OpenAIWebsocket, kernel):
+    """Verify that the realtime path blocks a function not in the allowlist."""
+    event = ResponseFunctionCallArgumentsDoneEvent(
+        call_id="call_id",
+        arguments='{"url": "http://169.254.169.254/"}',
+        event_id="event_id",
+        output_index=0,
+        item_id="item_id",
+        name="HttpPlugin-GetAsync",
+        response_id="response_id",
+        type="response.function_call_arguments.done",
+    )
+    function_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["SafePlugin"]})
+    OpenAIWebsocket._current_settings = OpenAIRealtimeExecutionSettings(
+        instructions="instructions", ai_model_id="gpt-realtime"
+    )
+    OpenAIWebsocket._current_settings.function_choice_behavior = function_behavior
+    OpenAIWebsocket._call_id_to_function_map["call_id"] = "HttpPlugin-GetAsync"
+
+    # Register both plugins on kernel
+    safe_func = kernel_function(name="safe_function", description="safe")(lambda: "safe")
+    http_func = kernel_function(name="GetAsync", description="http get")(lambda url: url)
+    kernel.add_function(plugin_name="SafePlugin", function_name="safe_function", function=safe_func)
+    kernel.add_function(plugin_name="HttpPlugin", function_name="GetAsync", function=http_func)
+    OpenAIWebsocket._kernel = kernel
+
+    events_received = []
+    with patch.object(OpenAIWebsocket, "_send"):
+        async for evt in OpenAIWebsocket._parse_function_call_arguments_done(event):
+            events_received.append(evt)
+
+    # The function call event is yielded, then the result should contain the error
+    assert len(events_received) >= 2
+    result_event = events_received[-1]
+    assert isinstance(result_event, RealtimeFunctionResultEvent)
+    assert "not part of the provided" in str(result_event.function_result.result)
+
+
 async def test_send_audio(OpenAIWebsocket):
     audio_event = RealtimeAudioEvent(
         audio=AudioContent(data=b"audio data", mime_type="audio/wav"),

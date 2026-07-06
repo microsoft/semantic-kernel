@@ -1023,6 +1023,7 @@ def create_mcp_server_from_kernel(
     functions_to_expose = [
         func for func in kernel.get_full_list_of_function_metadata() if func.name not in (excluded_functions or [])
     ]
+    exposed_names = frozenset(func.name for func in functions_to_expose)
 
     if len(functions_to_expose) > 0:
 
@@ -1058,8 +1059,15 @@ def create_mcp_server_from_kernel(
             *args: Any,
         ) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
             """Call a tool in the kernel."""
-            await _log(level="debug", data=f"Calling tool with args: {args}")
             function_name, arguments = args[0], args[1]
+            if function_name not in exposed_names:
+                raise McpError(
+                    error=types.ErrorData(
+                        code=types.METHOD_NOT_FOUND,
+                        message=f"Unknown tool: {function_name}",
+                    )
+                )
+            await _log(level="debug", data=f"Calling tool: {function_name}")
             result = await _call_kernel_function(function_name, arguments)
             if result:
                 value = result.value
@@ -1165,7 +1173,6 @@ def create_mcp_server_from_kernel(
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
         function = kernel.get_function(plugin_name=None, function_name=function_name)
         arguments["server"] = server
-        print("arguments", arguments)
         return await function.invoke(kernel=kernel, **arguments)
 
     return server
