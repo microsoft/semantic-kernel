@@ -342,6 +342,23 @@ def test_get_server_url_with_servers_and_variables():
     assert operation.get_server_url(arguments=arguments) == expected_url
 
 
+def test_get_server_url_with_servers_coerces_variable_argument_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://example.com/{version}",
+                "variables": {"version": {"default": "v1", "argument_name": "api_version"}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"api_version": 2}
+    expected_url = "https://example.com/2/"
+    assert operation.get_server_url(arguments=arguments) == expected_url
+
+
 def test_get_server_url_with_servers_and_default_variable():
     operation = RestApiOperation(
         id="test",
@@ -350,6 +367,17 @@ def test_get_server_url_with_servers_and_default_variable():
         path="/resource/{id}",
     )
     expected_url = "https://example.com/v1/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_servers_coerces_default_variable_to_string():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/{version}", "variables": {"version": {"default": 1}}}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/1/"
     assert operation.get_server_url() == expected_url
 
 
@@ -410,6 +438,128 @@ def test_build_path_with_optional_and_required_parameters():
     arguments = {"id": "123"}
     expected_path = "/resource/123/{optional}"
     assert operation.build_path(operation.path, arguments) == expected_path
+
+
+def test_build_path_encodes_special_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    # Characters like /, ?, #, and spaces must be percent-encoded to prevent traversal
+    arguments = {"id": "foo/bar?q=1#frag data"}
+    result = operation.build_path(operation.path, arguments)
+    encoded_part = result.split("/resource/")[1]
+    assert "/" not in encoded_part
+    assert "?" not in encoded_part
+    assert "#" not in encoded_part
+    assert " " not in encoded_part
+    # Python's quote(safe="") encodes all except unreserved chars (letters, digits, _, ., -, ~)
+    assert result == "/resource/foo%2Fbar%3Fq%3D1%23frag%20data"
+
+
+def test_build_path_prevents_path_traversal():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "../../admin"}
+    # Encoded separators that decode into dot-segments must be rejected, not silently encoded
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, arguments)
+
+
+def test_build_path_double_encodes_pre_encoded_values():
+    """Arguments must be raw/unencoded values. Pre-encoded values are double-encoded by design."""
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "hello%2Fworld"}
+    result = operation.build_path(operation.path, arguments)
+    # %2F in input becomes %252F — the % is encoded, preventing decode-based bypass
+    assert result == "/resource/hello%252Fworld"
+
+
+def test_build_path_encodes_unicode_characters():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}", params=parameters
+    )
+    arguments = {"id": "café résumé"}
+    result = operation.build_path(operation.path, arguments)
+    assert result == "/resource/caf%C3%A9%20r%C3%A9sum%C3%A9"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/resources/../admin",
+        "/resources/./admin",
+        "/resources/%2e%2e/admin",
+        "/resources/%2E%2E/admin",
+        "/resources/%2e/admin",
+        "/resources/%2e%2e%2fadmin",
+        "/resources/%252e%252e/admin",
+    ],
+)
+def test_build_path_rejects_dot_segment_in_template(path):
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/"], path=path, params=[])
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {})
+
+
+def test_build_path_rejects_dot_segment_via_parameter():
+    parameters = [RestApiParameter(name="id", type="string", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{id}/details", params=parameters
+    )
+    with pytest.raises(FunctionExecutionException, match="dot-segment"):
+        operation.build_path(operation.path, {"id": ".."})
+
+
+def test_build_path_allows_encoded_non_dot_segment_characters():
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resources/a%20b/details", params=[]
+    )
+    assert operation.build_path(operation.path, {}) == "/resources/a%20b/details"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "https://evil.com/admin",
+        "https://example.com:8443/admin",
+        "http://example.com/admin",
+        "https://user:pass@example.com/api/admin",
+        "https://user@example.com/api/data",
+        "https://example.com@evil.com/admin",
+    ],
+)
+def test_build_operation_url_rejects_authority_changing_path(path):
+    # An operation path that is an absolute URI (changing scheme, host, or port) resolves to a
+    # request off the configured server after URL construction, so a credential-bearing request
+    # could be redirected to an unintended target even though it carries no dot-segment.
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/api"], path=path, params=[])
+    with pytest.raises(FunctionExecutionException, match="does not match the configured server"):
+        operation.build_operation_url({})
+
+
+def test_build_operation_url_allows_same_server_path():
+    # A normal relative operation path on the configured server must not be rejected.
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/api"], path="/resources/item", params=[]
+    )
+    assert operation.build_operation_url({}) == "https://example.com/api/resources/item"
+
+
+def test_build_operation_url_rejects_same_authority_base_path_escape():
+    # An absolute path on the same authority but outside the configured base path must be rejected,
+    # so a request cannot be moved to a different route even when scheme, host, and port all match.
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/api"], path="https://example.com/other/admin", params=[]
+    )
+    with pytest.raises(FunctionExecutionException, match="outside the configured server base path"):
+        operation.build_operation_url({})
 
 
 def test_build_query_string_with_required_parameter():
@@ -786,6 +936,93 @@ def test_predicate_callback_applied(openapi_runner_with_predicate_callback):
         )
 
 
+def test_encoded_dot_segment_operations_excluded_from_selection():
+    # A regular operation and one whose path contains an encoded dot-segment ("%2e%2e") that
+    # canonicalizes to a path-traversal at request time. The encoded path must be excluded before
+    # the selection predicate is consulted so it cannot bypass an include/exclude filter.
+    parsed_document = {
+        "servers": [{"url": "https://example.com"}],
+        "paths": {
+            "/items": {
+                "get": {
+                    "operationId": "getItems",
+                    "summary": "Get items",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+            "/resources/%2e%2e/admin": {
+                "get": {
+                    "operationId": "getAdmin",
+                    "summary": "Get admin",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+
+    observed_paths: list[str] = []
+
+    def predicate_callback(context):
+        observed_paths.append(context.path)
+        return True
+
+    parser = OpenApiParser()
+    exec_settings = OpenAPIFunctionExecutionParameters(operation_selection_predicate=predicate_callback)
+    operations = parser.create_rest_api_operations(parsed_document, execution_settings=exec_settings)
+
+    # The regular operation is offered to the predicate and imported.
+    assert "/items" in observed_paths
+    assert "getItems" in operations
+
+    # The encoded dot-segment operation is excluded before the predicate is consulted,
+    # so it cannot slip past an include/exclude operation-selection filter.
+    assert "/resources/%2e%2e/admin" not in observed_paths
+    assert "getAdmin" not in operations
+
+
+def test_non_relative_path_operations_excluded_from_selection():
+    # An operation whose path is an absolute / authority-changing URI resolves to a request off the
+    # configured server, so it must be excluded before the selection predicate is consulted rather
+    # than offered to a path-based filter and only rejected later at request construction.
+    parsed_document = {
+        "servers": [{"url": "https://example.com"}],
+        "paths": {
+            "/items": {
+                "get": {
+                    "operationId": "getItems",
+                    "summary": "Get items",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+            "https://evil.com/admin": {
+                "get": {
+                    "operationId": "getAdmin",
+                    "summary": "Get admin",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+
+    observed_paths: list[str] = []
+
+    def predicate_callback(context):
+        observed_paths.append(context.path)
+        return True
+
+    parser = OpenApiParser()
+    exec_settings = OpenAPIFunctionExecutionParameters(operation_selection_predicate=predicate_callback)
+    operations = parser.create_rest_api_operations(parsed_document, execution_settings=exec_settings)
+
+    # The regular operation is offered to the predicate and imported.
+    assert "/items" in observed_paths
+    assert "getItems" in operations
+
+    # The absolute operation path is excluded before the predicate is consulted.
+    assert "https://evil.com/admin" not in observed_paths
+    assert "getAdmin" not in operations
+
+
 @patch("aiohttp.ClientSession.request")
 async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner
@@ -812,3 +1049,8 @@ def test_invalid_server_url_override():
     with pytest.raises(ValueError, match="Invalid server_url_override: invalid_url"):
         params = OpenAPIFunctionExecutionParameters(server_url_override="invalid_url")
         params.model_post_init(None)
+
+
+def test_invalid_server_url_validation_allowed_base_url():
+    with pytest.raises(ValueError, match="Invalid allowed_base_urls: invalid_url"):
+        OpenAPIFunctionExecutionParameters(server_url_validation_allowed_base_urls=["invalid_url"])

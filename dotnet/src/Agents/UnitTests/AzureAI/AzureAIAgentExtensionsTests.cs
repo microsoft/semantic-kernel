@@ -3,12 +3,12 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Moq;
 using Xunit;
-
 namespace SemanticKernel.Agents.UnitTests.AzureAI;
 
 public sealed class AzureAIAgentExtensionsTests
@@ -49,24 +49,24 @@ public sealed class AzureAIAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
         var azureAIAgent = new AzureAIAgent(s_agentMetadata, clientMock.Object);
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -75,17 +75,17 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -96,18 +96,18 @@ public sealed class AzureAIAgentExtensionsTests
 
         // Act
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<AzureAIAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         var clientMock = new Mock<Azure.AI.Agents.Persistent.PersistentAgentsClient>();
@@ -118,10 +118,10 @@ public sealed class AzureAIAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = azureAIAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);

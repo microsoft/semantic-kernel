@@ -73,7 +73,7 @@ aws = [
 azure = [
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
-    "azure-search-documents >= 11.6.0b4",
+    "azure-search-documents >= 11.6.0b4, < 12.0.0",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
@@ -93,7 +93,7 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 6.0",
-    "torch == 2.8.0"
+    "torch==2.12.0"
 ]
 mcp = [
     "mcp>=1.8",
@@ -103,10 +103,10 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 1.2,< 2.0"
+    "mistralai >= 1.2,< 2.4.6"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.16",
+    "pymongo >= 4.8.0, < 4.17",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
@@ -150,7 +150,7 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 22.0"
+    "pyarrow>=12.0,<24.0"
 ]
 weaviate = [
     "weaviate-client>=4.17.0,<5.0",
@@ -164,7 +164,7 @@ dev = [
     "pytest ~= 8.2",
     "pytest-xdist[psutil] ~= 3.6",
     "pytest-cov >= 5.0",
-    "pytest-asyncio ~= 0.24",
+    "pytest-asyncio ~= 1.0",
     "pytest-timeout>=2.3.1",
     "snoop ~= 0.4",
     "mypy >= 1.10",

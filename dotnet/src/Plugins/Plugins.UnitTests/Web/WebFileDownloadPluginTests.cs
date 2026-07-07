@@ -3,7 +3,9 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Xunit;
 
@@ -74,6 +76,70 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(uri, filePath));
+    }
+
+    [Fact]
+    public async Task DownloadToFileDoesNotFollowRedirectsAsync()
+    {
+        // Arrange - start a local server that returns a 302 redirect
+        using var listener = new System.Net.HttpListener();
+        var port = new Random().Next(49152, 65535);
+        listener.Prefixes.Add($"http://localhost:{port}/");
+        listener.Start();
+        bool redirectTargetContacted = false;
+
+        _ = Task.Run(async () =>
+        {
+            while (listener.IsListening)
+            {
+                try
+                {
+                    var ctx = await listener.GetContextAsync();
+                    if (ctx.Request.Url!.AbsolutePath == "/start")
+                    {
+                        ctx.Response.StatusCode = 302;
+                        ctx.Response.RedirectLocation = $"http://localhost:{port}/secret.png";
+                        ctx.Response.Close();
+                    }
+                    else if (ctx.Request.Url.AbsolutePath == "/secret.png")
+                    {
+                        redirectTargetContacted = true;
+                        ctx.Response.StatusCode = 200;
+                        ctx.Response.ContentType = "image/png";
+                        ctx.Response.OutputStream.Write(new byte[] { 0x89, 0x50, 0x4E, 0x47 });
+                        ctx.Response.Close();
+                    }
+                }
+                catch (ObjectDisposedException) { break; }
+                catch (System.Net.HttpListenerException) { break; }
+            }
+        });
+
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var filePath = Path.Combine(folderPath, "file.png");
+        Directory.CreateDirectory(folderPath);
+
+        var webFileDownload = new WebFileDownloadPlugin()
+        {
+            AllowedDomains = ["localhost"],
+            AllowedFolders = [folderPath]
+        };
+
+        try
+        {
+            // Act & Assert - the plugin should throw because 302 is a non-success status
+            await Assert.ThrowsAsync<HttpOperationException>(() => webFileDownload.DownloadToFileAsync(new Uri($"http://localhost:{port}/start"), filePath));
+            Assert.False(redirectTargetContacted, "The redirect target should not have been contacted.");
+            Assert.False(Path.Exists(filePath));
+        }
+        finally
+        {
+            listener.Stop();
+            if (Path.Exists(folderPath))
+            {
+                Directory.Delete(folderPath, true);
+            }
+        }
     }
 
     [Fact]
@@ -155,13 +221,52 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, validFilePath));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(invalidUri, validFilePath));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, invalidFilePath));
-        // UNC paths are rejected as ArgumentException on Windows; on Linux Path.GetFullPath
-        // canonicalizes them to a regular path, so they are caught by the AllowedFolders check instead.
-        await Assert.ThrowsAnyAsync<Exception>(async () => await webFileDownload.DownloadToFileAsync(validUri, "\\\\UNC\\server\\folder\\myfile.txt"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "\\\\UNC\\server\\folder\\myfile.txt"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "//UNC/server/folder/myfile.txt"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "//?/C:/Windows/win.ini"));
         await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, ""));
         // Relative paths are now canonicalized to absolute paths via Path.GetFullPath,
         // so they are caught by the AllowedFolders check rather than the "fully qualified" check.
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
+    }
+
+    [Fact]
+    public async Task DownloadToFileUsesCaseSensitiveAllowListComparisonOnLinuxAsync()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
+
+        // Arrange
+        this._messageHandlerStub.AddImageResponse(File.ReadAllBytes(SKLogoPng));
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
+        var tempDir = Path.Combine(Path.GetTempPath(), $"WebFileDownloadPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "Allowed");
+        var disallowedDir = Path.Combine(tempDir, "allowed");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(disallowedDir);
+
+        try
+        {
+            var webFileDownload = new WebFileDownloadPlugin()
+            {
+                AllowedDomains = ["raw.githubusercontent.com"],
+                AllowedFolders = [allowedDir]
+            };
+
+            var disallowedFile = Path.Combine(disallowedDir, "download.txt");
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => webFileDownload.DownloadToFileAsync(uri, disallowedFile));
+        }
+        finally
+        {
+            if (Path.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
     }
 
     /// <inheritdoc/>
