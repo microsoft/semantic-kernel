@@ -132,7 +132,7 @@ async def test_mcp_sampling_consent_callback_error_denies_request(caplog):
     assert "MCP sampling consent callback failed" in caplog.text
 
 
-async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(caplog):
+async def test_mcp_sampling_without_consent_callback_denies_by_default(caplog):
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     params = types.CreateMessageRequestParams(
         messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
@@ -144,7 +144,28 @@ async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(c
         result = await plugin.sampling_callback(MagicMock(), params)
 
     assert isinstance(result, types.ErrorData)
-    assert "auto-approved because no sampling consent callback was configured" in caplog.text
+    assert result.message == "Sampling denied: no consent callback configured."
+    assert "denied because no sampling consent callback was configured" in caplog.text
+
+
+async def test_mcp_sampling_auto_approve_logs_warning(caplog):
+    plugin = MCPSsePlugin(
+        name="TestMCPPlugin",
+        url="http://localhost:8080/sse",
+        sampling_auto_approve=True,
+    )
+    params = types.CreateMessageRequestParams(
+        messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
+        systemPrompt="server instructions",
+        maxTokens=100,
+    )
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        result = await plugin.sampling_callback(MagicMock(), params)
+
+    # No kernel configured, so the request is approved but then fails for lack of a chat service.
+    assert isinstance(result, types.ErrorData)
+    assert "auto-approved because sampling_auto_approve is enabled" in caplog.text
 
 
 async def test_mcp_tool_and_prompt_names_do_not_shadow_plugin_attributes():
