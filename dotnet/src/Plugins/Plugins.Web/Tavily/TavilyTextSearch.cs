@@ -676,7 +676,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         string? topic = null;
         string? timeRange = null;
         int? days = null;
-        int? maxResults = top - skip;
+        int? maxResults = top;
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 
