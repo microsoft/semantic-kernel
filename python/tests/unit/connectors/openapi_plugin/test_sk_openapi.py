@@ -359,6 +359,58 @@ def test_get_server_url_with_servers_coerces_variable_argument_to_string():
     assert operation.get_server_url(arguments=arguments) == expected_url
 
 
+def test_get_server_url_with_server_variable_enum_rejects_invalid_argument():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{region}.api.vendor.example/v1",
+                "variables": {"region": {"default": "us", "enum": ["us", "eu"]}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"region": "external.example/"}
+    with pytest.raises(FunctionExecutionException, match="server variable 'region' is not one of the allowed values"):
+        operation.get_server_url(arguments=arguments)
+
+
+def test_get_server_url_with_server_variable_enum_allows_valid_argument():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{region}.api.vendor.example/v1",
+                "variables": {"region": {"default": "us", "enum": ["us", "eu"]}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"region": "eu"}
+    expected_url = "https://eu.api.vendor.example/v1/"
+    assert operation.get_server_url(arguments=arguments) == expected_url
+
+
+def test_get_server_url_with_server_variable_encodes_reserved_characters():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{region}.api.vendor.example/v1",
+                "variables": {"region": {"default": "us"}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    arguments = {"region": "external.example/"}
+    result = operation.get_server_url(arguments=arguments)
+    assert result == "https://external.example%2F.api.vendor.example/v1/"
+    assert urlparse(result).hostname != "external.example"
+
+
 def test_get_server_url_with_servers_and_default_variable():
     operation = RestApiOperation(
         id="test",
@@ -378,6 +430,17 @@ def test_get_server_url_with_servers_coerces_default_variable_to_string():
         path="/resource/{id}",
     )
     expected_url = "https://example.com/1/"
+    assert operation.get_server_url() == expected_url
+
+
+def test_get_server_url_with_servers_encodes_default_variable():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[{"url": "https://example.com/{version}", "variables": {"version": {"default": "v1/beta"}}}],
+        path="/resource/{id}",
+    )
+    expected_url = "https://example.com/v1%2Fbeta/"
     assert operation.get_server_url() == expected_url
 
 
