@@ -138,7 +138,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default != Parameter.empty:
+    if default is not Parameter.empty:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
