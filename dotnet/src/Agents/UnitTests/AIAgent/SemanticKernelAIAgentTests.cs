@@ -84,7 +84,7 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
-    public void DeserializeThread_ReturnsSemanticKernelAIAgentThread()
+    public async Task DeserializeThread_ReturnsSemanticKernelAIAgentSession()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -95,14 +95,14 @@ public sealed class SemanticKernelAIAgentTests
         var json = JsonElement.Parse("{}");
 
         // Act
-        var result = adapter.DeserializeThread(json);
+        var result = await adapter.DeserializeSessionAsync(json);
 
         // Assert
-        Assert.IsType<SemanticKernelAIAgentThread>(result);
+        Assert.IsType<SemanticKernelAIAgentSession>(result);
     }
 
     [Fact]
-    public void GetNewThread_ReturnsSemanticKernelAIAgentThread()
+    public async Task GetNewThread_ReturnsSemanticKernelAIAgentSession()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -111,15 +111,15 @@ public sealed class SemanticKernelAIAgentTests
         var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, (e, o) => expectedThread, ThreadSerializer);
 
         // Act
-        var result = adapter.GetNewThread();
+        var result = await adapter.CreateSessionAsync();
 
         // Assert
-        Assert.IsType<SemanticKernelAIAgentThread>(result);
-        Assert.Equal(expectedThread, ((SemanticKernelAIAgentThread)result).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentSession>(result);
+        Assert.Equal(expectedThread, ((SemanticKernelAIAgentSession)result).InnerThread);
     }
 
     [Fact]
-    public void DeserializeThread_CallsDeserializationFactory()
+    public async Task DeserializeThread_CallsDeserializationFactory()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -136,15 +136,15 @@ public sealed class SemanticKernelAIAgentTests
         var json = JsonElement.Parse("{}");
 
         // Act
-        var result = adapter.DeserializeThread(json);
+        var result = await adapter.DeserializeSessionAsync(json);
 
         // Assert
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(result);
+        Assert.IsType<SemanticKernelAIAgentSession>(result);
     }
 
     [Fact]
-    public void GetNewThread_CallsThreadFactory()
+    public async Task GetNewThread_CallsThreadFactory()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -160,11 +160,11 @@ public sealed class SemanticKernelAIAgentTests
         var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, (e, o) => expectedThread, (t, o) => default);
 
         // Act
-        var result = adapter.GetNewThread();
+        var result = await adapter.CreateSessionAsync();
 
         // Assert
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(result);
+        Assert.IsType<SemanticKernelAIAgentSession>(result);
     }
 
     [Fact]
@@ -211,13 +211,13 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(message, innerThread);
         }
 
-        var thread = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var result = await adapter.RunAsync("Input text", thread);
 
         // Assert
-        Assert.IsType<MAAI.AgentRunResponse>(result);
+        Assert.IsType<MAAI.AgentResponse>(result);
         Assert.Equal("Final response", result.Text);
         agentMock.Verify(a => a.InvokeAsync(
             It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
@@ -246,13 +246,13 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Final response"), innerThread);
         }
 
-        var thread = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+        var thread = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var results = await adapter.RunStreamingAsync("Input text", thread).ToListAsync();
 
         // Assert
-        Assert.IsType<MAAI.AgentRunResponseUpdate>(results.First());
+        Assert.IsType<MAAI.AgentResponseUpdate>(results.First());
         Assert.Equal("Final response", results.First().Text);
         agentMock.Verify(a => a.InvokeStreamingAsync(
             It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
@@ -288,13 +288,13 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(final, thread);
         }
 
-        var threadWrapper = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+        var threadWrapper = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var response = await adapter.RunAsync("input", threadWrapper);
 
         // Assert
-        // Use reflection to inspect Messages collection inside AgentRunResponse
+        // Use reflection to inspect Messages collection inside AgentResponse
         var messages = response.Messages;
         var contents = messages.First().Contents;
         Assert.Single(contents); // Duplicate text content should have been removed
@@ -327,7 +327,7 @@ public sealed class SemanticKernelAIAgentTests
             yield return new AgentResponseItem<ChatMessageContent>(final, thread);
         }
 
-        var threadWrapper = new SemanticKernelAIAgentThread(innerThread, (t, o) => default);
+        var threadWrapper = new SemanticKernelAIAgentSession(innerThread);
 
         // Act
         var response = await adapter.RunAsync("input", threadWrapper);
