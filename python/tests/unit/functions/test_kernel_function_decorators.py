@@ -51,6 +51,10 @@ class MiscClass:
         return input
 
     @kernel_function
+    def func_input_none_default(self, input: str = None):
+        return input
+
+    @kernel_function
     def func_return_type(self, input: str) -> str:
         return input
 
@@ -137,6 +141,15 @@ def test_kernel_function_param_optional():
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_param_none_default():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_none_default")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
+    assert not my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0]["default_value"] is None
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
