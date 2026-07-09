@@ -287,23 +287,22 @@ class RestApiOperation:
             # Substitute server variables if available
             for variable_name, variable_def in server_variables.items():
                 argument_name = variable_def.get("argument_name", variable_name)
+                allowed_values = variable_def.get("enum")
                 if argument_name in arguments:
                     value = str(arguments[argument_name])
-                    allowed_values = variable_def.get("enum")
-                    if allowed_values is not None and value not in allowed_values:
-                        raise FunctionExecutionException(
-                            f"Value '{value}' for server variable '{variable_name}' is not one of the allowed values."
-                        )
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", quote(value, safe=""))
                 elif "default" in variable_def and variable_def["default"] is not None:
                     # Use the default value if no argument is provided
                     value = str(variable_def["default"])
-                    server_url_string = server_url_string.replace(f"{{{variable_name}}}", quote(value, safe=""))
                 else:
                     # Raise an exception if no value is available
                     raise FunctionExecutionException(
                         f"No argument provided for the '{variable_name}' server variable of the operation '{self.id}'."
                     )
+                if allowed_values is not None and value not in allowed_values:
+                    raise FunctionExecutionException(
+                        f"Value '{value}' for server variable '{variable_name}' is not one of the allowed values."
+                    )
+                server_url_string = server_url_string.replace(f"{{{variable_name}}}", quote(value, safe=""))
         elif self.server_url:
             server_url_string = self.server_url
         elif api_host_url is not None:

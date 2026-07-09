@@ -393,6 +393,22 @@ def test_get_server_url_with_server_variable_enum_allows_valid_argument():
     assert operation.get_server_url(arguments=arguments) == expected_url
 
 
+def test_get_server_url_with_server_variable_enum_rejects_invalid_default():
+    operation = RestApiOperation(
+        id="test",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{region}.api.vendor.example/v1",
+                "variables": {"region": {"default": "external.example/", "enum": ["us", "eu"]}},
+            }
+        ],
+        path="/resource/{id}",
+    )
+    with pytest.raises(FunctionExecutionException, match="server variable 'region' is not one of the allowed values"):
+        operation.get_server_url()
+
+
 def test_get_server_url_with_server_variable_encodes_reserved_characters():
     operation = RestApiOperation(
         id="test",
