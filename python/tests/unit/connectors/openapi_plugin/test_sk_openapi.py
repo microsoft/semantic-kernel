@@ -524,6 +524,44 @@ def test_build_path_allows_encoded_non_dot_segment_characters():
     assert operation.build_path(operation.path, {}) == "/resources/a%20b/details"
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "https://evil.com/admin",
+        "https://example.com:8443/admin",
+        "http://example.com/admin",
+        "https://user:pass@example.com/api/admin",
+        "https://user@example.com/api/data",
+        "https://example.com@evil.com/admin",
+    ],
+)
+def test_build_operation_url_rejects_authority_changing_path(path):
+    # An operation path that is an absolute URI (changing scheme, host, or port) resolves to a
+    # request off the configured server after URL construction, so a credential-bearing request
+    # could be redirected to an unintended target even though it carries no dot-segment.
+    operation = RestApiOperation(id="test", method="GET", servers=["https://example.com/api"], path=path, params=[])
+    with pytest.raises(FunctionExecutionException, match="does not match the configured server"):
+        operation.build_operation_url({})
+
+
+def test_build_operation_url_allows_same_server_path():
+    # A normal relative operation path on the configured server must not be rejected.
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/api"], path="/resources/item", params=[]
+    )
+    assert operation.build_operation_url({}) == "https://example.com/api/resources/item"
+
+
+def test_build_operation_url_rejects_same_authority_base_path_escape():
+    # An absolute path on the same authority but outside the configured base path must be rejected,
+    # so a request cannot be moved to a different route even when scheme, host, and port all match.
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/api"], path="https://example.com/other/admin", params=[]
+    )
+    with pytest.raises(FunctionExecutionException, match="outside the configured server base path"):
+        operation.build_operation_url({})
+
+
 def test_build_query_string_with_required_parameter():
     parameters = [
         RestApiParameter(name="query", type="string", location=RestApiParameterLocation.QUERY, is_required=True)
@@ -896,6 +934,93 @@ def test_predicate_callback_applied(openapi_runner_with_predicate_callback):
         assert operation.method != "DELETE" and "internal" not in operation.path, (
             f"Predicate incorrectly executed operation {operation_id}"
         )
+
+
+def test_encoded_dot_segment_operations_excluded_from_selection():
+    # A regular operation and one whose path contains an encoded dot-segment ("%2e%2e") that
+    # canonicalizes to a path-traversal at request time. The encoded path must be excluded before
+    # the selection predicate is consulted so it cannot bypass an include/exclude filter.
+    parsed_document = {
+        "servers": [{"url": "https://example.com"}],
+        "paths": {
+            "/items": {
+                "get": {
+                    "operationId": "getItems",
+                    "summary": "Get items",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+            "/resources/%2e%2e/admin": {
+                "get": {
+                    "operationId": "getAdmin",
+                    "summary": "Get admin",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+
+    observed_paths: list[str] = []
+
+    def predicate_callback(context):
+        observed_paths.append(context.path)
+        return True
+
+    parser = OpenApiParser()
+    exec_settings = OpenAPIFunctionExecutionParameters(operation_selection_predicate=predicate_callback)
+    operations = parser.create_rest_api_operations(parsed_document, execution_settings=exec_settings)
+
+    # The regular operation is offered to the predicate and imported.
+    assert "/items" in observed_paths
+    assert "getItems" in operations
+
+    # The encoded dot-segment operation is excluded before the predicate is consulted,
+    # so it cannot slip past an include/exclude operation-selection filter.
+    assert "/resources/%2e%2e/admin" not in observed_paths
+    assert "getAdmin" not in operations
+
+
+def test_non_relative_path_operations_excluded_from_selection():
+    # An operation whose path is an absolute / authority-changing URI resolves to a request off the
+    # configured server, so it must be excluded before the selection predicate is consulted rather
+    # than offered to a path-based filter and only rejected later at request construction.
+    parsed_document = {
+        "servers": [{"url": "https://example.com"}],
+        "paths": {
+            "/items": {
+                "get": {
+                    "operationId": "getItems",
+                    "summary": "Get items",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+            "https://evil.com/admin": {
+                "get": {
+                    "operationId": "getAdmin",
+                    "summary": "Get admin",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+
+    observed_paths: list[str] = []
+
+    def predicate_callback(context):
+        observed_paths.append(context.path)
+        return True
+
+    parser = OpenApiParser()
+    exec_settings = OpenAPIFunctionExecutionParameters(operation_selection_predicate=predicate_callback)
+    operations = parser.create_rest_api_operations(parsed_document, execution_settings=exec_settings)
+
+    # The regular operation is offered to the predicate and imported.
+    assert "/items" in observed_paths
+    assert "getItems" in operations
+
+    # The absolute operation path is excluded before the predicate is consulted.
+    assert "https://evil.com/admin" not in observed_paths
+    assert "getAdmin" not in operations
 
 
 @patch("aiohttp.ClientSession.request")
