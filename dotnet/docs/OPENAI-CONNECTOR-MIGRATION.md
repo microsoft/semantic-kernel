@@ -74,7 +74,7 @@ We have the two only specific cases where we attempted to auto-correct the endpo
    ```
 
    For example, an OpenAI-compatible provider such as TokenLab should be
-   configured with its root compatible endpoint:
+   configured with its OpenAI-compatible base URL:
 
    ```diff
    - https://api.tokenlab.sh
