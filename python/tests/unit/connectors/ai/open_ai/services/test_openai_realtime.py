@@ -636,6 +636,38 @@ async def test_parse_function_call_arguments_done_filters_block_unallowed(OpenAI
     assert "not part of the provided" in str(result_event.function_result.result)
 
 
+async def test_parse_function_call_arguments_done_no_settings_fails_closed(OpenAIWebsocket, kernel):
+    """When no settings/function choice behavior is present, the call must not be invoked (fail closed)."""
+    event = ResponseFunctionCallArgumentsDoneEvent(
+        call_id="call_id",
+        arguments='{"x": "result"}',
+        event_id="event_id",
+        output_index=0,
+        item_id="item_id",
+        name="plugin_name-function_name",
+        response_id="response_id",
+        type="response.function_call_arguments.done",
+    )
+    # No current settings -> function_behavior would be None -> allowlist cannot be enforced.
+    OpenAIWebsocket._current_settings = None
+    OpenAIWebsocket._call_id_to_function_map["call_id"] = "plugin_name-function_name"
+    func = kernel_function(name="function_name", description="function_description")(lambda x: x)
+    kernel.add_function(plugin_name="plugin_name", function_name="function_name", function=func)
+    OpenAIWebsocket._kernel = kernel
+
+    with (
+        patch.object(Kernel, "invoke_function_call") as mock_invoke,
+        patch.object(OpenAIWebsocket, "_send") as mock_send,
+    ):
+        events_received = [evt async for evt in OpenAIWebsocket._parse_function_call_arguments_done(event)]
+
+    # The function is never invoked, but a safe result is still sent back to the service.
+    mock_invoke.assert_not_awaited()
+    assert mock_send.await_count == 2
+    assert isinstance(events_received[-1], RealtimeFunctionResultEvent)
+    assert "not invoked" in str(events_received[-1].function_result.result)
+
+
 async def test_send_audio(OpenAIWebsocket):
     audio_event = RealtimeAudioEvent(
         audio=AudioContent(data=b"audio data", mime_type="audio/wav"),
