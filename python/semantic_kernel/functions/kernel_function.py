@@ -285,7 +285,8 @@ class KernelFunction(KernelBaseModel):
 
                 async def main():
                     kernel = Kernel()
-                    kernel.add_service(OpenAIChatCompletion(service_id="default"))
+                    # Requires OPENAI_API_KEY env var (or pass api_key explicitly).
+                    kernel.add_service(OpenAIChatCompletion(ai_model_id="gpt-4o-mini", service_id="default"))
                     func = KernelFunction.from_prompt(
                         function_name="summarize",
                         plugin_name="WriterPlugin",
