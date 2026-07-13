@@ -33,11 +33,12 @@ if not api_key:
     raise SystemExit("Set DAOXE_API_KEY to your DaoXE dashboard API key.")
 
 # Exact model ID from your account catalog — do not hardcode a public price list.
-ai_model_id = os.environ.get("DAOXE_MODEL", "YOUR_DAOXE_MODEL_ID")
-if ai_model_id == "YOUR_DAOXE_MODEL_ID":
-    print(
-        "Tip: export DAOXE_MODEL to an exact ID from "
-        "`curl -H \"Authorization: Bearer $DAOXE_API_KEY\" https://daoxe.com/v1/models`"
+ai_model_id = os.environ.get("DAOXE_MODEL")
+if not ai_model_id:
+    raise SystemExit(
+        "Set DAOXE_MODEL to an exact model ID from your DaoXE account catalog "
+        '(GET /v1/models), e.g. '
+        '`curl -H "Authorization: Bearer $DAOXE_API_KEY" https://daoxe.com/v1/models`.'
     )
 
 kernel = Kernel()
