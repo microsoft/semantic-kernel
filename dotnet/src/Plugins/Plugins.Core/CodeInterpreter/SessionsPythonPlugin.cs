@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -271,9 +271,14 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Validate the request domain against allowed domains to prevent SSRF.
+        // When AllowedDomains is explicitly configured, only those domains are permitted.
+        // When AllowedDomains is null (not configured), only the configured endpoint's
+        // own host is permitted, blocking requests to arbitrary URLs such as IMDS (169.254.169.254).
+        var effectiveAllowedDomains = this._settings.AllowedDomains
+            ?? new[] { this._poolManagementEndpoint.Host };
+
+        if (!effectiveAllowedDomains.Contains(uri.Host))
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
