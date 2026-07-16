@@ -56,7 +56,7 @@ dependencies = [
     # Protobuf
     # explicit typing extensions
     "typing-extensions>=4.13",
-    "mcp>=1.26.0",
+    "mcp>=1.8",
 ]
 
 ### Optional dependencies
