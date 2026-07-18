@@ -161,6 +161,34 @@ def test_extract_range_preserve_pairs_keeps_chronological_order(chat_messages_wi
     assert extracted == expected_order, "extract_range must preserve the original message order"
 
 
+def test_extract_range_preserve_pairs_honors_filter_func_when_partner_out_of_range(chat_messages_with_pairs):
+    """
+    Regression test: when preserve_pairs=True and a message's paired call/result
+    falls outside [start, end), filter_func must still be applied to that message.
+
+    There's no pair-coherence decision to make in this case since the partner isn't
+    part of the output either way, so the message should be treated like any other
+    unpaired message with respect to filter_func.
+
+    Slice start=3, end=8 => indices 3,4,5,6,7. Index 3 (result for call1) has its
+    partner at index 2, outside the range. Index 5 (call for call2) has its partner
+    at index 8, also outside the range. filter_func targets index 3 specifically.
+    """
+    target = chat_messages_with_pairs[3]
+    filter_func = lambda msg: msg is target  # noqa: E731
+
+    extracted = extract_range(
+        chat_messages_with_pairs,
+        start=3,
+        end=8,
+        filter_func=filter_func,
+        preserve_pairs=True,
+    )
+
+    assert target not in extracted, "filter_func must be honored even when the pair's partner is out of range"
+    assert len(extracted) == 4
+
+
 def test_locate_summarization_boundary_empty():
     # Edge case: empty history => boundary = 0
     empty_history = []

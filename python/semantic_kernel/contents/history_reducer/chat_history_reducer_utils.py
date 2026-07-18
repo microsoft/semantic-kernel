@@ -194,8 +194,11 @@ def extract_range(
                     continue
                 extracted.append(msg)
                 continue
-            # The paired message falls outside [start, end): keep this one unconditionally
-            # so a function call is never separated from its result (or vice versa).
+            # The paired message falls outside [start, end): there's no pair-coherence
+            # decision to make here (the other half isn't part of the output either way),
+            # so this message is subject to filter_func just like any unpaired message.
+            if filter_func and filter_func(msg):
+                continue
             extracted.append(msg)
             continue
 
