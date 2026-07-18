@@ -224,11 +224,10 @@ public sealed class WebFileDownloadPlugin
         return PathUtilities.GetSafeFullPath(expanded);
     }
 
-    private static bool IsUncOrExtendedPath(string path)
-    {
-        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
-    }
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -239,7 +238,7 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }

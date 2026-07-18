@@ -113,7 +113,7 @@ public sealed class FileIOPlugin
         Verify.NotNullOrWhiteSpace(path);
         canonicalPath = string.Empty;
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -162,5 +162,10 @@ public sealed class FileIOPlugin
 
         return false;
     }
+
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
     #endregion
 }
