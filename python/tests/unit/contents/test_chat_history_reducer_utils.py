@@ -138,6 +138,29 @@ def test_extract_range_preserve_pairs_call_outside_slice(chat_messages_with_pair
     # (2,3) do not appear, and that's correct since they're outside this slice.
 
 
+def test_extract_range_preserve_pairs_keeps_chronological_order(chat_messages_with_pairs):
+    """
+    Regression test: extract_range with preserve_pairs=True must not reorder
+    messages relative to the original history.
+
+    In the fixture, the (call2, result2) pair sits at indices (5, 8), with an
+    unrelated user message (6) and an unrelated function result (7) interleaved
+    between them. Before the fix, extract_range moved the paired result right
+    after the call as soon as it encountered the call, producing the order
+    [2, 3, 4, 5, 8, 6, 7] instead of [2, 3, 4, 5, 6, 7, 8]. That silently
+    scrambled the chronological order of messages handed to summarization.
+    """
+    extracted = extract_range(
+        chat_messages_with_pairs,
+        start=2,
+        end=9,
+        preserve_pairs=True,
+    )
+
+    expected_order = chat_messages_with_pairs[2:9]
+    assert extracted == expected_order, "extract_range must preserve the original message order"
+
+
 def test_locate_summarization_boundary_empty():
     # Edge case: empty history => boundary = 0
     empty_history = []
