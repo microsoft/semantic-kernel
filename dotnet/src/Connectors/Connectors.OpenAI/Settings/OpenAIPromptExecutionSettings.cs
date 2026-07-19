@@ -650,6 +650,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     internal static void ApplyExtraBodyEntry(ChatCompletionOptions options, string key, object? value)
     {
+        if (TryApplyExtraBodyTools(options, key, value))
+        {
+            return;
+        }
+
         string path = key.StartsWith("$.", StringComparison.Ordinal)
             ? key
             : $"$[{JsonSerializer.Serialize(key)}]";
@@ -667,6 +672,57 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(value, value.GetType());
         options.Patch.Set(pathBytes, BinaryData.FromBytes(jsonBytes));
 #pragma warning restore SCME0001
+    }
+
+    private static bool TryApplyExtraBodyTools(ChatCompletionOptions options, string key, object? value)
+    {
+        if (value is null || (key != "tools" && key != "$.tools"))
+        {
+            return false;
+        }
+
+        JsonElement tools = JsonSerializer.SerializeToElement(value, value.GetType());
+        if (tools.ValueKind != JsonValueKind.Array || tools.EnumerateArray().Any(tool => tool.ValueKind != JsonValueKind.Object))
+        {
+            return false;
+        }
+
+        var parsedTools = new List<ChatTool>();
+        foreach (JsonElement toolElement in tools.EnumerateArray())
+        {
+            // ChatTool currently models function tools only. Start with one so the SDK owns serialization of the
+            // surrounding tools array, then replace its fields through JsonPatch to support newer tool types.
+            ChatTool tool = ChatTool.CreateFunctionTool("placeholder");
+
+#pragma warning disable SCME0001 // System.ClientModel JsonPatch is for evaluation purposes only.
+            tool.Patch.Remove(System.Text.Encoding.UTF8.GetBytes("$.function"));
+            foreach (JsonProperty property in toolElement.EnumerateObject())
+            {
+                string path = property.Name is "type" or "function"
+                    ? $"$.{property.Name}"
+                    : $"$[{JsonSerializer.Serialize(property.Name)}]";
+                byte[] propertyPath = System.Text.Encoding.UTF8.GetBytes(path);
+                if (property.Value.ValueKind == JsonValueKind.Null)
+                {
+                    tool.Patch.SetNull(propertyPath);
+                }
+                else
+                {
+                    tool.Patch.Set(propertyPath, BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(property.Value)));
+                }
+            }
+#pragma warning restore SCME0001
+
+            parsedTools.Add(tool);
+        }
+
+        options.Tools.Clear();
+        foreach (ChatTool tool in parsedTools)
+        {
+            options.Tools.Add(tool);
+        }
+
+        return true;
     }
 
     /// <summary>
