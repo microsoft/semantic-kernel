@@ -150,6 +150,7 @@ public static class KernelFunctionPrompty
     /// <summary>
     /// Converts the strongly typed <see cref="PromptyCore.ModelOptions"/> to the loosely typed extension data
     /// expected by <see cref="PromptExecutionSettings"/> consumers (for example, the OpenAI connector).
+    /// Only the strongly typed options are mapped; arbitrary provider-specific options are not forwarded.
     /// </summary>
     private static Dictionary<string, object> ToExtensionData(PromptyCore.ModelOptions? options)
     {
@@ -166,15 +167,6 @@ public static class KernelFunctionPrompty
         if (options.MaxOutputTokens is not null) { extensionData["max_tokens"] = options.MaxOutputTokens; }
         if (options.Seed is not null) { extensionData["seed"] = options.Seed; }
         if (options.StopSequences is { Count: > 0 }) { extensionData["stop_sequences"] = options.StopSequences; }
-
-        // Carry over any provider-specific options that are not part of the strongly typed set.
-        if (options.AdditionalProperties is not null)
-        {
-            foreach (var kvp in options.AdditionalProperties)
-            {
-                extensionData[kvp.Key] = kvp.Value;
-            }
-        }
 
         return extensionData;
     }
