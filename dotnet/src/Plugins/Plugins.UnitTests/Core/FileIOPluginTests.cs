@@ -154,8 +154,11 @@ public class FileIOPluginTests
         // Arrange
         var plugin = new FileIOPlugin() { AllowedFolders = [Path.GetTempPath()] };
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => plugin.ReadAsync(uncPath));
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => plugin.ReadAsync(uncPath));
+
+        // Assert - the UNC guard (not another validation) must be what rejected the path
+        Assert.Contains("UNC paths are not supported", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -172,8 +175,11 @@ public class FileIOPluginTests
             DisableFileOverwrite = false
         };
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => plugin.WriteAsync(uncPath, "hello world"));
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => plugin.WriteAsync(uncPath, "hello world"));
+
+        // Assert - the UNC guard (not another validation) must be what rejected the path
+        Assert.Contains("UNC paths are not supported", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -175,14 +175,14 @@ public sealed class FileIOPlugin
     /// <c>//server/share</c>) or an extended-length / device path (e.g., <c>\\?\</c>, <c>\\.\</c>).
     /// Windows treats any two leading directory separators, in any combination of <c>\</c> and
     /// <c>/</c>, as such a root, so all combinations are rejected for consistency with the other
-    /// file plugins.
+    /// file plugins. Both separator characters are checked explicitly so the result does not
+    /// depend on the current operating system's separator.
     /// </summary>
     private static bool IsUncOrExtendedPath(string path)
     {
         return path.Length >= 2 && IsDirectorySeparator(path[0]) && IsDirectorySeparator(path[1]);
     }
 
-    private static bool IsDirectorySeparator(char c)
-        => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
+    private static bool IsDirectorySeparator(char c) => c is '\\' or '/';
     #endregion
 }
