@@ -1,4 +1,4 @@
-﻿---
+---
 name: prompty_with_no_execution_setting
 description: prompty without execution setting
 metadata:
@@ -7,6 +7,8 @@ metadata:
   tags:
     - basic
 inputs:
-  prompt: dummy
+  - name: prompt
+    kind: string
+    default: dummy
 ---
 {{prompt}}
