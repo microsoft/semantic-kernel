@@ -2,8 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
@@ -55,24 +54,24 @@ public static class KernelFunctionPrompty
     {
         Verify.NotNullOrWhiteSpace(promptyTemplate);
 
-        Dictionary<string, object> globalConfig = [];
-        PromptyCore.Prompty prompty = PromptyCore.Prompty.Load(promptyTemplate, globalConfig, promptyFilePath);
+        PromptyCore.Prompty prompty = LoadPrompty(promptyTemplate, promptyFilePath);
 
         var promptTemplateConfig = new PromptTemplateConfig
         {
             Name = prompty.Name,
             Description = prompty.Description,
-            Template = prompty.Content.ToString() ?? string.Empty,
+            Template = prompty.Instructions ?? string.Empty,
         };
 
         PromptExecutionSettings? defaultExecutionSetting = null;
-        if (prompty.Model?.Id is not null || prompty.Model?.Connection?.ServiceId is not null || prompty.Model?.Options?.Count > 0)
+        var extensionData = ToExtensionData(prompty.Model?.Options);
+        var modelId = prompty.Model?.Id;
+        if (!string.IsNullOrWhiteSpace(modelId) || extensionData.Count > 0)
         {
             defaultExecutionSetting = new PromptExecutionSettings()
             {
-                ModelId = prompty.Model.Id,
-                ServiceId = prompty.Model.Connection?.ServiceId,
-                ExtensionData = prompty.Model.Options,
+                ModelId = string.IsNullOrWhiteSpace(modelId) ? null : modelId,
+                ExtensionData = extensionData.Count > 0 ? extensionData : null,
             };
             promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
         }
@@ -80,17 +79,14 @@ public static class KernelFunctionPrompty
         // Add input and output variables.
         if (prompty.Inputs is not null)
         {
-            foreach (var kvp in prompty.Inputs)
+            foreach (var input in prompty.Inputs)
             {
-                var input = kvp.Value;
                 promptTemplateConfig.InputVariables.Add(new()
                 {
-                    Name = kvp.Key,
+                    Name = input.Name,
                     Default = input.Default,
-                    IsRequired = input.Required,
-                    Description = input.Description,
-                    AllowDangerouslySetContent = !input.Strict,
-                    JsonSchema = ToJsonSchema(input.JsonSchema),
+                    IsRequired = input.Required ?? false,
+                    Description = input.Description ?? string.Empty,
                 });
             }
         }
@@ -100,35 +96,87 @@ public static class KernelFunctionPrompty
             // contains one and only one, use it. Otherwise, ignore any outputs.
             if (prompty.Outputs.Count == 1)
             {
-                var output = prompty.Outputs.Values.First();
+                var output = prompty.Outputs[0];
                 promptTemplateConfig.OutputVariable = new()
                 {
-                    Description = output.Description,
-                    JsonSchema = ToJsonSchema(output.JsonSchema),
+                    Description = output.Description ?? string.Empty,
                 };
             }
         }
 
         // Update template format. If not provided, use Liquid as default.
-        promptTemplateConfig.TemplateFormat = prompty.Template?.Format ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
+        promptTemplateConfig.TemplateFormat =
+            string.IsNullOrEmpty(prompty.Template?.Format?.Kind)
+                ? LiquidPromptTemplateFactory.LiquidTemplateFormat
+                : prompty.Template!.Format!.Kind;
 
         return promptTemplateConfig;
     }
 
     #region private
-    private static string? ToJsonSchema(object? input)
+    /// <summary>
+    /// Loads a <see cref="PromptyCore.Prompty"/> from the provided template text, optionally using a file path
+    /// so that <c>${file:...}</c> references resolve securely within the prompty file's directory.
+    /// </summary>
+    private static PromptyCore.Prompty LoadPrompty(string promptyTemplate, string? promptyFilePath)
     {
-        if (input is null)
+        try
         {
-            return null;
+            // When a real file path is available, use the file loader so that file references
+            // (${file:...}) are resolved securely, confined to the directory containing the file.
+            if (!string.IsNullOrEmpty(promptyFilePath) && File.Exists(promptyFilePath))
+            {
+                var fullPath = Path.GetFullPath(promptyFilePath);
+                var loadOptions = new PromptyCore.PromptyLoadOptions
+                {
+                    AllowedFileRoots = [Path.GetDirectoryName(fullPath)!],
+                };
+
+                return PromptyCore.PromptyLoader.Load(fullPath, loadOptions);
+            }
+
+            // Otherwise parse the frontmatter (and markdown body) directly from the provided text.
+            var frontmatter = PromptyCore.FrontmatterParser.Parse(promptyTemplate);
+            return PromptyCore.Prompty.Load(frontmatter, new PromptyCore.LoadContext());
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            // Normalize parse/format failures (for example, invalid YAML in the frontmatter) to
+            // ArgumentException to preserve the plugin's input-validation contract.
+            throw new ArgumentException($"Invalid prompty template: {ex.Message}", nameof(promptyTemplate), ex);
+        }
+    }
+
+    /// <summary>
+    /// Converts the strongly typed <see cref="PromptyCore.ModelOptions"/> to the loosely typed extension data
+    /// expected by <see cref="PromptExecutionSettings"/> consumers (for example, the OpenAI connector).
+    /// </summary>
+    private static Dictionary<string, object> ToExtensionData(PromptyCore.ModelOptions? options)
+    {
+        Dictionary<string, object> extensionData = [];
+        if (options is null)
+        {
+            return extensionData;
         }
 
-        if (input is string str)
+        if (options.Temperature is not null) { extensionData["temperature"] = options.Temperature; }
+        if (options.TopP is not null) { extensionData["top_p"] = options.TopP; }
+        if (options.PresencePenalty is not null) { extensionData["presence_penalty"] = options.PresencePenalty; }
+        if (options.FrequencyPenalty is not null) { extensionData["frequency_penalty"] = options.FrequencyPenalty; }
+        if (options.MaxOutputTokens is not null) { extensionData["max_tokens"] = options.MaxOutputTokens; }
+        if (options.Seed is not null) { extensionData["seed"] = options.Seed; }
+        if (options.StopSequences is { Count: > 0 }) { extensionData["stop_sequences"] = options.StopSequences; }
+
+        // Carry over any provider-specific options that are not part of the strongly typed set.
+        if (options.AdditionalProperties is not null)
         {
-            return str;
+            foreach (var kvp in options.AdditionalProperties)
+            {
+                extensionData[kvp.Key] = kvp.Value;
+            }
         }
 
-        return JsonSerializer.Serialize(input);
+        return extensionData;
     }
     #endregion
 }
