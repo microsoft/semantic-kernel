@@ -8,9 +8,9 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Redis;
+using CommunityToolkit.VectorData.InMemory;
+using CommunityToolkit.VectorData.Qdrant;
+using CommunityToolkit.VectorData.Redis;
 using Qdrant.Client;
 using StackExchange.Redis;
 

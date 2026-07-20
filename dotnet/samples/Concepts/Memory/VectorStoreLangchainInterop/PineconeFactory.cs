@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Pinecone;
+using CommunityToolkit.VectorData.Pinecone;
 using Pinecone;
 
 namespace Memory.VectorStoreLangchainInterop;

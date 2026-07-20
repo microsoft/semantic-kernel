@@ -2,7 +2,7 @@
 
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Redis;
+using CommunityToolkit.VectorData.Redis;
 using Microsoft.SemanticKernel.Memory;
 using StackExchange.Redis;
 

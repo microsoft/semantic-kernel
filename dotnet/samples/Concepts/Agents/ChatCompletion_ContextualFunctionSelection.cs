@@ -5,7 +5,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Connectors.InMemory;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Functions;
 
 namespace Agents;

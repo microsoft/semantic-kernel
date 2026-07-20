@@ -6,7 +6,7 @@ using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.PgVector;
+using CommunityToolkit.VectorData.PgVector;
 
 namespace Memory;
 

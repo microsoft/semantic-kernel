@@ -5,7 +5,7 @@ using System.ClientModel.Primitives;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.InMemory;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Resources;
 

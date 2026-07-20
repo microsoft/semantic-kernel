@@ -3,7 +3,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.InMemory;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -52,7 +52,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
         [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreVector(Dimensions: 768)]
+        [VectorStoreVector(768)]
         public string Embedding { get; set; }
     }
 

@@ -3,7 +3,7 @@
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
+using CommunityToolkit.VectorData.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Qdrant.Client;
 

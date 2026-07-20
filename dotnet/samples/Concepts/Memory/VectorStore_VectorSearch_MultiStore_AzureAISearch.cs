@@ -7,7 +7,7 @@ using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using CommunityToolkit.VectorData.AzureAISearch;
 
 namespace Memory;
 
