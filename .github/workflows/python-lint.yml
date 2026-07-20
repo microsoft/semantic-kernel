@@ -23,9 +23,9 @@ jobs:
       UV_CACHE_DIR: /tmp/.uv-cache
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           version: "0.5.x"
           enable-cache: true
@@ -33,7 +33,7 @@ jobs:
           cache-dependency-glob: "**/uv.lock"
       - name: Install the project
         run: uv sync --all-extras --dev
-      - uses: pre-commit/action@v3.0.1
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         name: Run Pre-Commit Hooks
         with:
           extra_args: --config python/.pre-commit-config.yaml --all-files
