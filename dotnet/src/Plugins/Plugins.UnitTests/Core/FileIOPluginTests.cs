@@ -144,6 +144,38 @@ public class FileIOPluginTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.ReadAsync(Path.Combine("", Path.GetRandomFileName())));
     }
 
+    [Theory]
+    [InlineData("\\\\server\\share\\file.txt")]
+    [InlineData("//server/share/file.txt")]
+    [InlineData("\\/server\\share\\file.txt")]
+    [InlineData("/\\server/share/file.txt")]
+    public async Task ItCannotReadFromUncPathsAsync(string uncPath)
+    {
+        // Arrange
+        var plugin = new FileIOPlugin() { AllowedFolders = [Path.GetTempPath()] };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => plugin.ReadAsync(uncPath));
+    }
+
+    [Theory]
+    [InlineData("\\\\server\\share\\file.txt")]
+    [InlineData("//server/share/file.txt")]
+    [InlineData("\\/server\\share\\file.txt")]
+    [InlineData("/\\server/share/file.txt")]
+    public async Task ItCannotWriteToUncPathsAsync(string uncPath)
+    {
+        // Arrange
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => plugin.WriteAsync(uncPath, "hello world"));
+    }
+
     [Fact]
     public async Task ItCannotReadThroughSymlinkOutsideAllowedFoldersAsync()
     {

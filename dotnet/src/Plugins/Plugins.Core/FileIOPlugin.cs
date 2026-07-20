@@ -113,7 +113,7 @@ public sealed class FileIOPlugin
         Verify.NotNullOrWhiteSpace(path);
         canonicalPath = string.Empty;
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -126,6 +126,13 @@ public sealed class FileIOPlugin
         }
 
         canonicalPath = PathUtilities.GetSafeFullPath(path);
+
+        // Re-check after canonicalization: resolving the path could produce a UNC
+        // or extended-path prefix that was not present in the original input.
+        if (IsUncOrExtendedPath(canonicalPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
 
         if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
         {
@@ -162,5 +169,20 @@ public sealed class FileIOPlugin
 
         return false;
     }
+
+    /// <summary>
+    /// Determines whether the provided path is a UNC path (e.g., <c>\\server\share</c> or
+    /// <c>//server/share</c>) or an extended-length / device path (e.g., <c>\\?\</c>, <c>\\.\</c>).
+    /// Windows treats any two leading directory separators, in any combination of <c>\</c> and
+    /// <c>/</c>, as such a root, so all combinations are rejected for consistency with the other
+    /// file plugins.
+    /// </summary>
+    private static bool IsUncOrExtendedPath(string path)
+    {
+        return path.Length >= 2 && IsDirectorySeparator(path[0]) && IsDirectorySeparator(path[1]);
+    }
+
+    private static bool IsDirectorySeparator(char c)
+        => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
     #endregion
 }
