@@ -125,7 +125,17 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
-        canonicalPath = PathUtilities.GetSafeFullPath(path);
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        canonicalPath = Path.GetFullPath(path);
+        if (IsUncOrExtendedPath(canonicalPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
 
         if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
         {
