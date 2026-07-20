@@ -188,6 +188,57 @@ public sealed class OllamaTextGenerationTests : IDisposable
         Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetTextContentsShouldSendThinkSettingAsync(bool thinkValue)
+    {
+        // Arrange
+        var sut = new OllamaTextGenerationService("fake-model", httpClient: this._httpClient);
+        var settings = new OllamaPromptExecutionSettings { Think = thinkValue };
+
+        // Act
+        await sut.GetTextContentsAsync("Any prompt", settings);
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<GenerateRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.Equal(thinkValue, (bool?)requestPayload.Think);
+    }
+
+    [Fact]
+    public async Task GetTextContentsShouldNotSendThinkWhenNotSetAsync()
+    {
+        // Arrange
+        var sut = new OllamaTextGenerationService("fake-model", httpClient: this._httpClient);
+
+        // Act
+        await sut.GetTextContentsAsync("Any prompt");
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<GenerateRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.Null(requestPayload.Think);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetStreamingTextContentsShouldSendThinkSettingAsync(bool thinkValue)
+    {
+        // Arrange
+        var sut = new OllamaTextGenerationService("fake-model", httpClient: this._httpClient);
+        var settings = new OllamaPromptExecutionSettings { Think = thinkValue };
+
+        // Act
+        await sut.GetStreamingTextContentsAsync("Any prompt", settings).GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<GenerateRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.Equal(thinkValue, (bool?)requestPayload.Think);
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
