@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 #pragma warning disable CS0618 // ITextSearch is obsolete
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch<TRecord>, ITextSearch
+    where TRecord : class
 #pragma warning restore CS0618
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
