@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using CommunityToolkit.VectorData.InMemory;
+using Microsoft.Extensions.VectorData;
 
 namespace Memory;
 

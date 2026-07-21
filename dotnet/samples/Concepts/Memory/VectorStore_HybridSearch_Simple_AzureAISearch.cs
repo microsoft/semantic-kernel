@@ -4,9 +4,9 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.AzureAISearch;
 
 namespace Memory;
 

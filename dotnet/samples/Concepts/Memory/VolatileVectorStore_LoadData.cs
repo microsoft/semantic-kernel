@@ -3,9 +3,9 @@
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Text.Json;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Resources;
 

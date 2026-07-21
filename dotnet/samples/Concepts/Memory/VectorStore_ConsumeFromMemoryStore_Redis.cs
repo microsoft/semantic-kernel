@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using CommunityToolkit.VectorData.Redis;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.Redis;
 using Microsoft.SemanticKernel.Memory;
 using StackExchange.Redis;
 

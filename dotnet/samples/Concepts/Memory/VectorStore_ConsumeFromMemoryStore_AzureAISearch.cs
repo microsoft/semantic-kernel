@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using Azure;
 using Azure.Search.Documents.Indexes;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Memory;

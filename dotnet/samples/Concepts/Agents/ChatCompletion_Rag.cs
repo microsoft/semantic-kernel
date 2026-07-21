@@ -2,11 +2,11 @@
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Data;
 
 namespace Agents;

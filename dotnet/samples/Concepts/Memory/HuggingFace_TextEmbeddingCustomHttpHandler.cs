@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

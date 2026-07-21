@@ -3,14 +3,14 @@
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using CommunityToolkit.VectorData.InMemory;
+using CommunityToolkit.VectorData.Qdrant;
+using CommunityToolkit.VectorData.Redis;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using CommunityToolkit.VectorData.InMemory;
-using CommunityToolkit.VectorData.Qdrant;
-using CommunityToolkit.VectorData.Redis;
 using Qdrant.Client;
 using StackExchange.Redis;
 

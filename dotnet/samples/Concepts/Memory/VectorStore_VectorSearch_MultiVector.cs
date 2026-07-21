@@ -2,9 +2,9 @@
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.InMemory;
 
 namespace Memory;
 

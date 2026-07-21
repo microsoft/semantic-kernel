@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Data;
 using OpenAI;
 

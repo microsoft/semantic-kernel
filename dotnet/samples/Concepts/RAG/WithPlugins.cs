@@ -2,10 +2,10 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using CommunityToolkit.VectorData.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using OpenAI;
