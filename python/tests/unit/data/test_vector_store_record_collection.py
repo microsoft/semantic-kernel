@@ -177,6 +177,7 @@ async def test_crud_batch_operations_container(vector_store_record_collection):
     ["definition_pandas"],
     indirect=True,
 )
+@mark.asyncio
 async def test_crud_operations_pandas(vector_store_record_collection):
     id = "test_id"
     record = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}])
@@ -198,6 +199,7 @@ async def test_crud_operations_pandas(vector_store_record_collection):
     ["definition_pandas"],
     indirect=True,
 )
+@mark.asyncio
 async def test_crud_batch_operations_pandas(vector_store_record_collection):
     ids = ["test_id_1", "test_id_2"]
 
