@@ -25,16 +25,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />

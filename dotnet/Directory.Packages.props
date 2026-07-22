@@ -91,7 +91,7 @@
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Npgsql" Version="10.0.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.25" />
     <PackageVersion Include="OpenAI" Version="2.10.0" />
@@ -115,7 +115,7 @@
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.4" />
     <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.6" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.9" />
     <PackageVersion Include="System.Text.Json" Version="10.0.6" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
@@ -200,15 +200,14 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
     <!-- VectorData Dependencies -->
-    <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0-preview.1" />
-    <PackageVersion Include="CommunityToolkit.VectorData.CosmosNoSql" Version="1.0.0-preview.1" />
-    <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.Pinecone" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.Redis" Version="1.0.0-preview.3" />
-    <PackageVersion Include="CommunityToolkit.VectorData.Weaviate" Version="1.0.0-preview.3" />
+    <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.CosmosNoSql" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Redis" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Weaviate" Version="1.0.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->

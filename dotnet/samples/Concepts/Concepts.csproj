@@ -55,7 +55,6 @@
     <PackageReference Include="CommunityToolkit.VectorData.CosmosMongoDB" />
     <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
     <PackageReference Include="CommunityToolkit.VectorData.Qdrant" />
-    <PackageReference Include="CommunityToolkit.VectorData.Pinecone" />
     <PackageReference Include="CommunityToolkit.VectorData.PgVector" />
     <PackageReference Include="CommunityToolkit.VectorData.Redis" />
   </ItemGroup>
