@@ -91,7 +91,7 @@
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Npgsql" Version="10.0.2" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.25" />
     <PackageVersion Include="OpenAI" Version="2.10.0" />
@@ -115,7 +115,7 @@
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.4" />
     <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.9" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.6" />
     <PackageVersion Include="System.Text.Json" Version="10.0.6" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
