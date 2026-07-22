@@ -148,6 +148,30 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
     }
 
     [Fact]
+    public async Task ExtraBodyNestedToolsPathDoesNotDuplicatePropertyAsync()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["$.tools[0].type"] = "web_search",
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        var body = ParseRequestBody(this._messageHandlerStub.RequestContent!);
+        var tools = Assert.Single(body.EnumerateObject(), property => property.NameEquals("tools"));
+        var tool = Assert.Single(tools.Value.EnumerateArray());
+        Assert.Equal("web_search", tool.GetProperty("type").GetString());
+        Assert.False(tool.TryGetProperty("function", out _));
+    }
+
+    [Fact]
     public async Task ExtraBodyNestedDictionaryEmitsNestedJsonObjectAsync()
     {
         // Arrange
