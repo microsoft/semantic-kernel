@@ -28,6 +28,7 @@
     <PackageReference Include="Pinecone.Client" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
@@ -37,10 +38,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.Pinecone.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

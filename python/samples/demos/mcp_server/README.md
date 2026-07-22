@@ -61,6 +61,20 @@ uv --directory=<path to sk project>/semantic-kernel/python/samples/demos/mcp_ser
 
 This will start a server that listens for incoming requests on port `8000`.
 
+> [!NOTE]
+> By default the SSE server binds to `127.0.0.1` (loopback) and only accepts requests
+> with a loopback `Host` header and, when present, a loopback `Origin` header. A local
+> MCP server exposes tools, plugins and model providers backed by your own credentials,
+> so it is good practice to keep it reachable only from your own machine. The
+> [MCP specification](https://modelcontextprotocol.io/) recommends validating `Origin`
+> and binding to loopback, in part to guard against [DNS rebinding](https://en.wikipedia.org/wiki/DNS_rebinding).
+>
+> You can override the bind address with `--host`, e.g. `--host 0.0.0.0` to expose the
+> server on the network. Do this only on a trusted network. The bundled Host/Origin
+> checks only allow loopback callers, so a non-loopback deployment needs proper
+> authentication - see the [`mcp_with_oauth`](../mcp_with_oauth/) sample for the
+> authenticated, Streamable-HTTP pattern recommended for production.
+
 ---
 
 In both cases, `uv` will ensure that `semantic-kernel` is installed with the `mcp` extra in a temporary virtual environment.
