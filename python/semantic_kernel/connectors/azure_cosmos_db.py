@@ -398,7 +398,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB for MongoDB."
                 )
             index_name = f"{field.storage_name or field.name}_"
-            index_kind = DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function]
+            index_kind = INDEX_KIND_MAP_MONGODB[field.index_kind]
             index: dict[str, Any] = {
                 "name": index_name,
                 FieldTypes.KEY: {field.storage_name or field.name: "cosmosSearch"},
