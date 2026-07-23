@@ -305,10 +305,10 @@ public class RedisJsonCollectionTests
     }
 
     [Theory]
-    [InlineData(true, true, """{"data1_json_name":"data 1","data2":"data 2","vector1_json_name":[1,2,3,4],"vector2":[1,2,3,4],"notAnnotated":null}""")]
-    [InlineData(true, false, """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""")]
-    [InlineData(false, true, """{"data1_json_name":"data 1","data2":"data 2","vector1_json_name":[1,2,3,4],"vector2":[1,2,3,4],"notAnnotated":null}""")]
-    [InlineData(false, false, """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""")]
+    [InlineData(true, true, """{"data1_json_name":"data 1","data2":"data 2","vector1_json_name":[1,2,3,4],"vector2":[1,2,3,4]}""")]
+    [InlineData(true, false, """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""")]
+    [InlineData(false, true, """{"data1_json_name":"data 1","data2":"data 2","vector1_json_name":[1,2,3,4],"vector2":[1,2,3,4]}""")]
+    [InlineData(false, false, """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""")]
     public async Task CanUpsertRecordAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedUpsertedJson)
     {
         // Arrange
@@ -320,7 +320,6 @@ public class RedisJsonCollectionTests
         await sut.UpsertAsync(model);
 
         // Assert
-        // TODO: Fix issue where NotAnnotated is being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", expectedUpsertedJson };
         this._redisDatabaseMock
             .Verify(
@@ -346,8 +345,7 @@ public class RedisJsonCollectionTests
         await sut.UpsertAsync([model1, model2]);
 
         // Assert
-        // TODO: Fix issue where NotAnnotated is being included in the JSON.
-        var expectedArgs = new object[] { TestRecordKey1, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""", TestRecordKey2, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""" };
+        var expectedArgs = new object[] { TestRecordKey1, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""", TestRecordKey2, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4]}""" };
         this._redisDatabaseMock
             .Verify(
                 x => x.ExecuteAsync(
