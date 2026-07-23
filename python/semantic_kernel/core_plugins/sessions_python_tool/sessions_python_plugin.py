@@ -415,6 +415,7 @@ class SessionsPythonTool(KernelBaseModel):
                 f"List files failed with status code {e.response.status_code} and error: {error_message}"
             ) from e
 
+    @kernel_function(name="download_file", description="Downloads a file from the current Session ID")
     async def download_file(
         self,
         *,
