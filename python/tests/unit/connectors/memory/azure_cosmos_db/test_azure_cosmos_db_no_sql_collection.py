@@ -96,10 +96,10 @@ def test_azure_cosmos_db_no_sql_build_filter_parameterizes_injection_payload(
         collection_name=collection_name,
     )
 
-    filter_string, parameters = vector_collection._build_filter('lambda x: x.content == "\\\' OR true --"')
+    filter_string, parameters = vector_collection._build_filter('lambda x: x.content == "\\\\\' OR true --"')
 
     assert filter_string == "c.content = @filter_p0"
-    assert parameters == [{"name": "@filter_p0", "value": "' OR true --"}]
+    assert parameters == [{"name": "@filter_p0", "value": "\\' OR true --"}]
 
 
 def test_azure_cosmos_db_no_sql_dynamic_filter_injection_payload_stays_literal(
