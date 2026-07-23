@@ -6,18 +6,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.3.1-preview.1.25305.6" />
-    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.3.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="13.3.0" />
+    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="9.9.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.3.0" />
     <PackageVersion Include="MessagePack" Version="3.1.7" /> <!-- Transitive dependency of Aspire pinned to newer version due to vulnerability in 2.5.192 -->
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.7.5" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.8.5" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.8.5" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.14.5" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.3.8" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.6.1" />
     <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.19" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.5.6" />
@@ -107,6 +107,7 @@
     <PackageVersion Include="PdfPig" Version="0.1.13" />
     <PackageVersion Include="Pinecone.Client" Version="3.1.0" />
     <PackageVersion Include="Prompty.Core" Version="2.0.0-beta.3" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" /> <!-- Transitive dependency of Microsoft.Data.Sqlite pinned to newer version due to vulnerability in <= 2.1.11 (GHSA-2m69-gcr7-jv3q) -->
     <PackageVersion Include="PuppeteerSharp" Version="20.2.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />

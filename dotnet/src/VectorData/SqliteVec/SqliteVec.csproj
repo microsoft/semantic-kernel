@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" /> <!-- Pin to patched version to fix vulnerability GHSA-2m69-gcr7-jv3q -->
     <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="sqlite-vec" />
