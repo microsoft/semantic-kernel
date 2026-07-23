@@ -6839,7 +6839,7 @@ requires-dist = [
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
     { name = "typing-extensions", specifier = ">=4.13" },
-    { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.16" },
+    { name = "usearch", marker = "extra == 'usearch'", specifier = ">=2.16,<2.25" },
     { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.17.0,<5.0" },
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },

@@ -149,7 +149,7 @@ sql = [
     "pyodbc >= 5.2"
 ]
 usearch = [
-    "usearch ~= 2.16",
+    "usearch >= 2.16,< 2.25",
     "pyarrow>=12.0,<24.0"
 ]
 weaviate = [
