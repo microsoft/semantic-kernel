@@ -190,20 +190,15 @@ public static class TextChunker
             var lastParagraph = paragraphs[paragraphs.Count - 1];
             var secondLastParagraph = paragraphs[paragraphs.Count - 2];
 
-            if (GetTokenCount(lastParagraph, tokenCounter) < adjustedMaxTokensPerParagraph / 4)
+            var lastParagraphTokenCount = GetTokenCount(lastParagraph, tokenCounter);
+
+            if (lastParagraphTokenCount < adjustedMaxTokensPerParagraph / 4)
             {
-                var lastParagraphTokens = lastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
-                var secondLastParagraphTokens = secondLastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
+                var secondLastParagraphTokenCount = GetTokenCount(secondLastParagraph, tokenCounter);
 
-                var lastParagraphTokensCount = lastParagraphTokens.Length;
-                var secondLastParagraphTokensCount = secondLastParagraphTokens.Length;
-
-                if (lastParagraphTokensCount + secondLastParagraphTokensCount <= adjustedMaxTokensPerParagraph)
+                if (lastParagraphTokenCount + secondLastParagraphTokenCount <= adjustedMaxTokensPerParagraph)
                 {
-                    var newSecondLastParagraph = string.Join(" ", secondLastParagraphTokens);
-                    var newLastParagraph = string.Join(" ", lastParagraphTokens);
-
-                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}";
+                    paragraphs[paragraphs.Count - 2] = $"{secondLastParagraph} {lastParagraph}";
                     paragraphs.RemoveAt(paragraphs.Count - 1);
                 }
             }
