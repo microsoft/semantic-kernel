@@ -302,6 +302,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         items: list[CMC_ITEM_TYPES] = []
         if candidate.content and candidate.content.parts:
             for idx, part in enumerate(candidate.content.parts):
+                if getattr(part, "thought", False) is True:
+                    continue
                 if part.text:
                     items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
                 elif part.function_call:
@@ -357,6 +359,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         items: list[STREAMING_ITEM_TYPES] = []
         if candidate.content and candidate.content.parts:
             for idx, part in enumerate(candidate.content.parts):
+                if getattr(part, "thought", False) is True:
+                    continue
                 if part.text:
                     items.append(
                         StreamingTextContent(
