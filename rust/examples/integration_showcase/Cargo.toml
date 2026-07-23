@@ -1,0 +1,26 @@
+[package]
+name = "integration_showcase"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step01_cross_framework"
+path = "step01_cross_framework.rs"
+
+[[bin]]
+name = "step02_performance_optimization"
+path = "step02_performance_optimization.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+dotenv = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }

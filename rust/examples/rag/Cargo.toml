@@ -1,0 +1,17 @@
+[package]
+name = "rag"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-openai = { path = "../../sk-openai" }
+sk-memory = { path = "../../sk-memory" }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[[bin]]
+name = "rag"
+path = "src/main.rs"
