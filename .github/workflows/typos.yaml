@@ -29,6 +29,7 @@ jobs:
         id: changed-files
         if: github.event_name == 'pull_request'
         uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
 
       - name: Use custom config file
         uses: crate-ci/typos@v1.44.0
