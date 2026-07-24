@@ -36,7 +36,8 @@ internal static class ChatMessageExtensions
                 Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
                 Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
                 Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(
-                    functionName: fcc.Name,
+                    functionName: GetFunctionName(fcc.Name, out string? pluginName),
+                    pluginName: pluginName,
                     id: fcc.CallId,
                     arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
                 Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(
@@ -63,6 +64,19 @@ internal static class ChatMessageExtensions
                 .Select(m => m.Contents
                 .FirstOrDefault(c => c is Microsoft.Extensions.AI.FunctionCallContent fcc && fcc.CallId == callId) as Microsoft.Extensions.AI.FunctionCallContent)
                     .FirstOrDefault(fcc => fcc is not null);
+
+        static string GetFunctionName(string name, out string? pluginName)
+        {
+            int underscoreIndex = name.IndexOf('_');
+            if (underscoreIndex > 0)
+            {
+                pluginName = name.Substring(0, underscoreIndex);
+                return name.Substring(underscoreIndex + 1);
+            }
+
+            pluginName = null;
+            return name;
+        }
     }
 
     /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>
