@@ -68,9 +68,15 @@ public abstract class GeminiToolCallBehavior
     }
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private GeminiToolCallBehavior(bool autoInvoke)
+    private GeminiToolCallBehavior(bool autoInvoke, int maximumUseAttempts = int.MaxValue)
     {
-        this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+        this.MaximumUseAttempts = maximumUseAttempts;
+
+        // Auto-invocation can never outlast the number of requests that still advertise the tools, otherwise
+        // the model could request a tool after it has been removed from the request. Cap the auto-invoke
+        // attempts by the use attempts to preserve the documented invariant (MaximumUseAttempts >= MaximumAutoInvokeAttempts).
+        var autoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+        this.MaximumAutoInvokeAttempts = System.Math.Min(autoInvokeAttempts, maximumUseAttempts);
     }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
@@ -80,7 +86,7 @@ public abstract class GeminiToolCallBehavior
     /// if this is 1, the first request will include the tools, but the subsequent response sending back the tool's result
     /// will not include the tools for further use.
     /// </remarks>
-    public int MaximumUseAttempts { get; } = int.MaxValue;
+    public int MaximumUseAttempts { get; }
 
     /// <summary>Gets how many tool call request/response roundtrips are supported with auto-invocation.</summary>
     /// <remarks>
@@ -137,9 +143,15 @@ public abstract class GeminiToolCallBehavior
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : GeminiToolCallBehavior(autoInvoke)
+    internal sealed class EnabledFunctions : GeminiToolCallBehavior
     {
-        private readonly GeminiFunction[] _functions = functions.ToArray();
+        private readonly GeminiFunction[] _functions;
+
+        internal EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke, int maximumUseAttempts = int.MaxValue)
+            : base(autoInvoke, maximumUseAttempts)
+        {
+            this._functions = functions.ToArray();
+        }
 
         public override string ToString() =>
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +
