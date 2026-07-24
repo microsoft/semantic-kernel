@@ -104,12 +104,94 @@ We use and recommend the following workflow:
 The scripts below are used to build, test, and lint within the project.
 
 - Python: see [python/DEV_SETUP.md](https://github.com/microsoft/semantic-kernel/blob/main/python/DEV_SETUP.md#pipeline-checks).
-- .NET:
-  - Build/Test: `run build.cmd` or `bash build.sh`
+- .NET: see [.NET Validation Steps](#net-validation-steps) below for detailed pre-commit validation
+  - Quick Build/Test: `run build.cmd` or `bash build.sh`
   - Linting (auto-fix): `dotnet format`
 - Typescript:
   - Build/Test: `yarn build`
   - Linting (auto-fix): `yarn lint:fix`
+
+#### .NET Validation Steps
+
+Before submitting a PR, run these commands from the `dotnet/` directory to ensure your changes meet CI/CD requirements. The `--warnaserror` flag is critical as it matches GitHub Actions build requirements (all warnings become errors).
+
+**Full Pre-commit Validation Sequence:**
+
+1. **Format Check**: Verify code formatting compliance
+
+   ```powershell
+   dotnet format SK-dotnet.slnx --verify-no-changes
+   ```
+
+   If this fails, run `dotnet format SK-dotnet.slnx` to auto-fix formatting issues.
+
+2. **Build**: Build the solution with warnings as errors
+
+   ```powershell
+   # PowerShell (filters to show only errors/warnings)
+   dotnet build SK-dotnet.slnx --configuration Release --warnaserror 2>&1 | Select-String -Pattern "error|warning"
+
+   # Bash
+   dotnet build SK-dotnet.slnx --configuration Release --warnaserror 2>&1 | grep -E "error|warning"
+   ```
+
+   💡 **Tip**: Use `| Select-Object -First 30` (PowerShell) or `| head -n 30` (Bash) to limit output if many errors occur.
+
+3. **Core Unit Tests**: Run SemanticKernel core tests (~1,500 tests, no external API dependencies)
+
+   ```powershell
+   # Navigate to core unit tests
+   cd src/SemanticKernel.UnitTests
+
+   # PowerShell (shows summary)
+   dotnet test SemanticKernel.UnitTests.csproj --configuration Release --no-build 2>&1 | Select-String -Pattern "Passed|Failed|Total"
+
+   # Bash
+   dotnet test SemanticKernel.UnitTests.csproj --configuration Release --no-build 2>&1 | grep -E "Passed|Failed|Total"
+
+   # Return to dotnet root
+   cd ../..
+   ```
+
+4. **AOT Compatibility Check**: Verify Native AOT compilation support
+
+   ```powershell
+   # Navigate to AOT tests
+   cd src/SemanticKernel.AotTests
+
+   # PowerShell
+   dotnet publish --configuration Release 2>&1 | Select-String -Pattern "error|warning"
+
+   # Bash
+   dotnet publish --configuration Release 2>&1 | grep -E "error|warning"
+
+   # Return to dotnet root
+   cd ../..
+   ```
+
+5. **Full Test Suite** (Optional): Run all tests (~9,600+ tests)
+
+   ```powershell
+   # PowerShell (expect some failures without API keys configured)
+   dotnet test --configuration Release --no-build 2>&1 | Select-String "Test Run|Total tests"
+
+   # Bash
+   dotnet test --configuration Release --no-build 2>&1 | grep -E "Test Run|Total tests"
+   ```
+
+   ⚠️ **Note**: Full test suite includes integration tests that require external API keys. Infrastructure failures are expected without proper configuration.
+
+**Quick Validation** (minimum requirements):
+
+```powershell
+# From dotnet/ directory
+dotnet format SK-dotnet.slnx --verify-no-changes
+dotnet build SK-dotnet.slnx --configuration Release --warnaserror
+cd src/SemanticKernel.UnitTests && dotnet test --configuration Release --no-build
+```
+
+**Why `--warnaserror`?**
+The GitHub Actions CI/CD pipeline treats all warnings as errors. Using this flag locally ensures you catch issues before pushing, avoiding CI failures.
 
 ### Adding Plugins and Memory Connectors
 
