@@ -7,7 +7,7 @@ using MongoDB.Bson;
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
-/// Contains mapping helpers to use when searching for documents using Azure CosmosDB MongoDB.
+/// Contains mapping helpers to use when searching for documents using Azure DocumentDB (with MongoDB compatibility).
 /// </summary>
 internal static class CosmosMongoCollectionSearchMapping
 {

@@ -15,7 +15,7 @@ using MongoDB.Driver;
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
-/// Class for accessing the list of collections in a Azure CosmosDB MongoDB vector store.
+/// Class for accessing the list of collections in an Azure DocumentDB (with MongoDB compatibility) vector store.
 /// </summary>
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
@@ -25,7 +25,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
-    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
+    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure DocumentDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
@@ -36,7 +36,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoVectorStore"/> class.
     /// </summary>
-    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
+    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure DocumentDB.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public CosmosMongoVectorStore(IMongoDatabase mongoDatabase, CosmosMongoVectorStoreOptions? options = default)
     {
