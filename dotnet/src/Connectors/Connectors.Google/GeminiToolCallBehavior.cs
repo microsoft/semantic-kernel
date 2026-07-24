@@ -70,8 +70,13 @@ public abstract class GeminiToolCallBehavior
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private GeminiToolCallBehavior(bool autoInvoke, int maximumUseAttempts = int.MaxValue)
     {
-        this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
         this.MaximumUseAttempts = maximumUseAttempts;
+
+        // Auto-invocation can never outlast the number of requests that still advertise the tools, otherwise
+        // the model could request a tool after it has been removed from the request. Cap the auto-invoke
+        // attempts by the use attempts to preserve the documented invariant (MaximumUseAttempts >= MaximumAutoInvokeAttempts).
+        var autoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+        this.MaximumAutoInvokeAttempts = System.Math.Min(autoInvokeAttempts, maximumUseAttempts);
     }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>

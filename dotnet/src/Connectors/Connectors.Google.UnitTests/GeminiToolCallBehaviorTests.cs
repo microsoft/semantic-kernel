@@ -253,11 +253,13 @@ public sealed class GeminiToolCallBehaviorTests
         // Assert
         Assert.NotNull(converted.ToolCallBehavior);
         Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
-        Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
         Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
         // Required stops providing the functions after the first request so the model is not
-        // repeatedly forced to call them on follow-up iterations.
+        // repeatedly forced to call them on follow-up iterations. Auto-invocation is capped to the same
+        // value so it does not outlast the advertised tools (MaximumUseAttempts >= MaximumAutoInvokeAttempts).
         Assert.Equal(1, converted.ToolCallBehavior.MaximumUseAttempts);
+        Assert.Equal(1, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+        Assert.True(converted.ToolCallBehavior.MaximumUseAttempts >= converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]

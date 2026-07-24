@@ -442,8 +442,9 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         // For the Required choice, functions should only be provided on the first request to avoid
         // repeatedly forcing the model to call them on follow-up iterations, matching the shared
         // FunctionChoiceBehavior semantics. Limiting the use attempts to 1 stops the connector from
-        // re-advertising the tools after the initial request, since the converted behavior is reused
-        // across auto-invocation iterations.
+        // re-advertising the tools after the initial request; the auto-invoke attempts are capped to the
+        // same value (see GeminiToolCallBehavior) so a single forced call is executed and the model's
+        // final answer is returned.
         int maximumUseAttempts = config.Choice == FunctionChoice.Required ? 1 : int.MaxValue;
 
         // Provide exactly the resolved functions.
