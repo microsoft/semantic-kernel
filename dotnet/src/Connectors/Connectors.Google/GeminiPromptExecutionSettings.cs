@@ -355,16 +355,36 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// is null, an <see cref="ArgumentException"/> is thrown.
     /// </returns>
     public static GeminiPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
+        => FromExecutionSettings(executionSettings, kernel: null);
+
+    /// <summary>
+    /// Create a new settings object with the values from another settings object, resolving any
+    /// <see cref="FunctionChoiceBehavior"/> against the provided <paramref name="kernel"/>.
+    /// </summary>
+    /// <param name="executionSettings">The prompt execution settings to convert.</param>
+    /// <param name="kernel">
+    /// The <see cref="Kernel"/> used to resolve the functions declared by a <see cref="FunctionChoiceBehavior"/>.
+    /// This must be the kernel that will actually be used for the request so that the advertised function set
+    /// matches the caller's intent.
+    /// </param>
+    /// <returns>The converted <see cref="GeminiPromptExecutionSettings"/>.</returns>
+    public static GeminiPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, Kernel? kernel)
     {
         switch (executionSettings)
         {
             case null:
                 return new GeminiPromptExecutionSettings();
             case GeminiPromptExecutionSettings geminiSettings:
-                // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
+                // If FunctionChoiceBehavior is set and ToolCallBehavior is not, resolve it against the
+                // request's kernel. This is done on a clone so we neither mutate the caller's (possibly
+                // shared or frozen) settings instance nor cache a kernel-specific result that could go
+                // stale when the same settings object is reused with a different kernel.
                 if (geminiSettings.FunctionChoiceBehavior is not null && geminiSettings.ToolCallBehavior is null)
                 {
-                    geminiSettings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(geminiSettings.FunctionChoiceBehavior);
+                    var resolved = (GeminiPromptExecutionSettings)geminiSettings.Clone();
+                    resolved.FunctionChoiceBehavior = geminiSettings.FunctionChoiceBehavior;
+                    resolved.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(geminiSettings.FunctionChoiceBehavior, kernel);
+                    return resolved;
                 }
                 return geminiSettings;
         }
@@ -375,56 +395,62 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         // If FunctionChoiceBehavior is set and ToolCallBehavior is not, convert it
         if (executionSettings.FunctionChoiceBehavior is not null && settings.ToolCallBehavior is null)
         {
-            settings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior);
+            settings.ToolCallBehavior = ConvertFunctionChoiceBehaviorToToolCallBehavior(executionSettings.FunctionChoiceBehavior, kernel);
         }
 
         return settings;
     }
 
     /// <summary>
-    /// Shared empty kernel instance used for FunctionChoiceBehavior conversion.
-    /// </summary>
-    private static readonly Kernel s_emptyKernel = new();
-
-    /// <summary>
     /// Converts a <see cref="FunctionChoiceBehavior"/> to a <see cref="GeminiToolCallBehavior"/>.
     /// </summary>
     /// <param name="functionChoiceBehavior">The <see cref="FunctionChoiceBehavior"/> to convert.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> used to resolve the behavior's declared functions.</param>
     /// <returns>The converted <see cref="GeminiToolCallBehavior"/>.</returns>
-    internal static GeminiToolCallBehavior? ConvertFunctionChoiceBehaviorToToolCallBehavior(FunctionChoiceBehavior? functionChoiceBehavior)
+    /// <remarks>
+    /// The conversion honors the exact function set expressed by the <see cref="FunctionChoiceBehavior"/>.
+    /// The resolved <see cref="FunctionChoiceBehaviorConfiguration.Functions"/> list is the set of functions
+    /// provided to the model, matching the behavior of the other connectors. A null or empty function set
+    /// (e.g. <c>FunctionChoiceBehavior.Auto([])</c>, which is documented as being equivalent to disabling
+    /// function calling) results in no functions being provided.
+    /// </remarks>
+    internal static GeminiToolCallBehavior? ConvertFunctionChoiceBehaviorToToolCallBehavior(FunctionChoiceBehavior? functionChoiceBehavior, Kernel? kernel)
     {
         if (functionChoiceBehavior is null)
         {
             return null;
         }
 
-        // Check the type and determine auto-invoke by reflection or known behavior types
-        // All FunctionChoiceBehavior types (Auto, Required, None) support auto-invoke
-        // We use a simple approach: get the configuration with minimal context to check AutoInvoke
         try
         {
+            // Resolve the behavior against the kernel so the provided function set reflects
+            // exactly what the caller requested (all functions, an explicit subset, or none).
             var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
             {
-                Kernel = s_emptyKernel, // Provide an empty kernel for the configuration
+                Kernel = kernel,
                 RequestSequenceIndex = 0
             };
             var config = functionChoiceBehavior.GetConfiguration(context);
 
-            // Return appropriate GeminiToolCallBehavior based on AutoInvoke setting
-            if (config.AutoInvoke)
+            // A null or empty resolved function list means no functions should be provided to the model,
+            // which preserves the documented "empty list disables function calling" behavior.
+            if (config.Functions is not { Count: > 0 } functions)
             {
-                return GeminiToolCallBehavior.AutoInvokeKernelFunctions;
+                return null;
             }
 
-            return GeminiToolCallBehavior.EnableKernelFunctions;
+            // Provide exactly the resolved functions.
+            return GeminiToolCallBehavior.EnableFunctions(
+                functions.Select(f => f.Metadata.ToGeminiFunction()),
+                autoInvoke: config.AutoInvoke);
         }
 #pragma warning disable CA1031 // Do not catch general exception types
         catch
 #pragma warning restore CA1031
         {
-            // If we can't get configuration (e.g., due to missing dependencies or unexpected state),
-            // default to EnableKernelFunctions as the safer option that doesn't auto-invoke
-            return GeminiToolCallBehavior.EnableKernelFunctions;
+            // If the behavior cannot be resolved (e.g. an auto-invoke function is missing from the kernel),
+            // provide no functions rather than defaulting to the full set of kernel functions.
+            return null;
         }
     }
 }
