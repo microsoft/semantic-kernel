@@ -293,7 +293,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         [VectorStoreData]
         public string Result { get; set; }
 
-        [VectorStoreVector(Dimensions: 1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 

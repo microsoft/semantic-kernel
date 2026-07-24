@@ -56,6 +56,7 @@
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
     <PackageReference Include="Testcontainers.MongoDB" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />

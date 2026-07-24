@@ -15,7 +15,7 @@
     <PackageReference Include="Aspire.Azure.AI.OpenAI" />
     <PackageReference Include="Aspire.Azure.Search.Documents" />
     <PackageReference Include="Azure.Identity" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" />
   </ItemGroup>
 
   <ItemGroup>

@@ -91,7 +91,7 @@
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Npgsql" Version="10.0.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.25" />
     <PackageVersion Include="OpenAI" Version="2.10.0" />
@@ -115,7 +115,7 @@
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.4" />
     <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.6" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.9" />
     <PackageVersion Include="System.Text.Json" Version="10.0.6" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
@@ -126,7 +126,7 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
     <!-- Microsoft.Extensions.* -->
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.2" />
     <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
@@ -153,7 +153,7 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.VectorData.Abstractions" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.VectorData.Abstractions" Version="10.5.2" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -174,9 +174,7 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.10" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.2.0" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
-    <PackageVersion Include="MongoDB.Driver" Version="3.5.2" />
-    <PackageVersion Include="SharpCompress" Version="0.48.0" /><!-- Vulnerability fix: GHSA-6c8g-7p36-r338; transitively pinned via MongoDB.Driver -->
-    <PackageVersion Include="Snappier" Version="1.3.1" /><!-- Vulnerability fix: GHSA-pggp-6c3x-2xmx; transitively pinned via MongoDB.Driver -->
+    <PackageVersion Include="MongoDB.Driver" Version="3.10.0" />
     <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />
     <PackageVersion Include="Microsoft.Graph.Core" Version="3.2.6" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" />
@@ -203,15 +201,14 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.15.1" />
     <!-- VectorData Dependencies -->
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.CosmosMongoDB" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.CosmosNoSql" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Pinecone" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Redis" Version="1.74.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Weaviate" Version="1.74.0-preview" />
+    <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.CosmosNoSql" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Redis" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Weaviate" Version="1.0.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
