@@ -139,6 +139,14 @@ class KernelFunctionFromMethod(KernelFunction):
                 item_type = param_type.__args__[0]
                 return [self._parse_parameter(item, item_type) for item in value]
             raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
+        elif param_type is bool and isinstance(value, str):
+            # bool("false") is True for any non-empty string, so parse the string explicitly.
+            lowered = value.strip().lower()
+            if lowered in ("true", "1"):
+                return True
+            if lowered in ("false", "0"):
+                return False
+            raise FunctionExecutionException(f"Cannot parse string '{value}' as bool.")
         else:
             try:
                 if isinstance(value, dict) and hasattr(param_type, "__init__"):
