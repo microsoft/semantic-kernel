@@ -138,7 +138,26 @@ class KernelFunction(KernelBaseModel):
             "PromptExecutionSettings | Sequence[PromptExecutionSettings] | Mapping[str, PromptExecutionSettings] | None"
         ) = None,
     ) -> "KernelFunctionFromPrompt":
-        """Create a new instance of the KernelFunctionFromPrompt class."""
+        """Create a new instance of the KernelFunctionFromPrompt class.
+
+        Example:
+            Create a prompt-based function and register it with the kernel:
+
+                from semantic_kernel import Kernel
+                from semantic_kernel.functions import KernelFunction
+
+                kernel = Kernel()
+                func = KernelFunction.from_prompt(
+                    function_name="summarize",
+                    plugin_name="WriterPlugin",
+                    description="Summarizes the provided text in one sentence.",
+                    prompt="Summarize the following in one sentence: {{$input}}",
+                )
+                kernel.add_function(plugin_name="WriterPlugin", function=func)
+                print(func.name)         # summarize
+                print(func.plugin_name)  # WriterPlugin
+                print(func.is_prompt)    # True
+        """
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         return KernelFunctionFromPrompt(
@@ -248,13 +267,41 @@ class KernelFunction(KernelBaseModel):
 
         Args:
             kernel (Kernel): The kernel
-            arguments (KernelArguments): The Kernel arguments
-            metadata (Dict[str, Any]): Additional metadata.
+            arguments (KernelArguments | None): The Kernel arguments. Optional; defaults to None,
+                in which case arguments are built from kwargs.
+            metadata (dict[str, Any] | None): Additional metadata. Optional; defaults to None.
             kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
         Returns:
-            FunctionResult: The result of the function
+            FunctionResult | None: The result of the function, or None if no result is produced.
+
+        Example:
+            Invoke a prompt function with arguments:
+
+                import asyncio
+                from semantic_kernel import Kernel
+                from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+                from semantic_kernel.functions import KernelArguments, KernelFunction
+
+                async def main():
+                    kernel = Kernel()
+                    # Requires OPENAI_API_KEY env var (or pass api_key explicitly).
+                    kernel.add_service(OpenAIChatCompletion(ai_model_id="gpt-4o-mini", service_id="default"))
+                    func = KernelFunction.from_prompt(
+                        function_name="summarize",
+                        plugin_name="WriterPlugin",
+                        prompt="Summarize the following in one sentence: {{$input}}",
+                    )
+                    result = await func.invoke(
+                        kernel=kernel,
+                        arguments=KernelArguments(
+                            input="Azure API Management is a fully managed gateway service."
+                        ),
+                    )
+                    print(result)
+
+                asyncio.run(main())
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
