@@ -338,6 +338,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             AudioTimestamp = this.AudioTimestamp,
             ResponseMimeType = this.ResponseMimeType,
             ResponseSchema = this.ResponseSchema,
+            Labels = this.Labels is not null ? new Dictionary<string, string>(this.Labels) : null,
+            CachedContent = this.CachedContent,
             ThinkingConfig = this.ThinkingConfig?.Clone()
         };
     }

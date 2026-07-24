@@ -207,6 +207,8 @@ public sealed class GeminiPromptExecutionSettingsTests
                               "threshold": "{{threshold.Label}}"
                             }
                           ],
+                          "labels": { "env": "test", "team": "sk" },
+                          "cached_content": "projects/p/locations/l/cachedContents/c",
                           "thinking_config": {{thinkingConfigJson}}
                         }
                         """;
@@ -224,6 +226,8 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equivalent(executionSettings.SafetySettings, clone.SafetySettings);
         Assert.Equal(executionSettings.AudioTimestamp, clone.AudioTimestamp);
         Assert.Equivalent(executionSettings.ThinkingConfig, clone.ThinkingConfig);
+        Assert.Equivalent(executionSettings.Labels, clone.Labels);
+        Assert.Equal(executionSettings.CachedContent, clone.CachedContent);
     }
 
     [Fact]
