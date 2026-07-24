@@ -37,9 +37,11 @@ class FunctionResult(KernelBaseModel):
 
     def __str__(self) -> str:
         """Get the string representation of the result."""
-        if self.value:
+        if self.value is not None:
             try:
                 if isinstance(self.value, list):
+                    if not self.value:
+                        return ""
                     return (
                         str(self.value[0])
                         if isinstance(self.value[0], KernelContent)
@@ -48,6 +50,8 @@ class FunctionResult(KernelBaseModel):
                 if isinstance(self.value, dict):
                     # TODO (eavanvalkenburg): remove this once function result doesn't include input args
                     # This is so an integration test can pass.
+                    if not self.value:
+                        return ""
                     return str(list(self.value.values())[-1])
                 return str(self.value)
             except Exception as e:
