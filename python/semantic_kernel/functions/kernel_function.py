@@ -267,13 +267,14 @@ class KernelFunction(KernelBaseModel):
 
         Args:
             kernel (Kernel): The kernel
-            arguments (KernelArguments): The Kernel arguments
-            metadata (Dict[str, Any]): Additional metadata.
+            arguments (KernelArguments | None): The Kernel arguments. Optional; defaults to None,
+                in which case arguments are built from kwargs.
+            metadata (dict[str, Any] | None): Additional metadata. Optional; defaults to None.
             kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
         Returns:
-            FunctionResult: The result of the function
+            FunctionResult | None: The result of the function, or None if no result is produced.
 
         Example:
             Invoke a prompt function with arguments:
