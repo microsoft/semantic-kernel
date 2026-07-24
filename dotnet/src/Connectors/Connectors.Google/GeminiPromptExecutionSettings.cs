@@ -412,7 +412,9 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// The resolved <see cref="FunctionChoiceBehaviorConfiguration.Functions"/> list is the set of functions
     /// provided to the model, matching the behavior of the other connectors. A null or empty function set
     /// (e.g. <c>FunctionChoiceBehavior.Auto([])</c>, which is documented as being equivalent to disabling
-    /// function calling) results in no functions being provided.
+    /// function calling) results in no functions being provided. Any configuration errors thrown while
+    /// resolving the behavior (for example, requesting auto-invocation for a function that is not present in
+    /// the kernel) are surfaced to the caller rather than being swallowed, matching the other connectors.
     /// </remarks>
     internal static GeminiToolCallBehavior? ConvertFunctionChoiceBehaviorToToolCallBehavior(FunctionChoiceBehavior? functionChoiceBehavior, Kernel? kernel)
     {
@@ -421,36 +423,33 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             return null;
         }
 
-        try
+        // Resolve the behavior against the kernel so the provided function set reflects
+        // exactly what the caller requested (all functions, an explicit subset, or none).
+        var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
         {
-            // Resolve the behavior against the kernel so the provided function set reflects
-            // exactly what the caller requested (all functions, an explicit subset, or none).
-            var context = new FunctionChoiceBehaviorConfigurationContext(new ChatHistory())
-            {
-                Kernel = kernel,
-                RequestSequenceIndex = 0
-            };
-            var config = functionChoiceBehavior.GetConfiguration(context);
+            Kernel = kernel,
+            RequestSequenceIndex = 0
+        };
+        var config = functionChoiceBehavior.GetConfiguration(context);
 
-            // A null or empty resolved function list means no functions should be provided to the model,
-            // which preserves the documented "empty list disables function calling" behavior.
-            if (config.Functions is not { Count: > 0 } functions)
-            {
-                return null;
-            }
-
-            // Provide exactly the resolved functions.
-            return GeminiToolCallBehavior.EnableFunctions(
-                functions.Select(f => f.Metadata.ToGeminiFunction()),
-                autoInvoke: config.AutoInvoke);
-        }
-#pragma warning disable CA1031 // Do not catch general exception types
-        catch
-#pragma warning restore CA1031
+        // A null or empty resolved function list means no functions should be provided to the model,
+        // which preserves the documented "empty list disables function calling" behavior.
+        if (config.Functions is not { Count: > 0 } functions)
         {
-            // If the behavior cannot be resolved (e.g. an auto-invoke function is missing from the kernel),
-            // provide no functions rather than defaulting to the full set of kernel functions.
             return null;
         }
+
+        // For the Required choice, functions should only be provided on the first request to avoid
+        // repeatedly forcing the model to call them on follow-up iterations, matching the shared
+        // FunctionChoiceBehavior semantics. Limiting the use attempts to 1 stops the connector from
+        // re-advertising the tools after the initial request, since the converted behavior is reused
+        // across auto-invocation iterations.
+        int maximumUseAttempts = config.Choice == FunctionChoice.Required ? 1 : int.MaxValue;
+
+        // Provide exactly the resolved functions.
+        return new GeminiToolCallBehavior.EnabledFunctions(
+            functions.Select(f => f.Metadata.ToGeminiFunction()),
+            autoInvoke: config.AutoInvoke,
+            maximumUseAttempts: maximumUseAttempts);
     }
 }

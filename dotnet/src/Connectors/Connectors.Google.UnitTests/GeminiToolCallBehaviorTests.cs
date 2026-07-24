@@ -213,6 +213,8 @@ public sealed class GeminiToolCallBehaviorTests
         Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
         // The provided set is validated against the requested functions.
         Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
+        // Auto continues to provide the functions across follow-up requests.
+        Assert.Equal(int.MaxValue, converted.ToolCallBehavior.MaximumUseAttempts);
         Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}FunctionA", $"TestPlugin{GeminiFunction.NameSeparator}FunctionB" }, GetAdvertisedFunctionNames(enabledFunctions, kernel));
     }
 
@@ -253,6 +255,9 @@ public sealed class GeminiToolCallBehaviorTests
         Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
         Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
         Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
+        // Required stops providing the functions after the first request so the model is not
+        // repeatedly forced to call them on follow-up iterations.
+        Assert.Equal(1, converted.ToolCallBehavior.MaximumUseAttempts);
     }
 
     [Fact]
@@ -313,6 +318,23 @@ public sealed class GeminiToolCallBehaviorTests
         Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
         // Only the function specified in the behavior is provided to the model.
         Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}First" }, GetAdvertisedFunctionNames(enabledFunctions, kernel));
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorConfigurationErrorsArePropagated()
+    {
+        // Arrange - auto-invocation requires the declared function to exist in the kernel; when it does
+        // not, the behavior resolution throws and the error must surface rather than be swallowed.
+        var kernelWithFunction = CreateKernelWithFunctions("First");
+        var first = kernelWithFunction.Plugins.GetFunction("TestPlugin", "First");
+        var emptyKernel = Kernel.CreateBuilder().Build();
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: [first], autoInvoke: true)
+        };
+
+        // Act & Assert
+        Assert.Throws<KernelException>(() => GeminiPromptExecutionSettings.FromExecutionSettings(settings, emptyKernel));
     }
 
     [Fact]
