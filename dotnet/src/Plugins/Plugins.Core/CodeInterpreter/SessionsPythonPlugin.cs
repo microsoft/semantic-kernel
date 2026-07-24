@@ -271,9 +271,25 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Validate the request host against the allowed domains to prevent SSRF.
+        // When AllowedDomains is explicitly configured, only those hosts are permitted:
+        // a request whose host is not on the list (including the configured endpoint's
+        // own host, e.g. IMDS at 169.254.169.254) is rejected. This is the effective
+        // SSRF guard and it now works correctly regardless of casing.
+        //
+        // When AllowedDomains is null (not configured) the plugin defaults to permitting
+        // only the configured endpoint's own host. Since every request in this type is
+        // built as a relative path against that endpoint, this is a readable,
+        // deterministic replacement for the previous nullable-bool expression rather than
+        // an additional restriction — it preserves backward-compatible behavior while
+        // removing the confusing "(!x) ?? false" fail-open construct. To actually
+        // restrict which host the plugin talks to, configure AllowedDomains explicitly.
+        // Host comparison is ordinal-ignore-case to match DNS semantics and the
+        // convention used by other plugins in this repository.
+        var effectiveAllowedDomains = this._settings.AllowedDomains
+            ?? new[] { this._poolManagementEndpoint.Host };
+
+        if (!effectiveAllowedDomains.Contains(uri.Host, StringComparer.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }

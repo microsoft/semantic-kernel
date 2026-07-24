@@ -338,6 +338,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    [InlineData("FAKE-TEST-HOST.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     public async Task ItShouldRespectAllowedDomainsAsync(string allowedDomain, string actualEndpoint, bool isAllowed)
     {
         // Arrange
@@ -362,6 +363,61 @@ public sealed class SessionsPythonPluginTests : IDisposable
             // Ignore exception if the endpoint is not allowed since we expect it
         }
 #pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    /// <summary>
+    /// When AllowedDomains is null (not configured), requests to the configured endpoint's
+    /// own host should succeed — the plugin defaults to allowing only that host.
+    /// </summary>
+    [Fact]
+    public async Task ItShouldAllowConfiguredEndpointHostWhenAllowedDomainsIsNullAsync()
+    {
+        // Arrange — AllowedDomains is null (default)
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("https://eastus.acasessions.io/subscriptions/123/rg/456/sps/test-pool"))
+        {
+            AllowedDomains = null
+        };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(ListFilesTestDataFilePath)),
+        };
+
+        var sut = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+        // Act & Assert — should NOT throw; the endpoint host is implicitly allowed
+        var files = await sut.ListFilesAsync();
+        Assert.NotNull(files);
+
+        // The request must actually be sent to the configured endpoint host.
+        Assert.Equal("eastus.acasessions.io", this._messageHandlerStub.RequestUri?.Host);
+    }
+
+    /// <summary>
+    /// When AllowedDomains is explicitly configured, a request whose host is not in the
+    /// allowlist must be blocked — even when that host is the configured endpoint itself.
+    /// This prevents SSRF to arbitrary targets such as IMDS (169.254.169.254).
+    /// </summary>
+    [Fact]
+    public async Task ItShouldBlockEndpointHostNotInAllowedDomainsAsync()
+    {
+        // Arrange — endpoint points at IMDS, but the allowlist only permits a legitimate host.
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://169.254.169.254/metadata/instance"))
+        {
+            AllowedDomains = new[] { "eastus.acasessions.io" }
+        };
+
+        var sut = new SessionsPythonPlugin(settings, this._httpClientFactory);
+
+        // Act & Assert — should throw because 169.254.169.254 is not in AllowedDomains.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => sut.ListFilesAsync());
+
+        Assert.Contains("not allowed", exception.Message);
     }
 
     [Fact]
