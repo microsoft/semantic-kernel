@@ -298,6 +298,8 @@ class MCPPluginBase:
         try:
             self._current_task = asyncio.create_task(self._inner_connect(ready_event))
             await ready_event.wait()
+            if self._current_task.done():
+                await self._current_task
         except KernelPluginInvalidConfigurationError:
             ready_event.clear()
             raise
@@ -319,55 +321,60 @@ class MCPPluginBase:
         self.session = None
 
     async def _inner_connect(self, ready_event: asyncio.Event) -> None:
-        if not self.session:
-            try:
-                transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
-            except Exception as ex:
-                await self._exit_stack.aclose()
-                ready_event.set()
-                raise KernelPluginInvalidConfigurationError(
-                    "Failed to connect to the MCP server. Please check your configuration."
-                ) from ex
-            try:
-                session = await self._exit_stack.enter_async_context(
-                    ClientSession(
-                        read_stream=transport[0],
-                        write_stream=transport[1],
-                        read_timeout_seconds=timedelta(seconds=self.request_timeout) if self.request_timeout else None,
-                        message_handler=self.message_handler,
-                        logging_callback=self.logging_callback,
-                        sampling_callback=self.sampling_callback,
+        try:
+            if not self.session:
+                try:
+                    transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
+                except Exception as ex:
+                    await self._exit_stack.aclose()
+                    raise KernelPluginInvalidConfigurationError(
+                        "Failed to connect to the MCP server. Please check your configuration."
+                    ) from ex
+                try:
+                    session = await self._exit_stack.enter_async_context(
+                        ClientSession(
+                            read_stream=transport[0],
+                            write_stream=transport[1],
+                            read_timeout_seconds=(
+                                timedelta(seconds=self.request_timeout) if self.request_timeout else None
+                            ),
+                            message_handler=self.message_handler,
+                            logging_callback=self.logging_callback,
+                            sampling_callback=self.sampling_callback,
+                        )
                     )
-                )
-            except Exception as ex:
-                await self._exit_stack.aclose()
-                raise KernelPluginInvalidConfigurationError(
-                    "Failed to create a session. Please check your configuration."
-                ) from ex
-            try:
-                await session.initialize()
-            except Exception as ex:
-                await self._exit_stack.aclose()
-                raise KernelPluginInvalidConfigurationError(
-                    "Failed to initialize session. Please check your configuration."
-                ) from ex
-            self.session = session
-        elif self.session._request_id == 0:
-            # If the session is not initialized, we need to reinitialize it
-            await self.session.initialize()
-        logger.debug("Connected to MCP server: %s", self.session)
-        if self.load_tools_flag:
-            await self.load_tools()
-        if self.load_prompts_flag:
-            await self.load_prompts()
+                except Exception as ex:
+                    await self._exit_stack.aclose()
+                    raise KernelPluginInvalidConfigurationError(
+                        "Failed to create a session. Please check your configuration."
+                    ) from ex
+                try:
+                    await session.initialize()
+                except Exception as ex:
+                    await self._exit_stack.aclose()
+                    raise KernelPluginInvalidConfigurationError(
+                        "Failed to initialize session. Please check your configuration."
+                    ) from ex
+                self.session = session
+            elif self.session._request_id == 0:
+                # If the session is not initialized, we need to reinitialize it
+                await self.session.initialize()
+            logger.debug("Connected to MCP server: %s", self.session)
+            if self.load_tools_flag:
+                await self.load_tools()
+            if self.load_prompts_flag:
+                await self.load_prompts()
 
-        if logger.level != logging.NOTSET:
-            try:
-                await self.session.set_logging_level(
-                    next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
-                )
-            except Exception:
-                logger.warning("Failed to set log level to %s", logger.level)
+            if logger.level != logging.NOTSET:
+                try:
+                    await self.session.set_logging_level(
+                        next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
+                    )
+                except Exception:
+                    logger.warning("Failed to set log level to %s", logger.level)
+        except Exception:
+            ready_event.set()
+            raise
         # Setting up is complete, will now signal the main loop that we are ready
         ready_event.set()
         # Create a stop event to signal the exit stack to close
