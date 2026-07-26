@@ -364,6 +364,34 @@ class Items(KernelBaseModel):
     resource: Annotated[int, "Number of turns required for the item"]
 
 
+class Category(KernelBaseModel):
+    name: str
+    parent: Optional["Category"] = None
+
+
+class TreeNode(KernelBaseModel):
+    value: int
+    children: list["TreeNode"] = []
+
+
+class Author(KernelBaseModel):
+    name: str
+    books: list["Book"] = []
+
+
+class Book(KernelBaseModel):
+    title: str
+    author: Optional["Author"] = None
+
+
+class Wrapper(KernelBaseModel):
+    inner: "Inner"
+
+
+class Inner(KernelBaseModel):
+    value: int
+
+
 def test_build_complex_type_list():
     schema = KernelJsonSchemaBuilder.build(list[Items])
     assert schema is not None
@@ -455,3 +483,113 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+def test_build_with_simple_forward_reference():
+    """A forward reference to a type defined later in the same module, with no cycle back
+    to the referencing model, should resolve and inline normally with no $defs/$ref.
+    """
+    schema = KernelJsonSchemaBuilder.build(Wrapper)
+    assert schema == {
+        "type": "object",
+        "properties": {
+            "inner": {
+                "type": "object",
+                "properties": {"value": {"type": "integer"}},
+                "required": ["value"],
+            },
+        },
+        "required": ["inner"],
+    }
+
+
+def test_build_with_self_referential_model_does_not_recurse_infinitely():
+    """A self-referential model (e.g. a tree node with an optional parent) used to raise
+    RecursionError. It should now resolve to a $ref/$defs pair instead.
+    """
+    schema = KernelJsonSchemaBuilder.build(Category)
+    assert schema == {
+        "$ref": "#/$defs/Category",
+        "$defs": {
+            "Category": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "parent": {
+                        "anyOf": [
+                            {"$ref": "#/$defs/Category"},
+                            {"type": "null"},
+                        ]
+                    },
+                },
+                "required": ["name"],
+            }
+        },
+    }
+
+
+def test_build_with_self_referential_model_via_list():
+    """Same as above, but the cycle runs through a list (e.g. a tree's children), not Optional."""
+    schema = KernelJsonSchemaBuilder.build(TreeNode)
+    assert schema == {
+        "$ref": "#/$defs/TreeNode",
+        "$defs": {
+            "TreeNode": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "integer"},
+                    "children": {
+                        "type": "array",
+                        "items": {"$ref": "#/$defs/TreeNode"},
+                    },
+                },
+                "required": ["value", "children"],
+            }
+        },
+    }
+
+
+def test_build_with_mutually_referential_models():
+    """Two models that reference each other (A -> B -> A) should also resolve via $defs/$ref
+    instead of recursing infinitely, even though neither is directly self-referential.
+    """
+    schema = KernelJsonSchemaBuilder.build(Author)
+    assert schema == {
+        "$ref": "#/$defs/Author",
+        "$defs": {
+            "Author": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "books": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {"type": "string"},
+                                "author": {
+                                    "anyOf": [
+                                        {"$ref": "#/$defs/Author"},
+                                        {"type": "null"},
+                                    ]
+                                },
+                            },
+                            "required": ["title"],
+                        },
+                    },
+                },
+                "required": ["name", "books"],
+            }
+        },
+    }
+
+
+def test_build_with_self_referential_model_structured_output():
+    """structured_output=True must not place "additionalProperties" on the "anyOf" wrapper
+    used for a nullable $ref, since that is not a valid sibling of "anyOf".
+    """
+    schema = KernelJsonSchemaBuilder.build(Category, structured_output=True)
+    parent_schema = schema["$defs"]["Category"]["properties"]["parent"]
+    assert "anyOf" in parent_schema
+    assert "additionalProperties" not in parent_schema
+    assert schema["$defs"]["Category"]["additionalProperties"] is False
