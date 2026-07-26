@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -124,16 +125,33 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
             Console.WriteLine($"\n>>> User:\n{userMessage}");
 
             var response = new StringBuilder();
+            var timeToFirstContent = Stopwatch.StartNew();
+            var firstContentObserved = false;
             var chatUpdates = chatService.GetStreamingChatMessageContentsAsync(chatHistory);
             await foreach (var chatUpdate in chatUpdates)
             {
-                response.Append((string?)chatUpdate.Content);
+                var content = (string?)chatUpdate.Content;
+                response.Append(content);
+
+                if (!firstContentObserved && !string.IsNullOrEmpty(content))
+                {
+                    timeToFirstContent.Stop();
+                    firstContentObserved = true;
+                    Console.WriteLine(
+                        $"Time to first content, including chat-history reduction: {timeToFirstContent.ElapsedMilliseconds} ms");
+                }
 
                 if (chatUpdate.InnerContent is StreamingChatCompletionUpdate openAiChatUpdate)
                 {
                     totalTokenCount += openAiChatUpdate.Usage?.TotalTokenCount ?? 0;
                 }
             }
+
+            if (!firstContentObserved)
+            {
+                Console.WriteLine("Time to first content was not observed because the stream returned no text.");
+            }
+
             chatHistory.AddAssistantMessage(response.ToString());
             Console.WriteLine($"\n>>> Assistant:\n{response}");
         }
