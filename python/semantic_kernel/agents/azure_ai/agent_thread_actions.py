@@ -1226,11 +1226,10 @@ class AgentThreadActions:
             result = agent.mcp_tool_approval_callback(request)
             if inspect.isawaitable(result):
                 result = await result
-        except Exception as ex:
+        except Exception:
             logger.exception(
                 f"MCP tool approval callback raised an error for tool call `{request.function_name}` from server "
                 f"`{request.server_label}`. Denying the call.",
-                exc_info=ex,
             )
             return False
 
