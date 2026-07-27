@@ -3,6 +3,15 @@
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
+from semantic_kernel.filters.auto_function_invocation.function_authorization_filter import (
+    FunctionApprovalStore,
+    FunctionAuthorizationAction,
+    FunctionAuthorizationDecision,
+    FunctionAuthorizationFilter,
+    FunctionAuthorizationPolicy,
+    FunctionAuthorizationStatus,
+    FunctionRiskLevel,
+)
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
@@ -10,6 +19,13 @@ from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderCo
 __all__ = [
     "AutoFunctionInvocationContext",
     "FilterTypes",
+    "FunctionApprovalStore",
+    "FunctionAuthorizationAction",
+    "FunctionAuthorizationDecision",
+    "FunctionAuthorizationFilter",
+    "FunctionAuthorizationPolicy",
+    "FunctionAuthorizationStatus",
     "FunctionInvocationContext",
+    "FunctionRiskLevel",
     "PromptRenderContext",
 ]
