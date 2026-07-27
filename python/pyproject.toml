@@ -91,7 +91,7 @@ google = [
     "google-genai >= 1.51,< 1.75"
 ]
 hugging_face = [
-    "transformers[torch] ~= 4.28",
+    "transformers[torch] >= 4.28,< 6.0",
     "sentence-transformers >= 2.2,< 6.0",
     "torch==2.13.0"
 ]
