@@ -81,7 +81,7 @@ jobs:
           fi
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
           echo "Found ${#csproj_files[@]} unique csproj/slnx files: ${csproj_files[*]}"
-          echo "csproj_files=${csproj_files[*]}" >> $GITHUB_OUTPUT
+          echo "csproj_files=${csproj_files[*]}" >> "$GITHUB_OUTPUT"
           set +f
 
       - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
