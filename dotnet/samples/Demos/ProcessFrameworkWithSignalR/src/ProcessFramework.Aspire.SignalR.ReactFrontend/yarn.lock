@@ -1954,13 +1954,13 @@ follow-redirects@^1.16.0:
   integrity sha1-KEdKFZ07nRHvYgUKFO1g5N9tYbw=
 
 form-data@^4.0.5:
-  version "4.0.5"
+  version "4.0.6"
   dependencies:
     asynckit "^0.4.0"
     combined-stream "^1.0.8"
     es-set-tostringtag "^2.1.0"
-    hasown "^2.0.2"
-    mime-types "^2.1.12"
+    hasown "^2.0.4"
+    mime-types "^2.1.35"
 
 fsevents@~2.3.3:
   version "2.3.3"
