@@ -129,7 +129,8 @@ pandas = [
     "pandas ~= 2.2"
 ]
 pinecone = [
-    "pinecone[asyncio, grpc] ~= 7.0"
+    "pinecone[asyncio, grpc] ~= 7.0; sys_platform == 'darwin' or sys_platform == 'linux'",
+    "pinecone[asyncio, grpc] ~= 7.3; sys_platform == 'win32'"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
