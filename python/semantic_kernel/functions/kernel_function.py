@@ -143,6 +143,8 @@ class KernelFunction(KernelBaseModel):
         Example:
             Create a prompt-based function and register it with the kernel:
 
+            .. code-block:: python
+
                 from semantic_kernel import Kernel
                 from semantic_kernel.functions import KernelFunction
 
@@ -278,6 +280,8 @@ class KernelFunction(KernelBaseModel):
 
         Example:
             Invoke a prompt function with arguments:
+
+            .. code-block:: python
 
                 import asyncio
                 from semantic_kernel import Kernel
