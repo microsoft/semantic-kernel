@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Download coverage report
         uses: actions/download-artifact@v5
         with:

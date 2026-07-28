@@ -64,7 +64,7 @@ jobs:
 
       # Safe checkout: base repo only, not the untrusted PR head.
       - name: Checkout target repo base
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
@@ -73,7 +73,7 @@ jobs:
 
       # Private DevFlow checkout: the PAT/token grants access to this repo's code.
       - name: Checkout DevFlow
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: ${{ env.DEVFLOW_REPOSITORY }}
           ref: ${{ env.DEVFLOW_REF }}
