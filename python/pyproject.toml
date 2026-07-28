@@ -24,7 +24,7 @@ classifiers = [
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0,< 2.3",
+    "azure-ai-projects >= 1.0,< 2.5",
     "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents >=1,<3",
@@ -45,7 +45,7 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance >= 23.6.21,< 25.4.9",
+    "prance >= 23.6.21,< 26.7.20",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
@@ -91,7 +91,7 @@ google = [
     "google-genai >= 1.51,< 1.75"
 ]
 hugging_face = [
-    "transformers[torch] ~= 4.28",
+    "transformers[torch] >= 4.28,< 6.0",
     "sentence-transformers >= 2.2,< 6.0",
     "torch==2.13.0"
 ]
@@ -103,7 +103,7 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 1.2,< 2.4.6"
+    "mistralai >= 1.2,< 2.7.3"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.17",
@@ -116,10 +116,11 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-  # onnxruntime>=1.24.0 dropped Python 3.10 support; pin to last compatible version for 3.10.
+  # onnxruntime>=1.24.0 dropped Python 3.10 support; retain the last compatible runtime/genai pair for 3.10.
   "onnxruntime==1.22.1; python_version == '3.10'",
-  "onnxruntime>=1.24.3; python_version > '3.10'",
-  "onnxruntime-genai==0.9.0"
+  "onnxruntime>=1.26.0; python_version > '3.10'",
+  "onnxruntime-genai==0.9.0; python_version == '3.10'",
+  "onnxruntime-genai==0.14.1; python_version > '3.10'"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
