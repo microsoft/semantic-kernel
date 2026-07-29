@@ -277,9 +277,12 @@ class RedisCollection(
                 return
             raise VectorStoreOperationException("Invalid index type supplied.")
         fields = _definition_to_redis_fields(self.definition, self.collection_type)
-        index_definition = IndexDefinition(
-            prefix=f"{self.collection_name}:", index_type=INDEX_TYPE_MAP[self.collection_type]
-        )
+        if self.prefix_collection_name_to_key_names:
+            index_definition = IndexDefinition(
+                prefix=[f"{self.collection_name}:"], index_type=INDEX_TYPE_MAP[self.collection_type]
+            )
+        else:
+            index_definition = IndexDefinition(index_type=INDEX_TYPE_MAP[self.collection_type])
         await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
 
     @override
@@ -706,7 +709,7 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        await asyncio.gather(*[self.redis_database.json().delete(key, **kwargs) for key in keys])
+        await asyncio.gather(*[self.redis_database.json().delete(self._get_redis_key(key), **kwargs) for key in keys])
 
     @override
     def _serialize_dicts_to_store_models(
