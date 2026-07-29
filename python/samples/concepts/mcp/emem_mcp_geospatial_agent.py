@@ -1,18 +1,19 @@
-"""Semantic Kernel + emem MCP example — multi-step verification: locate, recall, verify.
+"""Semantic Kernel + emem MCP example — multi-step geospatial verification.
 
 Connects a Microsoft Semantic Kernel agent to the emem MCP server over
-Streamable HTTP and runs a multi-step verification chain for South Mumbai:
-resolve the place, recall elevation, then verify the receipt/fact CID.
+Streamable HTTP. For each query the agent: resolves a place to a canonical
+cell64 address, recalls signed Earth-observation facts, and reports the
+emem:fact: receipt so the answer can be verified offline.
 
 Install:
     pip install semantic-kernel
 
 Usage:
     export OPENAI_API_KEY="sk-..."
+    export OPENAI_CHAT_MODEL_ID="gpt-4o"   # optional, defaults to gpt-4o
     python emem_mcp_geospatial_agent.py
 
-The agent will resolve South Mumbai, recall its elevation, then verify
-the receipt/fact CID, showing each step in the chain.
+No API key is needed for emem — reads are anonymous (Apache 2.0).
 """
 
 import asyncio
@@ -42,7 +43,7 @@ async def main() -> None:
         url=EMEM_MCP_URL,
     ) as emem_plugin:
         agent = ChatCompletionAgent(
-            service=OpenAIChatCompletion(ai_model_id="gpt-4o"),
+            service=OpenAIChatCompletion(),
             name="GeospatialAgent",
             instructions=(
                 "You are a geospatial verification agent grounded in emem's signed Earth memory. "
