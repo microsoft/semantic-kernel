@@ -156,9 +156,9 @@ class KernelFunction(KernelBaseModel):
                     prompt="Summarize the following in one sentence: {{$input}}",
                 )
                 kernel.add_function(plugin_name="WriterPlugin", function=func)
-                print(func.name)         # summarize
+                print(func.name)  # summarize
                 print(func.plugin_name)  # WriterPlugin
-                print(func.is_prompt)    # True
+                print(func.is_prompt)  # True
         """
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
@@ -288,6 +288,7 @@ class KernelFunction(KernelBaseModel):
                 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
                 from semantic_kernel.functions import KernelArguments, KernelFunction
 
+
                 async def main():
                     kernel = Kernel()
                     # Requires OPENAI_API_KEY env var (or pass api_key explicitly).
@@ -299,11 +300,10 @@ class KernelFunction(KernelBaseModel):
                     )
                     result = await func.invoke(
                         kernel=kernel,
-                        arguments=KernelArguments(
-                            input="Azure API Management is a fully managed gateway service."
-                        ),
+                        arguments=KernelArguments(input="Azure API Management is a fully managed gateway service."),
                     )
                     print(result)
+
 
                 asyncio.run(main())
         """
