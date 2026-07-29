@@ -47,23 +47,19 @@ async def main() -> None:
             instructions=(
                 "You are a geospatial verification agent grounded in emem's signed Earth memory. "
                 "For every place query: "
-                "1. Call emem_locate to resolve the place to a canonical cell64 address. "
-                "2. Call emem_recall to read signed facts (air quality, elevation, flood extent, etc.). "
-                "3. Report the emem:fact: receipt so the user can verify it offline. "
-                "Always cite the fact_cid from the receipt."
+                "1. Use emem's locate tool to resolve the place to a canonical cell64 address. "
+                "2. Use emem's recall tool to read signed facts (air quality, elevation, flood extent, etc.). "
+                "3. Report the emem:fact: receipt so the user can verify it offline, including the fact_cid."
             ),
             plugins=[emem_plugin],
         )
 
-        thread: ChatHistoryAgentThread | None = None
-
         for user_input in USER_INPUTS:
+            thread = ChatHistoryAgentThread()
             print(f"\n# User: {user_input}")
             response = await agent.get_response(messages=user_input, thread=thread)
             print(f"# {response.name}: {response}")
-            thread = response.thread
-
-        await thread.delete() if thread else None
+            await thread.delete()
 
 
 if __name__ == "__main__":
