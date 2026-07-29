@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="System.Numerics.Tensors" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>
   
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />

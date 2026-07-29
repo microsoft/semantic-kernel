@@ -22,10 +22,18 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: Get changed files
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+
       - name: Use custom config file
-        uses: crate-ci/typos@v1.36.2
+        uses: crate-ci/typos@v1.44.0
         with:
+          files: ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.added_modified || '.' }}
           config: .github/_typos.toml
           write_changes: false
