@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import socket
 
 import pytest
+from pytest import raises
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
@@ -17,7 +19,7 @@ from semantic_kernel.exceptions import FunctionExecutionException
     [
         ("127.0.0.1", "loopback"),
         ("127.255.255.254", "loopback"),
-        ("169.254.169.254", "link-local"),
+        ("169.254.10.10", "link-local"),
         ("169.254.0.1", "link-local"),
         ("10.0.0.1", "private (RFC1918)"),
         ("172.16.0.1", "private (RFC1918)"),
@@ -76,7 +78,7 @@ def test_try_categorize_non_public_address_allows_public_addresses(address: str)
 
 async def test_validate_server_url_rejects_literal_link_local_ipv4():
     with pytest.raises(FunctionExecutionException, match="link-local"):
-        await validate_server_url("https://169.254.169.254/latest/meta-data/")
+        await validate_server_url("https://169.254.10.10/latest/meta-data/")
 
 
 async def test_validate_server_url_rejects_literal_loopback_ipv6():
@@ -120,7 +122,7 @@ async def test_validate_server_url_allows_private_network_access_after_scheme_ga
 async def test_validate_server_url_blocks_hostname_resolving_to_link_local():
     async def fake_resolver(host: str):
         assert host == "evil.example.com"
-        return ["169.254.169.254"]
+        return ["169.254.10.10"]
 
     with pytest.raises(FunctionExecutionException, match="link-local"):
         await validate_server_url("https://evil.example.com/latest/meta-data/", dns_resolver=fake_resolver)
@@ -168,3 +170,76 @@ async def test_validate_server_url_blocks_empty_dns_response():
 
     with pytest.raises(FunctionExecutionException, match="returned no addresses"):
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
+
+
+CLOUD_METADATA_ENDPOINTS = [
+    "169.254.169.254",  # AWS IMDS, GCP, Azure, OCI, DigitalOcean
+    "169.254.170.2",  # AWS ECS task IAM role credentials
+    "169.254.170.23",  # AWS EKS Pod Identity Agent
+    "168.63.129.16",  # Azure WireServer (publicly routable)
+    "100.100.100.200",  # Alibaba Cloud
+    "192.0.0.192",  # Oracle Cloud (Classic)
+    "169.254.42.42",  # Scaleway
+]
+
+
+@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
+async def test_cloud_metadata_endpoints_blocked(address):
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://{address}/latest/meta-data/")
+
+
+@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
+async def test_cloud_metadata_endpoints_blocked_with_private_access(address):
+    """`allow_private_network_access` covers your own network, not the credential endpoint."""
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    with raises(FunctionExecutionException, match="cloud metadata endpoint"):
+        await validate_server_url(f"https://{address}/latest/meta-data/", options)
+
+
+async def test_private_network_access_still_permits_rfc1918():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    await validate_server_url("https://10.0.0.5/resource", options)
+
+
+async def test_private_network_access_still_permits_loopback():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    await validate_server_url("https://127.0.0.1/resource", options)
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "64:ff9b::169.254.169.254",  # NAT64 well-known prefix (RFC 6052)
+        "64:ff9b:1::169.254.169.254",  # NAT64 local-use prefix (RFC 8215)
+        "2002:a9fe:a9fe::",  # 6to4 (RFC 3056)
+        "::ffff:169.254.169.254",  # IPv4-mapped
+    ],
+)
+async def test_ipv6_forms_carrying_a_blocked_ipv4_are_rejected(address):
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{address}]/latest/meta-data/")
+
+
+async def test_teredo_carrying_a_blocked_ipv4_is_rejected():
+    """Teredo obfuscates the client IPv4 by XOR-ing the low 32 bits with all ones."""
+    target = ipaddress.IPv4Address("169.254.169.254")
+    low = bytes(byte ^ 0xFF for byte in target.packed)
+    teredo = ipaddress.IPv6Address(b"\x20\x01\x00\x00" + b"\x00" * 8 + low)
+
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{teredo}]/latest/meta-data/")
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "64:ff9b::1.1.1.1",  # NAT64 pointing at a public IPv4
+        "64:ff9b:1::1.1.1.1",
+        "2002:0101:0101::",  # 6to4 pointing at 1.1.1.1
+        "2606:4700:4700::1111",  # plain public IPv6
+    ],
+)
+async def test_ipv6_forms_carrying_a_public_ipv4_are_allowed(address):
+    """Decoding must not reject legitimate NAT64/6to4 targets."""
+    await validate_server_url(f"https://[{address}]/resource")
