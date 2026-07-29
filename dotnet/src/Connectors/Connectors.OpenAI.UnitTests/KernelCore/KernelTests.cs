@@ -60,6 +60,20 @@ public sealed class KernelTests : IDisposable
     [Fact]
     public async Task FunctionUsageMetricsAreCapturedByTelemetryAsExpected()
     {
+        // Arrange: Set up the response and create the function FIRST so we can filter
+        // measurements by this specific function's name (avoids parallel test contamination).
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) }
+        );
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(this._mockLoggerFactory.Object);
+        builder.AddOpenAIChatCompletion(modelId: "model", apiKey: "apiKey", httpClient: this._httpClient);
+        var kernel = builder.Build();
+
+        var kernelFunction = KernelFunctionFactory.CreateFromPrompt("prompt", loggerFactory: this._mockLoggerFactory.Object);
+        var expectedFunctionName = kernelFunction.Name;
+
         // Set up a MeterListener to capture the measurements
         using MeterListener listener = new();
         var isPublished = false;
@@ -82,10 +96,23 @@ public sealed class KernelTests : IDisposable
 
         listener.SetMeasurementEventCallback<long>((instrument, measurement, tags, state) =>
         {
-            if (instrument.Name is "semantic_kernel.function.invocation.token_usage.prompt" or
-                "semantic_kernel.function.invocation.token_usage.completion")
+            if (instrument.Name is not ("semantic_kernel.function.invocation.token_usage.prompt" or
+                "semantic_kernel.function.invocation.token_usage.completion"))
             {
-                measurements[instrument.Name].Add(measurement);
+                return;
+            }
+
+            // Filter by function name tag to ignore measurements emitted by other tests
+            // that may run in parallel against the same global static histogram.
+            foreach (var tag in tags)
+            {
+                if (tag.Key == "semantic_kernel.function.name" &&
+                    tag.Value is string fnName &&
+                    fnName == expectedFunctionName)
+                {
+                    measurements[instrument.Name].Add(measurement);
+                    return;
+                }
             }
         });
 
@@ -100,17 +127,6 @@ public sealed class KernelTests : IDisposable
         };
 
         listener.Start();  // Start the listener to begin collecting data
-
-        this._multiMessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) }
-        );
-
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton(this._mockLoggerFactory.Object);
-        builder.AddOpenAIChatCompletion(modelId: "model", apiKey: "apiKey", httpClient: this._httpClient);
-        var kernel = builder.Build();
-
-        var kernelFunction = KernelFunctionFactory.CreateFromPrompt("prompt", loggerFactory: this._mockLoggerFactory.Object);
 
         // Act & Assert
         var result = await kernel.InvokeAsync(kernelFunction);

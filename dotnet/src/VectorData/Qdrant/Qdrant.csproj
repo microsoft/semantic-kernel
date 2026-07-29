@@ -27,6 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Qdrant.Client" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
@@ -38,10 +39,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

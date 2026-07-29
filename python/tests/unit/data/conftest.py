@@ -2,6 +2,7 @@
 
 
 import ast
+import asyncio
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Annotated, Any
@@ -21,6 +22,24 @@ from semantic_kernel.data.vector import (
     vectorstoremodel,
 )
 from semantic_kernel.kernel_types import OptionalOneOrMany
+
+
+@fixture(autouse=True)
+def _ensure_event_loop():
+    """Ensure a current event loop exists before each test.
+
+    Works around a pytest-asyncio 0.26 bug on Windows Python 3.10 where
+    asyncio.set_event_loop(None) can be left as state after a previous test's
+    teardown, and _provide_clean_event_loop does not recover because it only
+    creates a fresh loop when old_loop is not None.  By guaranteeing a non-None
+    loop at fixture-setup time, _temporary_event_loop_policy saves a valid
+    old_loop, so the teardown path restores a valid loop instead of None.
+    """
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+    yield
 
 
 @fixture
@@ -218,6 +237,17 @@ def data_model_pandas_definition() -> object:
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
         from_dict=lambda x, **_: DataFrame(x),
+    )
+
+
+@fixture
+async def pandas_vector_store_record_collection(DictVectorStoreRecordCollection, data_model_pandas_definition):
+    from pandas import DataFrame
+
+    return DictVectorStoreRecordCollection(
+        collection_name="test",
+        record_type=DataFrame,
+        definition=data_model_pandas_definition,
     )
 
 

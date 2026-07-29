@@ -27,6 +27,12 @@ internal static class HttpClientProvider
     public static HttpClient GetHttpClient() => new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
 
     /// <summary>
+    /// Retrieves an instance of HttpClient that does not automatically follow HTTP redirects.
+    /// </summary>
+    /// <returns>An instance of HttpClient that does not follow redirects.</returns>
+    public static HttpClient GetNonRedirectingHttpClient() => new(NonDisposableHttpClientHandler.NonRedirectingInstance, disposeHandler: false);
+
+    /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>
@@ -52,14 +58,19 @@ internal static class HttpClientProvider
         /// <summary>
         /// Private constructor to prevent direct instantiation of the class.
         /// </summary>
-        private NonDisposableHttpClientHandler() : base(CreateHandler())
+        private NonDisposableHttpClientHandler(bool allowRedirect) : base(CreateHandler(allowRedirect))
         {
         }
 
         /// <summary>
-        /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
+        /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/> that follows HTTP redirects.
         /// </summary>
-        public static NonDisposableHttpClientHandler Instance { get; } = new();
+        public static NonDisposableHttpClientHandler Instance { get; } = new(allowRedirect: true);
+
+        /// <summary>
+        /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/> that does not follow HTTP redirects.
+        /// </summary>
+        public static NonDisposableHttpClientHandler NonRedirectingInstance { get; } = new(allowRedirect: false);
 
         /// <summary>
         /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.
@@ -74,7 +85,7 @@ internal static class HttpClientProvider
         }
 
 #if NET
-        private static SocketsHttpHandler CreateHandler()
+        private static SocketsHttpHandler CreateHandler(bool allowRedirect)
         {
             return new SocketsHttpHandler()
             {
@@ -86,12 +97,13 @@ internal static class HttpClientProvider
                 {
                     CertificateRevocationCheckMode = X509RevocationMode.Online,
                 },
+                AllowAutoRedirect = allowRedirect,
             };
         }
 #elif NETSTANDARD2_0_OR_GREATER
-        private static HttpClientHandler CreateHandler()
+        private static HttpClientHandler CreateHandler(bool allowRedirect)
         {
-            var handler = new HttpClientHandler();
+            var handler = new HttpClientHandler() { AllowAutoRedirect = allowRedirect };
             try
             {
                 handler.CheckCertificateRevocationList = true;
@@ -100,8 +112,8 @@ internal static class HttpClientProvider
             return handler;
         }
 #elif NETFRAMEWORK
-        private static HttpClientHandler CreateHandler()
-            => new();
+        private static HttpClientHandler CreateHandler(bool allowRedirect)
+            => new() { AllowAutoRedirect = allowRedirect };
 #endif
     }
 }

@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError
 from semantic_kernel.agents import AgentRegistry, AgentResponseItem, OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.openai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -497,3 +498,82 @@ name: ShouldFail
 """
     with pytest.raises(AgentInitializationException, match="not registered"):
         await AgentRegistry.create_from_yaml(spec)
+
+
+async def test_openai_assistant_agent_get_response_passes_function_choice_behavior(openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    thread = AsyncMock(spec=AssistantAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        await agent.get_response(messages="message", thread=thread, function_choice_behavior=fcb)
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_openai_assistant_agent_invoke_passes_function_choice_behavior(openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    thread = AsyncMock(spec=AssistantAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        async for _ in agent.invoke(messages="message", thread=thread, function_choice_behavior=fcb):
+            pass
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_openai_assistant_agent_invoke_stream_passes_function_choice_behavior(
+    openai_client, assistant_definition
+):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    thread = AsyncMock(spec=AssistantAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
+        side_effect=fake_invoke,
+    ):
+        async for _ in agent.invoke_stream(messages="message", thread=thread, function_choice_behavior=fcb):
+            pass
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_openai_assistant_agent_get_response_no_fcb_passes_none(openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    thread = AsyncMock(spec=AssistantAgentThread)
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        await agent.get_response(messages="message", thread=thread)
+
+    assert captured_kwargs.get("function_choice_behavior") is None

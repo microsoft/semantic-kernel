@@ -278,6 +278,10 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
         : base(id, processBuilder)
     {
         Verify.NotNull(stepType);
+        if (!typeof(KernelProcessStep).IsAssignableFrom(stepType))
+        {
+            throw new ArgumentException($"Type '{stepType.FullName}' must be a subclass of KernelProcessStep.", nameof(stepType));
+        }
 
         this._stepType = stepType;
         this.FunctionsDict = this.GetFunctionMetadataMap();

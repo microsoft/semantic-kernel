@@ -68,36 +68,38 @@ def test_azure_cosmos_db_no_sql_collection_init_env(
     assert vector_collection.create_database is False
 
 
-def test_azure_cosmos_db_no_sql_build_filter_escapes_apostrophes(
+def test_azure_cosmos_db_no_sql_build_filter_parameterizes_apostrophes(
     azure_cosmos_db_no_sql_unit_test_env,
     record_type,
     collection_name: str,
 ) -> None:
-    """Test Cosmos DB filter building escapes apostrophes in string literals."""
+    """Test Cosmos DB filter building binds string literals as parameters (handles apostrophes)."""
     vector_collection = CosmosNoSqlCollection(
         record_type=record_type,
         collection_name=collection_name,
     )
 
-    filter_string = vector_collection._build_filter('lambda x: x.content == "O\'Reilly"')
+    filter_string, parameters = vector_collection._build_filter('lambda x: x.content == "O\'Reilly"')
 
-    assert filter_string == "c.content = 'O''Reilly'"
+    assert filter_string == "c.content = @filter_p0"
+    assert parameters == [{"name": "@filter_p0", "value": "O'Reilly"}]
 
 
-def test_azure_cosmos_db_no_sql_build_filter_escapes_injection_payload(
+def test_azure_cosmos_db_no_sql_build_filter_parameterizes_injection_payload(
     azure_cosmos_db_no_sql_unit_test_env,
     record_type,
     collection_name: str,
 ) -> None:
-    """Test Cosmos DB filter building keeps injection-shaped strings inside the literal."""
+    """Test Cosmos DB filter building binds injection-shaped strings as inert parameters."""
     vector_collection = CosmosNoSqlCollection(
         record_type=record_type,
         collection_name=collection_name,
     )
 
-    filter_string = vector_collection._build_filter("lambda x: x.content == \"test' OR '1'='1\"")
+    filter_string, parameters = vector_collection._build_filter('lambda x: x.content == "\\\\\' OR true --"')
 
-    assert filter_string == "c.content = 'test'' OR ''1''=''1'"
+    assert filter_string == "c.content = @filter_p0"
+    assert parameters == [{"name": "@filter_p0", "value": "\\' OR true --"}]
 
 
 def test_azure_cosmos_db_no_sql_dynamic_filter_injection_payload_stays_literal(
@@ -121,11 +123,133 @@ def test_azure_cosmos_db_no_sql_dynamic_filter_injection_payload_stays_literal(
                 type_object=str,
             )
         ],
-        content="test' OR '1'='1",
+        content="\\' OR true --",
     )
 
     assert isinstance(generated_filter, str)
-    assert vector_collection._build_filter(generated_filter) == "c.content = 'test'' OR ''1''=''1'"
+    filter_string, parameters = vector_collection._build_filter(generated_filter)
+    assert filter_string == "c.content = @filter_p0"
+    assert parameters == [{"name": "@filter_p0", "value": "\\' OR true --"}]
+
+
+async def test_azure_cosmos_db_no_sql_translate_filter_is_isolated_across_threads(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test _lambda_parser holds no shared state: concurrent calls on one instance don't bleed."""
+    import asyncio
+
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+
+    def translate(value: str) -> tuple[str, list]:
+        return vector_collection._build_filter(f'lambda x: x.content == "{value}"')
+
+    values = [f"tenant-{i}" for i in range(50)]
+    results = await asyncio.gather(*(asyncio.to_thread(translate, value) for value in values))
+
+    for value, (clause, parameters) in zip(values, results):
+        # Every call gets its own local accumulator, so each is a single @filter_p0 bound to its
+        # own value with no cross-contamination between concurrent calls.
+        assert clause == "c.content = @filter_p0"
+        assert parameters == [{"name": "@filter_p0", "value": value}]
+
+
+async def test_azure_cosmos_db_no_sql_inner_search_parameterizes_filter(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test _inner_search binds filter constants as parameters instead of concatenating them."""
+    from semantic_kernel.data.vector import SearchType, VectorSearchOptions
+
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+
+    async def _empty_results():
+        for item in []:
+            yield item
+
+    mock_container_proxy = MagicMock()
+    mock_container_proxy.query_items = MagicMock(return_value=_empty_results())
+
+    options = VectorSearchOptions(
+        vector_property_name="vector",
+        filter=lambda x: x.content == "\\' OR true --",
+        top=3,
+    )
+
+    with patch.object(
+        CosmosNoSqlCollection,
+        "_get_container_proxy",
+        new=AsyncMock(return_value=mock_container_proxy),
+    ):
+        await vector_collection._inner_search(
+            search_type=SearchType.VECTOR,
+            options=options,
+            vector=[0.1, 0.2, 0.3, 0.4, 0.5],
+        )
+
+    query, kwargs = mock_container_proxy.query_items.call_args
+    executed_query = query[0]
+    parameters = kwargs["parameters"]
+
+    # The injection payload must never appear in the query text; it must be a bound parameter.
+    assert "OR true" not in executed_query
+    assert "c.content = @filter_p0" in executed_query
+    assert {"name": "@filter_p0", "value": "\\' OR true --"} in parameters
+
+
+async def test_azure_cosmos_db_no_sql_inner_search_multiple_filters_have_unique_params(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test _inner_search renumbers filter params to unique names when multiple filters are given."""
+    from semantic_kernel.data.vector import SearchType, VectorSearchOptions
+
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+
+    async def _empty_results():
+        for item in []:
+            yield item
+
+    mock_container_proxy = MagicMock()
+    mock_container_proxy.query_items = MagicMock(return_value=_empty_results())
+
+    options = VectorSearchOptions(
+        vector_property_name="vector",
+        filter=['lambda x: x.content == "alpha"', 'lambda x: x.content == "beta"'],
+        top=3,
+    )
+
+    with patch.object(
+        CosmosNoSqlCollection,
+        "_get_container_proxy",
+        new=AsyncMock(return_value=mock_container_proxy),
+    ):
+        await vector_collection._inner_search(
+            search_type=SearchType.VECTOR,
+            options=options,
+            vector=[0.1, 0.2, 0.3, 0.4, 0.5],
+        )
+
+    query, kwargs = mock_container_proxy.query_items.call_args
+    executed_query = query[0]
+    parameters = kwargs["parameters"]
+
+    # Two filters, each with one string constant, must get distinct parameter names and be AND-ed.
+    assert "WHERE (c.content = @filter_p0 AND c.content = @filter_p1)" in executed_query
+    assert {"name": "@filter_p0", "value": "alpha"} in parameters
+    assert {"name": "@filter_p1", "value": "beta"} in parameters
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_NO_SQL_URL"]], indirect=True)

@@ -856,6 +856,24 @@ public class FunctionCallsProcessorTests
     }
 
     [Fact]
+    public void ItShouldPreserveImageContentWithoutSerialization()
+    {
+        // Arrange
+        var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG magic bytes
+        var functionResult = new ImageContent(imageData, "image/png");
+
+        // Act
+        var result = FunctionCallsProcessor.ProcessFunctionResult(functionResult);
+
+        // Assert
+        Assert.IsType<ImageContent>(result);
+        var imageResult = (ImageContent)result;
+        Assert.Equal("image/png", imageResult.MimeType);
+        Assert.NotNull(imageResult.Data);
+        Assert.Equal(imageData, imageResult.Data.Value.ToArray());
+    }
+
+    [Fact]
     public async Task ItShouldPassPromptExecutionSettingsToAutoFunctionInvocationFilterAsync()
     {
         // Arrange

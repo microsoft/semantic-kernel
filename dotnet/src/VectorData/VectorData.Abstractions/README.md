@@ -1,0 +1,1 @@
+The code for Microsoft.Extensions.VectorData.Abstractions can now be found in the [dotnet/extensions repository](https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.VectorData.Abstractions)

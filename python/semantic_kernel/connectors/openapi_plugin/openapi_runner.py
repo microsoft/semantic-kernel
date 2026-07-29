@@ -17,6 +17,10 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_run_options import RestApiRunOptions
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
+    ServerUrlValidationOptions,
+    validate_server_url,
+)
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -39,6 +43,7 @@ class OpenApiRunner:
         http_client: httpx.AsyncClient | None = None,
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
+        server_url_validation_options: ServerUrlValidationOptions | None = None,
     ):
         """Initialize the OpenApiRunner."""
         self.spec = Spec.from_dict(parsed_openapi_document)  # type: ignore
@@ -46,6 +51,7 @@ class OpenApiRunner:
         self.http_client = http_client
         self.enable_dynamic_payload = enable_dynamic_payload
         self.enable_payload_namespacing = enable_payload_namespacing
+        self.server_url_validation_options = server_url_validation_options or ServerUrlValidationOptions()
 
     def build_full_url(self, base_url, query_string):
         """Build the full URL."""
@@ -137,6 +143,7 @@ class OpenApiRunner:
             server_url_override=options.server_url_override if options else None,
             api_host_url=options.api_host_url if options else None,
         )
+        await validate_server_url(url, self.server_url_validation_options)
         headers = operation.build_headers(arguments=arguments)
         payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
 

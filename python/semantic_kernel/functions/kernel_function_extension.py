@@ -289,10 +289,21 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
 
         """
         if plugin_name is None:
-            for plugin in self.plugins.values():
-                if function_name in plugin:
-                    return plugin[function_name]
-            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in any plugin.")
+            matches = [
+                (name, plugin[function_name]) for name, plugin in self.plugins.items() if function_name in plugin
+            ]
+            if not matches:
+                raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in any plugin.")
+            if len(matches) > 1:
+                logger.warning(
+                    "Function '%s' is ambiguous: it exists in multiple plugins (%s). Resolving to '%s-%s' "
+                    "(first registered). Specify a plugin_name for security-relevant lookups to avoid shadowing.",
+                    function_name,
+                    ", ".join(name for name, _ in matches),
+                    matches[0][0],
+                    function_name,
+                )
+            return matches[0][1]
         if plugin_name not in self.plugins:
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:

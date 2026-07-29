@@ -447,6 +447,53 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Gets or sets a dictionary of additional fields to include in the request body sent to the OpenAI-compatible endpoint.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is an escape hatch for vendor-specific or preview parameters that are not modeled by
+    /// <see cref="OpenAIPromptExecutionSettings"/> (for example, Qwen3's <c>enable_thinking</c> or ChatGLM thinking-mode flags).
+    /// </para>
+    /// <para>
+    /// <b>Key syntax</b> (hybrid):
+    /// <list type="bullet">
+    /// <item><description>A plain key (without a leading <c>$.</c>) is treated as a literal top-level field name.
+    /// For example, <c>ExtraBody["enable_thinking"] = false</c> emits <c>{ "enable_thinking": false }</c>. Keys containing
+    /// dots, brackets, or other special characters are bracket-quoted automatically and remain literal.</description></item>
+    /// <item><description>A key starting with <c>$.</c> is interpreted as a JSONPath expression and applied as a deep patch
+    /// onto the request body, allowing surgical edits of nested objects and arrays produced by the SDK
+    /// (for example, <c>ExtraBody["$.stream_options.include_usage"] = true</c> or <c>ExtraBody["$.thinking.enabled"] = false</c>).</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <b>Collisions:</b> if a key targets the same JSON property as a strongly-typed setting (for example,
+    /// <c>ExtraBody["temperature"] = 0.0</c> with <see cref="Temperature"/> set to <c>0.7</c>), the <see cref="ExtraBody"/>
+    /// value wins because it is applied during request serialization (last-write-wins).
+    /// </para>
+    /// <para>
+    /// <b>Removal is not supported:</b> setting a value to <see langword="null"/> emits a JSON <c>null</c>; it does not remove
+    /// an SDK-injected field. Use a delegating HTTP handler if you need to remove fields from the outgoing body.
+    /// </para>
+    /// <para>
+    /// <b>Round-trip behavior:</b> when populated via YAML or JSON <c>PromptTemplateConfig</c> deserialization, values arrive
+    /// as <see cref="JsonElement"/> instances. Read accordingly.
+    /// </para>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("extra_body")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, object?>? ExtraBody
+    {
+        get => this._extraBody;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._extraBody = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -470,6 +517,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         if (this._metadata is not null)
         {
             this._metadata = new ReadOnlyDictionary<string, string>(this._metadata);
+        }
+
+        if (this._extraBody is not null)
+        {
+            this._extraBody = new ReadOnlyDictionary<string, object?>(this._extraBody);
         }
     }
 
@@ -543,6 +595,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             WebSearchOptions = this.WebSearchOptions,
             Modalities = this.Modalities,
             Audio = this.Audio,
+            ExtraBody = this.ExtraBody is not null ? new Dictionary<string, object?>(this.ExtraBody) : null,
         };
     }
 
@@ -561,6 +614,75 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
 
         return chatHistory;
+    }
+
+    /// <inheritdoc/>
+    protected override void PrepareChatOptionsForRequest(Microsoft.Extensions.AI.ChatOptions options)
+    {
+        base.PrepareChatOptionsForRequest(options);
+
+        if (this._extraBody is null || this._extraBody.Count == 0)
+        {
+            return;
+        }
+
+        var snapshot = new List<KeyValuePair<string, object?>>(this._extraBody);
+
+        options.RawRepresentationFactory = (_) =>
+        {
+            var raw = new ChatCompletionOptions();
+            foreach (var kvp in snapshot)
+            {
+                ApplyExtraBodyEntry(raw, kvp.Key, kvp.Value);
+            }
+            return raw;
+        };
+
+        // The base ToChatOptions catch-all writes ExtraBody into AdditionalProperties via JSON round-trip.
+        // The factory above is the canonical carrier, so remove the duplicate here.
+        options.AdditionalProperties?.Remove("extra_body");
+    }
+
+    /// <summary>
+    /// Applies a single <see cref="ExtraBody"/> entry to the supplied <see cref="ChatCompletionOptions"/> using its
+    /// <c>JsonPatch</c> facility. Plain keys become bracket-quoted top-level fields; keys starting with <c>$.</c> are
+    /// passed through as raw JSONPath patches.
+    /// </summary>
+    internal static void ApplyExtraBodyEntry(ChatCompletionOptions options, string key, object? value)
+    {
+        string path = key.StartsWith("$.", StringComparison.Ordinal)
+            ? key
+            : $"$[{JsonSerializer.Serialize(key)}]";
+
+        byte[] pathBytes = System.Text.Encoding.UTF8.GetBytes(path);
+
+#pragma warning disable SCME0001 // System.ClientModel JsonPatch is for evaluation purposes only.
+        if (value is null)
+        {
+            options.Patch.SetNull(pathBytes);
+            return;
+        }
+
+        // Serialize to raw JSON bytes so any value type (primitive, JsonElement, dictionary, complex object) is supported uniformly.
+        byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(value, value.GetType());
+        options.Patch.Set(pathBytes, BinaryData.FromBytes(jsonBytes));
+#pragma warning restore SCME0001
+    }
+
+    /// <summary>
+    /// Applies all entries from <paramref name="settings"/>.<see cref="ExtraBody"/> to <paramref name="options"/>.
+    /// </summary>
+    internal static void ApplyExtraBody(ChatCompletionOptions options, OpenAIPromptExecutionSettings settings)
+    {
+        if (settings._extraBody is null || settings._extraBody.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var kvp in settings._extraBody)
+        {
+            ApplyExtraBodyEntry(options, kvp.Key, kvp.Value);
+        }
     }
 
     #region private ================================================================================
@@ -586,6 +708,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private IDictionary<string, string>? _metadata;
     private object? _responseModalities;
     private object? _audioOptions;
+    private IDictionary<string, object?>? _extraBody;
 
     #endregion
 }

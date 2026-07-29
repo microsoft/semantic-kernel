@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010</NoWarn>
+    <!-- CommunityToolkit.VectorData.CosmosNoSql pulls Microsoft.Azure.Cosmos which added a mandatory Newtonsoft.Json explicit-reference check; disable it since we don't use Newtonsoft.Json directly -->
+    <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     <UserSecretsId>c4203b00-7179-47c1-8701-ee352e381412</UserSecretsId>
   </PropertyGroup>
 
@@ -15,17 +17,17 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="PdfPig" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" />
+    <PackageReference Include="CommunityToolkit.VectorData.CosmosMongoDB" />
+    <PackageReference Include="CommunityToolkit.VectorData.CosmosNoSql" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
+    <PackageReference Include="CommunityToolkit.VectorData.Qdrant" />
+    <PackageReference Include="CommunityToolkit.VectorData.Redis" />
+    <PackageReference Include="CommunityToolkit.VectorData.Weaviate" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\AzureAISearch\AzureAISearch.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\CosmosMongoDB\CosmosMongoDB.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\CosmosNoSql\CosmosNoSql.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\InMemory\InMemory.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Qdrant\Qdrant.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Redis\Redis.csproj" />
-    <ProjectReference Include="..\..\..\src\VectorData\Weaviate\Weaviate.csproj" />
     <ProjectReference Include="..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>

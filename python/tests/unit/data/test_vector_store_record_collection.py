@@ -172,46 +172,36 @@ async def test_crud_batch_operations_container(vector_store_record_collection):
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
-@mark.parametrize(
-    "vector_store_record_collection",
-    ["definition_pandas"],
-    indirect=True,
-)
-async def test_crud_operations_pandas(vector_store_record_collection):
+async def test_crud_operations_pandas(pandas_vector_store_record_collection):
     id = "test_id"
     record = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}])
-    no_records = await vector_store_record_collection.get(id)
+    no_records = await pandas_vector_store_record_collection.get(id)
     assert no_records is None
-    await vector_store_record_collection.upsert(record)
-    assert len(vector_store_record_collection.inner_storage) == 1
+    await pandas_vector_store_record_collection.upsert(record)
+    assert len(pandas_vector_store_record_collection.inner_storage) == 1
 
-    assert vector_store_record_collection.inner_storage[id]["content"] == record["content"].values[0]
-    assert vector_store_record_collection.inner_storage[id]["vector"] == record["vector"].values[0]
-    record_2 = await vector_store_record_collection.get(id)
+    assert pandas_vector_store_record_collection.inner_storage[id]["content"] == record["content"].values[0]
+    assert pandas_vector_store_record_collection.inner_storage[id]["vector"] == record["vector"].values[0]
+    record_2 = await pandas_vector_store_record_collection.get(id)
     assert record_2.equals(record)
-    await vector_store_record_collection.delete(id)
-    assert len(vector_store_record_collection.inner_storage) == 0
+    await pandas_vector_store_record_collection.delete(id)
+    assert len(pandas_vector_store_record_collection.inner_storage) == 0
 
 
-@mark.parametrize(
-    "vector_store_record_collection",
-    ["definition_pandas"],
-    indirect=True,
-)
-async def test_crud_batch_operations_pandas(vector_store_record_collection):
+async def test_crud_batch_operations_pandas(pandas_vector_store_record_collection):
     ids = ["test_id_1", "test_id_2"]
 
     batch = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]} for id in ids])
-    no_records = await vector_store_record_collection.get(ids)
+    no_records = await pandas_vector_store_record_collection.get(ids)
     assert no_records is None
-    await vector_store_record_collection.upsert(batch)
-    assert len(vector_store_record_collection.inner_storage) == 2
-    assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch["content"].values[0]
-    assert vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch["vector"].values[0]
-    records = await vector_store_record_collection.get(ids)
+    await pandas_vector_store_record_collection.upsert(batch)
+    assert len(pandas_vector_store_record_collection.inner_storage) == 2
+    assert pandas_vector_store_record_collection.inner_storage[ids[0]]["content"] == batch["content"].values[0]
+    assert pandas_vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch["vector"].values[0]
+    records = await pandas_vector_store_record_collection.get(ids)
     assert records.equals(batch)
-    await vector_store_record_collection.delete(ids)
-    assert len(vector_store_record_collection.inner_storage) == 0
+    await pandas_vector_store_record_collection.delete(ids)
+    assert len(pandas_vector_store_record_collection.inner_storage) == 0
 
 
 # region Fails

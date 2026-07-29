@@ -34,6 +34,8 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -154,6 +156,7 @@ class AssistantThreadActions:
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the assistant.
@@ -173,12 +176,17 @@ class AssistantThreadActions:
             parallel_tool_calls: The parallel tool calls.
             reasoning_effort: The reasoning effort.
             response_format: The response format.
-            tools: The tools.
+            tools: The SDK-level tools (e.g. CodeInterpreter, FileSearch). When provided,
+                overrides the tools from the agent definition. Does not affect kernel function availability;
+                use function_choice_behavior for that.
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
             polling_options: The polling options defined at the run-level. These will override the agent-level
                 polling options.
+            function_choice_behavior: Controls which kernel functions are allowed to execute during this run.
+                Use FunctionChoiceBehavior.Auto(filters={"included_functions": [...]}) to restrict to specific
+                functions. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -187,7 +195,11 @@ class AssistantThreadActions:
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
-        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+        cls._validate_function_choice_behavior(function_choice_behavior)
+
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -260,7 +272,11 @@ class AssistantThreadActions:
 
                     chat_history = ChatHistory()
                     _ = await cls._invoke_function_calls(
-                        kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                        kernel=kernel,
+                        fccs=fccs,
+                        chat_history=chat_history,
+                        arguments=arguments,
+                        function_choice_behavior=function_choice_behavior,
                     )
 
                     tool_outputs = cls._format_tool_outputs(fccs, chat_history)
@@ -374,6 +390,7 @@ class AssistantThreadActions:
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the assistant.
@@ -396,10 +413,15 @@ class AssistantThreadActions:
             parallel_tool_calls: The parallel tool calls.
             reasoning_effort: The reasoning effort.
             response_format: The response format.
-            tools: The tools.
+            tools: The SDK-level tools (e.g. CodeInterpreter, FileSearch). When provided,
+                overrides the tools from the agent definition. Does not affect kernel function availability;
+                use function_choice_behavior for that.
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            function_choice_behavior: Controls which kernel functions are allowed to execute during this run.
+                Use FunctionChoiceBehavior.Auto(filters={"included_functions": [...]}) to restrict to specific
+                functions. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -408,7 +430,11 @@ class AssistantThreadActions:
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
-        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+        cls._validate_function_choice_behavior(function_choice_behavior)
+
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -496,6 +522,7 @@ class AssistantThreadActions:
                             run,
                             function_steps,
                             arguments,
+                            function_choice_behavior=function_choice_behavior,
                         )
                         if action_result is None:
                             raise AgentInvokeException(
@@ -553,6 +580,7 @@ class AssistantThreadActions:
         run: "Run",
         function_steps: dict[str, "FunctionCallContent"],
         arguments: KernelArguments,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> FunctionActionResult | None:
         """Handle the requires action event for a streaming run."""
@@ -563,7 +591,11 @@ class AssistantThreadActions:
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             results = await cls._invoke_function_calls(
-                kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                kernel=kernel,
+                fccs=fccs,
+                chat_history=chat_history,
+                arguments=arguments,
+                function_choice_behavior=function_choice_behavior,
             )
 
             function_result_streaming_content = merge_streaming_function_results(
@@ -658,6 +690,7 @@ class AssistantThreadActions:
         fccs: list["FunctionCallContent"],
         chat_history: "ChatHistory",
         arguments: KernelArguments,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
     ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
         return await asyncio.gather(
@@ -666,6 +699,7 @@ class AssistantThreadActions:
                     function_call=function_call,
                     chat_history=chat_history,
                     arguments=arguments,
+                    function_behavior=function_choice_behavior,
                 )
                 for function_call in fccs
             ],
@@ -837,22 +871,80 @@ class AssistantThreadActions:
             if tool_definition := cls.tool_metadata.get(tool):
                 yield from tool_definition
 
+    @staticmethod
+    def _validate_function_choice_behavior(
+        function_choice_behavior: FunctionChoiceBehavior | None,
+    ) -> None:
+        """Validate the function choice behavior is compatible with agent invocations."""
+        if function_choice_behavior is None:
+            return
+        if function_choice_behavior.type_ != FunctionChoiceType.AUTO:
+            raise AgentInvokeException(
+                f"FunctionChoiceBehavior with type '{function_choice_behavior.type_}' is not supported for agent "
+                "invocations. Use FunctionChoiceBehavior.Auto(filters=...) to control which kernel functions "
+                "are available."
+            )
+        if not function_choice_behavior.auto_invoke_kernel_functions:
+            raise AgentInvokeException(
+                "FunctionChoiceBehavior.Auto(auto_invoke=False) is not supported for agent invocations. "
+                "The agent run loop manages tool invocation; disabling auto_invoke is not compatible."
+            )
+        valid_filter_keys: set[str] = {
+            "excluded_plugins",
+            "included_plugins",
+            "excluded_functions",
+            "included_functions",
+        }
+        if function_choice_behavior.filters is not None:
+            if not function_choice_behavior.filters:
+                raise AgentInvokeException(
+                    "FunctionChoiceBehavior filters must not be empty. Provide at least one filter key "
+                    f"from {sorted(valid_filter_keys)}, or omit filters entirely to include all "
+                    "kernel functions."
+                )
+            unknown_keys = {str(k) for k in function_choice_behavior.filters} - valid_filter_keys
+            if unknown_keys:
+                raise AgentInvokeException(
+                    f"Unknown filter key(s): {sorted(unknown_keys)}. "
+                    f"Valid filter keys are: {sorted(valid_filter_keys)}."
+                )
+
     @classmethod
-    def _get_tools(cls: type[_T], agent: "OpenAIAssistantAgent", kernel: "Kernel") -> list[dict[str, str]]:
+    def _get_tools(
+        cls: type[_T],
+        agent: "OpenAIAssistantAgent",
+        kernel: "Kernel",
+        tools_override: "list[AssistantToolParam] | None" = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+    ) -> list[dict[str, str]]:
         """Get the list of tools for the assistant.
+
+        Args:
+            agent: The assistant agent.
+            kernel: The kernel to use for function metadata.
+            tools_override: When provided, overrides agent.definition.tools (SDK-level tools only).
+            function_choice_behavior: When provided, filters which kernel functions are included.
 
         Returns:
             The list of tools.
         """
         tools: list[Any] = []
 
-        for tool in agent.definition.tools:
+        source_tools = tools_override if tools_override is not None else agent.definition.tools
+        for tool in source_tools:
             if isinstance(tool, CodeInterpreterTool):
                 tools.append({"type": "code_interpreter"})
             elif isinstance(tool, FileSearchTool):
                 tools.append({"type": "file_search"})
 
-        funcs = agent.kernel.get_full_list_of_function_metadata()
+        # Determine kernel function metadata based on function_choice_behavior
+        if function_choice_behavior is not None and not function_choice_behavior.enable_kernel_functions:
+            funcs = []
+        elif function_choice_behavior is not None and function_choice_behavior.filters:
+            funcs = kernel.get_list_of_function_metadata(function_choice_behavior.filters)
+        else:
+            funcs = kernel.get_full_list_of_function_metadata()
+
         tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
 
         return tools

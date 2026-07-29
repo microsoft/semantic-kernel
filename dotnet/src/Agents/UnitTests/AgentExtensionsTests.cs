@@ -2,10 +2,10 @@
 
 using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Moq;
 using Xunit;
-
 namespace SemanticKernel.Agents.UnitTests;
 
 public sealed class AgentExtensionsTests
@@ -77,7 +77,7 @@ public sealed class AgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
+    public async Task AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -95,17 +95,17 @@ public sealed class AgentExtensionsTests
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
-        var thread = result.GetNewThread();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, factoryCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentSession)thread).InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_WithDeserializationFactory_CreatesWorkingAdapter()
+    public async Task AsAIAgent_WithDeserializationFactory_CreatesWorkingAdapter()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
@@ -125,12 +125,12 @@ public sealed class AgentExtensionsTests
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
         var json = JsonElement.Parse("{}");
-        var thread = result.DeserializeThread(json);
+        var thread = await result.DeserializeSessionAsync(json);
 
         // Assert
         Assert.NotNull(thread);
         Assert.Equal(1, deserializationCallCount);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        Assert.Same(expectedThread, ((SemanticKernelAIAgentSession)thread).InnerThread);
     }
 }

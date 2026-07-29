@@ -1,3 +1,0 @@
-# Suppress missing documentation warnings for generated code (strings)
-[*.Designer.cs]
-dotnet_diagnostic.CS1591.severity = none

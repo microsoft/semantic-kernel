@@ -24,12 +24,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VectorData\VectorData.Abstractions\VectorData.Abstractions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

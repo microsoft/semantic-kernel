@@ -99,11 +99,26 @@ public class OpenApiFunctionExecutionParameters
     public RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
-    /// Options for validating server URLs before making HTTP requests.
-    /// When set, the plugin will validate each resolved URL against the configured allowed base URLs and schemes
-    /// before sending the HTTP request. This helps prevent Server-Side Request Forgery (SSRF) attacks.
-    /// If null (default), no URL validation is performed.
+    /// Options for validating server URLs before making HTTP requests, to help prevent
+    /// Server-Side Request Forgery (SSRF) attacks against private/internal infrastructure.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Validation is <b>on by default</b>: when this property is <c>null</c>, the plugin behaves
+    /// as if a default-constructed <see cref="RestApiOperationServerUrlValidationOptions"/> was
+    /// supplied. The implicit policy permits only HTTPS URLs that resolve to public IP
+    /// addresses, blocking loopback, link-local, RFC1918, IPv6 ULA, CGNAT and other
+    /// non-public ranges (including the cloud-metadata address <c>169.254.169.254</c>).
+    /// </para>
+    /// <para>
+    /// To allow plaintext HTTP or private/loopback hosts (for example for localhost
+    /// development or on-prem APIs), set
+    /// <see cref="RestApiOperationServerUrlValidationOptions.AllowedBaseUrls"/> with the
+    /// specific allowed origins, or set
+    /// <see cref="RestApiOperationServerUrlValidationOptions.AllowPrivateNetworkAccess"/>
+    /// to <c>true</c>.
+    /// </para>
+    /// </remarks>
     [Experimental("SKEXP0040")]
     public RestApiOperationServerUrlValidationOptions? ServerUrlValidationOptions { get; set; }
 

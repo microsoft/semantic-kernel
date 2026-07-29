@@ -82,13 +82,13 @@ async Task AFSequentialAgentWorkflow()
     var sequentialAgentWorkflow = AgentWorkflowBuilder.BuildSequential(
         [frenchAgent, spanishAgent, englishAgent]);
 
-    await using StreamingRun run = await InProcessExecution.StreamAsync(sequentialAgentWorkflow, "Hello, world!");
+    await using StreamingRun run = await InProcessExecution.RunStreamingAsync(sequentialAgentWorkflow, "Hello, world!");
     await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
     string? lastExecutorId = null;
     await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
     {
-        if (evt is AgentRunUpdateEvent e)
+        if (evt is AgentResponseUpdateEvent e)
         {
             if (string.IsNullOrEmpty(e.Update.Text))
             {

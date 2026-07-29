@@ -31,7 +31,7 @@ internal static class SqlServerCommandBuilder
         if (ifNotExists)
         {
             sb.Append("IF OBJECT_ID(N'");
-            sb.AppendTableName(schema, tableName);
+            sb.AppendTableNameInsideLiteral(schema, tableName);
             sb.AppendLine("', N'U') IS NULL");
         }
         sb.AppendLine("BEGIN");
@@ -125,22 +125,22 @@ internal static class SqlServerCommandBuilder
             // Full-text indexes require a unique index (we use the primary key)
             sb.AppendLine("DECLARE @pkIndexName NVARCHAR(128);");
             sb.Append("SELECT @pkIndexName = name FROM sys.indexes WHERE object_id = OBJECT_ID(N'");
-            sb.AppendTableName(schema, tableName);
+            sb.AppendTableNameInsideLiteral(schema, tableName);
             sb.AppendLine("') AND is_primary_key = 1;");
 
             sb.AppendLine("DECLARE @ftSql NVARCHAR(MAX);");
             sb.Append("SET @ftSql = N'CREATE FULLTEXT INDEX ON ");
-            sb.AppendTableName(schema, tableName).Append(" (");
+            sb.AppendTableNameInsideLiteral(schema, tableName).Append(" (");
             for (int i = 0; i < fullTextProperties.Count; i++)
             {
-                sb.AppendIdentifier(fullTextProperties[i].StorageName);
+                sb.AppendIdentifierInsideLiteral(fullTextProperties[i].StorageName);
                 if (i < fullTextProperties.Count - 1)
                 {
                     sb.Append(',');
                 }
             }
             sb.Append(") KEY INDEX ' + QUOTENAME(@pkIndexName) + N' ON ");
-            sb.AppendIdentifier(catalogName).AppendLine("';");
+            sb.AppendIdentifierInsideLiteral(catalogName).AppendLine("';");
             sb.AppendLine("EXEC sp_executesql @ftSql;");
         }
 
@@ -535,41 +535,67 @@ internal static class SqlServerCommandBuilder
         string distanceMetric,
         string sorting)
     {
-        // VECTOR_SEARCH() currently only supports post-filtering (TOP_N candidates are returned first,
-        // then predicates are applied). Pre-filtering is not supported.
-        if (options.Filter is not null)
-        {
-            throw new NotSupportedException(
-                "Filtering is not supported with approximate vector search (VECTOR_SEARCH). " +
-                "Remove the filter or use IndexKind.Flat for exact search with VECTOR_DISTANCE.");
-        }
-
         SqlCommand command = connection.CreateCommand();
         command.Parameters.AddWithValue("@vector", vector);
 
         StringBuilder sb = new(300);
 
+        // When skip > 0, we need a subquery since TOP and OFFSET/FETCH can't coexist in the same SELECT.
+        bool needsSubquery = options.Skip > 0;
+
+        if (needsSubquery)
+        {
+            sb.Append("SELECT * FROM (");
+        }
+
         // VECTOR_SEARCH returns all columns from the table plus a 'distance' column.
         // We select the needed columns from the table alias and alias 'distance' as 'score'.
-        sb.Append("SELECT ");
+        // The latest version vector indexes require SELECT TOP(N) WITH APPROXIMATE instead of the deprecated TOP_N parameter.
+        sb.Append("SELECT TOP(").Append(top + options.Skip).Append(") WITH APPROXIMATE ");
         sb.AppendIdentifiers(model.Properties, prefix: "t.", includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
         sb.AppendLine("s.[distance] AS [score]");
         sb.Append("FROM VECTOR_SEARCH(TABLE = ");
         sb.AppendTableName(schema, tableName);
         sb.Append(" AS t, COLUMN = ").AppendIdentifier(vectorProperty.StorageName);
-        sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).Append('\'');
-        sb.Append(", TOP_N = ").Append(top + options.Skip).AppendLine(") AS s");
+        sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).AppendLine("') AS s");
+
+        // With latest version vector indexes, WHERE predicates are applied during the vector search process
+        // (iterative filtering), not after retrieval.
+        if (options.Filter is not null)
+        {
+            int startParamIndex = command.Parameters.Count;
+
+            SqlServerFilterTranslator translator = new(model, options.Filter, sb, startParamIndex: startParamIndex, tableAlias: "t");
+            translator.Translate(appendWhere: true);
+            List<object> parameters = translator.ParameterValues;
+
+            foreach (object parameter in parameters)
+            {
+                command.AddParameter(property: null, $"@_{startParamIndex++}", parameter);
+            }
+
+            sb.AppendLine();
+        }
 
         if (options.ScoreThreshold is not null)
         {
             command.Parameters.AddWithValue("@scoreThreshold", options.ScoreThreshold!.Value);
-            sb.AppendLine("WHERE s.[distance] <= @scoreThreshold");
+            sb.Append(options.Filter is not null ? "AND " : "WHERE ");
+            sb.AppendLine("s.[distance] <= @scoreThreshold");
         }
 
         sb.AppendFormat("ORDER BY [score] {0}", sorting);
-        sb.AppendLine();
-        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
+
+        if (needsSubquery)
+        {
+            sb.AppendLine();
+            sb.Append(") AS [inner]");
+            sb.AppendLine();
+            sb.AppendFormat("ORDER BY [score] {0}", sorting);
+            sb.AppendLine();
+            sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
+        }
 
         command.CommandText = sb.ToString();
         return command;
@@ -586,15 +612,6 @@ internal static class SqlServerCommandBuilder
         string keywords)
     {
         bool useVectorSearch = UseVectorSearch(vectorProperty);
-
-        // VECTOR_SEARCH() currently only supports post-filtering (TOP_N candidates are returned first,
-        // then predicates are applied). Pre-filtering is not supported.
-        if (useVectorSearch && options.Filter is not null)
-        {
-            throw new NotSupportedException(
-                "Filtering is not supported with approximate vector search (VECTOR_SEARCH). " +
-                "Remove the filter or use IndexKind.Flat for exact search with VECTOR_DISTANCE.");
-        }
 
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
         (string distanceMetric, _) = MapDistanceFunction(distanceFunction);
@@ -652,16 +669,32 @@ internal static class SqlServerCommandBuilder
         // CTE 2: Semantic/vector search
         if (useVectorSearch)
         {
-            // Use VECTOR_SEARCH() for approximate nearest neighbor search with a vector index
+            // Use VECTOR_SEARCH() for approximate nearest neighbor search with a vector index.
+            // The latest version vector indexes require SELECT TOP(N) WITH APPROXIMATE instead of the deprecated TOP_N parameter.
             sb.AppendLine("semantic_search AS (");
-            sb.AppendLine("    SELECT TOP(@candidateCount)");
+            sb.AppendLine("    SELECT TOP(@candidateCount) WITH APPROXIMATE");
             sb.Append("        t.").AppendIdentifier(model.KeyProperty.StorageName).AppendLine(",");
             sb.AppendLine("        RANK() OVER (ORDER BY s.[distance]) AS [rank]");
             sb.AppendLine("    FROM VECTOR_SEARCH(TABLE = ");
             sb.Append("        ").AppendTableName(schema, tableName);
             sb.Append(" AS t, COLUMN = ").AppendIdentifier(vectorProperty.StorageName);
-            sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).Append('\'');
-            sb.Append(", TOP_N = @candidateCount").AppendLine(") AS s");
+            sb.Append(", SIMILAR_TO = @vector, METRIC = '").Append(distanceMetric).AppendLine("') AS s");
+
+            // With latest version vector indexes, WHERE predicates are applied during the vector search process
+            // (iterative filtering), not after retrieval.
+            if (options.Filter is not null)
+            {
+                int filterParamStart = command.Parameters.Count;
+                SqlServerFilterTranslator translator = new(model, options.Filter, sb, startParamIndex: filterParamStart, tableAlias: "t");
+                translator.Translate(appendWhere: true);
+                foreach (object parameter in translator.ParameterValues)
+                {
+                    command.AddParameter(property: null, $"@_{filterParamStart++}", parameter);
+                }
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("    ORDER BY s.[distance]");
             sb.AppendLine("),");
         }
         else
@@ -861,6 +894,30 @@ internal static class SqlServerCommandBuilder
         sb.Append(identifier);
         sb.Replace("]", "]]", index, identifier.Length);
         sb.Append(']');
+        return sb;
+    }
+
+    /// <summary>
+    /// Same as <see cref="AppendTableName"/>, but for use inside a SQL string literal (N'...'),
+    /// where single quotes must be escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendTableNameInsideLiteral(this StringBuilder sb, string? schema, string tableName)
+    {
+        int start = sb.Length;
+        sb.AppendTableName(schema, tableName);
+        sb.Replace("'", "''", start, sb.Length - start);
+        return sb;
+    }
+
+    /// <summary>
+    /// Same as <see cref="AppendIdentifier"/>, but for use inside a SQL string literal (N'...'),
+    /// where single quotes must be escaped by doubling them.
+    /// </summary>
+    internal static StringBuilder AppendIdentifierInsideLiteral(this StringBuilder sb, string identifier)
+    {
+        int start = sb.Length;
+        sb.AppendIdentifier(identifier);
+        sb.Replace("'", "''", start, sb.Length - start);
         return sb;
     }
 

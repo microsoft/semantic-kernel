@@ -108,6 +108,58 @@ public sealed class RedisFilterTranslatorTests
         Assert.Equal("""@Name:{"foo\"bar"}""", result);
     }
 
+    [Fact]
+    public void Equal_with_backslash_in_value()
+    {
+        var result = Translate<TestRecord>(r => r.Name == "foo\\bar");
+        Assert.Equal("""@Name:{"foo\\bar"}""", result);
+    }
+
+    [Fact]
+    public void Equal_with_single_backslash()
+    {
+        var result = Translate<TestRecord>(r => r.Name == "\\");
+        Assert.Equal("""@Name:{"\\"}""", result);
+    }
+
+    [Fact]
+    public void Equal_with_backslash_quote_injection_attempt()
+    {
+        // Input: \" which should NOT break out of the quoted string
+        var result = Translate<TestRecord>(r => r.Name == "\\\"");
+        Assert.Equal("""@Name:{"\\\""}""", result);
+    }
+
+    [Fact]
+    public void Equal_with_backslash_quote_wildcard_injection()
+    {
+        // The specific attack payload: \" | * | \"
+        var result = Translate<TestRecord>(r => r.Name == "\\\" | * | \\\"");
+        Assert.Equal("""@Name:{"\\\" | * | \\\""}""", result);
+    }
+
+    [Fact]
+    public void Contains_with_backslash_in_value()
+    {
+        var result = Translate<TestRecord>(r => r.Tags.Contains("foo\\bar"));
+        Assert.Equal("""@Tags:{"foo\\bar"}""", result);
+    }
+
+    [Fact]
+    public void Contains_with_backslash_quote_injection_attempt()
+    {
+        var result = Translate<TestRecord>(r => r.Tags.Contains("\\\""));
+        Assert.Equal("""@Tags:{"\\\""}""", result);
+    }
+
+    [Fact]
+    public void Any_with_backslash_in_values()
+    {
+        var values = new[] { "a\\b", "c\\d" };
+        var result = Translate<TestRecord>(r => r.Tags.Any(t => values.Contains(t)));
+        Assert.Equal("""@Tags:{"a\\b" | "c\\d"}""", result);
+    }
+
     private static string Translate<TRecord>(Expression<Func<TRecord, bool>> filter)
     {
         var model = BuildModel();

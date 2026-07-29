@@ -131,6 +131,30 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Enables or disables thinking for reasoning models such as deepseek-r1, qwen3, and phi4-reasoning.
+    /// Set to <c>false</c> to disable thinking and receive a standard response when using a model that
+    /// enables thinking by default. Set to <c>true</c> to explicitly enable thinking.
+    /// When <c>null</c> (the default), the model's own default behavior is used.
+    /// </summary>
+    /// <remarks>
+    /// When thinking is active, the model's reasoning output lands in a separate thinking stream
+    /// rather than in the main response content. Setting this to <c>false</c> suppresses thinking
+    /// so that all output appears in the standard response field.
+    /// </remarks>
+    [JsonPropertyName("think")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Think
+    {
+        get => this._think;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._think = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -161,6 +185,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
             NumPredict = this.NumPredict,
             Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+            Think = this.Think,
         };
     }
 
@@ -171,6 +196,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     private float? _topP;
     private int? _topK;
     private int? _numPredict;
+    private bool? _think;
 
     #endregion
 }

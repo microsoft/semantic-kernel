@@ -26,6 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Azure.Search.Documents" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
@@ -36,9 +37,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureAISearch.UnitTests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
 </Project>

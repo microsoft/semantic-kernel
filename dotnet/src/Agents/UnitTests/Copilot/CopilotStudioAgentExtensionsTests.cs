@@ -2,12 +2,12 @@
 
 using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Copilot;
 using Moq;
 using Xunit;
-
 namespace SemanticKernel.Agents.UnitTests.Copilot;
 
 public sealed class CopilotStudioAgentExtensionsTests
@@ -38,7 +38,7 @@ public sealed class CopilotStudioAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactory()
+    public async Task AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
         var clientMock = new Mock<CopilotClient>(null, null, null, null);
@@ -46,17 +46,17 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Act
         var result = copilotStudioAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         var clientMock = new Mock<CopilotClient>(null, null, null, null);
@@ -65,17 +65,17 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Act
         var result = copilotStudioAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         var clientMock = new Mock<CopilotClient>(null, null, null, null);
@@ -85,17 +85,17 @@ public sealed class CopilotStudioAgentExtensionsTests
 
         // Act
         var result = copilotStudioAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         var clientMock = new Mock<CopilotClient>(null, null, null, null);
@@ -105,10 +105,10 @@ public sealed class CopilotStudioAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = copilotStudioAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);

@@ -762,6 +762,7 @@ async def setup_openapi_function_call(kernel: Kernel, function_name, arguments):
             openapi_document_path=openapi_spec_file,
             execution_settings=OpenAPIFunctionExecutionParameters(
                 http_client=client,
+                server_url_validation_allowed_base_urls=["https://127.0.0.1"],
             ),
         )
 

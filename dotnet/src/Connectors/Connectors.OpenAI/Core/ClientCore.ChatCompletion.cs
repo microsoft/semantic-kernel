@@ -548,6 +548,8 @@ internal partial class ClientCore
             }
         }
 
+        OpenAIPromptExecutionSettings.ApplyExtraBody(options, executionSettings);
+
         return options;
     }
 
@@ -765,9 +767,16 @@ internal partial class ClientCore
                     continue;
                 }
 
-                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+                var result = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
 
-                toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
+                // OpenAI does not support multimodal tool results - return error message for ImageContent
+                if (result is ImageContent)
+                {
+                    toolMessages.Add(new ToolChatMessage(resultContent.CallId, FunctionCalling.FunctionCallsProcessor.ImageContentNotSupportedErrorMessage));
+                    continue;
+                }
+
+                toolMessages.Add(new ToolChatMessage(resultContent.CallId, (string?)result ?? string.Empty));
             }
 
             if (toolMessages is not null)
@@ -997,9 +1006,9 @@ internal partial class ClientCore
             return "audio/opus";
         }
 
-        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Aac)
         {
-            return "audio/wav";
+            return "audio/aac";
         }
 
         if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Flac)
@@ -1012,7 +1021,7 @@ internal partial class ClientCore
             return "audio/pcm16";
         }
 
-        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'flac' and 'pcm16'.");
+        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'aac', 'flac' and 'pcm16'.");
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)

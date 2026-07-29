@@ -1,4 +1,4 @@
-# Instructions for migrating from Semantic Kernel Agents to Agent Framework in .NET projects.
+﻿# Instructions for migrating from Semantic Kernel Agents to Agent Framework in .NET projects.
 
 ## Scope
 
@@ -22,13 +22,13 @@ For each project that needs to be migrated, you need to do the following:
   solution or you could not find the project, notify user and continue with other projects).
 - Identify the specific Semantic Kernel agent types being used:
   - `ChatCompletionAgent` → `ChatClientAgent`
-  - `OpenAIAssistantAgent` → `assistantsClient.CreateAIAgent()` (via OpenAI Assistants client extension)
-  - `AzureAIAgent` → `persistentAgentsClient.CreateAIAgent()` (via Azure AI Foundry client extension)
-  - `OpenAIResponseAgent` → `responsesClient.CreateAIAgent()` (via OpenAI Responses client extension)
+  - `OpenAIAssistantAgent` → `assistantsClient.AsAIAgent()` (via OpenAI Assistants client extension)
+  - `AzureAIAgent` → `persistentAgentsClient.AsAIAgent()` (via Azure AI Foundry client extension)
+  - `OpenAIResponseAgent` → `responsesClient.AsAIAgent()` (via OpenAI Responses client extension)
   - `A2AAgent` → `AIAgent` (via A2A card resolver)
   - `BedrockAgent` → Custom implementation required (not supported)
 - Determine if agents are being created new or retrieved from hosted services:
-  - **New agents**: Use `CreateAIAgent()` methods
+  - **New agents**: Use `AsAIAgent()` methods
   - **Existing hosted agents**: Use `GetAIAgent(agentId)` methods for OpenAI Assistants and Azure AI Foundry
 </agent_type_identification>
 
@@ -105,8 +105,8 @@ After completing migration, verify these specific items:
 1. **Compilation**: Execute `dotnet build` on all modified projects - zero errors required
 2. **Namespace Updates**: Confirm all `using Microsoft.SemanticKernel.Agents` statements are replaced
 3. **Method Calls**: Verify all `InvokeAsync` calls are changed to `RunAsync`
-4. **Return Types**: Confirm handling of `AgentRunResponse` instead of `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>`
-5. **Thread Creation**: Validate all thread creation uses `agent.GetNewThread()` pattern
+4. **Return Types**: Confirm handling of `AgentResponse` instead of `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>`
+5. **Thread Creation**: Validate all thread creation uses `agent.CreateSessionAsync()` pattern
 6. **Tool Registration**: Ensure `[KernelFunction]` attributes are removed and `AIFunctionFactory.Create()` is used
 7. **Options Configuration**: Verify `AgentRunOptions` or `ChatClientAgentRunOptions` replaces `AgentInvokeOptions`
 8. **Breaking Glass**: Test `RawRepresentation` access replaces `InnerContent` access
@@ -119,8 +119,8 @@ Agent Framework provides functionality for creating and managing AI agents throu
 Key API differences:
 - Agent creation: Remove Kernel dependency, use direct client-based creation
 - Method names: `InvokeAsync` → `RunAsync`, `InvokeStreamingAsync` → `RunStreamingAsync`
-- Return types: `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` → `AgentRunResponse`
-- Thread creation: Provider-specific constructors → `agent.GetNewThread()`
+- Return types: `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` → `AgentResponse`
+- Thread creation: Provider-specific constructors → `agent.CreateSessionAsync()`
 - Tool registration: `KernelPlugin` system → Direct `AIFunction` registration
 - Options: `AgentInvokeOptions` → Provider-specific run options (e.g., `ChatClientAgentRunOptions`)
 </api_changes>
@@ -142,14 +142,14 @@ Replace these Semantic Kernel agent classes with their Agent Framework equivalen
 |----------------------|----------------------------|-------------------|
 | `IChatCompletionService` | `IChatClient` | Convert to `IChatClient` using `chatService.AsChatClient()` extensions |
 | `ChatCompletionAgent` | `ChatClientAgent` | Remove `Kernel` parameter, add `IChatClient` parameter |
-| `OpenAIAssistantAgent` | `AIAgent` (via extension) | **New**: `OpenAIClient.GetAssistantClient().CreateAIAgent()` <br> **Existing**: `OpenAIClient.GetAssistantClient().GetAIAgent(assistantId)` |
-| `AzureAIAgent` | `AIAgent` (via extension) | **New**: `PersistentAgentsClient.CreateAIAgent()` <br> **Existing**: `PersistentAgentsClient.GetAIAgent(agentId)` |
-| `OpenAIResponseAgent` | `AIAgent` (via extension) | Replace with `OpenAIClient.GetOpenAIResponseClient().CreateAIAgent()` |
+| `OpenAIAssistantAgent` | `AIAgent` (via extension) | **New**: `OpenAIClient.GetAssistantClient().AsAIAgent()` <br> **Existing**: `OpenAIClient.GetAssistantClient().GetAIAgent(assistantId)` |
+| `AzureAIAgent` | `AIAgent` (via extension) | **New**: `PersistentAgentsClient.AsAIAgent()` <br> **Existing**: `PersistentAgentsClient.GetAIAgent(agentId)` |
+| `OpenAIResponseAgent` | `AIAgent` (via extension) | Replace with `OpenAIClient.GetResponsesClient().AsAIAgent()` |
 | `A2AAgent` | `AIAgent` (via extension) | Replace with `A2ACardResolver.GetAIAgentAsync()` |
 | `BedrockAgent` | Not supported | Custom implementation required |
 
 **Important distinction:**
-- **CreateAIAgent()**: Use when creating new agents in the hosted service
+- **AsAIAgent()**: Use when creating new agents in the hosted service
 - **GetAIAgent(agentId)**: Use when retrieving existing agents from the hosted service
 </agent_type_identification>
 
@@ -158,16 +158,16 @@ Replace these method calls:
 
 | Semantic Kernel Method | Agent Framework Method | Parameter Changes |
 |----------------------|----------------------|------------------|
-| `agent.InvokeAsync(message, thread, options)` | `agent.RunAsync(message, thread, options)` | Same parameters, different return type |
-| `agent.InvokeStreamingAsync(message, thread, options)` | `agent.RunStreamingAsync(message, thread, options)` | Same parameters, different return type |
-| `new ChatHistoryAgentThread()` | `agent.GetNewThread()` | No parameters needed |
-| `new OpenAIAssistantAgentThread(client)` | `agent.GetNewThread()` | No parameters needed |
-| `new AzureAIAgentThread(client)` | `agent.GetNewThread()` | No parameters needed |
+| `agent.InvokeAsync(message, thread, options)` | `agent.RunAsync(message, session, options)` | Same parameters, different return type |
+| `agent.InvokeStreamingAsync(message, thread, options)` | `agent.RunStreamingAsync(message, session, options)` | Same parameters, different return type |
+| `new ChatHistoryAgentThread()` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
+| `new OpenAIAssistantAgentThread(client)` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
+| `new AzureAIAgentThread(client)` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
 | `thread.DeleteAsync()` | Provider-specific cleanup | Use provider client directly |
 
 Return type changes:
-- `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` → `AgentRunResponse`
-- `IAsyncEnumerable<StreamingChatMessageContent>` → `IAsyncEnumerable<AgentRunResponseUpdate>`
+- `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` → `AgentResponse`
+- `IAsyncEnumerable<StreamingChatMessageContent>` → `IAsyncEnumerable<AgentResponseUpdate>`
 </api_changes>
 
 <configuration_changes>
@@ -191,8 +191,8 @@ Agent Framework changes these behaviors compared to Semantic Kernel Agents:
 1. **Thread Management**: Agent Framework automatically manages thread state. Semantic Kernel required manual thread updates in some scenarios (e.g., OpenAI Responses).
 
 2. **Return Types**:
-   - Non-streaming: Returns single `AgentRunResponse` instead of `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>`
-   - Streaming: Returns `IAsyncEnumerable<AgentRunResponseUpdate>` instead of `IAsyncEnumerable<StreamingChatMessageContent>`
+   - Non-streaming: Returns single `AgentResponse` instead of `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>`
+   - Streaming: Returns `IAsyncEnumerable<AgentResponseUpdate>` instead of `IAsyncEnumerable<StreamingChatMessageContent>`
 
 3. **Tool Registration**: Agent Framework uses direct function registration without requiring `[KernelFunction]` attributes.
 
@@ -222,6 +222,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Agents.AI;
 // Provider-specific namespaces (add only if needed):
 using OpenAI; // For OpenAI provider
+using OpenAI.Chat; // For ChatClient.AsAIAgent() extension
+using OpenAI.Responses; // For ResponsesClient.AsAIAgent() extension
 using Azure.AI.OpenAI; // For Azure OpenAI provider
 using Azure.AI.Agents.Persistent; // For Azure AI Foundry provider
 using Azure.Identity; // For Azure authentication
@@ -254,7 +256,7 @@ AIAgent agent = new ChatClientAgent(chatClient, instructions: "You are a helpful
 // Method 2: Extension method (recommended)
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: "You are a helpful assistant");
+    .AsAIAgent(instructions: "You are a helpful assistant");
 ```
 </configuration_changes>
 
@@ -314,7 +316,7 @@ AIAgent agent = new ChatClientAgent(chatClient, instructions: "You are a helpful
 // Method 2: Extension method (recommended)
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: "You are a helpful assistant");
+    .AsAIAgent(instructions: "You are a helpful assistant");
 ```
 
 **Required changes:**
@@ -338,12 +340,12 @@ AgentThread thread = new AzureAIAgentThread(azureClient);
 **With this unified Agent Framework pattern:**
 ```csharp
 // Use this single pattern for all agent types:
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 
 **Required changes:**
 1. Remove all `new [Provider]AgentThread()` constructor calls
-2. Replace with `agent.GetNewThread()` method call
+2. Replace with `agent.CreateSessionAsync()` method call
 3. Remove provider client parameters from thread creation
 4. Use the same pattern regardless of agent provider type
 </api_changes>
@@ -369,7 +371,7 @@ ChatCompletionAgent agent = new() { Kernel = kernel };
 [Description("Get the weather for a location")] // Keep Description attribute
 static string GetWeather(string location) => $"Weather in {location}";
 
-AIAgent agent = chatClient.CreateAIAgent(
+AIAgent agent = chatClient.AsAIAgent(
     instructions: "You are a helpful assistant",
     tools: [AIFunctionFactory.Create(GetWeather)]);
 ```
@@ -415,12 +417,12 @@ await foreach (var item in agent.InvokeAsync(userInput, thread)) { ... }
 static string GetWeather(string location) => $"Weather in {location}";
 
 // Start with an existing agent
-AIAgent existingAgent = chatClient.CreateAIAgent(
+AIAgent existingAgent = chatClient.AsAIAgent(
     instructions: "You are a helpful assistant");
 
 // Create an augmented agent with additional tools using builder middleware
 var augmentedAgent = existingAgent.AsBuilder()
-    .Use(async (chatMessages, agentThread, agentRunOptions, next, cancellationToken) =>
+    .Use(async (chatMessages, agentSession, agentRunOptions, next, cancellationToken) =>
     {
         if (agentRunOptions is ChatClientAgentRunOptions chatClientAgentRunOptions)
         {
@@ -429,12 +431,12 @@ var augmentedAgent = existingAgent.AsBuilder()
             chatClientAgentRunOptions.ChatOptions.Tools.Add(AIFunctionFactory.Create(GetWeather));
         }
 
-        return await next(chatMessages, agentThread, agentRunOptions, cancellationToken);
+        return await next(chatMessages, agentSession, agentRunOptions, cancellationToken);
     })
     .Build();
 
 // Use the augmented agent with the additional tools
-AgentRunResponse result = await augmentedAgent.RunAsync(userInput, thread);
+AgentResponse result = await augmentedAgent.RunAsync(userInput, session);
 ```
 
 **Required changes:**
@@ -464,7 +466,7 @@ await foreach (AgentResponseItem<ChatMessageContent> item in agent.InvokeAsync(u
 
 **With this Agent Framework non-streaming pattern:**
 ```csharp
-AgentRunResponse result = await agent.RunAsync(userInput, thread, options);
+AgentResponse result = await agent.RunAsync(userInput, session, options);
 Console.WriteLine(result);
 ```
 
@@ -478,7 +480,7 @@ await foreach (StreamingChatMessageContent update in agent.InvokeStreamingAsync(
 
 **With this Agent Framework streaming pattern:**
 ```csharp
-await foreach (AgentRunResponseUpdate update in agent.RunStreamingAsync(userInput, thread, options))
+await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(userInput, session, options))
 {
     Console.Write(update);
 }
@@ -487,8 +489,8 @@ await foreach (AgentRunResponseUpdate update in agent.RunStreamingAsync(userInpu
 **Required changes:**
 1. Replace `agent.InvokeAsync()` with `agent.RunAsync()`
 2. Replace `agent.InvokeStreamingAsync()` with `agent.RunStreamingAsync()`
-3. Change return type handling from `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` to `AgentRunResponse`
-4. Change streaming type from `StreamingChatMessageContent` to `AgentRunResponseUpdate`
+3. Change return type handling from `IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>` to `AgentResponse`
+4. Change streaming type from `StreamingChatMessageContent` to `AgentResponseUpdate`
 5. Remove `await foreach` for non-streaming calls
 6. Access message content directly from result object instead of iterating
 </api_changes>
@@ -537,7 +539,7 @@ services.AddTransient<ChatCompletionAgent>(sp => new()
 services.AddTransient<AIAgent>(sp =>
     new OpenAIClient(apiKey)
         .GetChatClient(modelId)
-        .CreateAIAgent(instructions: "You are helpful"));
+        .AsAIAgent(instructions: "You are helpful"));
 ```
 
 **Required changes:**
@@ -564,11 +566,11 @@ For every thread created if there's intent to cleanup, the caller should track a
 ```csharp
 // For OpenAI Assistants (when cleanup is needed):
 var assistantClient = new OpenAIClient(apiKey).GetAssistantClient();
-await assistantClient.DeleteThreadAsync(thread.ConversationId);
+await assistantClient.DeleteThreadAsync(session.ConversationId);
 
 // For Azure AI Foundry (when cleanup is needed):
 var persistentClient = new PersistentAgentsClient(endpoint, credential);
-await persistentClient.Threads.DeleteThreadAsync(thread.ConversationId);
+await persistentClient.Threads.DeleteThreadAsync(session.ConversationId);
 
 // No thread and agent cleanup is needed for non-hosted agent providers like 
 // - Azure OpenAI Chat Completion
@@ -580,7 +582,7 @@ await persistentClient.Threads.DeleteThreadAsync(thread.ConversationId);
 **Required changes:**
 1. Remove `thread.DeleteAsync()` calls
 2. Use provider-specific client for cleanup when required
-3. Access thread ID via `thread.ConversationId` property
+3. Access thread ID via `session.ConversationId` property
 4. Only implement cleanup for providers that require it (Assistants, Azure AI Foundry)
 </api_changes>
 
@@ -593,14 +595,14 @@ Use these exact patterns for each provider:
 ```csharp
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: instructions);
+    .AsAIAgent(instructions: instructions);
 ```
 
 **OpenAI Assistants (New):**
 ```csharp
 AIAgent agent = new OpenAIClient(apiKey)
     .GetAssistantClient()
-    .CreateAIAgent(modelId, instructions: instructions);
+    .AsAIAgent(modelId, instructions: instructions);
 ```
 
 **OpenAI Assistants (Existing):**
@@ -614,13 +616,13 @@ AIAgent agent = new OpenAIClient(apiKey)
 ```csharp
 AIAgent agent = new AzureOpenAIClient(endpoint, credential)
     .GetChatClient(deploymentName)
-    .CreateAIAgent(instructions: instructions);
+    .AsAIAgent(instructions: instructions);
 ```
 
 **Azure AI Foundry (New):**
 ```csharp
 AIAgent agent = new PersistentAgentsClient(endpoint, credential)
-    .CreateAIAgent(model: deploymentName, instructions: instructions);
+    .AsAIAgent(model: deploymentName, instructions: instructions);
 ```
 
 **Azure AI Foundry (Existing):**
@@ -665,9 +667,9 @@ using OpenAI;
 
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: "You are helpful");
+    .AsAIAgent(instructions: "You are helpful");
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 </configuration_changes>
 
@@ -691,7 +693,7 @@ kernel.Plugins.Add(plugin);
 static string GetWeather([Description("Location")] string location)
     => $"Weather in {location}";
 
-AIAgent agent = chatClient.CreateAIAgent(
+AIAgent agent = chatClient.AsAIAgent(
     instructions: "You are a helpful assistant",
     tools: [AIFunctionFactory.Create(GetWeather)]);
 ```
@@ -714,7 +716,7 @@ await foreach (var result in agent.InvokeAsync(input, thread, options))
 ```csharp
 ChatClientAgentRunOptions options = new(new ChatOptions { MaxOutputTokens = 1000 });
 
-AgentRunResponse result = await agent.RunAsync(input, thread, options);
+AgentResponse result = await agent.RunAsync(input, session, options);
 Console.WriteLine(result);
 
 // Access underlying content when needed:
@@ -742,7 +744,7 @@ await foreach (var result in agent.InvokeAsync(input, thread, options))
 
 **With this Agent Framework non-streaming usage pattern:**
 ```csharp
-AgentRunResponse result = await agent.RunAsync(input, thread, options);
+AgentResponse result = await agent.RunAsync(input, session, options);
 Console.WriteLine($"Tokens: {result.Usage.TotalTokenCount}");
 ```
 
@@ -762,7 +764,7 @@ await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsyn
 
 **With this Agent Framework streaming usage pattern:**
 ```csharp
-await foreach (AgentRunResponseUpdate update in agent.RunStreamingAsync(input, thread, options))
+await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(input, session, options))
 {
     if (update.Contents.OfType<UsageContent>().FirstOrDefault() is { } usageContent)
     {
@@ -787,7 +789,7 @@ await foreach (var content in agent.InvokeAsync(userInput, thread))
 
 **With this Agent Framework breaking glass pattern:**
 ```csharp
-var agentRunResponse = await agent.RunAsync(userInput, thread);
+var agentRunResponse = await agent.RunAsync(userInput, session);
 
 // If the agent uses a ChatClient the first breaking glass probably will be a Microsoft.Extensions.AI.ChatResponse
 ChatResponse? chatResponse = agentRunResponse.RawRepresentation as ChatResponse;
@@ -829,7 +831,7 @@ await foreach (var content in agent.InvokeAsync(userInput, thread))
 
 **With this Agent Framework CodeInterpreter pattern:**
 ```csharp
-var result = await agent.RunAsync(userInput, thread);
+var result = await agent.RunAsync(userInput, session);
 Console.WriteLine(result);
 
 // Extract chat response MEAI type via first level breaking glass
@@ -919,7 +921,7 @@ var openAIResponse = chatCompletion.GetRawResponse();
 
 **Issue: Thread Type Mismatches**
 - **Problem**: Provider-specific thread constructors not found
-- **Solution**: Replace all thread constructors with `agent.GetNewThread()`
+- **Solution**: Replace all thread constructors with `agent.CreateSessionAsync()`
 
 **Issue: Options Configuration**
 - **Problem**: `AgentInvokeOptions` type not found
@@ -937,7 +939,7 @@ var openAIResponse = chatCompletion.GetRawResponse();
 2. **Update Namespaces**: Replace SK namespaces with AF namespaces
 3. **Update Agent Creation**: Remove Kernel, use direct client creation
 4. **Update Method Calls**: Replace `InvokeAsync` with `RunAsync`
-5. **Update Thread Creation**: Replace provider-specific constructors with `GetNewThread()`
+5. **Update Thread Creation**: Replace provider-specific constructors with `await agent.CreateSessionAsync()`
 6. **Update Tool Registration**: Remove attributes, use `AIFunctionFactory.Create()`
 7. **Update Options**: Replace `AgentInvokeOptions` with provider-specific options
 8. **Test and Validate**: Compile and test all functionality
@@ -988,9 +990,9 @@ using OpenAI;
 
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: "You are a helpful assistant");
+    .AsAIAgent(instructions: "You are a helpful assistant");
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 
 ### 2. Azure OpenAI Chat Completion Migration
@@ -1038,7 +1040,7 @@ using Azure.Identity;
 
 AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
     .GetChatClient(deploymentName)
-    .CreateAIAgent(instructions: "You are a helpful assistant");
+    .AsAIAgent(instructions: "You are a helpful assistant");
 ```
 
 ### 3. OpenAI Assistants Migration
@@ -1083,12 +1085,12 @@ using OpenAI;
 
 AIAgent agent = new OpenAIClient(apiKey)
     .GetAssistantClient()
-    .CreateAIAgent(modelId, instructions: "You are a helpful assistant");
+    .AsAIAgent(modelId, instructions: "You are a helpful assistant");
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 
 // Cleanup when needed
-await assistantClient.DeleteThreadAsync(thread.ConversationId);
+await assistantClient.DeleteThreadAsync(session.ConversationId);
 ```
 
 **Retrieving an existing assistant:**
@@ -1100,7 +1102,7 @@ AIAgent agent = new OpenAIClient(apiKey)
     .GetAssistantClient()
     .GetAIAgent(assistantId); // Use existing assistant ID
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 </api_changes>
 
@@ -1163,12 +1165,12 @@ using Azure.Identity;
 var client = new PersistentAgentsClient(endpoint, new AzureCliCredential());
 
 // Create a new AIAgent using Agent Framework
-AIAgent agent = client.CreateAIAgent(
+AIAgent agent = client.AsAIAgent(
     model: deploymentName,
     instructions: "You are a helpful assistant",
     tools: [/* List of specialized Azure.AI.Agents.Persistent.ToolDefinition types */]);
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 
 **Retrieving an existing agent:**
@@ -1182,7 +1184,7 @@ var client = new PersistentAgentsClient(endpoint, new AzureCliCredential());
 // Retrieve an existing AIAgent using its ID
 AIAgent agent = await client.GetAIAgentAsync(agentId);
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 ```
 </api_changes>
 
@@ -1269,20 +1271,21 @@ await foreach (AgentResponseItem<ChatMessageContent> responseItem in responseIte
 Agent Framework automatically manages the thread, so there's no need to manually update it.
 
 ```csharp
-using Microsoft.Agents.AI.OpenAI;
+using OpenAI.Chat; // For ChatClient.AsAIAgent()
+using OpenAI.Responses; // For ResponsesClient.AsAIAgent()
 
 AIAgent agent = new OpenAIClient(apiKey)
-    .GetOpenAIResponseClient(modelId)
-    .CreateAIAgent(
+    .GetResponsesClient(modelId)
+    .AsAIAgent(
         name: "ResponseAgent",
         instructions: "Answer all queries in English and French.",
         tools: [/* AITools */]);
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 
-var result = await agent.RunAsync(userInput, thread);
+var result = await agent.RunAsync(userInput, session);
 
-// The thread will be automatically updated with the new response id from this point
+// The session will be automatically updated with the new response id from this point
 ```
 </api_changes>
 
@@ -1336,21 +1339,22 @@ await foreach (AgentResponseItem<ChatMessageContent> responseItem in responseIte
 Agent Framework automatically manages the thread, so there's no need to manually update it.
 
 ```csharp
-using Microsoft.Agents.AI.OpenAI;
+using OpenAI.Chat; // For ChatClient.AsAIAgent()
+using OpenAI.Responses; // For ResponsesClient.AsAIAgent()
 using Azure.AI.OpenAI;
 
 AIAgent agent = new AzureOpenAIClient(endpoint, new AzureCliCredential())
-    .GetOpenAIResponseClient(modelId)
-    .CreateAIAgent(
+    .GetResponsesClient(modelId)
+    .AsAIAgent(
         name: "ResponseAgent",
         instructions: "Answer all queries in English and French.",
         tools: [/* AITools */]);
 
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
 
-var result = await agent.RunAsync(userInput, thread);
+var result = await agent.RunAsync(userInput, session);
 
-// The thread will be automatically updated with the new response id from this point
+// The session will be automatically updated with the new response id from this point
 ```
 </api_changes>
 
@@ -1513,7 +1517,7 @@ AITool[] tools =
 
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(
+    .AsAIAgent(
         instructions: "You are a weather assistant",
         tools: tools);
 ```
@@ -1562,10 +1566,10 @@ var renderedTemplate = await new KernelPromptTemplateFactory()
 
 AIAgent agent = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
-    .CreateAIAgent(instructions: renderedTemplate);
+    .AsAIAgent(instructions: renderedTemplate);
 
 // No template variables in invocation - use plain string
-var result = await agent.RunAsync("What's the weather?", thread);
+var result = await agent.RunAsync("What's the weather?");
 Console.WriteLine(result);
 ```
 </behavioral_changes>
