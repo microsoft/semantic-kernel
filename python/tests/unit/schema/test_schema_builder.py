@@ -455,3 +455,67 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class InnerForward(KernelBaseModel):
+    value: int
+    label: str
+
+
+class HolderForwardList(KernelBaseModel):
+    items: list["InnerForward"] = []
+
+
+class HolderDirectList(KernelBaseModel):
+    items: list[InnerForward] = []
+
+
+class HolderForwardDict(KernelBaseModel):
+    mapping: dict[str, "InnerForward"] = {}
+
+
+class HolderForwardOptional(KernelBaseModel):
+    maybe: Optional["InnerForward"] = None
+
+
+def test_build_list_with_string_forward_reference_matches_direct_reference():
+    """`list["Inner"]` and `list[Inner]` must produce the same schema."""
+    forward = KernelJsonSchemaBuilder.build(HolderForwardList)
+    direct = KernelJsonSchemaBuilder.build(HolderDirectList)
+
+    assert forward == direct
+    assert forward["properties"]["items"]["items"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_dict_with_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(HolderForwardDict)
+
+    assert schema["properties"]["mapping"]["additionalProperties"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_optional_with_string_forward_reference_still_works():
+    """`Optional["Inner"]` already resolved via `get_type_hints`; make sure it still does."""
+    schema = KernelJsonSchemaBuilder.build(HolderForwardOptional)
+
+    assert schema["properties"]["maybe"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_unresolvable_forward_reference_falls_back_instead_of_raising():
+    """An annotation naming something that doesn't exist must not break schema building."""
+
+    class HolderUnknown(KernelBaseModel):
+        items: list["DoesNotExistAnywhere"] = []  # noqa: F821
+
+    schema = KernelJsonSchemaBuilder.build(HolderUnknown)
+
+    assert schema["properties"]["items"]["type"] == "array"
+    assert schema["properties"]["items"]["items"] == {"type": "object"}

@@ -86,6 +86,7 @@ class KernelJsonSchemaBuilder:
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            field_type = cls._resolve_nested_forward_refs(field_type, model_module_globals)
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
@@ -149,6 +150,59 @@ class KernelJsonSchemaBuilder:
         """
         type_name = TYPE_MAPPING.get(parameter_type, "object")
         return {"type": type_name}
+
+    @classmethod
+    def _resolve_nested_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
+        """Resolve string forward references nested inside a generic alias.
+
+        `get_type_hints` evaluates an annotation that *is* a string, but it does not descend into
+        a generic alias that already exists as an object. `list["Inner"]` goes through
+        `list.__class_getitem__`, which stores `"Inner"` verbatim instead of wrapping it in a
+        `ForwardRef`, so nothing resolves it and `build` formats the bare string rather than the
+        class it names.
+
+        Args:
+            annotation: The annotation to resolve, typically a generic alias.
+            globalns: The globals of the module the owning model was defined in.
+
+        Returns:
+            Any: The annotation with resolvable string arguments replaced by the types they name,
+                or the original annotation when nothing could be resolved.
+        """
+        args = get_args(annotation)
+        if not args:
+            return annotation
+
+        resolved_args = []
+        changed = False
+        for arg in args:
+            reference = arg if isinstance(arg, str) else getattr(arg, "__forward_arg__", None)
+            if reference is not None:
+                try:
+                    resolved = eval(reference, globalns, {})
+                except Exception:
+                    # Not resolvable from this module; leave the annotation alone so the existing
+                    # fallback applies instead of raising while a schema is being built.
+                    return annotation
+                changed = True
+            else:
+                resolved = cls._resolve_nested_forward_refs(arg, globalns)
+                changed = changed or resolved is not arg
+            resolved_args.append(resolved)
+
+        if not changed:
+            return annotation
+
+        copy_with = getattr(annotation, "copy_with", None)
+        if copy_with is not None:
+            return copy_with(tuple(resolved_args))
+        origin = get_origin(annotation)
+        if origin is None:
+            return annotation
+        try:
+            return origin[tuple(resolved_args)]
+        except TypeError:
+            return annotation
 
     @classmethod
     def handle_complex_type(
