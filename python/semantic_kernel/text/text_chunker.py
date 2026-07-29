@@ -137,15 +137,12 @@ def _split_text_paragraph(text: list[str], max_tokens: int, token_counter: Calla
         sec_last_para = paragraphs[-2]
 
         if token_counter(last_para) < max_tokens / 4:
-            last_para_tokens = last_para.split(" ")
-            sec_last_para_tokens = sec_last_para.split(" ")
-            last_para_token_count = len(last_para_tokens)
-            sec_last_para_token_count = len(sec_last_para_tokens)
+            # Compare against `token_counter`, not `len(text.split(" "))`. Word counts and token
+            # counts are different units, so the old check could pass while the merged paragraph
+            # was over `max_tokens` -- exactly the limit this function exists to keep.
+            new_sec_last_para = f"{sec_last_para}{NEWLINE}{last_para}"
 
-            if last_para_token_count + sec_last_para_token_count <= max_tokens:
-                sec_last_para = " ".join(sec_last_para_tokens) + NEWLINE
-                last_para = " ".join(last_para_tokens)
-                new_sec_last_para = sec_last_para + last_para
+            if token_counter(new_sec_last_para) <= max_tokens:
                 paragraphs[-2] = new_sec_last_para.strip()
                 paragraphs.pop()
 

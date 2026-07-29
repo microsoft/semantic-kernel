@@ -8,6 +8,7 @@ from semantic_kernel.text import (
     split_plaintext_lines,
     split_plaintext_paragraph,
 )
+from semantic_kernel.text.text_chunker import _split_text_paragraph, _token_counter
 
 NEWLINE = os.linesep
 
@@ -532,3 +533,25 @@ def test_split_md_on_newlines():
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
     assert expected == split
+
+
+def test_short_last_paragraph_merge_respects_max_tokens():
+    """Folding the last paragraph back must not push it over `max_tokens`."""
+    max_tokens = 20
+    # The default counter is len(text) // 4, so these are 20 and 4 tokens but one word each.
+    lines = ["a" * 80, "b" * 16]
+
+    paragraphs = _split_text_paragraph(lines, max_tokens)
+
+    assert all(_token_counter(p) <= max_tokens for p in paragraphs), [_token_counter(p) for p in paragraphs]
+
+
+def test_short_last_paragraph_still_merges_when_it_fits():
+    """A trailing paragraph that does fit is still folded back."""
+    max_tokens = 20
+    lines = ["a" * 20, "b" * 8]
+
+    paragraphs = _split_text_paragraph(lines, max_tokens)
+
+    assert len(paragraphs) == 1
+    assert _token_counter(paragraphs[0]) <= max_tokens
