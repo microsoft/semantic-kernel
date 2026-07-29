@@ -16,7 +16,7 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Facts\*.txt">

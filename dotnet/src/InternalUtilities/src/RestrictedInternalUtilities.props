@@ -5,6 +5,8 @@
   -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/*.cs" Link="Shared/System/%(Filename)%(Extension)" />
+    <!-- PathUtilities is only needed by Plugins.Core (FileIOPlugin); exclude it from VectorData connectors. -->
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/PathUtilities.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/*.cs" Link="Shared/Data/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/*.cs" Link="Shared/Linq/%(Filename)%(Extension)" />
 

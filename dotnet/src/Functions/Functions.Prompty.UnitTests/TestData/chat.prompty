@@ -8,91 +8,31 @@ metadata:
     - basic
 model:
   id: gpt-35-turbo
-  api: chat
-  connection:
-    type: azure_openai
-    api_version: 2023-07-01-preview
-  options:
-    tools_choice: auto
-tools:
-  - id: test
-    type: function
-    description: test function
-    options:
-      parameters:
-        - name: location
-          type: string
-          required: true
-          description: The city and state or city and country, e.g. San Francisco, CA or Tokyo, Japan
+  apiType: chat
 inputs:
-  firstName:
-    type: string
+  - name: firstName
+    kind: string
     default: User
-    sample: April
     description: The first name of the customer
-    json_schema:
-      type: string
-  lastName:
-    type: string
-    sample: Kwong
+  - name: lastName
+    kind: string
     required: true
-    strict: false
     description: The last name of the customer
-    json_schema:
-      type: string
-  question:
-    type: string
-    description: The question to answer
+  - name: question
+    kind: string
     required: true
-    json_schema:
-      type: string
-  answer:
-    type: object
-    description: Some count
+    description: The question to answer
+  - name: answer
+    kind: object
     required: true
     description: The answer with citations
-    json_schema: |
-            {
-              "type": "object",
-              "properties": {
-                "answer": {
-                  "type": "string"
-                },
-                "citations": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uri"
-                  }
-                }
-              },
-              "required": [
-                "answer",
-                "citations"
-              ],
-              "additionalProperties": false
-            }
-  other:
-    type: object
+  - name: other
+    kind: object
     required: true
-    description: Property with JSON schema
-    json_schema:
-        type: object  
-        properties:  
-          answer:  
-            type: string  
-          citations:  
-            type: array  
-            items:  
-              type: string  
-              format: uri  
-        required:  
-          - answer  
-          - citations  
-        additionalProperties: false
+    description: Property with additional context
 outputs:
-  work:
-    type: object
+  - name: work
+    kind: object
     description: The thing to output
 ---
 system:
