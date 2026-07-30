@@ -58,8 +58,8 @@ public sealed class AgentHooksFilterTests
             () => kernel.InvokeAsync(function));
 
         Assert.False(invoked);
-        Assert.Equal("blocked_by_test", ex.Record.Verdict.Reason);
-        Assert.Equal(InterceptionPoint.PreToolCall, ex.Record.InterceptionPoint);
+        Assert.Equal("blocked_by_test", ex.Record!.Verdict.Reason);
+        Assert.Equal(InterceptionPoint.PreToolCall, ex.Record!.InterceptionPoint);
     }
 
     [Fact]
@@ -138,5 +138,39 @@ public sealed class AgentHooksFilterTests
             return ValueTask.FromResult(new ApprovalResolution(
                 ApprovalOutcome.Approve, request.ContextIdentity, Verdict.Allow));
         }
+    }
+
+    [Fact]
+    public async Task DeniedStartupPoisonsTheSessionAsync()
+    {
+        var kernel = BuildKernel(new ScriptedInterceptor(ctx =>
+            PointOf(ctx) == "agent_startup"
+                ? Verdict.Deny("startup_denied")
+                : Verdict.Allow));
+        var function = KernelFunctionFactory.CreateFromMethod(() => "ran", "Probe");
+
+        await Assert.ThrowsAsync<AgentHooksInterceptionBlockedException>(
+            () => kernel.InvokeAsync(function));
+
+        // §6.1a: the session processes nothing after a blocked startup.
+        var second = await Assert.ThrowsAsync<AgentHooksInterceptionBlockedException>(
+            () => kernel.InvokeAsync(function));
+        Assert.Null(second.Record);
+    }
+
+    [Fact]
+    public async Task ToolErrorStillEmitsPostToolCallAsync()
+    {
+        var records = new List<InterceptionRecord>();
+        var kernel = BuildKernel(
+            new ScriptedInterceptor(_ => Verdict.Allow),
+            records: records);
+        var function = KernelFunctionFactory.CreateFromMethod(
+            new Func<string>(() => throw new InvalidOperationException("boom")), "Probe");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => kernel.InvokeAsync(function));
+
+        var post = Assert.Single(records, r => r.InterceptionPoint == InterceptionPoint.PostToolCall);
+        Assert.True(post.Verdict.Decision == Decision.Allow);
     }
 }

@@ -26,7 +26,9 @@ namespace Microsoft.SemanticKernel.AgentHooks;
 /// a kernel. The <c>input</c>, <c>output</c>, and <c>agent_shutdown</c> points
 /// have no kernel-level seam and are not emitted by this adapter.
 /// A block verdict surfaces as <see cref="AgentHooksInterceptionBlockedException"/>;
-/// filter exceptions propagate, so enforcement fails closed.
+/// filter exceptions propagate, so enforcement fails closed. A
+/// <c>post_tool_call</c> transform substitutes a JSON-typed function result,
+/// which may differ from the original CLR result type.
 /// </remarks>
 public sealed class AgentHooksFilter :
     IFunctionInvocationFilter, IPromptRenderFilter, IAutoFunctionInvocationFilter
@@ -35,6 +37,7 @@ public sealed class AgentHooksFilter :
     private readonly IInterceptor[] _interceptors;
     private readonly ConditionalWeakTable<Kernel, KernelSession> _sessions = [];
 
+    /// <summary>Creates the filter with the adapter options and the DI-resolved interceptors.</summary>
     public AgentHooksFilter(AgentHooksOptions options, IEnumerable<IInterceptor> interceptors)
     {
         this._options = options;
@@ -47,6 +50,7 @@ public sealed class AgentHooksFilter :
         public required InterceptionEmitter Emitter { get; init; }
         public required AgentContextBuilder Builder { get; init; }
         public bool StartupEmitted;
+        public bool StartupBlocked;
         public readonly object StartupLock = new();
     }
 
@@ -89,8 +93,23 @@ public sealed class AgentHooksFilter :
             var tools = kernel.Plugins
                 .SelectMany(p => p.Select(f => $"{p.Name}.{f.Name}"))
                 .ToArray();
-            await this.EmitAsync(session, session.Builder.AgentStartup(tools)).ConfigureAwait(false);
+            try
+            {
+                await this.EmitAsync(session, session.Builder.AgentStartup(tools)).ConfigureAwait(false);
+            }
+            catch (AgentHooksInterceptionBlockedException)
+            {
+                session.StartupBlocked = true;
+                throw;
+            }
         }
+
+        // §6.1a: a blocked agent_startup means the session processes nothing.
+        if (session.StartupBlocked)
+        {
+            throw new AgentHooksInterceptionBlockedException();
+        }
+
         return session;
     }
 
@@ -130,7 +149,22 @@ public sealed class AgentHooksFilter :
             }
         }
 
-        await next(context).ConfigureAwait(false);
+        try
+        {
+            await next(context).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not AgentHooksInterceptionBlockedException)
+        {
+            // The invocation completed with an error: the contract still
+            // brackets it with post_tool_call (tool_result.is_error = true).
+            var errorArgs = pre.Target as JsonObject ?? args;
+            var error = (JsonNode)(ex.GetType().Name);
+            await this.EmitAsync(
+                    session,
+                    session.Builder.PostToolCall(callId, name, errorArgs, error, isError: true))
+                .ConfigureAwait(false);
+            throw;
+        }
 
         var resultValue = SerializeResult(context.Result);
         var effectiveArgs = pre.Target as JsonObject ?? args;
@@ -256,6 +290,7 @@ public sealed class AgentHooksFilter :
 /// </summary>
 public sealed class AgentHooksInterceptionBlockedException : KernelException
 {
+    /// <summary>Creates the exception for a blocked emission carrying its record.</summary>
     public AgentHooksInterceptionBlockedException(InterceptionRecord record)
         : base($"agent-hooks blocked {record.InterceptionPoint.ToWireName()}: " +
                $"{record.Verdict.Reason ?? "no reason"}")
@@ -263,7 +298,16 @@ public sealed class AgentHooksInterceptionBlockedException : KernelException
         this.Record = record;
     }
 
-    /// <summary>The interception record for the blocked emission (§10.3).</summary>
-    public InterceptionRecord Record { get; }
+    internal AgentHooksInterceptionBlockedException()
+        : base("agent-hooks blocked this session: agent_startup was denied")
+    {
+    }
+
+    /// <summary>
+    /// The interception record for the blocked emission (§10.3), or
+    /// <see langword="null"/> when the session was blocked at startup and no
+    /// further emissions occur.
+    /// </summary>
+    public InterceptionRecord? Record { get; }
 }
 #pragma warning restore RCS1194
