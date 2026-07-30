@@ -149,7 +149,9 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
 
             if (!firstContentObserved)
             {
-                Console.WriteLine("Time to first content was not observed because the stream returned no text.");
+                timeToFirstContent.Stop();
+                Console.WriteLine(
+                    $"No text content was observed; time to stream completion, including chat-history reduction: {timeToFirstContent.ElapsedMilliseconds} ms");
             }
 
             chatHistory.AddAssistantMessage(response.ToString());
