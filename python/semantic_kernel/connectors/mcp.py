@@ -278,6 +278,7 @@ class MCPPluginBase:
         self.sampling_auto_approve = sampling_auto_approve
         self._sampling_auto_approved_warning_logged = False
         self._mcp_reserved_attribute_names: set[str] | None = None
+        self._mcp_registered_names: dict[str, tuple[str, str]] = {}
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
@@ -538,6 +539,27 @@ class MCPPluginBase:
         )
         return True
 
+    def _is_mcp_local_name_taken(self, item_type: str, remote_name: str, local_name: str) -> bool:
+        """Check whether a normalized name is already bound to a different MCP tool or prompt.
+
+        Normalization is not injective, so distinct remote names can collapse into the same local
+        name. Tools and prompts share one attribute namespace, so registering a collision would
+        silently rebind an already advertised name to a different remote item.
+        """
+        owner = self._mcp_registered_names.get(local_name)
+        if owner is None or owner == (item_type, remote_name):
+            return False
+        owner_type, owner_name = owner
+        logger.warning(
+            "Skipping MCP %s '%s' because normalized name '%s' is already registered by %s '%s'.",
+            item_type,
+            remote_name,
+            local_name,
+            owner_type,
+            owner_name,
+        )
+        return True
+
     async def load_prompts(self):
         """Load prompts from the MCP server."""
         try:
@@ -546,8 +568,11 @@ class MCPPluginBase:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
             local_name = _normalize_mcp_name(prompt.name)
+            if self._is_mcp_local_name_taken("prompt", prompt.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("prompt", prompt.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("prompt", prompt.name)
             func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
@@ -563,8 +588,11 @@ class MCPPluginBase:
         # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             local_name = _normalize_mcp_name(tool.name)
+            if self._is_mcp_local_name_taken("tool", tool.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("tool", tool.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("tool", tool.name)
             func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)

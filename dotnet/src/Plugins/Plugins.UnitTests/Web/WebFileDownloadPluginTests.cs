@@ -230,6 +230,26 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
     }
 
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\myfile.txt")]
+    [InlineData("//UNC/server/folder/myfile.txt")]
+    [InlineData("/\\UNC\\server\\folder\\myfile.txt")]
+    [InlineData("\\/UNC/server/folder/myfile.txt")]
+    public async Task DownloadToFileRejectsUncOrExtendedPathsAsync(string filePath)
+    {
+        // Arrange
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var webFileDownload = new WebFileDownloadPlugin()
+        {
+            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedFolders = [folderPath]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => webFileDownload.DownloadToFileAsync(uri, filePath));
+    }
+
     [Fact]
     public async Task DownloadToFileUsesCaseSensitiveAllowListComparisonOnLinuxAsync()
     {
