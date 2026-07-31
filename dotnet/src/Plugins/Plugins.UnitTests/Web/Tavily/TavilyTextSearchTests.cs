@@ -496,8 +496,11 @@ public sealed class TavilyTextSearchTests : IDisposable
         Assert.Contains("\"max_results\":5", requestBodyJson);
     }
 
-    [Fact]
-    public async Task SkipIsNotSubtractedFromMaxResultsAsync()
+    [Theory]
+    [InlineData(5, 2, 5)]   // Top > Skip
+    [InlineData(2, 2, 2)]   // Top == Skip
+    [InlineData(1, 5, 1)]   // Top < Skip
+    public async Task SkipIsNotSubtractedFromMaxResultsAsync(int top, int skip, int expectedMaxResults)
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
@@ -506,14 +509,14 @@ public sealed class TavilyTextSearchTests : IDisposable
         // Act - Tavily has no offset parameter, so max_results must equal Top regardless of Skip.
         var searchOptions = new TextSearchOptions<TavilyWebPage>
         {
-            Top = 5,
-            Skip = 2
+            Top = top,
+            Skip = skip
         };
         await textSearch.SearchAsync("What is the Semantic Kernel?", searchOptions);
 
         // Assert
         var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
-        Assert.Contains("\"max_results\":5", requestBodyJson);
+        Assert.Contains($"\"max_results\":{expectedMaxResults}", requestBodyJson);
     }
 
     #endregion
