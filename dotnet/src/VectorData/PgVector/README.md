@@ -39,4 +39,4 @@ See [this sample](../../../samples/Concepts/Memory/VectorStore_VectorSearch_Mult
 
 For more information on using Postgres as a vector store, see the [PostgresVectorStore](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector) documentation.
 
-Use the [getting started instructions](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp#getting-started-with-vector-store-connectors) on the Microsoft Leearn site to learn more about using the vector store.
+Use the [getting started instructions](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp#getting-started-with-vector-store-connectors) on the Microsoft Learn site to learn more about using the vector store.
