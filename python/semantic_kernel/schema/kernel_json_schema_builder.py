@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import sys
 import types
 from enum import Enum
@@ -151,6 +152,39 @@ class KernelJsonSchemaBuilder:
         type_name = TYPE_MAPPING.get(parameter_type, "object")
         return {"type": type_name}
 
+    _TYPE_EXPRESSION_NODES = (
+        ast.Expression,
+        ast.Name,
+        ast.Attribute,
+        ast.Subscript,
+        ast.Tuple,
+        ast.List,
+        ast.Load,
+        ast.Constant,
+        ast.BinOp,
+        ast.BitOr,
+    )
+
+    @classmethod
+    def _is_type_expression(cls, source: str) -> bool:
+        """Return whether `source` parses as a type expression and nothing more.
+
+        A forward reference names a type: an identifier, a dotted path, a subscription such as
+        `dict[str, Inner]`, or a `X | None` union. Calls, lambdas and comprehensions are not part
+        of that grammar, so rejecting them keeps `eval` from running anything a type annotation
+        would never legitimately contain.
+        """
+        try:
+            tree = ast.parse(source, mode="eval")
+        except SyntaxError:
+            return False
+        for node in ast.walk(tree):
+            if not isinstance(node, cls._TYPE_EXPRESSION_NODES):
+                return False
+            if isinstance(node, ast.Constant) and not isinstance(node.value, (str, int, bool, type(None))):
+                return False
+        return True
+
     @classmethod
     def _resolve_nested_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
         """Resolve string forward references nested inside a generic alias.
@@ -178,6 +212,11 @@ class KernelJsonSchemaBuilder:
         for arg in args:
             reference = arg if isinstance(arg, str) else getattr(arg, "__forward_arg__", None)
             if reference is not None:
+                if not cls._is_type_expression(reference):
+                    # Anything that isn't the grammar of a type expression is not a forward
+                    # reference; refuse to evaluate it rather than widen what a stray
+                    # annotation can run while a schema is being built.
+                    return annotation
                 try:
                     resolved = eval(reference, globalns, {})
                 except Exception:
