@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 """Semantic Kernel + emem MCP example — multi-step geospatial verification.
 
 Connects a Microsoft Semantic Kernel agent to the emem MCP server over
@@ -48,8 +50,8 @@ async def main() -> None:
             instructions=(
                 "You are a geospatial verification agent grounded in emem's signed Earth memory. "
                 "For every place query: "
-                "1. Use emem's locate tool to resolve the place to a canonical cell64 address. "
-                "2. Use emem's recall tool to read signed facts (air quality, elevation, flood extent, etc.). "
+                "1. Use the available emem tools to resolve the place to a canonical cell64 address. "
+                "2. Use the available emem tools to read signed facts (air quality, elevation, flood extent, etc.). "
                 "3. Report the emem:fact: receipt so the user can verify it offline, including the fact_cid."
             ),
             plugins=[emem_plugin],
