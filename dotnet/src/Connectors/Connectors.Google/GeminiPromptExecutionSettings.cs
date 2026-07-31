@@ -326,6 +326,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         return new GeminiPromptExecutionSettings()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
             Temperature = this.Temperature,
             TopP = this.TopP,
