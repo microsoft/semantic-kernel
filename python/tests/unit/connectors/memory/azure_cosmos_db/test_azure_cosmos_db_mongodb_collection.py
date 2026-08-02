@@ -98,8 +98,8 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     # Check the vector field index creation
     assert command_args["indexes"][1]["name"] == "vector_"
     assert command_args["indexes"][1]["key"] == {"vector": "cosmosSearch"}
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "COS"
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] is not None
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "vector-hnsw"
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] == "COS"
     assert command_args["indexes"][1]["cosmosSearchOptions"]["dimensions"] == 5
 
 
