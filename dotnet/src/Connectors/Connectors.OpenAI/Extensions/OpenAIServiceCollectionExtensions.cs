@@ -207,6 +207,7 @@ public static partial class OpenAIServiceCollectionExtensions
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(endpoint);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
             new(modelId,

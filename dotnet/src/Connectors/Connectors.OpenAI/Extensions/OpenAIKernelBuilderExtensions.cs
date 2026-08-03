@@ -293,6 +293,7 @@ public static class OpenAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(endpoint);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
             new(modelId,

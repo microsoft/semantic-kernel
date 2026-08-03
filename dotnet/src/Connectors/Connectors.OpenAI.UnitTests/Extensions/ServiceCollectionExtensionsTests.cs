@@ -174,6 +174,16 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void ItThrowsWhenAddingAudioToTextServiceWithoutCustomEndpoint()
+    {
+        // Arrange
+        var sut = new ServiceCollection();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => sut.AddOpenAIAudioToText("model", endpoint: null!));
+    }
+
+    [Fact]
     public void ItCanAddAudioToTextServiceWithOpenAIClient()
     {
         // Arrange

@@ -146,6 +146,16 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
+    public void ItThrowsWhenAddingAudioToTextServiceWithoutCustomEndpoint()
+    {
+        // Arrange
+        var sut = Kernel.CreateBuilder();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => sut.AddOpenAIAudioToText("model", endpoint: null!));
+    }
+
+    [Fact]
     public void ItCanAddAudioToTextServiceWithOpenAIClient()
     {
         // Arrange

@@ -67,6 +67,14 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Fact]
+    public void ItThrowsIfCustomEndpointIsNotProvided()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => new OpenAIAudioToTextService("model-id", endpoint: null!));
+        Assert.Equal("endpoint", exception.ParamName);
+    }
+
+    [Fact]
     public void ItThrowsIfModelIdIsNotProvided()
     {
         // Act & Assert

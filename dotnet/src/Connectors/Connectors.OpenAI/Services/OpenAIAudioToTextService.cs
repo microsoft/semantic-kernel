@@ -63,6 +63,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
+        Verify.NotNull(endpoint);
         this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
     }
 
