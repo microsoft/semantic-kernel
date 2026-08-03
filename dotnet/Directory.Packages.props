@@ -16,7 +16,7 @@
     <PackageVersion Include="MessagePack" Version="3.1.7" /> <!-- Transitive dependency of Aspire pinned to newer version due to vulnerability in 2.5.192 -->
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.100.7" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.100.7" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.100.7" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.101" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.100.9" />
     <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.7" />
