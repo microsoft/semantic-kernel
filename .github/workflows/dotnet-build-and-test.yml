@@ -29,10 +29,10 @@ jobs:
     outputs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         id: filter
         with:
           filters: |
@@ -69,12 +69,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: ${{ github.workspace }}/dotnet/global.json
 
@@ -126,7 +126,7 @@ jobs:
 
       - name: Azure CLI Login
         if: github.event_name != 'pull_request' && matrix.integration-tests
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -184,14 +184,14 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.15
+        uses: danielpalme/ReportGenerator-GitHub-Action@18e0cd4c1bebd0c8b3978b380a6a4ea61c51178e # 5.4.15
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
           reporttypes: "HtmlInline;JsonSummary"
 
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
           path: ./TestResults/Reports # Directory containing files to upload
@@ -232,13 +232,13 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: core.setFailed('Integration Tests Cancelled!')

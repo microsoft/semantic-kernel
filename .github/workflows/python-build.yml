@@ -17,9 +17,9 @@ jobs:
     env:
       UV_PYTHON: "3.10"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -31,18 +31,18 @@ jobs:
       - name: Build the package
         run: cd python && make build
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: |
             python/dist/*
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Start DevOps pipeline
-        uses: azure/cli@v2
+        uses: azure/cli@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
         with:
           inlineScript: |
             az pipelines run --id ${{ vars.ADO_PYTHON_RELEASE_ID }} --org ${{ vars.ADO_ORG }} --project ${{ vars.ADO_PROJECT_NAME }} --parameters tag=${{ github.event.release.tag_name }} delay=0
