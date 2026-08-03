@@ -8,21 +8,19 @@ import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
-from datetime import timedelta
 from functools import partial
 from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 from mcp import types
-from mcp.client.session import ClientSession
+from mcp.client.session import ClientRequestContext, ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
-from mcp.client.streamable_http import streamablehttp_client
-from mcp.client.websocket import websocket_client
+from mcp.client.streamable_http import streamable_http_client
 from mcp.server.lowlevel import Server
-from mcp.shared.context import RequestContext
-from mcp.shared.exceptions import McpError
-from mcp.shared.session import RequestResponder
+from mcp.server.lowlevel.server import ServerRequestContext
+from mcp.shared._httpx_utils import create_mcp_http_client
+from mcp.shared.exceptions import MCPError
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -110,14 +108,14 @@ def _mcp_content_types_to_kernel_content(
     if isinstance(mcp_type, types.TextContent):
         return [TextContent(text=mcp_type.text, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ImageContent):
-        return [ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
+        return [ImageContent(data=mcp_type.data, mime_type=mcp_type.mime_type, inner_content=mcp_type)]
     if isinstance(mcp_type, types.AudioContent):
-        return [AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
+        return [AudioContent(data=mcp_type.data, mime_type=mcp_type.mime_type, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ResourceLink):
         return [
             BinaryContent(
                 uri=mcp_type.uri,  # type: ignore
-                mime_type=mcp_type.mimeType,
+                mime_type=mcp_type.mime_type,
                 inner_content=mcp_type,
             )
         ]
@@ -131,7 +129,7 @@ def _mcp_content_types_to_kernel_content(
                 inner_content=mcp_type,
                 name=mcp_type.type,
                 result=list(chain(*[_mcp_content_types_to_kernel_content(mcp_type.content)])),
-                call_id=mcp_type.toolUseId,
+                call_id=mcp_type.tool_use_id,
             )
         ]
     # subtypes of EmbeddedResource
@@ -160,15 +158,15 @@ def _kernel_content_to_mcp_content_types(
     if isinstance(content, TextContent):
         return [types.TextContent(type="text", text=content.text)]
     if isinstance(content, ImageContent):
-        return [types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type)]
+        return [types.ImageContent(type="image", data=content.data_string, mime_type=content.mime_type)]
     if isinstance(content, AudioContent):
-        return [types.AudioContent(type="audio", data=content.data_string, mimeType=content.mime_type)]
+        return [types.AudioContent(type="audio", data=content.data_string, mime_type=content.mime_type)]
     if isinstance(content, BinaryContent):
         return [
             types.EmbeddedResource(
                 type="resource",
                 resource=types.BlobResourceContents(
-                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "sk://binary"
+                    blob=content.data_string, mime_type=content.mime_type, uri=content.uri or "sk://binary"
                 ),
             )
         ]
@@ -204,8 +202,8 @@ def _get_parameter_dict_from_mcp_prompt(prompt: types.Prompt) -> list[dict[str, 
 @experimental
 def _get_parameter_dicts_from_mcp_tool(tool: types.Tool) -> list[dict[str, Any]]:
     """Creates an MCPFunction instance from a tool."""
-    properties = tool.inputSchema.get("properties", None)
-    required = tool.inputSchema.get("required", [])
+    properties = tool.input_schema.get("properties", None)
+    required = tool.input_schema.get("required", [])
     # Check if 'properties' is missing or not a dictionary
     if not properties:
         return []
@@ -334,7 +332,7 @@ class MCPPluginBase:
                     ClientSession(
                         read_stream=transport[0],
                         write_stream=transport[1],
-                        read_timeout_seconds=timedelta(seconds=self.request_timeout) if self.request_timeout else None,
+                        read_timeout_seconds=float(self.request_timeout) if self.request_timeout else None,
                         message_handler=self.message_handler,
                         logging_callback=self.logging_callback,
                         sampling_callback=self.sampling_callback,
@@ -353,7 +351,7 @@ class MCPPluginBase:
                     "Failed to initialize session. Please check your configuration."
                 ) from ex
             self.session = session
-        elif self.session._request_id == 0:
+        elif self.session.initialize_result is None:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
         logger.debug("Connected to MCP server: %s", self.session)
@@ -381,7 +379,7 @@ class MCPPluginBase:
             pass
 
     async def sampling_callback(
-        self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
+        self, context: ClientRequestContext, params: types.CreateMessageRequestParams
     ) -> types.CreateMessageResult | types.ErrorData:
         """Callback function for sampling.
 
@@ -423,9 +421,9 @@ class MCPPluginBase:
                 message="No services in Kernel. Please set a kernel with one or more services.",
             )
         logger.debug("Sampling callback called with params: %s", params)
-        if params.modelPreferences is not None and params.modelPreferences.hints:
-            # TODO (eavanvalkenburg): deal with other parts of the modelPreferences concept
-            names = [hint.name for hint in params.modelPreferences.hints]
+        if params.model_preferences is not None and params.model_preferences.hints:
+            # TODO (eavanvalkenburg): deal with other parts of the model_preferences concept
+            names = [hint.name for hint in params.model_preferences.hints]
         else:
             names = ["default"]
 
@@ -444,12 +442,12 @@ class MCPPluginBase:
             completion_settings.temperature = params.temperature  # type: ignore
 
         if "max_completion_tokens" in completion_settings.__class__.model_fields:
-            completion_settings.max_completion_tokens = params.maxTokens  # type: ignore
+            completion_settings.max_completion_tokens = params.max_tokens  # type: ignore
         elif "max_tokens" in completion_settings.__class__.model_fields:
-            completion_settings.max_tokens = params.maxTokens  # type: ignore
+            completion_settings.max_tokens = params.max_tokens  # type: ignore
         elif "max_output_tokens" in completion_settings.__class__.model_fields:
-            completion_settings.max_output_tokens = params.maxTokens  # type: ignore
-        chat_history = ChatHistory(system_message=params.systemPrompt)
+            completion_settings.max_output_tokens = params.max_tokens  # type: ignore
+        chat_history = ChatHistory(system_message=params.system_prompt)
         for msg in params.messages:
             chat_history.add_message(_mcp_prompt_message_to_kernel_content(msg))
         try:
@@ -505,7 +503,7 @@ class MCPPluginBase:
 
     async def message_handler(
         self,
-        message: RequestResponder[types.ServerRequest, types.ClientResult] | types.ServerNotification | Exception,
+        message: types.ServerNotification | Exception,
     ) -> None:
         """Handle messages from the MCP server.
 
@@ -519,8 +517,8 @@ class MCPPluginBase:
         if isinstance(message, Exception):
             logger.error("Error from MCP server: %s", message)
             return
-        if isinstance(message, types.ServerNotification):
-            match message.root.method:
+        if isinstance(message, (types.ToolListChangedNotification, types.PromptListChangedNotification)):
+            match message.method:
                 case "notifications/tools/list_changed":
                     await self.load_tools()
                 case "notifications/prompts/list_changed":
@@ -616,7 +614,7 @@ class MCPPluginBase:
             )
         try:
             return _mcp_call_tool_result_to_kernel_contents(await self.session.call_tool(tool_name, arguments=kwargs))
-        except McpError:
+        except MCPError:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call tool '{tool_name}'.") from ex
@@ -634,7 +632,7 @@ class MCPPluginBase:
         try:
             prompt_result = await self.session.get_prompt(prompt_name, arguments=kwargs)
             return [_mcp_prompt_message_to_kernel_content(message) for message in prompt_result.messages]
-        except McpError:
+        except MCPError:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call prompt '{prompt_name}'.") from ex
@@ -835,7 +833,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         """Initialize the MCP streamable http plugin.
 
         The arguments are used to create a streamable http client.
-        see mcp.client.streamable_http.streamablehttp_client for more details.
+        see mcp.client.streamable_http.streamable_http_client for more details.
 
         Any extra arguments passed to the constructor will be passed to the
         streamable http client constructor.
@@ -884,17 +882,23 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         args: dict[str, Any] = {
             "url": self.url,
         }
-        if self.headers:
-            args["headers"] = self.headers
-        if self.timeout:
-            args["timeout"] = self.timeout
-        if self.sse_read_timeout:
-            args["sse_read_timeout"] = self.sse_read_timeout
+        # In mcp 2.x the streamable http client only accepts a pre-built http_client;
+        # headers/timeout/sse_read_timeout are configured on that client instead.
+        if self.headers or self.timeout or self.sse_read_timeout:
+            timeout = None
+            if self.timeout or self.sse_read_timeout:
+                import httpx2
+
+                timeout = httpx2.Timeout(
+                    self.timeout if self.timeout else 30.0,
+                    read=self.sse_read_timeout if self.sse_read_timeout else 300.0,
+                )
+            args["http_client"] = create_mcp_http_client(headers=self.headers or None, timeout=timeout)
         if self.terminate_on_close is not None:
             args["terminate_on_close"] = self.terminate_on_close
         if self._client_kwargs:
             args.update(self._client_kwargs)
-        return streamablehttp_client(**args)
+        return streamable_http_client(**args)
 
 
 class MCPWebsocketPlugin(MCPPluginBase):
@@ -917,8 +921,9 @@ class MCPWebsocketPlugin(MCPPluginBase):
     ) -> None:
         """Initialize the MCP websocket plugin.
 
-                The arguments are used to create a websocket client.
-        see mcp.client.websocket.websocket_client for more details.
+        Note: the websocket transport was removed from the mcp Python SDK in 2.0,
+        so connecting this plugin raises a KernelPluginInvalidConfigurationError.
+        Use MCPStdioPlugin, MCPSsePlugin, or MCPStreamableHttpPlugin instead.
 
         Any extra arguments passed to the constructor will be passed to the
         websocket client constructor.
@@ -957,12 +962,11 @@ class MCPWebsocketPlugin(MCPPluginBase):
 
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
         """Get an MCP websocket client."""
-        args: dict[str, Any] = {
-            "url": self.url,
-        }
-        if self._client_kwargs:
-            args.update(self._client_kwargs)
-        return websocket_client(**args)
+        # The websocket transport was removed from the mcp Python SDK in 2.0.
+        raise KernelPluginInvalidConfigurationError(
+            "The MCP websocket transport is not available: mcp.client.websocket was removed in mcp 2.0. "
+            "Use MCPStdioPlugin, MCPSsePlugin, or MCPStreamableHttpPlugin instead."
+        )
 
 
 # region: Kernel as MCP Server
@@ -1066,6 +1070,146 @@ def create_mcp_server_from_kernel(
         mcp.server.lowlevel.Server
 
     """
+    if excluded_functions is not None and not isinstance(excluded_functions, list):
+        excluded_functions = [excluded_functions]  # type: ignore
+
+    functions_to_expose = [
+        func for func in kernel.get_full_list_of_function_metadata() if func.name not in (excluded_functions or [])
+    ]
+    exposed_names = frozenset(func.name for func in functions_to_expose)
+
+    # In mcp 2.x there is no server-level request_context; handlers receive a per-request
+    # ServerRequestContext carrying the connection-scoped session. We track the most recent
+    # one so helper functions (e.g. _log) can reach the session to emit log messages.
+    current_ctx: dict[str, ServerRequestContext | None] = {"ctx": None}
+
+    server: Server["LifespanResultT"] | None = None
+
+    async def _list_tools(
+        ctx: ServerRequestContext, params: types.PaginatedRequestParams | None
+    ) -> types.ListToolsResult:
+        """List all tools in the kernel."""
+        current_ctx["ctx"] = ctx
+        tools = [
+            types.Tool(
+                name=func.name,
+                description=func.description,
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        param.name: param.schema_data
+                        for param in func.parameters
+                        if param.name and param.schema_data and param.include_in_function_choices
+                    },
+                    "required": [
+                        param.name
+                        for param in func.parameters
+                        if param.name and param.is_required and param.include_in_function_choices
+                    ],
+                },
+            )
+            for func in functions_to_expose
+        ]
+        await _log(level="debug", data=f"List of tools: {tools}")
+        await asyncio.sleep(0.0)
+        return types.ListToolsResult(tools=tools)
+
+    async def _call_tool(ctx: ServerRequestContext, params: types.CallToolRequestParams) -> types.CallToolResult:
+        """Call a tool in the kernel."""
+        current_ctx["ctx"] = ctx
+        function_name, arguments = params.name, params.arguments or {}
+        if function_name not in exposed_names:
+            raise MCPError(
+                code=types.METHOD_NOT_FOUND,
+                message=f"Unknown tool: {function_name}",
+            )
+        await _log(level="debug", data=f"Calling tool: {function_name}")
+        result = await _call_kernel_function(function_name, arguments)
+        if result:
+            value = result.value
+            messages: list[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource] = []
+            if isinstance(value, list):
+                for item in value:
+                    match item:
+                        case TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent():
+                            messages.extend(_kernel_content_to_mcp_content_types(item))
+                        case _:
+                            messages.append(
+                                types.TextContent(type="text", text=str(item)),
+                            )
+            else:
+                match value:
+                    case TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent():
+                        messages.extend(_kernel_content_to_mcp_content_types(value))
+                    case _:
+                        messages.append(
+                            types.TextContent(type="text", text=str(value)),
+                        )
+            return types.CallToolResult(content=messages)
+        raise MCPError(
+            code=types.INTERNAL_ERROR,
+            message=f"Function {function_name} returned no result",
+        )
+
+    async def _list_prompts(
+        ctx: ServerRequestContext, params: types.PaginatedRequestParams | None
+    ) -> types.ListPromptsResult:
+        """List all prompts in the kernel."""
+        current_ctx["ctx"] = ctx
+        mcp_prompts = []
+        for prompt in prompts or []:
+            mcp_prompts.append(
+                types.Prompt(
+                    name=prompt.prompt_template_config.name,
+                    description=prompt.prompt_template_config.description,
+                    arguments=[
+                        types.PromptArgument(
+                            name=var.name,
+                            description=var.description,
+                            required=var.is_required,
+                        )
+                        for var in prompt.prompt_template_config.input_variables
+                    ],
+                )
+            )
+        await _log(level="debug", data=f"List of prompts: {mcp_prompts}")
+        return types.ListPromptsResult(prompts=mcp_prompts)
+
+    async def _get_prompt(ctx: ServerRequestContext, params: types.GetPromptRequestParams) -> types.GetPromptResult:
+        """Get a prompt by name."""
+        current_ctx["ctx"] = ctx
+        name, arguments = params.name, params.arguments
+        prompt = next((p for p in (prompts or []) if p.prompt_template_config.name == name), None)
+        if prompt is None:
+            return types.GetPromptResult(description="Prompt not found", messages=[])
+
+        # Call the prompt
+        rendered_prompt = await prompt.render(
+            kernel,
+            KernelArguments(**arguments) if arguments is not None else KernelArguments(),  # type: ignore[arg-type]
+        )
+        # since the return type of a get_prompts is a list of messages,
+        # we need to convert the rendered prompt to a list of messages
+        # by using the ChatHistory class
+        chat_history = ChatHistory.from_rendered_prompt(rendered_prompt)
+        messages = []
+        for message in chat_history.messages:
+            messages.append(
+                types.PromptMessage(
+                    role=message.role.value if message.role in (AuthorRole.ASSISTANT, AuthorRole.USER) else "assistant",
+                    content=_kernel_content_to_mcp_content_types(message)[0],
+                )
+            )
+        return types.GetPromptResult(messages=messages)
+
+    async def _set_logging_level(ctx: ServerRequestContext, params: types.SetLevelRequestParams) -> types.EmptyResult:
+        """Set the logging level for the server."""
+        current_ctx["ctx"] = ctx
+        logger.setLevel(LOG_LEVEL_MAPPING[params.level])
+        # emit this log with the new minimum level
+        await _log(level=params.level, data=f"Log level set to {params.level}")
+        return types.EmptyResult()
+
     server_args: dict[str, Any] = {
         "name": server_name,
         "version": version,
@@ -1073,163 +1217,28 @@ def create_mcp_server_from_kernel(
     }
     if lifespan:
         server_args["lifespan"] = lifespan
+    if len(functions_to_expose) > 0:
+        server_args["on_list_tools"] = _list_tools
+        server_args["on_call_tool"] = _call_tool
+    if prompts:
+        server_args["on_list_prompts"] = _list_prompts
+        server_args["on_get_prompt"] = _get_prompt
+    server_args["on_set_logging_level"] = _set_logging_level
     if kwargs:
         server_args.update(kwargs)
 
-    if excluded_functions is not None and not isinstance(excluded_functions, list):
-        excluded_functions = [excluded_functions]  # type: ignore
-
-    server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
-
-    functions_to_expose = [
-        func for func in kernel.get_full_list_of_function_metadata() if func.name not in (excluded_functions or [])
-    ]
-    exposed_names = frozenset(func.name for func in functions_to_expose)
-
-    if len(functions_to_expose) > 0:
-
-        @server.list_tools()
-        async def _list_tools() -> list[types.Tool]:
-            """List all tools in the kernel."""
-            tools = [
-                types.Tool(
-                    name=func.name,
-                    description=func.description,
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            param.name: param.schema_data
-                            for param in func.parameters
-                            if param.name and param.schema_data and param.include_in_function_choices
-                        },
-                        "required": [
-                            param.name
-                            for param in func.parameters
-                            if param.name and param.is_required and param.include_in_function_choices
-                        ],
-                    },
-                )
-                for func in functions_to_expose
-            ]
-            await _log(level="debug", data=f"List of tools: {tools}")
-            await asyncio.sleep(0.0)
-            return tools
-
-        @server.call_tool()
-        async def _call_tool(
-            *args: Any,
-        ) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
-            """Call a tool in the kernel."""
-            function_name, arguments = args[0], args[1]
-            if function_name not in exposed_names:
-                raise McpError(
-                    error=types.ErrorData(
-                        code=types.METHOD_NOT_FOUND,
-                        message=f"Unknown tool: {function_name}",
-                    )
-                )
-            await _log(level="debug", data=f"Calling tool: {function_name}")
-            result = await _call_kernel_function(function_name, arguments)
-            if result:
-                value = result.value
-                messages: list[
-                    types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource
-                ] = []
-                if isinstance(value, list):
-                    for item in value:
-                        match item:
-                            case (
-                                TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent()
-                            ):
-                                messages.extend(_kernel_content_to_mcp_content_types(item))
-                            case _:
-                                messages.append(
-                                    types.TextContent(type="text", text=str(item)),
-                                )
-                else:
-                    match value:
-                        case TextContent() | ImageContent() | BinaryContent() | AudioContent() | ChatMessageContent():
-                            messages.extend(_kernel_content_to_mcp_content_types(value))
-                        case _:
-                            messages.append(
-                                types.TextContent(type="text", text=str(value)),
-                            )
-                return messages
-            raise McpError(
-                error=types.ErrorData(
-                    code=types.INTERNAL_ERROR,
-                    message=f"Function {function_name} returned no result",
-                ),
-            )
-
-    if prompts:
-
-        @server.list_prompts()
-        async def _list_prompts() -> list[types.Prompt]:
-            """List all prompts in the kernel."""
-            mcp_prompts = []
-            for prompt in prompts:
-                mcp_prompts.append(
-                    types.Prompt(
-                        name=prompt.prompt_template_config.name,
-                        description=prompt.prompt_template_config.description,
-                        arguments=[
-                            types.PromptArgument(
-                                name=var.name,
-                                description=var.description,
-                                required=var.is_required,
-                            )
-                            for var in prompt.prompt_template_config.input_variables
-                        ],
-                    )
-                )
-            await _log(level="debug", data=f"List of prompts: {mcp_prompts}")
-            return mcp_prompts
-
-        @server.get_prompt()
-        async def _get_prompt(name: str, arguments: dict[str, Any] | None) -> types.GetPromptResult:
-            """Get a prompt by name."""
-            prompt = next((p for p in prompts if p.prompt_template_config.name == name), None)
-            if prompt is None:
-                return types.GetPromptResult(description="Prompt not found", messages=[])
-
-            # Call the prompt
-            rendered_prompt = await prompt.render(
-                kernel,
-                KernelArguments(**arguments) if arguments is not None else KernelArguments(),
-            )
-            # since the return type of a get_prompts is a list of messages,
-            # we need to convert the rendered prompt to a list of messages
-            # by using the ChatHistory class
-            chat_history = ChatHistory.from_rendered_prompt(rendered_prompt)
-            messages = []
-            for message in chat_history.messages:
-                messages.append(
-                    types.PromptMessage(
-                        role=message.role.value
-                        if message.role in (AuthorRole.ASSISTANT, AuthorRole.USER)
-                        else "assistant",
-                        content=_kernel_content_to_mcp_content_types(message)[0],
-                    )
-                )
-            return types.GetPromptResult(messages=messages)
+    server = Server(**server_args)  # type: ignore[call-arg]
 
     async def _log(level: types.LoggingLevel, data: Any) -> None:
         """Log a message to the server and logger."""
         # Log to the local logger
         logger.log(LOG_LEVEL_MAPPING[level], data)
-        if server and server.request_context and server.request_context.session:
+        ctx = current_ctx.get("ctx")
+        if ctx and ctx.session:
             try:
-                await server.request_context.session.send_log_message(level=level, data=data)
+                await ctx.session.send_log_message(level=level, data=data)
             except Exception as e:
                 logger.error("Failed to send log message to server: %s", e)
-
-    @server.set_logging_level()
-    async def _set_logging_level(level: types.LoggingLevel) -> None:
-        """Set the logging level for the server."""
-        logger.setLevel(LOG_LEVEL_MAPPING[level])
-        # emit this log with the new minimum level
-        await _log(level=level, data=f"Log level set to {level}")
 
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
         function = kernel.get_function(plugin_name=None, function_name=function_name)

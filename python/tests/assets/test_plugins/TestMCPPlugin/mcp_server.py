@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP("Echo")
+mcp = MCPServer("Echo")
 
 
 @mcp.resource("echo://{message}")
