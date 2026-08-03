@@ -46,6 +46,27 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ItUsesCustomEndpointWithoutApiKeyAsync()
+    {
+        // Arrange
+        var endpoint = new Uri("http://localhost:10095/v1");
+        var service = new OpenAIAudioToTextService("model-id", endpoint, httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        await service.GetTextContentsAsync(
+            new AudioContent(new BinaryData("data"), mimeType: null),
+            new OpenAIAudioToTextExecutionSettings("file.mp3"));
+
+        // Assert
+        Assert.Equal("http://localhost:10095/v1/audio/transcriptions", this._messageHandlerStub.RequestUri!.ToString());
+        Assert.Equal(endpoint.ToString(), service.Attributes["Endpoint"]);
+    }
+
+    [Fact]
     public void ItThrowsIfModelIdIsNotProvided()
     {
         // Act & Assert

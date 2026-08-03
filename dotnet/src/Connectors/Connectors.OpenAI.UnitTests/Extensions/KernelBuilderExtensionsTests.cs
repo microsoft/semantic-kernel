@@ -130,6 +130,22 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
+    public void ItCanAddAudioToTextServiceWithCustomEndpoint()
+    {
+        // Arrange
+        var endpoint = new Uri("http://localhost:10095/v1");
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var service = sut.AddOpenAIAudioToText("model", endpoint)
+            .Build()
+            .GetRequiredService<IAudioToTextService>();
+
+        // Assert
+        Assert.Equal(endpoint.ToString(), service.Attributes[AIServiceExtensions.EndpointKey]);
+    }
+
+    [Fact]
     public void ItCanAddAudioToTextServiceWithOpenAIClient()
     {
         // Arrange

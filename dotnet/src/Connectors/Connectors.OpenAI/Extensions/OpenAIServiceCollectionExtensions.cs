@@ -187,6 +187,41 @@ public static partial class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Adds an OpenAI-compatible audio-to-text service with a custom endpoint to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">Model name.</param>
+    /// <param name="endpoint">OpenAI-compatible API endpoint.</param>
+    /// <param name="apiKey">Optional API key.</param>
+    /// <param name="orgId">OpenAI organization id.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAIAudioToText(
+        this IServiceCollection services,
+        string modelId,
+        Uri endpoint,
+        string? apiKey = null,
+        string? orgId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
+            new(modelId,
+                endpoint,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
+
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
