@@ -119,7 +119,7 @@ onnx = [
   # onnxruntime>=1.24.0 dropped Python 3.10 support; retain the last compatible runtime/genai pair for 3.10.
   "onnxruntime==1.22.1; python_version == '3.10'",
   "onnxruntime>=1.26.0; python_version > '3.10'",
-  "onnxruntime-genai==0.9.0; python_version == '3.10'",
+  "onnxruntime-genai==0.15.0; python_version == '3.10'",
   "onnxruntime-genai==0.14.1; python_version > '3.10'"
 ]
 oracledb = [
