@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
-using Xunit.Abstractions;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -27,11 +26,9 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly ChatHistory _chatHistory = [new ChatMessageContent(AuthorRole.User, "test")];
-    private readonly ITestOutputHelper _output;
 
-    public OpenAIChatCompletionExtraBodyTests(ITestOutputHelper output)
+    public OpenAIChatCompletionExtraBodyTests()
     {
-        this._output = output;
         this._messageHandlerStub = new HttpMessageHandlerStub
         {
             ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
