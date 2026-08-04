@@ -86,6 +86,27 @@ class NonPydanticReasoning:
     final_answer: str
 
 
+class ForwardRefInnerModel(KernelBaseModel):
+    value: int
+    label: str
+
+
+class ModelWithListForwardRef(KernelBaseModel):
+    items: list["ForwardRefInnerModel"] = []
+
+
+class ModelWithNestedListForwardRef(KernelBaseModel):
+    matrix: list[list["ForwardRefInnerModel"]]
+
+
+class ModelWithDictForwardRef(KernelBaseModel):
+    mapping: dict[str, "ForwardRefInnerModel"]
+
+
+class ModelWithTopLevelForwardRef(KernelBaseModel):
+    one: "ForwardRefInnerModel"
+
+
 def test_build_with_kernel_base_model():
     expected_schema = {
         "type": "object",
@@ -455,3 +476,88 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+def test_build_with_list_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(ModelWithListForwardRef)
+    items = schema["properties"]["items"]
+    assert items == {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {"value": {"type": "integer"}, "label": {"type": "string"}},
+            "required": ["value", "label"],
+        },
+    }
+
+
+def test_build_with_nested_list_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(ModelWithNestedListForwardRef)
+    matrix = schema["properties"]["matrix"]
+    inner = matrix["items"]["items"]
+    assert matrix["type"] == "array"
+    assert inner["type"] == "object"
+    assert inner["properties"]["value"]["type"] == "integer"
+    assert inner["properties"]["label"]["type"] == "string"
+    assert inner["required"] == ["value", "label"]
+
+
+def test_build_with_dict_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(ModelWithDictForwardRef)
+    additional_properties = schema["properties"]["mapping"]["additionalProperties"]
+    assert additional_properties["type"] == "object"
+    assert additional_properties["properties"]["value"]["type"] == "integer"
+    assert additional_properties["properties"]["label"]["type"] == "string"
+    assert additional_properties["required"] == ["value", "label"]
+
+
+def test_build_with_top_level_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(ModelWithTopLevelForwardRef)
+    one = schema["properties"]["one"]
+    assert one["type"] == "object"
+    assert one["properties"]["value"]["type"] == "integer"
+    assert one["required"] == ["value", "label"]
+
+
+def test_build_list_alias_with_string_forward_reference():
+    # A generic alias built with a raw string arg keeps the string in __args__
+    # (no ForwardRef wrapper), so resolution has to happen against the module
+    # globals of the model that owns the annotation.
+    schema = KernelJsonSchemaBuilder.build(list["ForwardRefInnerModel"])
+    assert schema == {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {"value": {"type": "integer"}, "label": {"type": "string"}},
+            "required": ["value", "label"],
+        },
+    }
+
+
+def test_build_nested_list_alias_with_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(list[list["ForwardRefInnerModel"]])
+    inner = schema["items"]["items"]
+    assert schema["type"] == "array"
+    assert inner["type"] == "object"
+    assert inner["properties"]["value"]["type"] == "integer"
+    assert inner["properties"]["label"]["type"] == "string"
+    assert inner["required"] == ["value", "label"]
+
+
+def test_build_dict_alias_with_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(dict[str, "ForwardRefInnerModel"])
+    additional_properties = schema["additionalProperties"]
+    assert additional_properties["type"] == "object"
+    assert additional_properties["properties"]["value"]["type"] == "integer"
+    assert additional_properties["properties"]["label"]["type"] == "string"
+    assert additional_properties["required"] == ["value", "label"]
+
+
+def test_build_tuple_alias_with_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(tuple["ForwardRefInnerModel", "ForwardRefInnerModel"])
+    assert schema["type"] == "array"
+    for item in schema["items"]:
+        assert item["type"] == "object"
+        assert item["properties"]["value"]["type"] == "integer"
+        assert item["properties"]["label"]["type"] == "string"
+        assert item["required"] == ["value", "label"]

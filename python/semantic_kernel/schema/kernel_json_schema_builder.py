@@ -36,7 +36,11 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def build(
-        cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
+        cls,
+        parameter_type: type | str | Any,
+        description: str | None = None,
+        structured_output: bool = False,
+        globalns: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
@@ -44,10 +48,16 @@ class KernelJsonSchemaBuilder:
             parameter_type: The parameter type.
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
+            globalns: The module globals to resolve string forward references
+                against. Defaults to None.
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
         """
+        if globalns is None:
+            # No owning model to provide globals (direct call): resolve string
+            # forward references against the caller's module globals instead.
+            globalns = sys._getframe(1).f_globals
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
         if isinstance(parameter_type, KernelBaseModel):
@@ -57,7 +67,7 @@ class KernelJsonSchemaBuilder:
         if hasattr(parameter_type, "__annotations__"):
             return cls.build_model_schema(parameter_type, description, structured_output)
         if hasattr(parameter_type, "__args__"):
-            return cls.handle_complex_type(parameter_type, description, structured_output)
+            return cls.handle_complex_type(parameter_type, description, structured_output, globalns)
         schema = cls.get_json_schema(parameter_type)
         if description:
             schema["description"] = description
@@ -97,7 +107,7 @@ class KernelJsonSchemaBuilder:
                     field_description = field_info.description
             if not cls._is_optional(field_type):
                 required.append(field_name)
-            properties[field_name] = cls.build(field_type, field_description, structured_output)
+            properties[field_name] = cls.build(field_type, field_description, structured_output, model_module_globals)
 
         schema = {"type": "object", "properties": properties}
         if required:
@@ -151,8 +161,27 @@ class KernelJsonSchemaBuilder:
         return {"type": type_name}
 
     @classmethod
+    def _resolve_forward_ref(cls, arg: Any, globalns: dict[str, Any] | None) -> Any:
+        """Resolve a string argument against the module globals if it names a type.
+
+        Generic aliases like ``list["Inner"]`` store the raw string in
+        ``__args__`` without a ``ForwardRef`` wrapper, so ``get_type_hints``
+        never evaluates it. Resolve it here against the owning model's module
+        globals so ``list["Inner"]`` produces the same schema as ``list[Inner]``.
+        """
+        if isinstance(arg, str) and globalns is not None:
+            resolved = globalns.get(arg)
+            if isinstance(resolved, type):
+                return resolved
+        return arg
+
+    @classmethod
     def handle_complex_type(
-        cls, parameter_type: type, description: str | None = None, structured_output: bool = False
+        cls,
+        parameter_type: type,
+        description: str | None = None,
+        structured_output: bool = False,
+        globalns: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
@@ -160,6 +189,8 @@ class KernelJsonSchemaBuilder:
             parameter_type: The parameter type.
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
+            globalns: The module globals to resolve string forward references
+                against. Defaults to None.
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -169,17 +200,18 @@ class KernelJsonSchemaBuilder:
 
         schema: dict[str, Any] = {}
         if origin is list or origin is set:
-            item_type = args[0]
+            item_type = cls._resolve_forward_ref(args[0], globalns)
             schema = {
                 "type": "array",
-                "items": cls.build(item_type, structured_output=structured_output),
+                "items": cls.build(item_type, structured_output=structured_output, globalns=globalns),
             }
             if description:
                 schema["description"] = description
             return schema
         if origin is dict:
             _, value_type = args
-            additional_properties = cls.build(value_type, structured_output=structured_output)
+            value_type = cls._resolve_forward_ref(value_type, globalns)
+            additional_properties = cls.build(value_type, structured_output=structured_output, globalns=globalns)
             if additional_properties == {"type": "object"}:
                 additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
             schema = {"type": "object", "additionalProperties": additional_properties}
@@ -189,7 +221,12 @@ class KernelJsonSchemaBuilder:
                 schema["additionalProperties"] = False
             return schema
         if origin is tuple:
-            items = [cls.build(arg, structured_output=structured_output) for arg in args]
+            items = [
+                cls.build(
+                    cls._resolve_forward_ref(arg, globalns), structured_output=structured_output, globalns=globalns
+                )
+                for arg in args
+            ]
             schema = {"type": "array", "items": items}
             if description:
                 schema["description"] = description
@@ -200,14 +237,23 @@ class KernelJsonSchemaBuilder:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
-                schema = cls.build(non_none_type, structured_output=structured_output)
+                non_none_type = cls._resolve_forward_ref(non_none_type, globalns)
+                schema = cls.build(non_none_type, structured_output=structured_output, globalns=globalns)
                 schema["type"] = [schema["type"], "null"]
                 if description:
                     schema["description"] = description
                 if structured_output:
                     schema["additionalProperties"] = False
                 return schema
-            schemas = [cls.build(arg, description, structured_output=structured_output) for arg in args]
+            schemas = [
+                cls.build(
+                    cls._resolve_forward_ref(arg, globalns),
+                    description,
+                    structured_output=structured_output,
+                    globalns=globalns,
+                )
+                for arg in args
+            ]
             return {"anyOf": schemas}
         schema = cls.get_json_schema(parameter_type)
         if description:
