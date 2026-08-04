@@ -27,8 +27,8 @@ public class ExternalGovernanceCheckpoint(ITestOutputHelper output) : BaseTest(o
             (decimal amount, string recipient) => "Executed wire transfer",
             "WireTransfer");
 
-        kernel.ImportPluginFromFunctions("Payments", [function]);
-        KernelFunction importedFunction = kernel.Plugins.GetFunction("Payments", "WireTransfer");
+        KernelPlugin plugin = kernel.ImportPluginFromFunctions("Payments", [function]);
+        KernelFunction importedFunction = plugin["WireTransfer"];
 
         var context = CreateAutoFunctionInvocationContext(
             kernel,
@@ -66,8 +66,8 @@ public class ExternalGovernanceCheckpoint(ITestOutputHelper output) : BaseTest(o
         var kernel = builder.Build();
         var function = KernelFunctionFactory.CreateFromMethod(() => "Deleted customer record", "DeleteCustomerRecord");
 
-        kernel.ImportPluginFromFunctions("CustomerAdmin", [function]);
-        KernelFunction importedFunction = kernel.Plugins.GetFunction("CustomerAdmin", "DeleteCustomerRecord");
+        KernelPlugin plugin = kernel.ImportPluginFromFunctions("CustomerAdmin", [function]);
+        KernelFunction importedFunction = plugin["DeleteCustomerRecord"];
 
         var context = CreateAutoFunctionInvocationContext(kernel, importedFunction, new KernelArguments());
         var filter = kernel.Services.GetRequiredService<IAutoFunctionInvocationFilter>();
@@ -133,8 +133,12 @@ public class ExternalGovernanceCheckpoint(ITestOutputHelper output) : BaseTest(o
                     return;
 
                 case "deny":
+                    string functionLabel = envelope.PluginName is { Length: > 0 }
+                        ? $"{envelope.PluginName}.{envelope.FunctionName}"
+                        : envelope.FunctionName;
+
                     throw new UnauthorizedAccessException(
-                        $"Function call '{envelope.PluginName ?? "<none>"}.{envelope.FunctionName}' was denied by checkpoint {checkpointReference}.");
+                        $"Function call '{functionLabel}' was denied by checkpoint {checkpointReference}.");
 
                 default:
                     throw new InvalidOperationException($"Unknown checkpoint verdict '{verdict.Decision}'.");
@@ -194,18 +198,14 @@ public class ExternalGovernanceCheckpoint(ITestOutputHelper output) : BaseTest(o
 
         public static string ComputeReference(ActionEnvelope envelope)
         {
-            StableActionEnvelope stableEnvelope = new(
-                envelope.PluginName,
-                envelope.FunctionName,
-                envelope.Arguments);
-
-            byte[] envelopeBytes = JsonSerializer.SerializeToUtf8Bytes(stableEnvelope, s_serializerOptions);
+            var reference = new ActionReference(envelope.PluginName, envelope.FunctionName, envelope.Arguments);
+            byte[] envelopeBytes = JsonSerializer.SerializeToUtf8Bytes(reference, s_serializerOptions);
             byte[] digest = SHA256.HashData(envelopeBytes);
 
             return $"sha256:{Convert.ToHexString(digest).ToLowerInvariant()}";
         }
 
-        private sealed record StableActionEnvelope(
+        private sealed record ActionReference(
             string? PluginName,
             string FunctionName,
             IReadOnlyDictionary<string, object?> Arguments);
@@ -225,7 +225,11 @@ public class ExternalGovernanceCheckpoint(ITestOutputHelper output) : BaseTest(o
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Console.WriteLine($"Checkpoint {checkpointReference}: {decision} {envelope.PluginName ?? "<none>"}.{envelope.FunctionName}");
+            string functionLabel = envelope.PluginName is { Length: > 0 }
+                ? $"{envelope.PluginName}.{envelope.FunctionName}"
+                : envelope.FunctionName;
+
+            Console.WriteLine($"Checkpoint {checkpointReference}: {decision} {functionLabel}");
 
             return Task.FromResult(new CheckpointVerdict(decision));
         }
