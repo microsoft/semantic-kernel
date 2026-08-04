@@ -19,6 +19,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     private readonly string _embeddingModelId;
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
+    private readonly bool _useEmbedContentMethod;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Vertex AI.
@@ -54,9 +55,14 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         string baseUri = GetVertexAIBaseUri(location);
 
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
+        this._useEmbedContentMethod = UsesEmbedContentMethod(modelId);
+        string embeddingMethod = this._useEmbedContentMethod ? "batchEmbedContents" : "predict";
+        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:{embeddingMethod}");
         this._dimensions = dimensions;
     }
+
+    private static bool UsesEmbedContentMethod(string modelId)
+        => modelId.StartsWith("gemini-embedding", StringComparison.Ordinal);
 
     /// <summary>
     /// Generates embeddings for the given data asynchronously.
@@ -72,17 +78,25 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
-        var geminiRequest = this.GetEmbeddingRequest(data, options);
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
+        object request = this._useEmbedContentMethod
+            ? VertexAIEmbedContentRequest.FromData(data, options?.Dimensions ?? this._dimensions)
+            : this.GetEmbeddingRequest(data, options);
+
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(request, this._embeddingEndpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
-        return DeserializeAndProcessEmbeddingsResponse(body);
+        return this._useEmbedContentMethod
+            ? ProcessEmbedContentResponse(body)
+            : DeserializeAndProcessEmbeddingsResponse(body);
     }
 
     private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
         => VertexAIEmbeddingRequest.FromData(data, options?.Dimensions ?? this._dimensions);
+
+    private static List<ReadOnlyMemory<float>> ProcessEmbedContentResponse(string body)
+        => DeserializeResponse<VertexAIEmbedContentResponse>(body).Embeddings.Select(embedding => embedding.Values).ToList();
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<VertexAIEmbeddingResponse>(body));
