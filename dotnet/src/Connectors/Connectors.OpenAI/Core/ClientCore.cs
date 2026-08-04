@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -202,6 +202,7 @@ internal partial class ClientCore
         options.Endpoint ??= endpoint ?? httpClient?.BaseAddress;
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
+        options.AddPolicy(DeduplicateJsonKeysPipelinePolicy.Instance, PipelinePosition.PerCall);
 
         if (orgId is not null)
         {
@@ -269,5 +270,89 @@ internal partial class ClientCore
                 message.Request.Headers.Set(headerName, headerValue);
             }
         });
+    }
+
+    private sealed class DeduplicateJsonKeysPipelinePolicy : PipelinePolicy
+    {
+        public static DeduplicateJsonKeysPipelinePolicy Instance { get; } = new();
+
+        public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+        {
+            SanitizeMessageContent(message);
+            ProcessNext(message, pipeline, currentIndex);
+        }
+
+        public override async ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+        {
+            SanitizeMessageContent(message);
+            await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
+        }
+
+        private static void SanitizeMessageContent(PipelineMessage message)
+        {
+            if (message.Request.Content is null)
+            {
+                return;
+            }
+
+            using var memoryStream = new System.IO.MemoryStream();
+            message.Request.Content.WriteTo(memoryStream, default);
+            byte[] bytes = memoryStream.ToArray();
+            if (bytes.Length == 0)
+            {
+                return;
+            }
+
+            string rawJson = System.Text.Encoding.UTF8.GetString(bytes);
+            if (!rawJson.StartsWith('{'))
+            {
+                return;
+            }
+
+            string cleanJson = DeduplicateTopLevelJsonKeys(rawJson);
+            if (!string.Equals(rawJson, cleanJson, StringComparison.Ordinal))
+            {
+                message.Request.Content = System.ClientModel.BinaryContent.Create(BinaryData.FromString(cleanJson));
+            }
+        }
+
+        private static string DeduplicateTopLevelJsonKeys(string rawJson)
+        {
+#pragma warning disable CA1031 // Catch all exceptions to prevent request pipeline failure
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(rawJson);
+                var root = doc.RootElement;
+                if (root.ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    return rawJson;
+                }
+
+                var dictionary = new Dictionary<string, System.Text.Json.JsonElement>(StringComparer.Ordinal);
+                foreach (var prop in root.EnumerateObject())
+                {
+                    dictionary[prop.Name] = prop.Value.Clone();
+                }
+
+                using var stream = new System.IO.MemoryStream();
+                using (var writer = new System.Text.Json.Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    foreach (var kvp in dictionary)
+                    {
+                        writer.WritePropertyName(kvp.Key);
+                        kvp.Value.WriteTo(writer);
+                    }
+                    writer.WriteEndObject();
+                }
+
+                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            }
+            catch
+            {
+                return rawJson;
+            }
+#pragma warning restore CA1031
+        }
     }
 }
