@@ -43,6 +43,11 @@ from semantic_kernel.exceptions import FunctionExecutionException
         ("2001:db8::1", "reserved"),
         ("::ffff:127.0.0.1", "loopback"),
         ("::ffff:169.254.169.254", "link-local"),
+        ("168.63.129.16", "Azure metadata (WireServer)"),
+        ("64:ff9b::169.254.169.254", "link-local"),
+        ("64:ff9b::a83f:8110", "Azure metadata (WireServer)"),
+        ("2002:a9fe:a9fe::", "link-local"),
+        ("2001:0:4136:e378:8000:63bf:3fff:fdd2", "reserved"),
     ],
 )
 def test_try_categorize_non_public_address(address: str, expected_category: str):
@@ -168,3 +173,34 @@ async def test_validate_server_url_blocks_empty_dns_response():
 
     with pytest.raises(FunctionExecutionException, match="returned no addresses"):
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
+
+
+async def test_validate_server_url_rejects_literal_azure_wire_server():
+    with pytest.raises(FunctionExecutionException, match="Azure metadata"):
+        await validate_server_url("https://168.63.129.16/machine/")
+
+
+async def test_validate_server_url_rejects_nat64_embedded_link_local():
+    with pytest.raises(FunctionExecutionException, match="link-local"):
+        await validate_server_url("https://[64:ff9b::169.254.169.254]/latest/meta-data/")
+
+
+async def test_validate_server_url_rejects_6to4_embedded_link_local():
+    with pytest.raises(FunctionExecutionException, match="link-local"):
+        await validate_server_url("https://[2002:a9fe:a9fe::]/latest/meta-data/")
+
+
+async def test_validate_server_url_blocks_wireserver_even_with_private_network_access():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+
+    with pytest.raises(FunctionExecutionException, match="Azure metadata"):
+        await validate_server_url("https://168.63.129.16/machine/", options)
+
+
+async def test_validate_server_url_blocks_hostname_resolving_to_azure_wire_server():
+    async def fake_resolver(host: str):
+        assert host == "wireserver-host.example.com"
+        return ["168.63.129.16"]
+
+    with pytest.raises(FunctionExecutionException, match="Azure metadata"):
+        await validate_server_url("https://wireserver-host.example.com/machine/", dns_resolver=fake_resolver)

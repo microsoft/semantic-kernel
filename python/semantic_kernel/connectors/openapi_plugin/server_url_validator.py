@@ -16,6 +16,15 @@ DnsResolver = Callable[[str], Awaitable[Sequence[str | ipaddress.IPv4Address | i
 
 DEFAULT_ALLOWED_SCHEME = "https"
 
+# Azure instance metadata service (WireServer). Unlike the AWS/GCP equivalents, this
+# address is publicly routable, so it would otherwise pass the private-address checks.
+_AZURE_WIRE_SERVER = ipaddress.ip_address("168.63.129.16")
+_AZURE_WIRE_SERVER_CATEGORY = "Azure metadata (WireServer)"
+
+# Well-known NAT64 prefixes (RFC 6052): the global 64:ff9b::/96 and the local-use
+# 64:ff9b:1::/48. IPv4 addresses embedded in these ranges must be classified too.
+_NAT64_PREFIXES = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+
 
 class ServerUrlValidationOptions(KernelBaseModel):
     """Options for validating OpenAPI operation request URLs."""
@@ -59,6 +68,9 @@ async def validate_server_url(
         )
 
     if options.allow_private_network_access:
+        # Allowing access to a private network is not the same as allowing access to
+        # the host agent's cloud metadata endpoint, which is always blocked.
+        _reject_cloud_metadata_host(parsed_url)
         return
 
     await _ensure_public_host(parsed_url, dns_resolver)
@@ -70,13 +82,35 @@ def try_categorize_non_public_address(
     """Return whether an IP address is non-public and the category when blocked."""
     ip_address = ipaddress.ip_address(address)
 
-    if isinstance(ip_address, ipaddress.IPv6Address) and ip_address.ipv4_mapped:
-        ip_address = ip_address.ipv4_mapped
+    if isinstance(ip_address, ipaddress.IPv6Address):
+        embedded_ipv4 = _extract_embedded_ipv4(ip_address)
+        if embedded_ipv4 is not None:
+            ip_address = embedded_ipv4
+        elif ip_address.ipv4_mapped:
+            ip_address = ip_address.ipv4_mapped
 
     if isinstance(ip_address, ipaddress.IPv4Address):
         return _try_classify_ipv4(ip_address)
 
     return _try_classify_ipv6(ip_address)
+
+
+def _extract_embedded_ipv4(address: ipaddress.IPv6Address) -> ipaddress.IPv4Address | None:
+    """Decode an IPv4 address embedded in an IPv6 address, if any.
+
+    Covers IPv4-mapped (``::ffff:a.b.c.d``), 6to4 (``2002::/16``, RFC 3056), Teredo
+    (``2001::/32``, RFC 4380) and NAT64 (RFC 6052) addresses. The embedded IPv4 is
+    classified separately so a private address cannot slip through an otherwise
+    public-looking IPv6 address.
+    """
+    if address.sixtofour is not None:
+        return address.sixtofour
+    if address.teredo is not None:
+        _, teredo_client = address.teredo
+        return teredo_client
+    if any(address in prefix for prefix in _NAT64_PREFIXES):
+        return ipaddress.ip_address(address.packed[-4:])
+    return None
 
 
 def _parse_absolute_url(url: str, option_name: str = "url") -> ParseResult:
@@ -191,9 +225,35 @@ def _ensure_public_address(url: str, address: ipaddress.IPv4Address | ipaddress.
         )
 
 
+def _reject_cloud_metadata_host(parsed_url: ParseResult) -> None:
+    """Block cloud metadata endpoints even when private network access is allowed.
+
+    Only literal IP hosts are checked: private-network mode deliberately does not
+    resolve hostnames, so a hostname pointing at a metadata endpoint is out of scope.
+    """
+    host = parsed_url.hostname
+    if host is None:
+        return
+
+    try:
+        ip_address = ipaddress.ip_address(host)
+    except ValueError:
+        return
+
+    blocked, category = try_categorize_non_public_address(ip_address)
+    if blocked and category == _AZURE_WIRE_SERVER_CATEGORY:
+        raise FunctionExecutionException(
+            f"The request URI '{parsed_url.geturl()}' is not allowed: the host is the Azure "
+            f"metadata endpoint (WireServer, {ip_address}), which is blocked even when "
+            "allow_private_network_access=True to prevent SSRF against cloud metadata services."
+        )
+
+
 def _try_classify_ipv4(address: ipaddress.IPv4Address) -> tuple[bool, str]:
     b0, b1, b2, _ = address.packed
 
+    if address == _AZURE_WIRE_SERVER:
+        return True, _AZURE_WIRE_SERVER_CATEGORY
     if b0 == 0:
         return True, "unspecified"
     if b0 == 10:
