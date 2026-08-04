@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -223,8 +223,8 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
         await service.GetChatMessageContentsAsync(this._chatHistory, settings);
 
         // Assert
-        var jsonString = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        int toolsKeyCount = System.Text.RegularExpressions.Regex.Matches(jsonString, "\"tools\"\\s*:").Count;
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
         Assert.Equal(1, toolsKeyCount);
     }
 
@@ -246,8 +246,8 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
         await service.GetChatMessageContentsAsync(this._chatHistory, settings);
 
         // Assert
-        var jsonString = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        int tempKeyCount = System.Text.RegularExpressions.Regex.Matches(jsonString, "\"temperature\"\\s*:").Count;
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int tempKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("temperature"));
         Assert.Equal(1, tempKeyCount);
     }
 
