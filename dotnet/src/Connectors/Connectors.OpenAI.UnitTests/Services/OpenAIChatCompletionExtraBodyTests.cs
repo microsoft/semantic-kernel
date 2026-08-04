@@ -226,6 +226,7 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
         using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
         int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
         Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
     }
 
     [Fact]
@@ -249,6 +250,7 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
         using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
         int tempKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("temperature"));
         Assert.Equal(1, tempKeyCount);
+        Assert.Equal(0.5, doc.RootElement.GetProperty("temperature").GetDouble());
     }
 
     [Fact]

@@ -298,6 +298,13 @@ internal partial class ClientCore
                     return;
                 }
 
+                if (message.Request.Headers.TryGetValue("Content-Type", out string? contentType) &&
+                    contentType is not null &&
+                    !contentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
                 using var memoryStream = new System.IO.MemoryStream();
                 message.Request.Content.WriteTo(memoryStream, default);
                 byte[] bytes = memoryStream.ToArray();
