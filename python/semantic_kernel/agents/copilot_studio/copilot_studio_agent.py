@@ -181,7 +181,10 @@ class _CopilotStudioAgentTokenFactory:
 
         pem_bytes = Path(cert_path).read_bytes()
         der_bytes = ssl.PEM_cert_to_DER_cert(pem_bytes.decode())
-        return hashlib.sha1(der_bytes, usedforsecurity=False).hexdigest().upper()
+        # SHA-1 is not used here as a security primitive: it computes the X.509 certificate thumbprint
+        # (the `x5t` JWT header value), which MSAL and Microsoft Entra ID mandate to be SHA-1 for the
+        # `thumbprint` client credential. Hence the `usedforsecurity=False` flag.
+        return hashlib.sha1(der_bytes, usedforsecurity=False).hexdigest().upper()  # CodeQL [SM02167] x5t thumbprint
 
 
 # endregion
