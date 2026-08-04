@@ -889,9 +889,13 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             if self.timeout or self.sse_read_timeout:
                 import httpx2
 
+                # Map the overall default from `timeout`, and let `sse_read_timeout` only
+                # widen the read window. When `sse_read_timeout` is unset, fall back to
+                # `timeout` so a configured short timeout also bounds reads.
+                default = self.timeout if self.timeout else 30.0
                 timeout = httpx2.Timeout(
-                    self.timeout if self.timeout else 30.0,
-                    read=self.sse_read_timeout if self.sse_read_timeout else 300.0,
+                    default,
+                    read=self.sse_read_timeout if self.sse_read_timeout else default,
                 )
             args["http_client"] = create_mcp_http_client(headers=self.headers or None, timeout=timeout)
         if self.terminate_on_close is not None:
@@ -1078,18 +1082,12 @@ def create_mcp_server_from_kernel(
     ]
     exposed_names = frozenset(func.name for func in functions_to_expose)
 
-    # In mcp 2.x there is no server-level request_context; handlers receive a per-request
-    # ServerRequestContext carrying the connection-scoped session. We track the most recent
-    # one so helper functions (e.g. _log) can reach the session to emit log messages.
-    current_ctx: dict[str, ServerRequestContext | None] = {"ctx": None}
-
     server: Server["LifespanResultT"] | None = None
 
     async def _list_tools(
         ctx: ServerRequestContext, params: types.PaginatedRequestParams | None
     ) -> types.ListToolsResult:
         """List all tools in the kernel."""
-        current_ctx["ctx"] = ctx
         tools = [
             types.Tool(
                 name=func.name,
@@ -1110,20 +1108,19 @@ def create_mcp_server_from_kernel(
             )
             for func in functions_to_expose
         ]
-        await _log(level="debug", data=f"List of tools: {tools}")
+        await _log(ctx, level="debug", data=f"List of tools: {tools}")
         await asyncio.sleep(0.0)
         return types.ListToolsResult(tools=tools)
 
     async def _call_tool(ctx: ServerRequestContext, params: types.CallToolRequestParams) -> types.CallToolResult:
         """Call a tool in the kernel."""
-        current_ctx["ctx"] = ctx
         function_name, arguments = params.name, params.arguments or {}
         if function_name not in exposed_names:
             raise MCPError(
                 code=types.METHOD_NOT_FOUND,
                 message=f"Unknown tool: {function_name}",
             )
-        await _log(level="debug", data=f"Calling tool: {function_name}")
+        await _log(ctx, level="debug", data=f"Calling tool: {function_name}")
         result = await _call_kernel_function(function_name, arguments)
         if result:
             value = result.value
@@ -1155,7 +1152,6 @@ def create_mcp_server_from_kernel(
         ctx: ServerRequestContext, params: types.PaginatedRequestParams | None
     ) -> types.ListPromptsResult:
         """List all prompts in the kernel."""
-        current_ctx["ctx"] = ctx
         mcp_prompts = []
         for prompt in prompts or []:
             mcp_prompts.append(
@@ -1172,12 +1168,11 @@ def create_mcp_server_from_kernel(
                     ],
                 )
             )
-        await _log(level="debug", data=f"List of prompts: {mcp_prompts}")
+        await _log(ctx, level="debug", data=f"List of prompts: {mcp_prompts}")
         return types.ListPromptsResult(prompts=mcp_prompts)
 
     async def _get_prompt(ctx: ServerRequestContext, params: types.GetPromptRequestParams) -> types.GetPromptResult:
         """Get a prompt by name."""
-        current_ctx["ctx"] = ctx
         name, arguments = params.name, params.arguments
         prompt = next((p for p in (prompts or []) if p.prompt_template_config.name == name), None)
         if prompt is None:
@@ -1204,10 +1199,9 @@ def create_mcp_server_from_kernel(
 
     async def _set_logging_level(ctx: ServerRequestContext, params: types.SetLevelRequestParams) -> types.EmptyResult:
         """Set the logging level for the server."""
-        current_ctx["ctx"] = ctx
         logger.setLevel(LOG_LEVEL_MAPPING[params.level])
         # emit this log with the new minimum level
-        await _log(level=params.level, data=f"Log level set to {params.level}")
+        await _log(ctx, level=params.level, data=f"Log level set to {params.level}")
         return types.EmptyResult()
 
     server_args: dict[str, Any] = {
@@ -1229,11 +1223,14 @@ def create_mcp_server_from_kernel(
 
     server = Server(**server_args)  # type: ignore[call-arg]
 
-    async def _log(level: types.LoggingLevel, data: Any) -> None:
-        """Log a message to the server and logger."""
+    async def _log(ctx: ServerRequestContext | None, level: types.LoggingLevel, data: Any) -> None:
+        """Log a message to the server and logger.
+
+        The per-request context is passed in explicitly so concurrent requests never
+        share or overwrite a stored context (each handler logs through its own session).
+        """
         # Log to the local logger
         logger.log(LOG_LEVEL_MAPPING[level], data)
-        ctx = current_ctx.get("ctx")
         if ctx and ctx.session:
             try:
                 await ctx.session.send_log_message(level=level, data=data)
