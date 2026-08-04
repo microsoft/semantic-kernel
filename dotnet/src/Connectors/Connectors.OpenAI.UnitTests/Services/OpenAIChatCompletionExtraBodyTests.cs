@@ -254,6 +254,52 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
     }
 
     [Fact]
+    public async Task ExtraBodyJsonPathToolsDoesNotEmitDuplicateToolsKeyAsync()
+    {
+        // Arrange - JSONPath root notation: ["$.tools"]
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["$.tools"] = new[] { new { type = "web_search" } },
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
+        Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task ExtraBodyJsonPathNestedToolsDoesNotEmitDuplicateToolsKeyAsync()
+    {
+        // Arrange - JSONPath array indexing notation: ["$.tools[0].type"]
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["$.tools[0].type"] = "web_search",
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
+        Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
+    }
+
+    [Fact]
 
     public void FromExecutionSettingsRoundTripPreservesExtraBody()
     {

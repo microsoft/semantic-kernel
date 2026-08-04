@@ -307,13 +307,18 @@ internal partial class ClientCore
 
                 using var memoryStream = new System.IO.MemoryStream();
                 message.Request.Content.WriteTo(memoryStream, default);
-                byte[] bytes = memoryStream.ToArray();
-                if (bytes.Length == 0)
+                if (memoryStream.Length == 0)
                 {
                     return;
                 }
 
-                string rawJson = System.Text.Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF', ' ', '\t', '\r', '\n');
+                byte[] bytes = memoryStream.TryGetBuffer(out ArraySegment<byte> buffer)
+                    ? buffer.Array!
+                    : memoryStream.ToArray();
+                int offset = memoryStream.TryGetBuffer(out buffer) ? buffer.Offset : 0;
+                int count = (int)memoryStream.Length;
+
+                string rawJson = System.Text.Encoding.UTF8.GetString(bytes, offset, count).TrimStart('\uFEFF', ' ', '\t', '\r', '\n');
                 if (!rawJson.StartsWith('{'))
                 {
                     return;
@@ -369,7 +374,13 @@ internal partial class ClientCore
                     writer.WriteEndObject();
                 }
 
-                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+                byte[] streamBytes = stream.TryGetBuffer(out ArraySegment<byte> streamBuffer)
+                    ? streamBuffer.Array!
+                    : stream.ToArray();
+                int streamOffset = stream.TryGetBuffer(out streamBuffer) ? streamBuffer.Offset : 0;
+                int streamCount = (int)stream.Length;
+
+                return System.Text.Encoding.UTF8.GetString(streamBytes, streamOffset, streamCount);
             }
             catch
             {
