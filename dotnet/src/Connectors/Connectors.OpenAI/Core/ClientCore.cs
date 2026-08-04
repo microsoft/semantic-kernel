@@ -290,30 +290,39 @@ internal partial class ClientCore
 
         private static void SanitizeMessageContent(PipelineMessage message)
         {
-            if (message.Request.Content is null)
+#pragma warning disable CA1031 // Do not let sanitization failures break request pipeline
+            try
+            {
+                if (message.Request.Content is null)
+                {
+                    return;
+                }
+
+                using var memoryStream = new System.IO.MemoryStream();
+                message.Request.Content.WriteTo(memoryStream, default);
+                byte[] bytes = memoryStream.ToArray();
+                if (bytes.Length == 0)
+                {
+                    return;
+                }
+
+                string rawJson = System.Text.Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF', ' ', '\t', '\r', '\n');
+                if (!rawJson.StartsWith('{'))
+                {
+                    return;
+                }
+
+                string cleanJson = DeduplicateTopLevelJsonKeys(rawJson);
+                if (!string.Equals(rawJson, cleanJson, StringComparison.Ordinal))
+                {
+                    message.Request.Content = System.ClientModel.BinaryContent.Create(BinaryData.FromString(cleanJson));
+                }
+            }
+            catch
             {
                 return;
             }
-
-            using var memoryStream = new System.IO.MemoryStream();
-            message.Request.Content.WriteTo(memoryStream, default);
-            byte[] bytes = memoryStream.ToArray();
-            if (bytes.Length == 0)
-            {
-                return;
-            }
-
-            string rawJson = System.Text.Encoding.UTF8.GetString(bytes);
-            if (!rawJson.StartsWith('{'))
-            {
-                return;
-            }
-
-            string cleanJson = DeduplicateTopLevelJsonKeys(rawJson);
-            if (!string.Equals(rawJson, cleanJson, StringComparison.Ordinal))
-            {
-                message.Request.Content = System.ClientModel.BinaryContent.Create(BinaryData.FromString(cleanJson));
-            }
+#pragma warning restore CA1031
         }
 
         private static string DeduplicateTopLevelJsonKeys(string rawJson)
@@ -329,9 +338,16 @@ internal partial class ClientCore
                 }
 
                 var dictionary = new Dictionary<string, System.Text.Json.JsonElement>(StringComparer.Ordinal);
+                bool hadDuplicates = false;
                 foreach (var prop in root.EnumerateObject())
                 {
+                    hadDuplicates |= dictionary.ContainsKey(prop.Name);
                     dictionary[prop.Name] = prop.Value.Clone();
+                }
+
+                if (!hadDuplicates)
+                {
+                    return rawJson;
                 }
 
                 using var stream = new System.IO.MemoryStream();
