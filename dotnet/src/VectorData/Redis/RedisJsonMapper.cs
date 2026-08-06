@@ -24,6 +24,11 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
     /// <summary>The key property.</summary>
     private readonly string _keyPropertyStorageName = model.KeyProperty.StorageName;
 
+    /// <summary>Storage names for the allowed properties that should be retained in the Redis payload.</summary>
+    private readonly HashSet<string> _allowedStorageNames = new(
+        model.DataProperties.Select(p => p.StorageName).Concat(model.VectorProperties.Select(p => p.StorageName)),
+        StringComparer.Ordinal);
+
     /// <inheritdoc />
     public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
@@ -40,6 +45,24 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
         // Remove the key field from the JSON object since we don't want to store it in the redis payload.
         var keyValue = jsonValue.ToString();
         jsonNode.Remove(this._keyPropertyStorageName);
+
+        // Remove any properties that are not part of the data model.
+        List<string>? propertiesToRemove = null;
+        foreach (var kvp in jsonNode)
+        {
+            if (!this._allowedStorageNames.Contains(kvp.Key))
+            {
+                (propertiesToRemove ??= new()).Add(kvp.Key);
+            }
+        }
+
+        if (propertiesToRemove is not null)
+        {
+            foreach (var keyToRemove in propertiesToRemove)
+            {
+                jsonNode.Remove(keyToRemove);
+            }
+        }
 
         // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
         // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
