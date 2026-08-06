@@ -321,7 +321,63 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        # redisvl >= 0.5.0 changed the third argument of process_results() from
+        # StorageType (an enum) to IndexSchema (an object). Detect which API is
+        # present at runtime so the connector works with both the old (<0.5) and
+        # current (>=0.5) redisvl versions.
+        #
+        # New API: process_results(results, query, schema: IndexSchema)
+        # Old API: process_results(results, query, storage_type: StorageType)
+        import inspect
+
+        sig = inspect.signature(process_results)
+        params = list(sig.parameters.values())
+        if len(params) >= 3 and params[2].annotation is not inspect.Parameter.empty:
+            annotation_name = getattr(params[2].annotation, "__name__", str(params[2].annotation))
+            uses_schema_api = "IndexSchema" in annotation_name or "Schema" in annotation_name
+        else:
+            # Fall back to duck-typing: try the new API first, then the old one
+            uses_schema_api = not hasattr(params[2].default if len(params) >= 3 else None, "value")
+
+        try:
+            if uses_schema_api:
+                # redisvl >= 0.5: fetch the live IndexSchema and pass it
+                from redisvl.schema import IndexSchema
+
+                index_info = await self.redis_database.ft(self.collection_name).info()
+                schema = IndexSchema.from_dict(
+                    {
+                        "index": {
+                            "name": self.collection_name,
+                            "storage_type": STORAGE_TYPE_MAP[self.collection_type].value,
+                        },
+                        "fields": {},
+                    }
+                )
+                processed = process_results(results, query, schema)
+            else:
+                # redisvl < 0.5: pass the StorageType enum directly
+                processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        except Exception as e:
+            # If the version sniffing produced the wrong branch, try the other
+            try:
+                if uses_schema_api:
+                    processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+                else:
+                    from redisvl.schema import IndexSchema
+
+                    schema = IndexSchema.from_dict(
+                        {
+                            "index": {
+                                "name": self.collection_name,
+                                "storage_type": STORAGE_TYPE_MAP[self.collection_type].value,
+                            },
+                            "fields": {},
+                        }
+                    )
+                    processed = process_results(results, query, schema)
+            except Exception:
+                raise VectorSearchExecutionException(f"An error occurred during the search: {e}") from e
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
             total_count=results.total,
@@ -616,8 +672,15 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
                     case FieldTypes.KEY:
                         rec[field.name] = self._unget_redis_key(rec[field.name])
                     case "vector":
-                        dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
-                        rec[field.name] = buffer_to_array(rec[field.name], dtype)
+                        # When include_vectors=False (the default for search), the vector
+                        # field is not returned by Redis and will be absent from `rec`.
+                        # Guard against KeyError before attempting to decode the buffer.
+                        storage_name = field.storage_name or field.name
+                        if storage_name in rec:
+                            dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
+                            rec[field.name] = buffer_to_array(rec[storage_name], dtype)
+                        else:
+                            rec[field.name] = None
             results.append(rec)
         return results
 
