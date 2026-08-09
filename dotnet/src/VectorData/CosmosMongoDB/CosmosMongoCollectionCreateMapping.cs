@@ -9,7 +9,7 @@ using MongoDB.Bson;
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
-/// Contains mapping helpers to use when creating a collection in Azure CosmosDB MongoDB.
+/// Contains mapping helpers to use when creating a collection in Azure DocumentDB (with MongoDB compatibility).
 /// </summary>
 internal static class CosmosMongoCollectionCreateMapping
 {
@@ -105,18 +105,18 @@ internal static class CosmosMongoCollectionCreateMapping
     }
 
     /// <summary>
-    /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
+    /// More information about Azure DocumentDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/documentdb/vector-search" />.
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)
         => CosmosMongoCollectionSearchMapping.GetVectorPropertyIndexKind(indexKind) switch
         {
             IndexKind.Hnsw => "vector-hnsw",
             IndexKind.IvfFlat => "vector-ivf",
-            _ => throw new NotSupportedException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new NotSupportedException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure DocumentDB VectorStore.")
         };
 
     /// <summary>
-    /// More information about Azure CosmosDB for MongoDB distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
+    /// More information about Azure DocumentDB distance functions here: <see href="https://learn.microsoft.com/azure/documentdb/" />.
     /// </summary>
     private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
         => CosmosMongoCollectionSearchMapping.GetVectorPropertyDistanceFunction(distanceFunction) switch
@@ -124,6 +124,6 @@ internal static class CosmosMongoCollectionCreateMapping
             DistanceFunction.CosineDistance => "COS",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure DocumentDB VectorStore.")
         };
 }

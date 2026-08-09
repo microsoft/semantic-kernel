@@ -22,7 +22,7 @@ using MEVD = Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
-/// Service for storing and retrieving vector records, that uses Azure CosmosDB MongoDB as the underlying storage.
+/// Service for storing and retrieving vector records, that uses Azure DocumentDB (with MongoDB compatibility) as the underlying storage.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key. Must be either <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
@@ -44,10 +44,10 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <summary>The default options for vector search.</summary>
     private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
-    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
+    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure DocumentDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
-    /// <summary>Azure CosmosDB MongoDB collection to perform record operations.</summary>
+    /// <summary>Azure DocumentDB collection to perform record operations.</summary>
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
@@ -76,7 +76,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
+    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure DocumentDB.</param>
     /// <param name="name">The name of the collection that this <see cref="CosmosMongoCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate CosmosMongoDynamicCollection instead.")]
@@ -397,7 +397,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 itemsAmount,
                 filter),
             _ => throw new InvalidOperationException(
-                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorProperty.StorageName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
+                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorProperty.StorageName}' is not supported by the Azure DocumentDB VectorStore. " +
                 $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
         };
 
