@@ -3,6 +3,7 @@
 import ast
 import asyncio
 import contextlib
+import inspect
 import json
 import logging
 import sys
@@ -17,6 +18,7 @@ from redis.asyncio.client import Redis
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+from redisvl.index import AsyncSearchIndex
 from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
@@ -164,6 +166,36 @@ def _definition_to_redis_fields(
         elif collection_type == RedisCollectionTypes.JSON:
             fields.append(_field_to_redis_field_json(field.storage_name or field.name, field))  # type: ignore
     return fields
+
+
+async def _process_search_results(
+    results: Any,
+    query: BaseQuery,
+    collection_name: str,
+    redis_database: Redis,
+    collection_type: RedisCollectionTypes,
+) -> Any:
+    """Process RedisVL results across its old and current APIs."""
+    parameters = list(inspect.signature(process_results).parameters.values())
+    if len(parameters) < 3:
+        raise VectorSearchExecutionException(
+            "Unsupported redisvl process_results() signature."
+        )
+
+    third_parameter = parameters[2].name
+    if third_parameter == "storage_type":
+        return process_results(results, query, STORAGE_TYPE_MAP[collection_type])
+
+    if third_parameter == "schema":
+        index = await AsyncSearchIndex.from_existing(
+            name=collection_name,
+            redis_client=redis_database,
+        )
+        return process_results(results, query, index.schema)
+
+    raise VectorSearchExecutionException(
+        f"Unsupported redisvl process_results() parameter: {third_parameter}."
+    )
 
 
 @release_candidate
@@ -321,63 +353,20 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        # redisvl >= 0.5.0 changed the third argument of process_results() from
-        # StorageType (an enum) to IndexSchema (an object). Detect which API is
-        # present at runtime so the connector works with both the old (<0.5) and
-        # current (>=0.5) redisvl versions.
-        #
-        # New API: process_results(results, query, schema: IndexSchema)
-        # Old API: process_results(results, query, storage_type: StorageType)
-        import inspect
-
-        sig = inspect.signature(process_results)
-        params = list(sig.parameters.values())
-        if len(params) >= 3 and params[2].annotation is not inspect.Parameter.empty:
-            annotation_name = getattr(params[2].annotation, "__name__", str(params[2].annotation))
-            uses_schema_api = "IndexSchema" in annotation_name or "Schema" in annotation_name
-        else:
-            # Fall back to duck-typing: try the new API first, then the old one
-            uses_schema_api = not hasattr(params[2].default if len(params) >= 3 else None, "value")
-
         try:
-            if uses_schema_api:
-                # redisvl >= 0.5: fetch the live IndexSchema and pass it
-                from redisvl.schema import IndexSchema
-
-                index_info = await self.redis_database.ft(self.collection_name).info()
-                schema = IndexSchema.from_dict(
-                    {
-                        "index": {
-                            "name": self.collection_name,
-                            "storage_type": STORAGE_TYPE_MAP[self.collection_type].value,
-                        },
-                        "fields": {},
-                    }
-                )
-                processed = process_results(results, query, schema)
-            else:
-                # redisvl < 0.5: pass the StorageType enum directly
-                processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
-        except Exception as e:
-            # If the version sniffing produced the wrong branch, try the other
-            try:
-                if uses_schema_api:
-                    processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
-                else:
-                    from redisvl.schema import IndexSchema
-
-                    schema = IndexSchema.from_dict(
-                        {
-                            "index": {
-                                "name": self.collection_name,
-                                "storage_type": STORAGE_TYPE_MAP[self.collection_type].value,
-                            },
-                            "fields": {},
-                        }
-                    )
-                    processed = process_results(results, query, schema)
-            except Exception:
-                raise VectorSearchExecutionException(f"An error occurred during the search: {e}") from e
+            processed = await _process_search_results(
+                results,
+                query,
+                self.collection_name,
+                self.redis_database,
+                self.collection_type,
+            )
+        except VectorSearchExecutionException:
+            raise
+        except Exception as exc:
+            raise VectorSearchExecutionException(
+                f"An error occurred during the search: {exc}"
+            ) from exc
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
             total_count=results.total,
