@@ -113,7 +113,7 @@
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.4" />
     <PackageVersion Include="System.Memory.Data" Version="10.0.2" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.9" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.10" />
     <PackageVersion Include="System.Text.Json" Version="10.0.6" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
@@ -189,7 +189,7 @@
     <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.CosmosNoSql" Version="1.0.0" />
-    <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.1" />
     <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.Redis" Version="1.0.0" />
