@@ -41,7 +41,6 @@ CLOUD_METADATA_ADDRESSES: frozenset[ipaddress.IPv4Address | ipaddress.IPv6Addres
 # shorter lengths inside the RFC 8215 local-use prefix reads bytes that are not the embedded
 # address, which would reject legitimate NAT64 targets.
 _NAT64_IPV4_OFFSETS = (12, 13, 14, 15)
-_SIXTOFOUR_OFFSETS = (2, 3, 4, 5)
 _NAT64_NETWORKS: tuple[ipaddress.IPv6Network, ...] = (ipaddress.IPv6Network("64:ff9b::/96"),)
 # RFC 8215 local-use space, where the translator's prefix length is configuration rather than
 # anything the address carries (RFC 6052 section 3.3). Bytes 12-15 hold the embedded address only
@@ -50,8 +49,6 @@ _NAT64_NETWORKS: tuple[ipaddress.IPv6Network, ...] = (ipaddress.IPv6Network("64:
 # avoids guessing in either direction: no public host is rejected as "unspecified", and no
 # metadata address reaches the fit check through a length this code cannot determine.
 _NAT64_LOCAL_USE_NETWORK = ipaddress.IPv6Network("64:ff9b:1::/48")
-_SIXTOFOUR_NETWORK = ipaddress.IPv6Network("2002::/16")
-_TEREDO_NETWORK = ipaddress.IPv6Network("2001::/32")
 
 
 class ServerUrlValidationOptions(KernelBaseModel):
@@ -148,12 +145,15 @@ def _embedded_ipv4s(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> l
     if any(address in network for network in _NAT64_NETWORKS):
         candidates.append(ipaddress.IPv4Address(bytes(packed[offset] for offset in _NAT64_IPV4_OFFSETS)))
 
-    if address in _SIXTOFOUR_NETWORK:
-        candidates.append(ipaddress.IPv4Address(bytes(packed[offset] for offset in _SIXTOFOUR_OFFSETS)))
+    # `sixtofour` and `teredo` return None outside their own prefixes, so they carry the
+    # membership check with them and leave no offset arithmetic here to get wrong. Teredo in
+    # particular obfuscates the client IPv4 by XOR-ing the low 32 bits with all ones (RFC 4380),
+    # which is the kind of detail worth taking from the standard library rather than restating.
+    if address.sixtofour is not None:
+        candidates.append(address.sixtofour)
 
-    if address in _TEREDO_NETWORK:
-        # RFC 4380: the client IPv4 sits in the low 32 bits, obfuscated by XOR with all-ones.
-        candidates.append(ipaddress.IPv4Address(bytes(byte ^ 0xFF for byte in packed[12:16])))
+    if address.teredo is not None:
+        candidates.append(address.teredo[1])
 
     return candidates
 
