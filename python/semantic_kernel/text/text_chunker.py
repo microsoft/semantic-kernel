@@ -142,7 +142,12 @@ def _split_text_paragraph(text: list[str], max_tokens: int, token_counter: Calla
             # was over `max_tokens` -- exactly the limit this function exists to keep.
             new_sec_last_para = f"{sec_last_para}{NEWLINE}{last_para}"
 
-            if token_counter(new_sec_last_para) <= max_tokens:
+            # Measure with newlines normalised, the way `_split_str_lines` already normalises its
+            # input. NEWLINE is `os.linesep`, two characters on Windows and one everywhere else,
+            # and a paragraph that has absorbed several lines carries several of them. With a
+            # length-based counter that is enough to move the total across the limit, so the same
+            # input would chunk differently per platform.
+            if token_counter(new_sec_last_para.replace("\r\n", "\n")) <= max_tokens:
                 paragraphs[-2] = new_sec_last_para.strip()
                 paragraphs.pop()
 
