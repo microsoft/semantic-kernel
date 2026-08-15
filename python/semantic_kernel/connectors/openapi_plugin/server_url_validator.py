@@ -42,10 +42,14 @@ CLOUD_METADATA_ADDRESSES: frozenset[ipaddress.IPv4Address | ipaddress.IPv6Addres
 # address, which would reject legitimate NAT64 targets.
 _NAT64_IPV4_OFFSETS = (12, 13, 14, 15)
 _SIXTOFOUR_OFFSETS = (2, 3, 4, 5)
-_NAT64_NETWORKS: tuple[ipaddress.IPv6Network, ...] = (
-    ipaddress.IPv6Network("64:ff9b::/96"),
-    ipaddress.IPv6Network("64:ff9b:1::/48"),
-)
+_NAT64_NETWORKS: tuple[ipaddress.IPv6Network, ...] = (ipaddress.IPv6Network("64:ff9b::/96"),)
+# RFC 8215 local-use space, where the translator's prefix length is configuration rather than
+# anything the address carries (RFC 6052 section 3.3). Bytes 12-15 hold the embedded address only
+# for a /96; for the shorter lengths they hold the suffix, which the RFC says SHOULD be zero, so
+# decoding them here reads 0.0.0.0 out of a perfectly ordinary target. Blocking the prefix whole
+# avoids guessing in either direction: no public host is rejected as "unspecified", and no
+# metadata address reaches the fit check through a length this code cannot determine.
+_NAT64_LOCAL_USE_NETWORK = ipaddress.IPv6Network("64:ff9b:1::/48")
 _SIXTOFOUR_NETWORK = ipaddress.IPv6Network("2002::/16")
 _TEREDO_NETWORK = ipaddress.IPv6Network("2001::/32")
 
@@ -325,5 +329,7 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
         return True, "multicast"
     if address in ipaddress.ip_network("2001:db8::/32"):
         return True, "reserved"
+    if address in _NAT64_LOCAL_USE_NETWORK:
+        return True, "NAT64 local-use prefix"
 
     return False, ""

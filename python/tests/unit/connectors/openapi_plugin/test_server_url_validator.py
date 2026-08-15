@@ -234,8 +234,7 @@ async def test_teredo_carrying_a_blocked_ipv4_is_rejected():
 @pytest.mark.parametrize(
     "address",
     [
-        "64:ff9b::1.1.1.1",  # NAT64 pointing at a public IPv4
-        "64:ff9b:1::1.1.1.1",
+        "64:ff9b::1.1.1.1",  # NAT64 well-known prefix pointing at a public IPv4
         "2002:0101:0101::",  # 6to4 pointing at 1.1.1.1
         "2606:4700:4700::1111",  # plain public IPv6
     ],
@@ -243,3 +242,36 @@ async def test_teredo_carrying_a_blocked_ipv4_is_rejected():
 async def test_ipv6_forms_carrying_a_public_ipv4_are_allowed(address):
     """Decoding must not reject legitimate NAT64/6to4 targets."""
     await validate_server_url(f"https://[{address}]/resource")
+
+
+def _rfc6052(prefix_length: int, target: str) -> ipaddress.IPv6Address:
+    """Embed an IPv4 address in the RFC 8215 local-use prefix at one of RFC 6052's lengths."""
+    packed = ipaddress.IPv4Address(target).packed
+    address = bytearray(16)
+    address[0:6] = b"\x00\x64\xff\x9b\x00\x01"
+    if prefix_length == 96:
+        address[12:16] = packed
+    elif prefix_length == 64:
+        address[9:13] = packed
+    elif prefix_length == 56:
+        address[7] = packed[0]
+        address[9:12] = packed[1:4]
+    elif prefix_length == 48:
+        address[6:8] = packed[0:2]
+        address[9:11] = packed[2:4]
+    return ipaddress.IPv6Address(bytes(address))
+
+
+@pytest.mark.parametrize("prefix_length", [96, 64, 56, 48])
+@pytest.mark.parametrize("target", ["1.1.1.1", "169.254.169.254"])
+async def test_nat64_local_use_prefix_is_blocked_at_every_embedding_length(prefix_length, target):
+    """The whole RFC 8215 local-use prefix is refused rather than decoded at a guessed length.
+
+    RFC 6052 only puts the embedded address in bytes 12-15 for a /96; the shorter lengths put the
+    suffix there, which the RFC says SHOULD be zero. Decoding those bytes regardless read 0.0.0.0
+    out of an ordinary public target and rejected it as "unspecified", while declining to decode
+    would have let the metadata address through at every length but /96. Neither is inferable from
+    the address, so the prefix is blocked as a whole.
+    """
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{_rfc6052(prefix_length, target)}]/resource")
