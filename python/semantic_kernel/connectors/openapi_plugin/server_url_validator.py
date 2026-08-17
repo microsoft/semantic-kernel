@@ -21,9 +21,14 @@ DEFAULT_ALLOWED_SCHEME = "https"
 _AZURE_WIRE_SERVER = ipaddress.ip_address("168.63.129.16")
 _AZURE_WIRE_SERVER_CATEGORY = "Azure metadata (WireServer)"
 
-# Well-known NAT64 prefixes (RFC 6052): the global 64:ff9b::/96 and the local-use
-# 64:ff9b:1::/48. IPv4 addresses embedded in these ranges must be classified too.
-_NAT64_PREFIXES = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+# NAT64 (RFC 6052) prefixes. The well-known prefix 64:ff9b::/96 has a fixed length
+# (RFC 6052 section 2.1), so an embedded IPv4 always occupies the last 32 bits and can
+# be decoded. The local-use prefix 64:ff9b:1::/48 (RFC 8215) has no fixed embedding
+# length: RFC 6052 section 3.3 leaves the prefix length to translator configuration
+# and it is not carried in the address, so the range is treated as non-public in its
+# own right instead of guessing at its contents.
+_NAT64_WELL_KNOWN_PREFIX = ipaddress.ip_network("64:ff9b::/96")
+_NAT64_LOCAL_USE_PREFIX = ipaddress.ip_network("64:ff9b:1::/48")
 
 
 class ServerUrlValidationOptions(KernelBaseModel):
@@ -83,6 +88,8 @@ def try_categorize_non_public_address(
     ip_address = ipaddress.ip_address(address)
 
     if isinstance(ip_address, ipaddress.IPv6Address):
+        if ip_address in _NAT64_LOCAL_USE_PREFIX:
+            return True, "NAT64 local-use prefix (RFC 8215)"
         embedded_ipv4 = _extract_embedded_ipv4(ip_address)
         if embedded_ipv4 is not None:
             ip_address = embedded_ipv4
@@ -99,16 +106,19 @@ def _extract_embedded_ipv4(address: ipaddress.IPv6Address) -> ipaddress.IPv4Addr
     """Decode an IPv4 address embedded in an IPv6 address, if any.
 
     Covers IPv4-mapped (``::ffff:a.b.c.d``), 6to4 (``2002::/16``, RFC 3056), Teredo
-    (``2001::/32``, RFC 4380) and NAT64 (RFC 6052) addresses. The embedded IPv4 is
-    classified separately so a private address cannot slip through an otherwise
-    public-looking IPv6 address.
+    (``2001::/32``, RFC 4380) and NAT64 addresses embedded via the well-known
+    ``64:ff9b::/96`` prefix (RFC 6052). The embedded IPv4 is classified separately so
+    a private address cannot slip through an otherwise public-looking IPv6 address.
+    The local-use ``64:ff9b:1::/48`` range (RFC 8215) is handled in
+    :func:`try_categorize_non_public_address` as a non-public range rather than
+    decoded, because its prefix length is not carried in the address.
     """
     if address.sixtofour is not None:
         return address.sixtofour
     if address.teredo is not None:
         _, teredo_client = address.teredo
         return teredo_client
-    if any(address in prefix for prefix in _NAT64_PREFIXES):
+    if address in _NAT64_WELL_KNOWN_PREFIX:
         return ipaddress.ip_address(address.packed[-4:])
     return None
 
@@ -299,3 +309,4 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
         return True, "reserved"
 
     return False, ""
+
