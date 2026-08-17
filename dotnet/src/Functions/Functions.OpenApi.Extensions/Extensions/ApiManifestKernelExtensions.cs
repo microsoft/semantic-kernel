@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.ApiManifest;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
@@ -103,7 +102,7 @@ public static class ApiManifestKernelExtensions
         KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+        var httpClient = OpenApiKernelPluginFactory.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         if (!File.Exists(filePath))
@@ -187,7 +186,7 @@ public static class ApiManifestKernelExtensions
                 };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-            var operationRunnerHttpClient = HttpClientProvider.GetNonRedirectingHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+            var operationRunnerHttpClient = OpenApiKernelPluginFactory.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
             var runner = new RestApiOperationRunner(

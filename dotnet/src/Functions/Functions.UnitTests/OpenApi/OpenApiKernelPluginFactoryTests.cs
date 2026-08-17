@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -57,45 +58,8 @@ public sealed class OpenApiKernelPluginFactoryTests
     public async Task ItDoesNotFollowRedirectsByDefaultAsync()
     {
         // Arrange
-        using var listener = CreateHttpListener();
-        var serverUrl = listener.Prefixes.Single();
-        var redirectTargetContacted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var serverTask = Task.Run(async () =>
-        {
-            while (listener.IsListening)
-            {
-                try
-                {
-                    var context = await listener.GetContextAsync();
-                    if (context.Request.Url!.AbsolutePath == "/start")
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.Redirect;
-                        context.Response.RedirectLocation = $"{serverUrl}target";
-                    }
-                    else
-                    {
-                        redirectTargetContacted.TrySetResult(true);
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.ContentType = MediaTypeNames.Application.Json;
-                    }
-
-                    context.Response.Close();
-                }
-                catch (ObjectDisposedException)
-                {
-                    break;
-                }
-                catch (HttpListenerException)
-                {
-                    break;
-                }
-                catch (InvalidOperationException)
-                {
-                    break;
-                }
-            }
-        });
+        await using var server = new RedirectLoopbackServer();
+        var serverUrl = server.BaseUri.AbsoluteUri;
 
         var operation = new RestApiOperation(
             id: "redirect",
@@ -117,103 +81,28 @@ public sealed class OpenApiKernelPluginFactoryTests
         var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("redirectPlugin", specification, executionParameters);
         var kernel = new Kernel();
 
-        try
-        {
-            // Act
-            await Assert.ThrowsAsync<HttpOperationException>(() => kernel.InvokeAsync(plugin["redirect"]));
+        // Act
+        await Assert.ThrowsAsync<HttpOperationException>(() => kernel.InvokeAsync(plugin["redirect"]));
 
-            // Assert
-            Assert.False(redirectTargetContacted.Task.IsCompleted);
-        }
-        finally
-        {
-            listener.Stop();
-            await serverTask;
-        }
+        // Assert
+        Assert.False(server.RedirectTargetContacted);
     }
 
     [Fact]
     public async Task ItDoesNotFollowRedirectsWhenLoadingOpenApiDocumentsByDefaultAsync()
     {
         // Arrange
-        using var listener = CreateHttpListener();
-        var serverUrl = listener.Prefixes.Single();
-        var redirectTargetContacted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var server = new RedirectLoopbackServer();
 
-        var serverTask = Task.Run(async () =>
-        {
-            while (listener.IsListening)
-            {
-                try
-                {
-                    var context = await listener.GetContextAsync();
-                    if (context.Request.Url!.AbsolutePath == "/start")
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.Redirect;
-                        context.Response.RedirectLocation = $"{serverUrl}document";
-                    }
-                    else
-                    {
-                        redirectTargetContacted.TrySetResult(true);
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.ContentType = MediaTypeNames.Application.Json;
-                    }
+        // Act
+        await Assert.ThrowsAsync<HttpOperationException>(() =>
+            OpenApiKernelPluginFactory.CreateFromOpenApiAsync(
+                "redirectedDocumentPlugin",
+                new Uri(server.BaseUri, "start"),
+                this._executionParameters));
 
-                    context.Response.Close();
-                }
-                catch (ObjectDisposedException)
-                {
-                    break;
-                }
-                catch (HttpListenerException)
-                {
-                    break;
-                }
-                catch (InvalidOperationException)
-                {
-                    break;
-                }
-            }
-        });
-
-        try
-        {
-            // Act
-            await Assert.ThrowsAsync<HttpOperationException>(() =>
-                OpenApiKernelPluginFactory.CreateFromOpenApiAsync(
-                    "redirectedDocumentPlugin",
-                    new Uri($"{serverUrl}start"),
-                    this._executionParameters));
-
-            // Assert
-            Assert.False(redirectTargetContacted.Task.IsCompleted);
-        }
-        finally
-        {
-            listener.Stop();
-            await serverTask;
-        }
-    }
-
-    private static HttpListener CreateHttpListener()
-    {
-        for (var attempt = 0; attempt < 10; attempt++)
-        {
-            var listener = new HttpListener();
-            listener.Prefixes.Add($"http://localhost:{Random.Shared.Next(49152, 65535)}/");
-
-            try
-            {
-                listener.Start();
-                return listener;
-            }
-            catch (HttpListenerException)
-            {
-                listener.Close();
-            }
-        }
-
-        throw new InvalidOperationException("Unable to allocate a local HTTP listener.");
+        // Assert
+        Assert.False(server.RedirectTargetContacted);
     }
 
     [Fact]
@@ -934,6 +823,87 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal(2, function.Metadata.Parameters.Count);
         Assert.Equal("payload", function.Metadata.Parameters[0].Name);
         Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
+    }
+
+    private sealed class RedirectLoopbackServer : IAsyncDisposable
+    {
+        private readonly TcpListener _listener;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly Task _serverTask;
+        private int _redirectTargetContacted;
+
+        public RedirectLoopbackServer()
+        {
+            this._listener = new TcpListener(IPAddress.Loopback, 0);
+            this._listener.Start();
+            var endpoint = (IPEndPoint)this._listener.LocalEndpoint;
+            this.BaseUri = new Uri($"http://{endpoint.Address}:{endpoint.Port}/");
+            this._serverTask = this.RunAsync();
+        }
+
+        public Uri BaseUri { get; }
+
+        public bool RedirectTargetContacted => Volatile.Read(ref this._redirectTargetContacted) != 0;
+
+        public async ValueTask DisposeAsync()
+        {
+            this._cancellationTokenSource.Cancel();
+            this._listener.Stop();
+            await this._serverTask.ConfigureAwait(false);
+            this._cancellationTokenSource.Dispose();
+        }
+
+        private async Task RunAsync()
+        {
+            while (!this._cancellationTokenSource.IsCancellationRequested)
+            {
+                TcpClient client;
+                try
+                {
+                    client = await this._listener.AcceptTcpClientAsync(this._cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (SocketException) when (this._cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                using (client)
+                {
+                    await this.HandleRequestAsync(client, this._cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task HandleRequestAsync(TcpClient client, CancellationToken cancellationToken)
+        {
+            var stream = client.GetStream();
+            using var reader = new StreamReader(stream, Encoding.ASCII, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true);
+            var requestLine = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+            string? header;
+            do
+            {
+                header = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+            }
+            while (!string.IsNullOrEmpty(header));
+
+            var requestTarget = requestLine?.Split(' ')[1];
+            string response;
+            if (requestTarget == "/start")
+            {
+                response = $"HTTP/1.1 302 Found\r\nLocation: {new Uri(this.BaseUri, "target")}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+            }
+            else
+            {
+                Interlocked.Exchange(ref this._redirectTargetContacted, 1);
+                response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}";
+            }
+
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(response), cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private sealed class FakePlugin
