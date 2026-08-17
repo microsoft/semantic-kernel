@@ -33,6 +33,12 @@ internal static class HttpClientProvider
     public static HttpClient GetNonRedirectingHttpClient() => new(NonDisposableHttpClientHandler.NonRedirectingInstance, disposeHandler: false);
 
     /// <summary>
+    /// Retrieves the provided HttpClient or an instance that does not automatically follow HTTP redirects.
+    /// </summary>
+    /// <returns>The provided HttpClient, or an instance that does not follow redirects.</returns>
+    public static HttpClient GetNonRedirectingHttpClient(HttpClient? httpClient) => httpClient ?? GetNonRedirectingHttpClient();
+
+    /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>

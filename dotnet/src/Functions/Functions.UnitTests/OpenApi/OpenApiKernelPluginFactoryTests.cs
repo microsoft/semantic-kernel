@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
@@ -49,6 +51,169 @@ public sealed class OpenApiKernelPluginFactoryTests
         };
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
+    }
+
+    [Fact]
+    public async Task ItDoesNotFollowRedirectsByDefaultAsync()
+    {
+        // Arrange
+        using var listener = CreateHttpListener();
+        var serverUrl = listener.Prefixes.Single();
+        var redirectTargetContacted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var serverTask = Task.Run(async () =>
+        {
+            while (listener.IsListening)
+            {
+                try
+                {
+                    var context = await listener.GetContextAsync();
+                    if (context.Request.Url!.AbsolutePath == "/start")
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+                        context.Response.RedirectLocation = $"{serverUrl}target";
+                    }
+                    else
+                    {
+                        redirectTargetContacted.TrySetResult(true);
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.ContentType = MediaTypeNames.Application.Json;
+                    }
+
+                    context.Response.Close();
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (HttpListenerException)
+                {
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    break;
+                }
+            }
+        });
+
+        var operation = new RestApiOperation(
+            id: "redirect",
+            servers: [new RestApiServer(serverUrl)],
+            path: "start",
+            method: HttpMethod.Get,
+            description: "redirect test",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []);
+        var specification = new RestApiSpecification(new RestApiInfo(), null, [operation]);
+        var executionParameters = new OpenApiFunctionExecutionParameters
+        {
+            ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+            {
+                AllowedBaseUrls = [new Uri(serverUrl)]
+            }
+        };
+        var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("redirectPlugin", specification, executionParameters);
+        var kernel = new Kernel();
+
+        try
+        {
+            // Act
+            await Assert.ThrowsAsync<HttpOperationException>(() => kernel.InvokeAsync(plugin["redirect"]));
+
+            // Assert
+            Assert.False(redirectTargetContacted.Task.IsCompleted);
+        }
+        finally
+        {
+            listener.Stop();
+            await serverTask;
+        }
+    }
+
+    [Fact]
+    public async Task ItDoesNotFollowRedirectsWhenLoadingOpenApiDocumentsByDefaultAsync()
+    {
+        // Arrange
+        using var listener = CreateHttpListener();
+        var serverUrl = listener.Prefixes.Single();
+        var redirectTargetContacted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var serverTask = Task.Run(async () =>
+        {
+            while (listener.IsListening)
+            {
+                try
+                {
+                    var context = await listener.GetContextAsync();
+                    if (context.Request.Url!.AbsolutePath == "/start")
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+                        context.Response.RedirectLocation = $"{serverUrl}document";
+                    }
+                    else
+                    {
+                        redirectTargetContacted.TrySetResult(true);
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.ContentType = MediaTypeNames.Application.Json;
+                    }
+
+                    context.Response.Close();
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (HttpListenerException)
+                {
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    break;
+                }
+            }
+        });
+
+        try
+        {
+            // Act
+            await Assert.ThrowsAsync<HttpOperationException>(() =>
+                OpenApiKernelPluginFactory.CreateFromOpenApiAsync(
+                    "redirectedDocumentPlugin",
+                    new Uri($"{serverUrl}start"),
+                    this._executionParameters));
+
+            // Assert
+            Assert.False(redirectTargetContacted.Task.IsCompleted);
+        }
+        finally
+        {
+            listener.Stop();
+            await serverTask;
+        }
+    }
+
+    private static HttpListener CreateHttpListener()
+    {
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            var listener = new HttpListener();
+            listener.Prefixes.Add($"http://localhost:{Random.Shared.Next(49152, 65535)}/");
+
+            try
+            {
+                listener.Start();
+                return listener;
+            }
+            catch (HttpListenerException)
+            {
+                listener.Close();
+            }
+        }
+
+        throw new InvalidOperationException("Unable to allocate a local HTTP listener.");
     }
 
     [Fact]
