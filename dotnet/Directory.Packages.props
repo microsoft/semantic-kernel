@@ -183,8 +183,8 @@
     <PackageVersion Include="Fluid.Core" Version="2.31.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-    <PackageVersion Include="Testcontainers.Milvus" Version="4.8.1" />
-    <PackageVersion Include="Testcontainers.MongoDB" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Milvus" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.14.0" />
     <!-- VectorData Dependencies -->
     <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0" />
