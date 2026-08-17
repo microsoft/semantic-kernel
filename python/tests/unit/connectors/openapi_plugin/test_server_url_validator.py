@@ -46,6 +46,9 @@ from semantic_kernel.exceptions import FunctionExecutionException
         ("168.63.129.16", "Azure metadata (WireServer)"),
         ("64:ff9b::169.254.169.254", "link-local"),
         ("64:ff9b::a83f:8110", "Azure metadata (WireServer)"),
+        ("64:ff9b:1::", "NAT64 local-use prefix (RFC 8215)"),
+        ("64:ff9b:1:a83f:8110::", "NAT64 local-use prefix (RFC 8215)"),
+        ("64:ff9b:1:101:1:100::", "NAT64 local-use prefix (RFC 8215)"),
         ("2002:a9fe:a9fe::", "link-local"),
         ("2001:0:4136:e378:8000:63bf:3fff:fdd2", "reserved"),
     ],
@@ -70,6 +73,8 @@ def test_try_categorize_non_public_address(address: str, expected_category: str)
         "100.63.255.255",
         "100.128.0.1",
         "2606:4700:4700::1111",
+        "64:ff9b::808:808",
+        "64:ff9b::101:101",
     ],
 )
 def test_try_categorize_non_public_address_allows_public_addresses(address: str):
@@ -185,6 +190,11 @@ async def test_validate_server_url_rejects_nat64_embedded_link_local():
         await validate_server_url("https://[64:ff9b::169.254.169.254]/latest/meta-data/")
 
 
+async def test_validate_server_url_rejects_nat64_local_use_prefix():
+    with pytest.raises(FunctionExecutionException, match="NAT64 local-use"):
+        await validate_server_url("https://[64:ff9b:1:a83f:8110::]/machine/")
+
+
 async def test_validate_server_url_rejects_6to4_embedded_link_local():
     with pytest.raises(FunctionExecutionException, match="link-local"):
         await validate_server_url("https://[2002:a9fe:a9fe::]/latest/meta-data/")
@@ -204,3 +214,4 @@ async def test_validate_server_url_blocks_hostname_resolving_to_azure_wire_serve
 
     with pytest.raises(FunctionExecutionException, match="Azure metadata"):
         await validate_server_url("https://wireserver-host.example.com/machine/", dns_resolver=fake_resolver)
+
