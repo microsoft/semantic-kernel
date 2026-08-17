@@ -57,10 +57,11 @@ The `java/README.md` redirects Java development to that repository; do not add J
 From `dotnet/`:
 
 ```text
-build.cmd
+build.cmd (Windows)
+./build.sh (Linux/macOS)
 ```
 
-The repository's `build.cmd` performs a Release build followed by the Release test suite.
+The repository's `build.cmd` and `build.sh` perform a Release build followed by the Release test suite.
 
 For formatting:
 
@@ -73,6 +74,8 @@ When possible, run the smallest relevant test project first, then broader valida
 ### Python
 
 Follow `python/DEV_SETUP.md` for environment setup.
+
+From `python/`:
 
 Unit tests:
 
@@ -92,7 +95,7 @@ All tests:
 uv run pytest tests
 ```
 
-From `python/`:
+Formatting and pre-commit checks:
 
 ```text
 uv run pre-commit run -a
