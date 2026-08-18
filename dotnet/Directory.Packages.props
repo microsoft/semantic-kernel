@@ -26,7 +26,7 @@
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.9.0-beta.1" />
     <PackageVersion Include="Azure.AI.Projects" Version="2.0.0-beta.2" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.7.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.8.3" />
     <PackageVersion Include="Community.OData.Linq" Version="2.1.0" />
     <PackageVersion Include="Dapr.Actors" Version="1.16.1" />
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.16.1" />
