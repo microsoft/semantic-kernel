@@ -184,7 +184,7 @@ class _CopilotStudioAgentTokenFactory:
         # SHA-1 is not used here as a security primitive; it is required to compute the X.509 certificate thumbprint
         # (the `x5t` JWT header value), which MSAL and Microsoft Entra ID mandate to be a SHA-1 digest for the
         # `thumbprint` client credential. Hence the `usedforsecurity=False` flag.
-        return hashlib.sha1(der_bytes, usedforsecurity=False).hexdigest().upper()  # CodeQL [SM02167] Required for X.509 x5t thumbprint
+        return hashlib.sha1(der_bytes, usedforsecurity=False).hexdigest().upper()  # CodeQL [SM02167] Required for X.509 x5t thumbprint  # fmt: skip
 
 
 # endregion
