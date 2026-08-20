@@ -67,7 +67,10 @@ internal static class KernelJsonSchemaBuilder
         {
             JsonSerializerOptions options = new()
             {
-                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver
+                {
+                    Modifiers = { ExcludeReadOnlyProperties }
+                },
                 Converters = { new JsonStringEnumConverter() },
             };
             options.MakeReadOnly();
@@ -75,5 +78,20 @@ internal static class KernelJsonSchemaBuilder
         }
 
         return s_options;
+    }
+
+    private static void ExcludeReadOnlyProperties(JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Kind != JsonTypeInfoKind.Object) return;
+
+        for (int i = 0; i < typeInfo.Properties.Count; i++)
+        {
+            var property = typeInfo.Properties[i];
+
+            if (property.Set == null)
+            {
+                typeInfo.Properties.RemoveAt(i--);
+            }
+        }
     }
 }
