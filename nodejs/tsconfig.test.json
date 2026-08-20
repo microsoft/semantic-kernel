@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "@jest/globals"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["tests/**/*", "semantic-kernel/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "files": ["tests/setup.d.ts"]
+}
