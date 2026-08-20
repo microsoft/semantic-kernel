@@ -31,6 +31,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private IDictionary<string, string>? _labels;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
+    private GeminiNativeToolCallConfig? _nativeToolCallConfig;
     private GeminiThinkingConfig? _thinkingConfig;
 
     /// <summary>
@@ -199,6 +200,21 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._toolCallBehavior = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the configuration for native tool calls.
+    /// </summary>
+    /// <remarks>Modifying this property will throw an exception if the object is in a frozen state.</remarks>
+    public GeminiNativeToolCallConfig? NativeToolCalls
+    {
+        get => this._nativeToolCallConfig;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._nativeToolCallConfig = value;
         }
     }
 
