@@ -115,15 +115,26 @@ def test_create_options():
 
 
 def test_tool_choice_none():
-    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
+    settings = AnthropicChatPromptExecutionSettings(
+        service_id="test_service",
+        extension_data={
+            "temperature": 0.5,
+            "top_p": 0.5,
+            "max_tokens": 128,
+            "tool_choice": {"type": "none"},
+            "messages": [{"role": "system", "content": "Hello"}],
+        },
+        function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
+    )
+    assert settings.tool_choice == {"type": "none"}
+
+
+def test_tool_choice_invalid_type_raises():
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Invalid Anthropic tool_choice type"):
         AnthropicChatPromptExecutionSettings(
             service_id="test_service",
             extension_data={
-                "temperature": 0.5,
-                "top_p": 0.5,
-                "max_tokens": 128,
-                "tool_choice": {"type": "none"},
+                "tool_choice": {"type": "invalid"},
                 "messages": [{"role": "system", "content": "Hello"}],
             },
-            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
         )
