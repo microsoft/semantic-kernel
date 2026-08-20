@@ -39,7 +39,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests : IDisposable
         await sut.GenerateAsync([]);
 
         //Assert
-        Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("/fake-model/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests : IDisposable
         await sut.GenerateAsync([]);
 
         //Assert
-        Assert.Equal("https://fake-random-test-host/fake-path/pipeline/feature-extraction/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host/fake-path/models/fake-model/pipeline/feature-extraction", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
