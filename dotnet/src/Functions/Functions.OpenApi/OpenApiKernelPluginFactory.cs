@@ -41,7 +41,7 @@ public static partial class OpenApiKernelPluginFactory
         KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
+        var httpClient = GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
         var loggerFactory = executionParameters?.LoggerFactory;
@@ -78,7 +78,7 @@ public static partial class OpenApiKernelPluginFactory
         KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
+        var httpClient = GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
         var loggerFactory = executionParameters?.LoggerFactory;
@@ -119,7 +119,7 @@ public static partial class OpenApiKernelPluginFactory
         KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
+        var httpClient = GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
@@ -148,7 +148,7 @@ public static partial class OpenApiKernelPluginFactory
         KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
+        var httpClient = GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
         return CreateOpenApiPlugin(
@@ -193,6 +193,12 @@ public static partial class OpenApiKernelPluginFactory
             documentUri: documentUri,
             loggerFactory: loggerFactory);
     }
+
+    /// <summary>
+    /// Returns the supplied HTTP client or the non-redirecting OpenAPI default.
+    /// </summary>
+    internal static HttpClient GetHttpClient(HttpClient? httpClient = null) =>
+        httpClient ?? HttpClientProvider.GetNonRedirectingHttpClient();
 
     /// <summary>
     /// Creates a plugin from an OpenAPI specification.
