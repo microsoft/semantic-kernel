@@ -132,7 +132,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             streamer = TextIteratorStreamer(AutoTokenizer.from_pretrained(self.ai_model_id))
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
             thread = Thread(
-                target=self.generator, args={prompt}, kwargs=settings.prepare_settings_dict(streamer=streamer)
+                target=self.generator, args=(prompt,), kwargs=settings.prepare_settings_dict(streamer=streamer)
             )
             thread.start()
 
