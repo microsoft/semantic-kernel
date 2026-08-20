@@ -129,7 +129,7 @@ class RedisMemoryStore(MemoryStoreBase):
         if await self.does_collection_exist(collection_name):
             logger.info(f'Collection "{collection_name}" already exists.')
         else:
-            index_def = IndexDefinition(prefix=f"{collection_name}:", index_type=IndexType.HASH)
+            index_def = IndexDefinition(prefix=[f"{collection_name}:"], index_type=IndexType.HASH)
             schema = (
                 TextField(name="key"),
                 TextField(name="metadata"),
