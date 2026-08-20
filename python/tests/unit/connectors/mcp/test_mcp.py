@@ -377,6 +377,24 @@ async def test_with_kwargs_streamablehttp(mock_session, mock_client, list_tool_c
         assert len(loaded_plugin.functions["func2"].parameters) == 0
 
 
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+def test_streamable_http_client_forwards_zero_timeouts(mock_client):
+    plugin = MCPStreamableHttpPlugin(
+        name="TestMCPPlugin",
+        url="http://localhost:8080/mcp",
+        timeout=0.0,
+        sse_read_timeout=0.0,
+    )
+
+    assert plugin.get_mcp_client() is mock_client.return_value
+
+    mock_client.assert_called_once_with(
+        url="http://localhost:8080/mcp",
+        timeout=0.0,
+        sse_read_timeout=0.0,
+    )
+
+
 async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function, custom_plugin_class):
     kernel.add_plugin(custom_plugin_class, "test")
     kernel.add_functions("test", [decorated_native_function])
