@@ -163,13 +163,14 @@
 
 - [Grounded](./grounding/grounded.py)
 
-### Local Models - Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) and [`OnnxGenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) to talk to models hosted locally in Ollama, OnnxGenAI, and LM Studio
+### Local Models - Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) and [`OnnxGenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) to talk to models hosted locally in Ollama, OnnxGenAI, and LM Studio, plus OpenAI-compatible gateways such as DaoXE
 
 - [ONNX Chat Completion](./local_models/onnx_chat_completion.py)
 - [LM Studio Text Embedding](./local_models/lm_studio_text_embedding.py)
 - [LM Studio Chat Completion](./local_models/lm_studio_chat_completion.py)
 - [ONNX Phi3 Vision Completion](./local_models/onnx_phi3_vision_completion.py)
 - [Ollama Chat Completion](./local_models/ollama_chat_completion.py)
+- [DaoXE Chat Completion (OpenAI-compatible gateway)](./local_models/daoxe_chat_completion.py)
 - [ONNX Text Completion](./local_models/onnx_text_completion.py)
 
 ### Logging - Showing how to set up logging
