@@ -8,6 +8,7 @@ from semantic_kernel.text import (
     split_plaintext_lines,
     split_plaintext_paragraph,
 )
+from semantic_kernel.text.text_chunker import _split_text_paragraph, _token_counter
 
 NEWLINE = os.linesep
 
@@ -532,3 +533,49 @@ def test_split_md_on_newlines():
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
     assert expected == split
+
+
+def test_short_last_paragraph_merge_respects_max_tokens():
+    """Folding the last paragraph back must not push it over `max_tokens`."""
+    max_tokens = 20
+    # The default counter is len(text) // 4, so these are 20 and 4 tokens but one word each.
+    lines = ["a" * 80, "b" * 16]
+
+    paragraphs = _split_text_paragraph(lines, max_tokens)
+
+    assert all(_token_counter(p) <= max_tokens for p in paragraphs), [_token_counter(p) for p in paragraphs]
+
+
+def test_short_last_paragraph_still_merges_when_it_fits():
+    """A trailing paragraph that does fit is still folded back.
+
+    The lengths matter. The splitting loop measures the paragraph it has accumulated *including*
+    the newline it appended, so 58 characters count as 15 tokens rather than 14, and 15 + 4 + 1
+    reaches `max_tokens` and starts a second paragraph. The tail merge then folds them back.
+    Shorter lines never split in the first place, which leaves one paragraph and skips the merge
+    block entirely, so the test would pass without exercising anything.
+    """
+    max_tokens = 20
+    lines = ["a" * 58, "b" * 16]
+
+    paragraphs = _split_text_paragraph(lines, max_tokens)
+
+    assert len(paragraphs) == 1
+    assert _token_counter(paragraphs[0]) <= max_tokens
+
+
+def test_short_last_paragraph_merge_is_not_platform_dependent():
+    """The merge decision must not depend on `os.linesep`.
+
+    The candidate paragraph is joined with NEWLINE, which is two characters on Windows and one
+    elsewhere. Measuring that joined string with a length-based counter let the same input chunk
+    differently per platform, so the separator is normalised for the comparison.
+    """
+    max_tokens = 15
+    lines = ["Seriously, this is the end. We're finished. All set. Bye.", "Done."]
+
+    paragraphs = _split_text_paragraph(lines, max_tokens)
+
+    # 57 chars + 5 chars: 15 tokens joined by "\n", 16 joined by "\r\n". The verdict is the same
+    # on both, and matches what the surrounding chunker tests have always expected.
+    assert len(paragraphs) == 1
