@@ -17,7 +17,13 @@ DnsResolver = Callable[[str], Awaitable[Sequence[str | ipaddress.IPv4Address | i
 DEFAULT_ALLOWED_SCHEME = "https"
 
 # Azure instance metadata service (WireServer). Unlike the AWS/GCP equivalents, this
-# address is publicly routable, so it would otherwise pass the private-address checks.
+# address is publicly routable, so it would otherwise pass the private-address checks:
+# 168.63.129.16 has is_private=False and is_link_local=False, so no generic rule
+# catches it - not even after NAT64 decoding (64:ff9b::a83f:8110 decodes to exactly
+# this address and would sail through the private/link-local branches). The explicit
+# entry below is therefore load-bearing, not redundant with the range checks; do not
+# remove it on the assumption that "the private-address branch already covers Azure
+# metadata".
 _AZURE_WIRE_SERVER = ipaddress.ip_address("168.63.129.16")
 _AZURE_WIRE_SERVER_CATEGORY = "Azure metadata (WireServer)"
 
