@@ -22,7 +22,7 @@ jobs:
         configuration: [Debug]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
