@@ -16,6 +16,40 @@ DnsResolver = Callable[[str], Awaitable[Sequence[str | ipaddress.IPv4Address | i
 
 DEFAULT_ALLOWED_SCHEME = "https"
 
+# Cloud metadata / credential endpoints. Most fall inside ranges `_try_classify_ipv4` already
+# rejects, but `168.63.129.16` (Azure WireServer) is publicly routable, so no range check reaches
+# it. They are listed explicitly and checked even when `allow_private_network_access` is set:
+# reaching a host on your own network and reaching the instance's credential endpoint are
+# different requests, and only the first is what that option is for.
+CLOUD_METADATA_ADDRESSES: frozenset[ipaddress.IPv4Address | ipaddress.IPv6Address] = frozenset(
+    ipaddress.ip_address(address)
+    for address in (
+        "169.254.169.254",  # AWS IMDS, GCP, Azure, OCI, DigitalOcean, Hetzner, OpenStack
+        "169.254.170.2",  # AWS ECS task IAM role credentials
+        "169.254.170.23",  # AWS EKS Pod Identity Agent
+        "168.63.129.16",  # Azure WireServer / platform channel (publicly routable)
+        "100.100.100.200",  # Alibaba Cloud
+        "192.0.0.192",  # Oracle Cloud (Classic)
+        "169.254.42.42",  # Scaleway
+        "fd00:ec2::254",  # AWS IMDS over IPv6
+        "fd00:ec2::23",  # AWS EKS Pod Identity Agent over IPv6
+    )
+)
+
+# NAT64 (RFC 6052) and 6to4 (RFC 3056) carry an IPv4 address inside the IPv6 one. Only the /96
+# embedding is decoded: it is the only length the well-known prefix allows, and guessing the
+# shorter lengths inside the RFC 8215 local-use prefix reads bytes that are not the embedded
+# address, which would reject legitimate NAT64 targets.
+_NAT64_IPV4_OFFSETS = (12, 13, 14, 15)
+_NAT64_NETWORKS: tuple[ipaddress.IPv6Network, ...] = (ipaddress.IPv6Network("64:ff9b::/96"),)
+# RFC 8215 local-use space, where the translator's prefix length is configuration rather than
+# anything the address carries (RFC 6052 section 3.3). Bytes 12-15 hold the embedded address only
+# for a /96; for the shorter lengths they hold the suffix, which the RFC says SHOULD be zero, so
+# decoding them here reads 0.0.0.0 out of a perfectly ordinary target. Blocking the prefix whole
+# avoids guessing in either direction: no public host is rejected as "unspecified", and no
+# metadata address reaches the fit check through a length this code cannot determine.
+_NAT64_LOCAL_USE_NETWORK = ipaddress.IPv6Network("64:ff9b:1::/48")
+
 
 class ServerUrlValidationOptions(KernelBaseModel):
     """Options for validating OpenAPI operation request URLs."""
@@ -58,10 +92,17 @@ async def validate_server_url(
             "To allow this URL, add it to server_url_validation_allowed_base_urls."
         )
 
-    if options.allow_private_network_access:
-        return
+    await _ensure_public_host(
+        parsed_url, dns_resolver, allow_private_network_access=options.allow_private_network_access
+    )
 
-    await _ensure_public_host(parsed_url, dns_resolver)
+
+def is_cloud_metadata_address(address: str | ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Return whether an address, or an IPv4 embedded in it, is a cloud metadata endpoint."""
+    ip_address = ipaddress.ip_address(address)
+    if ip_address in CLOUD_METADATA_ADDRESSES:
+        return True
+    return any(embedded in CLOUD_METADATA_ADDRESSES for embedded in _embedded_ipv4s(ip_address))
 
 
 def try_categorize_non_public_address(
@@ -76,7 +117,45 @@ def try_categorize_non_public_address(
     if isinstance(ip_address, ipaddress.IPv4Address):
         return _try_classify_ipv4(ip_address)
 
-    return _try_classify_ipv6(ip_address)
+    blocked, category = _try_classify_ipv6(ip_address)
+    if blocked:
+        return blocked, category
+
+    # 6to4, NAT64 and Teredo carry an IPv4 target inside an otherwise public-looking IPv6
+    # address. Decode those and classify the IPv4 they name.
+    for embedded in _embedded_ipv4s(ip_address):
+        blocked, category = _try_classify_ipv4(embedded)
+        if blocked:
+            return blocked, f"{category} (embedded in IPv6)"
+
+    return False, ""
+
+
+def _embedded_ipv4s(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> list[ipaddress.IPv4Address]:
+    """Decode the IPv4 addresses carried inside IPv4-mapped, NAT64, 6to4 and Teredo IPv6 forms."""
+    if not isinstance(address, ipaddress.IPv6Address):
+        return []
+
+    packed = address.packed
+    candidates: list[ipaddress.IPv4Address] = []
+
+    if address.ipv4_mapped is not None:
+        candidates.append(address.ipv4_mapped)
+
+    if any(address in network for network in _NAT64_NETWORKS):
+        candidates.append(ipaddress.IPv4Address(bytes(packed[offset] for offset in _NAT64_IPV4_OFFSETS)))
+
+    # `sixtofour` and `teredo` return None outside their own prefixes, so they carry the
+    # membership check with them and leave no offset arithmetic here to get wrong. Teredo in
+    # particular obfuscates the client IPv4 by XOR-ing the low 32 bits with all ones (RFC 4380),
+    # which is the kind of detail worth taking from the standard library rather than restating.
+    if address.sixtofour is not None:
+        candidates.append(address.sixtofour)
+
+    if address.teredo is not None:
+        candidates.append(address.teredo[1])
+
+    return candidates
 
 
 def _parse_absolute_url(url: str, option_name: str = "url") -> ParseResult:
@@ -127,7 +206,9 @@ def _matches_path_prefix(url_path: str, base_path: str) -> bool:
     return url_path.lower().startswith(base_path_with_slash.lower())
 
 
-async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver | None) -> None:
+async def _ensure_public_host(
+    parsed_url: ParseResult, dns_resolver: DnsResolver | None, allow_private_network_access: bool = False
+) -> None:
     host = parsed_url.hostname
     if host is None:
         raise FunctionExecutionException(f"The request URI '{parsed_url.geturl()}' does not contain a valid host.")
@@ -137,7 +218,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
     except ValueError:
         addresses = await _resolve_host(host, dns_resolver)
     else:
-        _ensure_public_address(parsed_url.geturl(), ip_address)
+        _ensure_public_address(parsed_url.geturl(), ip_address, allow_private_network_access)
         return
 
     if not addresses:
@@ -147,7 +228,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
         )
 
     for address in addresses:
-        _ensure_public_address(parsed_url.geturl(), address)
+        _ensure_public_address(parsed_url.geturl(), address, allow_private_network_access)
 
 
 async def _resolve_host(
@@ -180,7 +261,18 @@ async def _resolve_host(
     return addresses
 
 
-def _ensure_public_address(url: str, address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> None:
+def _ensure_public_address(
+    url: str, address: ipaddress.IPv4Address | ipaddress.IPv6Address, allow_private_network_access: bool = False
+) -> None:
+    if is_cloud_metadata_address(address):
+        raise FunctionExecutionException(
+            f"The request URI '{url}' is not allowed: host resolves to a cloud metadata endpoint ({address}), "
+            "which is blocked to prevent Server-Side Request Forgery (SSRF). To allow this URL, add it to "
+            "server_url_validation_allowed_base_urls."
+        )
+    if allow_private_network_access:
+        return
+
     blocked, category = try_categorize_non_public_address(address)
     if blocked:
         raise FunctionExecutionException(
@@ -237,5 +329,7 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
         return True, "multicast"
     if address in ipaddress.ip_network("2001:db8::/32"):
         return True, "reserved"
+    if address in _NAT64_LOCAL_USE_NETWORK:
+        return True, "NAT64 local-use prefix"
 
     return False, ""
