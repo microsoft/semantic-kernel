@@ -98,9 +98,45 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     # Check the vector field index creation
     assert command_args["indexes"][1]["name"] == "vector_"
     assert command_args["indexes"][1]["key"] == {"vector": "cosmosSearch"}
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "COS"
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] is not None
+    # `kind` must be the vector index kind, `similarity` the distance function; they are distinct.
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "vector-hnsw"
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] == "COS"
+    assert (
+        command_args["indexes"][1]["cosmosSearchOptions"]["kind"]
+        != command_args["indexes"][1]["cosmosSearchOptions"]["similarity"]
+    )
     assert command_args["indexes"][1]["cosmosSearchOptions"]["dimensions"] == 5
+
+
+async def test_ensure_collection_exists_applies_hnsw_tuning_options(definition) -> None:
+    """
+    Test that HNSW tuning options (m, efConstruction) are forwarded into cosmosSearchOptions.
+
+    The default `definition` fixture uses index_kind="hnsw", so the index `kind` must resolve to
+    "vector-hnsw" for the HNSW tuning block to apply. (Previously `kind` was set to the similarity
+    code "COS", so the tuning block never matched and these options were silently dropped.)
+    """
+    mock_database = AsyncMock()
+    mock_database.create_collection = AsyncMock()
+    mock_database.command = AsyncMock()
+
+    mock_client = AsyncMock(spec=AsyncMongoClient)
+    mock_client.get_database = MagicMock(return_value=mock_database)
+
+    collection = CosmosMongoCollection(
+        collection_name="test_collection",
+        record_type=dict,
+        definition=definition,
+        mongo_client=mock_client,
+        database_name="test_db",
+    )
+
+    await collection.ensure_collection_exists(m=16, efConstruction=64)
+
+    search_options = mock_database.command.call_args.kwargs["command"]["indexes"][1]["cosmosSearchOptions"]
+    assert search_options["kind"] == "vector-hnsw"
+    assert search_options["m"] == 16
+    assert search_options["efConstruction"] == 64
 
 
 async def test_context_manager_calls_aconnect_and_close_when_managed(mock_model) -> None:
