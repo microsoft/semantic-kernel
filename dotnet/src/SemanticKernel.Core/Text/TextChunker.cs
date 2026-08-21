@@ -195,15 +195,11 @@ public static class TextChunker
                 var lastParagraphTokens = lastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
                 var secondLastParagraphTokens = secondLastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
 
-                var lastParagraphTokensCount = lastParagraphTokens.Length;
-                var secondLastParagraphTokensCount = secondLastParagraphTokens.Length;
+                var mergedParagraph = $"{string.Join(" ", secondLastParagraphTokens)} {string.Join(" ", lastParagraphTokens)}";
 
-                if (lastParagraphTokensCount + secondLastParagraphTokensCount <= adjustedMaxTokensPerParagraph)
+                if (GetTokenCount(mergedParagraph, tokenCounter) <= adjustedMaxTokensPerParagraph)
                 {
-                    var newSecondLastParagraph = string.Join(" ", secondLastParagraphTokens);
-                    var newLastParagraph = string.Join(" ", lastParagraphTokens);
-
-                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}";
+                    paragraphs[paragraphs.Count - 2] = mergedParagraph;
                     paragraphs.RemoveAt(paragraphs.Count - 1);
                 }
             }
