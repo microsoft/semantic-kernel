@@ -22,12 +22,12 @@ def list_tool_calls_with_slash() -> ListToolsResult:
             Tool(
                 name="nasa/get-astronomy-picture",
                 description="func with slash",
-                inputSchema={"properties": {}, "required": []},
+                input_schema={"properties": {}, "required": []},
             ),
             Tool(
                 name="weird\\name with spaces",
                 description="func with backslash and spaces",
-                inputSchema={"properties": {}, "required": []},
+                input_schema={"properties": {}, "required": []},
             ),
         ]
     )
@@ -40,7 +40,7 @@ def list_tool_calls() -> ListToolsResult:
             Tool(
                 name="func1",
                 description="func1",
-                inputSchema={
+                input_schema={
                     "properties": {
                         "name": {"type": "string"},
                     },
@@ -50,7 +50,7 @@ def list_tool_calls() -> ListToolsResult:
             Tool(
                 name="func2",
                 description="func2",
-                inputSchema={},
+                input_schema={},
             ),
         ]
     )
@@ -66,7 +66,7 @@ def list_tool_calls() -> ListToolsResult:
 async def test_mcp_plugin_session_not_initialize(plugin_class, plugin_args):
     # Test if Client can insert it's own Session
     mock_session = AsyncMock(spec=ClientSession)
-    mock_session._request_id = 0
+    mock_session.initialize_result = None
     mock_session.initialize = AsyncMock()
     async with plugin_class(name="test", session=mock_session, **plugin_args) as plugin:
         assert plugin.session is mock_session
@@ -83,7 +83,7 @@ async def test_mcp_plugin_session_not_initialize(plugin_class, plugin_args):
 async def test_mcp_plugin_session_initialized(plugin_class, plugin_args):
     # Test if Client can insert it's own initialized Session
     mock_session = AsyncMock(spec=ClientSession)
-    mock_session._request_id = 1
+    mock_session.initialize_result = MagicMock()
     mock_session.initialize = AsyncMock()
     async with plugin_class(name="test", session=mock_session, **plugin_args) as plugin:
         assert plugin.session is mock_session
@@ -174,8 +174,8 @@ async def test_mcp_tool_and_prompt_names_do_not_shadow_plugin_attributes():
     session = AsyncMock(spec=ClientSession)
     session.list_tools.return_value = ListToolsResult(
         tools=[
-            Tool(name="kernel", description="reserved", inputSchema={}),
-            Tool(name="safe_tool", description="safe", inputSchema={}),
+            Tool(name="kernel", description="reserved", input_schema={}),
+            Tool(name="safe_tool", description="safe", input_schema={}),
         ]
     )
     session.list_prompts.return_value = types.ListPromptsResult(
@@ -201,8 +201,8 @@ async def test_mcp_tool_and_prompt_names_can_reload_existing_mcp_functions():
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     session = AsyncMock(spec=ClientSession)
     session.list_tools.side_effect = [
-        ListToolsResult(tools=[Tool(name="safe_tool", description="first tool", inputSchema={})]),
-        ListToolsResult(tools=[Tool(name="safe_tool", description="second tool", inputSchema={})]),
+        ListToolsResult(tools=[Tool(name="safe_tool", description="first tool", input_schema={})]),
+        ListToolsResult(tools=[Tool(name="safe_tool", description="second tool", input_schema={})]),
     ]
     session.list_prompts.side_effect = [
         types.ListPromptsResult(prompts=[types.Prompt(name="safe_prompt", description="first prompt", arguments=[])]),
@@ -283,35 +283,19 @@ async def test_with_kwargs_stdio(mock_session, mock_client, list_tool_calls, ker
         assert len(loaded_plugin.functions["func2"].parameters) == 0
 
 
-@patch("semantic_kernel.connectors.mcp.websocket_client")
-@patch("semantic_kernel.connectors.mcp.ClientSession")
-async def test_with_kwargs_websocket(mock_session, mock_client, list_tool_calls, kernel: "Kernel"):
-    mock_read = MagicMock()
-    mock_write = MagicMock()
+async def test_websocket_transport_removed(kernel: "Kernel"):
+    """The websocket transport was removed from the mcp Python SDK in 2.0.
 
-    mock_generator = MagicMock()
-    # Make the mock_stdio_client return an AsyncMock for the context manager
-    mock_generator.__aenter__.return_value = (mock_read, mock_write)
-    mock_generator.__aexit__.return_value = (mock_read, mock_write)
-
-    # Make the mock_stdio_client return an AsyncMock for the context manager
-    mock_client.return_value = mock_generator
-    mock_session.return_value.__aenter__.return_value.list_tools.return_value = list_tool_calls
-    async with MCPWebsocketPlugin(
-        name="TestMCPPlugin",
-        description="Test MCP Plugin",
-        url="http://localhost:8080/websocket",
-    ) as plugin:
-        mock_client.assert_called_once_with(url="http://localhost:8080/websocket")
-        loaded_plugin = kernel.add_plugin(plugin)
-        assert loaded_plugin is not None
-        assert loaded_plugin.name == "TestMCPPlugin"
-        assert loaded_plugin.description == "Test MCP Plugin"
-        assert loaded_plugin.functions.get("func1") is not None
-        assert loaded_plugin.functions["func1"].parameters[0].name == "name"
-        assert loaded_plugin.functions["func1"].parameters[0].is_required
-        assert loaded_plugin.functions.get("func2") is not None
-        assert len(loaded_plugin.functions["func2"].parameters) == 0
+    Connecting an MCPWebsocketPlugin should fail with a clear configuration error
+    rather than an import error at module load time.
+    """
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to connect to the MCP server"):
+        async with MCPWebsocketPlugin(
+            name="TestMCPPlugin",
+            description="Test MCP Plugin",
+            url="http://localhost:8080/websocket",
+        ):
+            pass
 
 
 @patch("semantic_kernel.connectors.mcp.sse_client")
@@ -345,19 +329,19 @@ async def test_with_kwargs_sse(mock_session, mock_client, list_tool_calls, kerne
         assert len(loaded_plugin.functions["func2"].parameters) == 0
 
 
-@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+@patch("semantic_kernel.connectors.mcp.streamable_http_client")
 @patch("semantic_kernel.connectors.mcp.ClientSession")
 async def test_with_kwargs_streamablehttp(mock_session, mock_client, list_tool_calls, kernel: "Kernel"):
     mock_read = MagicMock()
     mock_write = MagicMock()
-    mock_callback = MagicMock()
 
     mock_generator = MagicMock()
-    # Make the mock_streamablehttp_client return an AsyncMock for the context manager
-    mock_generator.__aenter__.return_value = (mock_read, mock_write, mock_callback)
-    mock_generator.__aexit__.return_value = (mock_read, mock_write, mock_callback)
+    # Make the mock streamable_http_client return an AsyncMock for the context manager
+    # (mcp 2.x yields a 2-tuple of read/write streams).
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write)
 
-    # Make the mock_streamablehttp_client return an AsyncMock for the context manager
+    # Make the mock streamable_http_client return an AsyncMock for the context manager
     mock_client.return_value = mock_generator
     mock_session.return_value.__aenter__.return_value.list_tools.return_value = list_tool_calls
     async with MCPStreamableHttpPlugin(
@@ -382,9 +366,10 @@ async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function,
     kernel.add_functions("test", [decorated_native_function])
     server = kernel.as_mcp_server()
     assert server is not None
-    assert types.PingRequest in server.request_handlers
-    assert types.ListToolsRequest in server.request_handlers
-    assert types.CallToolRequest in server.request_handlers
+    # mcp 2.x registers request handlers by method name on the lowlevel Server.
+    assert server.get_request_handler("ping") is not None
+    assert server.get_request_handler("tools/list") is not None
+    assert server.get_request_handler("tools/call") is not None
     assert server.name == "Semantic Kernel MCP Server"
 
 
@@ -435,8 +420,8 @@ async def test_mcp_tool_name_collision_detected(caplog):
     session = AsyncMock(spec=ClientSession)
     session.list_tools.return_value = ListToolsResult(
         tools=[
-            Tool(name="read-document", description="first tool", inputSchema={}),
-            Tool(name="read document", description="second tool", inputSchema={}),
+            Tool(name="read-document", description="first tool", input_schema={}),
+            Tool(name="read document", description="second tool", input_schema={}),
         ]
     )
     plugin.session = session
@@ -483,8 +468,8 @@ async def test_mcp_tool_name_collision_detected_across_reload(caplog):
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     session = AsyncMock(spec=ClientSession)
     session.list_tools.side_effect = [
-        ListToolsResult(tools=[Tool(name="read-document", description="first tool", inputSchema={})]),
-        ListToolsResult(tools=[Tool(name="read document", description="second tool", inputSchema={})]),
+        ListToolsResult(tools=[Tool(name="read-document", description="first tool", input_schema={})]),
+        ListToolsResult(tools=[Tool(name="read document", description="second tool", input_schema={})]),
     ]
     plugin.session = session
 
@@ -504,7 +489,7 @@ async def test_mcp_prompt_does_not_replace_registered_tool_name(caplog):
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     session = AsyncMock(spec=ClientSession)
     session.list_tools.return_value = ListToolsResult(
-        tools=[Tool(name="read-document", description="first tool", inputSchema={})]
+        tools=[Tool(name="read-document", description="first tool", input_schema={})]
     )
     session.list_prompts.return_value = types.ListPromptsResult(
         prompts=[types.Prompt(name="read document", description="second item", arguments=[])]
@@ -544,30 +529,17 @@ async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
 
     server = create_mcp_server_from_kernel(kernel, excluded_functions=["secret_admin"])
 
-    # Verify the server was created with handlers
-    assert types.ListToolsRequest in server.request_handlers
-    assert types.CallToolRequest in server.request_handlers
+    # Verify the server was created with handlers (mcp 2.x registers by method name)
+    assert server.get_request_handler("tools/list") is not None
+    assert server.get_request_handler("tools/call") is not None
 
-    # Mock _get_cached_tool_definition to bypass SDK request context requirements
-    # (normally set by a real MCP session transport)
-    async def _fake_get_cached_tool_definition(tool_name):
-        return None
+    # Invoke the registered tools/call handler directly with a call for the excluded function.
+    handler = server.get_request_handler("tools/call").handler
+    params = types.CallToolRequestParams(name="secret_admin", arguments={})
 
-    server._get_cached_tool_definition = _fake_get_cached_tool_definition
+    # The call must raise an MCPError (Unknown tool), and the side effect must not fire.
+    from mcp.shared.exceptions import MCPError
 
-    # Build a proper CallToolRequest as the MCP SDK would send
-    call_tool_request = types.CallToolRequest(
-        method="tools/call",
-        params=types.CallToolRequestParams(name="secret_admin", arguments={}),
-    )
-
-    # The internal handler wraps our _call_tool; invoke via the registered handler
-    handler = server.request_handlers[types.CallToolRequest]
-    result = await handler(call_tool_request)
-
-    # The call must fail (isError=True) with the correct error message
-    assert result.root.isError is True, "Calling an excluded function should return an error"
-    assert any("Unknown tool" in c.text for c in result.root.content if hasattr(c, "text")), (
-        f"Expected 'Unknown tool' error, got: {result.root.content}"
-    )
+    with pytest.raises(MCPError, match="Unknown tool"):
+        await handler(MagicMock(), params)
     assert not side_effect_called, "Excluded function's side effect should not have fired"
