@@ -135,7 +135,7 @@ def _process_signature(func_sig: Signature, globalns: dict[str, Any] | None = No
             underlying_type = _get_underlying_type(annotation)
         else:
             underlying_type = annotation
-        if globalns:
+        if globalns is not None:
             underlying_type = KernelJsonSchemaBuilder.resolve_forward_refs(underlying_type, globalns)
         parsed_annotation["type_object"] = underlying_type
         annotations.append(parsed_annotation)
