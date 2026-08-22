@@ -547,3 +547,32 @@ def test_resolve_forward_refs_leaves_literal_values_and_annotated_metadata_alone
 
     assert literal == list[Literal["ForwardRefTarget"]]
     assert annotated == list[Annotated[ForwardRefTarget, "ForwardRefTarget"]]
+
+
+def _not_a_type():
+    return None
+
+
+NOT_A_TYPE_VALUE = 3
+
+
+def test_resolve_forward_refs_ignores_names_that_do_not_refer_to_a_type():
+    """A reference that collides with a module, function or value keeps the placeholder fallback."""
+    namespace = {
+        "json": json,
+        "_not_a_type": _not_a_type,
+        "NOT_A_TYPE_VALUE": NOT_A_TYPE_VALUE,
+        "ForwardRefTarget": ForwardRefTarget,
+    }
+
+    assert KernelJsonSchemaBuilder.resolve_forward_refs(list["json"], namespace) == list["json"]
+    assert KernelJsonSchemaBuilder.resolve_forward_refs(list["_not_a_type"], namespace) == list["_not_a_type"]
+    assert (
+        KernelJsonSchemaBuilder.resolve_forward_refs(dict[str, "NOT_A_TYPE_VALUE"], namespace)
+        == (dict[str, "NOT_A_TYPE_VALUE"])
+    )
+    # a sibling argument that does name a type is still resolved
+    assert (
+        KernelJsonSchemaBuilder.resolve_forward_refs(dict["json", "ForwardRefTarget"], namespace)
+        == (dict["json", ForwardRefTarget])
+    )

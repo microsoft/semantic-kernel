@@ -43,6 +43,10 @@ class MiscClass:
         return items
 
     @kernel_function
+    def func_forward_ref_colliding_with_module(self, items: list["pytest"]):
+        return items
+
+    @kernel_function
     def func_input_annotated(self, input: Annotated[str, "input description"]):
         return input
 
@@ -333,3 +337,12 @@ def test_process_signature_without_globalns_leaves_forward_refs_unchanged():
     annotations = _process_signature(func_sig)
 
     assert annotations[0]["type_object"] == list["InputObject"]
+
+
+def test_kernel_function_forward_ref_that_names_a_module_is_left_unresolved():
+    """A reference colliding with a non type global must not be substituted or raise at decoration."""
+    my_func = getattr(MiscClass(), "func_forward_ref_colliding_with_module")
+    param = my_func.__kernel_function_parameters__[0]
+
+    assert param["type_"] == "list[pytest]"
+    assert param["type_object"] == list["pytest"]

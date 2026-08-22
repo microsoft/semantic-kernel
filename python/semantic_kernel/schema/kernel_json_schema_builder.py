@@ -165,10 +165,32 @@ class KernelJsonSchemaBuilder:
             Any: The resolved type, or the argument unchanged when it cannot be resolved.
         """
         if isinstance(arg, str):
-            return globalns.get(arg, arg)
+            return cls._lookup_type(arg, globalns, default=arg)
         if isinstance(arg, ForwardRef):
-            return globalns.get(arg.__forward_arg__, arg)
+            return cls._lookup_type(arg.__forward_arg__, globalns, default=arg)
         return cls.resolve_forward_refs(arg, globalns)
+
+    @staticmethod
+    def _lookup_type(name: str, globalns: dict[str, Any], default: Any) -> Any:
+        """Looks a name up in the namespace, substituting it only when it names a type.
+
+        A forward reference that happens to share its name with a module, a function or a plain
+        value must not be rebuilt around that object: a module reaches ``build_model_schema`` and
+        fails on ``__module__``, and a function or value would produce a misleading schema. Keeping
+        the original reference lets the existing placeholder fallback apply instead.
+
+        Args:
+            name: The referenced name.
+            globalns: The namespace to look it up in.
+            default: What to return when the name is missing or does not name a type.
+
+        Returns:
+            Any: The class or typing construct the name refers to, or ``default``.
+        """
+        value = globalns.get(name, default)
+        if isinstance(value, type) or get_origin(value) is not None:
+            return value
+        return default
 
     @classmethod
     def _is_optional(cls, field_type: Any) -> bool:
