@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import sys
 from enum import Enum
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -455,3 +456,94 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class ForwardRefTarget(KernelBaseModel):
+    value: int
+    label: str
+
+
+class DirectListHolder(KernelBaseModel):
+    items: list[ForwardRefTarget] = []
+
+
+class ForwardRefListHolder(KernelBaseModel):
+    items: list["ForwardRefTarget"] = []
+
+
+class ForwardRefDictHolder(KernelBaseModel):
+    mapping: dict[str, "ForwardRefTarget"] = {}
+
+
+class ForwardRefNestedHolder(KernelBaseModel):
+    items: list[list["ForwardRefTarget"]] = []
+
+
+class ForwardRefOptionalHolder(KernelBaseModel):
+    items: list[Optional["ForwardRefTarget"]] = []
+
+
+class UnresolvableForwardRefHolder(KernelBaseModel):
+    items: list["NotDefinedAnywhere"] = []  # noqa: F821
+
+
+def test_build_model_schema_resolves_forward_ref_in_list():
+    """list["Target"] must produce the same schema as list[Target]."""
+    forward_ref = KernelJsonSchemaBuilder.build(ForwardRefListHolder)["properties"]["items"]
+    direct = KernelJsonSchemaBuilder.build(DirectListHolder)["properties"]["items"]
+
+    assert forward_ref == direct
+    assert forward_ref["items"]["properties"] == {"value": {"type": "integer"}, "label": {"type": "string"}}
+    assert forward_ref["items"]["required"] == ["value", "label"]
+
+
+def test_build_model_schema_resolves_forward_ref_in_dict():
+    """dict[str, "Target"] must carry the element schema through additionalProperties."""
+    schema = KernelJsonSchemaBuilder.build(ForwardRefDictHolder)["properties"]["mapping"]
+
+    assert schema["additionalProperties"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_model_schema_resolves_nested_forward_ref():
+    """Resolution recurses into nested generic aliases."""
+    schema = KernelJsonSchemaBuilder.build(ForwardRefNestedHolder)["properties"]["items"]
+
+    assert schema["items"]["items"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_model_schema_resolves_forward_ref_inside_optional():
+    """A ForwardRef nested under Optional inside a list still resolves."""
+    schema = KernelJsonSchemaBuilder.build(ForwardRefOptionalHolder)["properties"]["items"]
+
+    assert schema["items"]["type"] == ["object", "null"]
+    assert schema["items"]["properties"] == {"value": {"type": "integer"}, "label": {"type": "string"}}
+
+
+@pytest.mark.skipif(
+    sys.version_info >= (3, 11),
+    reason="On 3.11+ get_type_hints raises NameError for the unresolvable name before the builder sees it",
+)
+def test_build_model_schema_unresolvable_forward_ref_falls_back():
+    """An unresolvable name keeps the previous placeholder rather than raising."""
+    schema = KernelJsonSchemaBuilder.build(UnresolvableForwardRefHolder)["properties"]["items"]
+
+    assert schema == {"type": "array", "items": {"type": "object"}}
+
+
+def test_resolve_forward_refs_leaves_literal_values_and_annotated_metadata_alone():
+    """Strings that are values, not names, must not be looked up even when a global matches."""
+    namespace = {"ForwardRefTarget": ForwardRefTarget}
+
+    literal = KernelJsonSchemaBuilder.resolve_forward_refs(list[Literal["ForwardRefTarget"]], namespace)
+    annotated = KernelJsonSchemaBuilder.resolve_forward_refs(
+        list[Annotated["ForwardRefTarget", "ForwardRefTarget"]], namespace
+    )
+
+    assert literal == list[Literal["ForwardRefTarget"]]
+    assert annotated == list[Annotated[ForwardRefTarget, "ForwardRefTarget"]]
