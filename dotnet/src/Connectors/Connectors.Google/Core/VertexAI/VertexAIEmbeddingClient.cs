@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
     private readonly bool _useEmbedContentMethod;
+    private readonly string _fullModelResourceName;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Vertex AI.
@@ -57,7 +58,8 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         this._embeddingModelId = modelId;
         this._useEmbedContentMethod = UsesEmbedContentMethod(modelId);
         string embeddingMethod = this._useEmbedContentMethod ? "batchEmbedContents" : "predict";
-        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:{embeddingMethod}");
+        this._fullModelResourceName = $"projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}";
+        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/{this._fullModelResourceName}:{embeddingMethod}");
         this._dimensions = dimensions;
     }
 
@@ -79,7 +81,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         Verify.NotNullOrEmpty(data);
 
         object request = this._useEmbedContentMethod
-            ? VertexAIEmbedContentRequest.FromData(data, options?.Dimensions ?? this._dimensions)
+            ? VertexAIEmbedContentRequest.FromData(data, this._fullModelResourceName, options?.Dimensions ?? this._dimensions)
             : this.GetEmbeddingRequest(data, options);
 
         using var httpRequestMessage = await this.CreateHttpRequestAsync(request, this._embeddingEndpoint).ConfigureAwait(false);

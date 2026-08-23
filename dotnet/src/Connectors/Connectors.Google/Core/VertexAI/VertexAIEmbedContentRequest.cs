@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +11,11 @@ internal sealed class VertexAIEmbedContentRequest
     [JsonPropertyName("requests")]
     public IList<EmbedContentRequestItem> Requests { get; set; } = null!;
 
-    public static VertexAIEmbedContentRequest FromData(IEnumerable<string> data, int? dimensions = null) => new()
+    public static VertexAIEmbedContentRequest FromData(IEnumerable<string> data, string model, int? dimensions = null) => new()
     {
         Requests = data.Select(text => new EmbedContentRequestItem
         {
+            Model = model,
             Content = new RequestContent
             {
                 Parts =
@@ -31,6 +32,9 @@ internal sealed class VertexAIEmbedContentRequest
 
     internal sealed class EmbedContentRequestItem
     {
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = null!;
+
         [JsonPropertyName("content")]
         public RequestContent Content { get; set; } = null!;
 
