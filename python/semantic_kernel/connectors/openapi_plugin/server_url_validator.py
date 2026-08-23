@@ -33,8 +33,12 @@ async def validate_server_url(
     url: str,
     options: ServerUrlValidationOptions | None = None,
     dns_resolver: DnsResolver | None = None,
-) -> None:
-    """Validate a fully resolved OpenAPI operation URL against the supplied policy."""
+) -> dict[str, str]:
+    """Validate a URL and return the hostname-to-address mapping used for pinning.
+
+    An empty mapping means that pinning is not required because an explicitly
+    allowed base URL or private-network opt-in bypassed public-host validation.
+    """
     options = options or ServerUrlValidationOptions()
     try:
         parsed_url = _parse_absolute_url(url)
@@ -44,7 +48,7 @@ async def validate_server_url(
         ) from exc
 
     if _matches_allowed_base_url(parsed_url, options.allowed_base_urls):
-        return
+        return {}
 
     if options.allowed_base_urls:
         raise FunctionExecutionException(
@@ -59,9 +63,9 @@ async def validate_server_url(
         )
 
     if options.allow_private_network_access:
-        return
+        return {}
 
-    await _ensure_public_host(parsed_url, dns_resolver)
+    return await _ensure_public_host(parsed_url, dns_resolver)
 
 
 def try_categorize_non_public_address(
@@ -127,7 +131,7 @@ def _matches_path_prefix(url_path: str, base_path: str) -> bool:
     return url_path.lower().startswith(base_path_with_slash.lower())
 
 
-async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver | None) -> None:
+async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver | None) -> dict[str, str]:
     host = parsed_url.hostname
     if host is None:
         raise FunctionExecutionException(f"The request URI '{parsed_url.geturl()}' does not contain a valid host.")
@@ -138,7 +142,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
         addresses = await _resolve_host(host, dns_resolver)
     else:
         _ensure_public_address(parsed_url.geturl(), ip_address)
-        return
+        return {host: str(ip_address)}
 
     if not addresses:
         raise FunctionExecutionException(
@@ -148,6 +152,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
 
     for address in addresses:
         _ensure_public_address(parsed_url.geturl(), address)
+    return {host: str(addresses[0])}
 
 
 async def _resolve_host(

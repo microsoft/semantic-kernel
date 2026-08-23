@@ -17,6 +17,7 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_expected_response
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_run_options import RestApiRunOptions
+from semantic_kernel.connectors.openapi_plugin.pinned_http_transport import PinnedDnsTransport
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
     validate_server_url,
@@ -143,7 +144,7 @@ class OpenApiRunner:
             server_url_override=options.server_url_override if options else None,
             api_host_url=options.api_host_url if options else None,
         )
-        await validate_server_url(url, self.server_url_validation_options)
+        pinned_hosts = await validate_server_url(url, self.server_url_validation_options)
         headers = operation.build_headers(arguments=arguments)
         payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
 
@@ -183,7 +184,10 @@ class OpenApiRunner:
 
             if hasattr(self, "http_client") and self.http_client is not None:
                 return await make_request(self.http_client)
-            async with httpx.AsyncClient(timeout=timeout) as client:
+            async with httpx.AsyncClient(
+                timeout=timeout,
+                transport=PinnedDnsTransport(pinned_hosts) if pinned_hosts else None,
+            ) as client:
                 return await make_request(client)
 
         return await fetch()

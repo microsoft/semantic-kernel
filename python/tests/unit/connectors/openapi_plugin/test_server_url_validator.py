@@ -149,7 +149,9 @@ async def test_validate_server_url_allows_hostname_resolving_to_public_ip():
         assert host == "api.example.com"
         return ["93.184.216.34"]
 
-    await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver)
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == {
+        "api.example.com": "93.184.216.34"
+    }
 
 
 async def test_validate_server_url_blocks_dns_resolution_failure():
