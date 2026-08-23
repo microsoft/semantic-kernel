@@ -161,14 +161,23 @@ public sealed class DocumentPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return PathUtilities.GetSafeFullPath(expanded);
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(fullPath);
     }
 
-    private static bool IsUncOrExtendedPath(string path)
-    {
-        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
-    }
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed directories.
