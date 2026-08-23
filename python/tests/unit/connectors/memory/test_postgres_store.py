@@ -18,6 +18,7 @@ from semantic_kernel.connectors.postgres import (
     PostgresStore,
 )
 from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
+from semantic_kernel.data.vector import VectorSearchOptions
 
 
 @fixture(scope="function")
@@ -320,6 +321,31 @@ async def test_vector_search(
         )
 
     assert statement_str == expected_statement
+
+
+async def test_vector_search_filter_is_emitted_as_sql(vector_store: PostgresStore) -> None:
+    @vectorstoremodel
+    @dataclass
+    class FilterDataModel:
+        id: Annotated[int, VectorStoreField("key")]
+        name: Annotated[str, VectorStoreField("data")]
+        embedding: Annotated[
+            list[float],
+            VectorStoreField(
+                "vector",
+                index_kind=IndexKind.HNSW,
+                dimensions=3,
+                distance_function=DistanceFunction.COSINE_DISTANCE,
+                type="float",
+            ),
+        ]
+
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=FilterDataModel)
+    options = VectorSearchOptions(filter="lambda x: x.name == 'test'")
+
+    query, _, _ = collection._construct_vector_query([1.0, 2.0, 3.0], options)
+
+    assert 'WHERE "name" = \'test\'' in query.as_string()
 
 
 async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
