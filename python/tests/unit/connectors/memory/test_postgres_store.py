@@ -351,6 +351,11 @@ async def test_vector_search_filter_is_emitted_as_sql(vector_store: PostgresStor
 
     assert ' WHERE "name" = \'test\' AND "id" > 0' in query.as_string()
 
+    options = VectorSearchOptions(filter=lambda x: x.name == "test")
+    query, _, _ = collection._construct_vector_query([1.0, 2.0, 3.0], options)
+
+    assert ' WHERE "name" = \'test\'' in query.as_string()
+
 
 async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
     @vectorstoremodel
