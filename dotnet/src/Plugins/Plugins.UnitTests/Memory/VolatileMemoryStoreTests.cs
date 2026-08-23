@@ -455,6 +455,39 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
+    public async Task GetNearestMatchesFiltersOppositePolarityAsync()
+    {
+        // Arrange
+        var queryEmbedding = new float[] { 1, 0 };
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
+
+        _ = await this._db.UpsertAsync(collection, MemoryRecord.LocalRecord(
+            id: "matching",
+            text: "Withhold the study drug when chest tightness is reported.",
+            description: "matching polarity",
+            embedding: new float[] { 1, 0 }));
+        _ = await this._db.UpsertAsync(collection, MemoryRecord.LocalRecord(
+            id: "opposite",
+            text: "Administer the study drug when chest tightness is reported.",
+            description: "opposite polarity",
+            embedding: new float[] { -1, 0 }));
+
+        // Act
+        var results = await this._db.GetNearestMatchesAsync(
+            collection,
+            queryEmbedding,
+            limit: 2,
+            minRelevanceScore: 0.75).ToArrayAsync();
+
+        // Assert
+        var result = Assert.Single(results);
+        Assert.Equal("matching", result.Item1.Metadata.Id);
+        Assert.True(result.Item2 >= 0.75);
+    }
+
+    [Fact]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
