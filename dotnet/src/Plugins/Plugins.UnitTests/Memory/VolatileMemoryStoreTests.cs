@@ -455,7 +455,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task GetNearestMatchesFiltersOppositePolarityAsync()
+    public async Task GetNearestMatchesUsesCosineSimilarityForOppositeMeaningAsync()
     {
         // Arrange
         var queryEmbedding = new float[] { 1, 0 };
@@ -463,16 +463,19 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
 
+        // These text/embedding pairs deliberately model the high-similarity range
+        // reported by the issue's embedding audit; this unit test does not compute
+        // embeddings and therefore does not claim to reproduce a model's output.
         _ = await this._db.UpsertAsync(collection, MemoryRecord.LocalRecord(
             id: "matching",
             text: "Withhold the study drug when chest tightness is reported.",
             description: "matching polarity",
-            embedding: new float[] { 1, 0 }));
+            embedding: new float[] { 0.98f, 0.199f }));
         _ = await this._db.UpsertAsync(collection, MemoryRecord.LocalRecord(
             id: "opposite",
             text: "Administer the study drug when chest tightness is reported.",
             description: "opposite polarity",
-            embedding: new float[] { -1, 0 }));
+            embedding: new float[] { 0.98f, 0.199f }));
 
         // Act
         var results = await this._db.GetNearestMatchesAsync(
@@ -482,9 +485,37 @@ public class VolatileMemoryStoreTests
             minRelevanceScore: 0.75).ToArrayAsync();
 
         // Assert
-        var result = Assert.Single(results);
-        Assert.Equal("matching", result.Item1.Metadata.Id);
-        Assert.True(result.Item2 >= 0.75);
+        Assert.Equal(2, results.Length);
+        Assert.Contains(results, result => result.Item1.Metadata.Id == "matching");
+        Assert.Contains(results, result => result.Item1.Metadata.Id == "opposite");
+        Assert.All(results, result => Assert.True(result.Item2 >= 0.75));
+    }
+
+    [Fact]
+    public async Task GetNearestMatchesFiltersLowSimilarityParaphraseAsync()
+    {
+        // Arrange
+        var queryEmbedding = new float[] { 1, 0 };
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
+
+        _ = await this._db.UpsertAsync(collection, MemoryRecord.LocalRecord(
+            id: "paraphrase",
+            text: "Do not administer the medication if the participant reports chest tightness.",
+            description: "semantically equivalent paraphrase",
+            embedding: new float[] { 0.6f, 0.8f }));
+
+        // Act
+        var results = await this._db.GetNearestMatchesAsync(
+            collection,
+            queryEmbedding,
+            limit: 1,
+            minRelevanceScore: 0.75).ToArrayAsync();
+
+        // Assert: a fixed similarity threshold cannot recover a semantically
+        // equivalent result whose embedding falls below that threshold.
+        Assert.Empty(results);
     }
 
     [Fact]
