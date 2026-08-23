@@ -795,11 +795,11 @@ class PostgresCollection(
 
         if where_clauses := self._build_filter(options.filter):  # type: ignore
             query += (
-                sql.SQL("WHERE {clause}").format(
+                sql.SQL(" WHERE {clause}").format(
                     clause=sql.SQL(" AND ").join(sql.SQL(clause) for clause in where_clauses)
                 )
                 if isinstance(where_clauses, list)
-                else sql.SQL("WHERE {clause}").format(clause=sql.SQL(where_clauses))
+                else sql.SQL(" WHERE {clause}").format(clause=sql.SQL(where_clauses))
             )
 
         query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(

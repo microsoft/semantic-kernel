@@ -17,8 +17,7 @@ from semantic_kernel.connectors.postgres import (
     PostgresSettings,
     PostgresStore,
 )
-from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorStoreField, vectorstoremodel
-from semantic_kernel.data.vector import VectorSearchOptions
+from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField, vectorstoremodel
 
 
 @fixture(scope="function")
@@ -345,7 +344,12 @@ async def test_vector_search_filter_is_emitted_as_sql(vector_store: PostgresStor
 
     query, _, _ = collection._construct_vector_query([1.0, 2.0, 3.0], options)
 
-    assert 'WHERE "name" = \'test\'' in query.as_string()
+    assert ' WHERE "name" = \'test\'' in query.as_string()
+
+    options = VectorSearchOptions(filter=["lambda x: x.name == 'test'", "lambda x: x.id > 0"])
+    query, _, _ = collection._construct_vector_query([1.0, 2.0, 3.0], options)
+
+    assert ' WHERE "name" = \'test\' AND "id" > 0' in query.as_string()
 
 
 async def test_model_post_init_conflicting_distance_column_name(vector_store: PostgresStore) -> None:
