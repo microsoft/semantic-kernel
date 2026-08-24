@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 try:
     imported = importlib.import_module("transformers")
     ready = hasattr(imported, "GenerationConfig")
-except ImportError:
+except ModuleNotFoundError:
     ready = False
 
 

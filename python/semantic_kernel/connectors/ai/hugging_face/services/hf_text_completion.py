@@ -14,7 +14,7 @@ else:
 try:
     import torch
     from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
-except ImportError as exc:
+except ModuleNotFoundError as exc:
     missing_package = exc.name or "Hugging Face dependencies"
     raise ImportError(
         f"{missing_package} is not installed. Install the 'hugging_face' extra with "
