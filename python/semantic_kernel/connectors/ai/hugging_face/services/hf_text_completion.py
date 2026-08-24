@@ -11,8 +11,15 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import torch
-from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
+try:
+    import torch
+    from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
+except ImportError as exc:
+    missing_package = exc.name or "Hugging Face dependencies"
+    raise ImportError(
+        f"{missing_package} is not installed. Install the 'hugging_face' extra with "
+        "`pip install semantic-kernel[hugging_face]`."
+    ) from exc
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings

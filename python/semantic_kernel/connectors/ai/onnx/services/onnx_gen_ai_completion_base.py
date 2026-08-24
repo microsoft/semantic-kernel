@@ -37,7 +37,9 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             ServiceInitializationError: When model cannot be loaded
         """
         if not ready:
-            raise ImportError("onnxruntime-genai is not installed.")
+            raise ImportError(
+                "onnxruntime-genai is not installed. Install the 'onnx' extra with `pip install semantic-kernel[onnx]`."
+            )
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
             with open(json_gen_ai_config) as file:
