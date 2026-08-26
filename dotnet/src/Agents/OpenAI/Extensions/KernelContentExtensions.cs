@@ -6,7 +6,7 @@ using OpenAI.Responses;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Extensions methods for <see cref="KernelContent"/>.
+/// Extension methods for <see cref="KernelContent"/>.
 /// </summary>
 internal static class KernelContentExtensions
 {

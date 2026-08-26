@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// A class to describe the content schema of a response/return type from an KernelFunctionFactory, in a JSON Schema friendly way.
+/// A class to describe the content schema of a response/return type from a KernelFunctionFactory, in a JSON Schema friendly way.
 /// </summary>
 internal sealed class JsonSchemaResponse
 {
