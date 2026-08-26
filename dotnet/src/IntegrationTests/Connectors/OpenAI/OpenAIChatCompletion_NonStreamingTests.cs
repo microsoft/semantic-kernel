@@ -143,7 +143,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
     }
 
-    [RetryFact]
+    [Fact(Skip = "The gpt-4o-search-preview model is deprecated and the replacement doesn't support web search")]
     public async Task ChatCompletionWithWebSearchAsync()
     {
         // Arrange
