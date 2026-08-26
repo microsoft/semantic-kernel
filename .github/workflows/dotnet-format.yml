@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -41,7 +41,7 @@ jobs:
       - name: Get changed files
         id: changed-files
         if: github.event_name == 'pull_request'
-        uses: jitterbit/get-changed-files@v1
+        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42 # v1
         continue-on-error: true
 
       - name: No C# files changed
