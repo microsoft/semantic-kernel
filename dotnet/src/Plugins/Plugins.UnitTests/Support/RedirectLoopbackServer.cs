@@ -69,7 +69,26 @@ internal sealed class RedirectLoopbackServer : IAsyncDisposable
 
             using (client)
             {
-                await this.HandleRequestAsync(client, this._cancellationTokenSource.Token).ConfigureAwait(false);
+                try
+                {
+                    await this.HandleRequestAsync(client, this._cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (this._cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (ObjectDisposedException) when (this._cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (IOException)
+                {
+                    // Ignore client disconnects / truncated requests to keep the test helper stable.
+                }
+                catch (SocketException) when (this._cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
     }
