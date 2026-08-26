@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
-using SemanticKernel.Plugins.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Web;
