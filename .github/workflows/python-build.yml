@@ -42,7 +42,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Start DevOps pipeline
-        uses: azure/cli@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # v3.0.0
         with:
           inlineScript: |
             az pipelines run --id ${{ vars.ADO_PYTHON_RELEASE_ID }} --org ${{ vars.ADO_ORG }} --project ${{ vars.ADO_PROJECT_NAME }} --parameters tag=${{ github.event.release.tag_name }} delay=0
