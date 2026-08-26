@@ -87,8 +87,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         var kernel = GetKernelWithCache(services =>
         {
             services.AddDocumentDBVectorStore(
-                TestConfiguration.CosmosMongo.ConnectionString,
-                TestConfiguration.CosmosMongo.DatabaseName);
+                TestConfiguration.AzureDocumentDb.ConnectionString,
+                TestConfiguration.AzureDocumentDb.DatabaseName);
         });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
