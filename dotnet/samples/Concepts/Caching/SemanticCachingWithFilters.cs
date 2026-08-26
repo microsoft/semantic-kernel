@@ -77,12 +77,12 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     }
 
     /// <summary>
-    /// Executing similar requests two times using Azure Cosmos DB for MongoDB caching store to compare execution time and results.
+    /// Executing similar requests two times using Azure DocumentDB caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
-    /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
+    /// How to set up Azure DocumentDB: https://learn.microsoft.com/en-us/azure/documentdb/quickstart-portal
     /// </summary>
     [Fact]
-    public async Task CosmosMongoDBCacheAsync()
+    public async Task DocumentDbCacheAsync()
     {
         var kernel = GetKernelWithCache(services =>
         {
