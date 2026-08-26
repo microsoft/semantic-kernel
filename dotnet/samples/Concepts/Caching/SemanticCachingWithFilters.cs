@@ -79,7 +79,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Executing similar requests two times using Azure DocumentDB caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
-    /// How to set up Azure DocumentDB: https://learn.microsoft.com/en-us/azure/documentdb/quickstart-portal
+    /// How to set up Azure DocumentDB: https://learn.microsoft.com/azure/documentdb/quickstart-portal
     /// </summary>
     [Fact]
     public async Task DocumentDbCacheAsync()
