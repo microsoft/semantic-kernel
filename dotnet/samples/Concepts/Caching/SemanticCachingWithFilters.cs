@@ -86,7 +86,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     {
         var kernel = GetKernelWithCache(services =>
         {
-            services.AddCosmosMongoVectorStore(
+            services.AddDocumentDBVectorStore(
                 TestConfiguration.CosmosMongo.ConnectionString,
                 TestConfiguration.CosmosMongo.DatabaseName);
         });
