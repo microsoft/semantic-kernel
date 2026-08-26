@@ -23,7 +23,7 @@ public class OpenAI_ChatCompletioWebSearch(ITestOutputHelper output) : BaseTest(
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
         // Ensure you use a supported model
-        var modelId = "gpt-5-search-ap";
+        var modelId = "gpt-5-search-api";
         var settings = new OpenAIPromptExecutionSettings
         {
             WebSearchOptions = new ChatWebSearchOptions()
