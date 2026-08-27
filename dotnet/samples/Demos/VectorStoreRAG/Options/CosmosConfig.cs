@@ -5,11 +5,11 @@ using System.ComponentModel.DataAnnotations;
 namespace VectorStoreRAG.Options;
 
 /// <summary>
-/// Azure CosmosDB service settings for use with CosmosMongo and CosmosNoSql.
+/// Azure DocumentDB and Azure Cosmos DB service settings.
 /// </summary>
 internal sealed class CosmosConfig
 {
-    public const string MongoConfigSectionName = "CosmosMongoDB";
+    public const string DocumentDBConfigSectionName = "AzureDocumentDB";
     public const string NoSqlConfigSectionName = "CosmosNoSql";
 
     [Required]
