@@ -148,15 +148,18 @@ def test_as_agent_framework_tool_preserves_optional_parameter_default(monkeypatc
     monkeypatch.setitem(__import__("sys").modules, "agent_framework", Mock(AIFunction=MockAIFunction))
 
     @kernel_function()
-    def function(count: int = 5) -> int:
+    def function(count: int = 5, label: str | None = None) -> int:
         return count
 
     native_function = KernelFunction.from_method(method=function, plugin_name="MockPlugin")
     tool = native_function.as_agent_framework_tool(kernel=Mock())
-    field = tool.input_model.model_fields["count"]
+    count_field = tool.input_model.model_fields["count"]
+    label_field = tool.input_model.model_fields["label"]
 
-    assert field.default == 5
-    assert not field.is_required()
+    assert count_field.default == 5
+    assert not count_field.is_required()
+    assert label_field.default is None
+    assert not label_field.is_required()
 
 
 def test_init_method_is_none():

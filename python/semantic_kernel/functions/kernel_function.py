@@ -447,13 +447,15 @@ class KernelFunction(KernelBaseModel):
         fields = {}
         for param in self.parameters:
             if param.include_in_function_choices:
-                if param.default_value is not None:
+                # Requiredness is explicit metadata: None can be a legitimate
+                # default for optional parameters and must remain a Pydantic default.
+                if param.is_required:
+                    fields[param.name] = (param.type_, Field(description=param.description))
+                else:
                     fields[param.name] = (
                         param.type_,
                         Field(description=param.description, default=param.default_value),
                     )
-                else:
-                    fields[param.name] = (param.type_, Field(description=param.description))
         input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
