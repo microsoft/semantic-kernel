@@ -452,7 +452,8 @@ class KernelFunction(KernelBaseModel):
                         param.type_,
                         Field(description=param.description, default=param.default_value),
                     )
-                fields[param.name] = (param.type_, Field(description=param.description))
+                else:
+                    fields[param.name] = (param.type_, Field(description=param.description))
         input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
