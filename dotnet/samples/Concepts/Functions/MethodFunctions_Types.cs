@@ -253,7 +253,7 @@ public class LocalExamplePlugin(ITestOutputHelper output)
     [KernelFunction]
     public async Task<string> TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
     {
-        var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+        var result = $"Cancellation requested: {cancellationToken.IsCancellationRequested}";
         this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
         return result;
     }

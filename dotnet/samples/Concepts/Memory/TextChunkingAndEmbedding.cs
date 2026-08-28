@@ -127,7 +127,7 @@ Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc
 Jane: Darn, it's just repeating stuff now.
 John: I think we're done.
 Jane: We're not though! We need like 1500 more characters.
-John: Oh Cananda, our home and native land.
+John: Oh Canada, our home and native land.
 Jane: True patriot love in all thy sons command.
 John: With glowing hearts we see thee rise.
 Jane: The True North strong and free.
