@@ -150,7 +150,17 @@ async def test_validate_server_url_allows_hostname_resolving_to_public_ip():
         return ["93.184.216.34"]
 
     assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == {
-        "api.example.com": "93.184.216.34"
+        "api.example.com": ["93.184.216.34"]
+    }
+
+
+async def test_validate_server_url_returns_all_resolved_public_addresses():
+    async def fake_resolver(host: str):
+        assert host == "multi-address.example.com"
+        return ["93.184.216.34", "1.1.1.1"]
+
+    assert await validate_server_url("https://multi-address.example.com/", dns_resolver=fake_resolver) == {
+        "multi-address.example.com": ["93.184.216.34", "1.1.1.1"]
     }
 
 

@@ -33,7 +33,7 @@ async def validate_server_url(
     url: str,
     options: ServerUrlValidationOptions | None = None,
     dns_resolver: DnsResolver | None = None,
-) -> dict[str, str]:
+) -> dict[str, list[str]]:
     """Validate a URL and return the hostname-to-address mapping used for pinning.
 
     An empty mapping means that pinning is not required because an explicitly
@@ -131,7 +131,7 @@ def _matches_path_prefix(url_path: str, base_path: str) -> bool:
     return url_path.lower().startswith(base_path_with_slash.lower())
 
 
-async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver | None) -> dict[str, str]:
+async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver | None) -> dict[str, list[str]]:
     host = parsed_url.hostname
     if host is None:
         raise FunctionExecutionException(f"The request URI '{parsed_url.geturl()}' does not contain a valid host.")
@@ -142,7 +142,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
         addresses = await _resolve_host(host, dns_resolver)
     else:
         _ensure_public_address(parsed_url.geturl(), ip_address)
-        return {host: str(ip_address)}
+        return {host: [str(ip_address)]}
 
     if not addresses:
         raise FunctionExecutionException(
@@ -152,7 +152,7 @@ async def _ensure_public_host(parsed_url: ParseResult, dns_resolver: DnsResolver
 
     for address in addresses:
         _ensure_public_address(parsed_url.geturl(), address)
-    return {host: str(addresses[0])}
+    return {host: [str(address) for address in addresses]}
 
 
 async def _resolve_host(
