@@ -17,6 +17,10 @@ public class OpenApiFunctionExecutionParameters
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
     /// </summary>
+    /// <remarks>
+    /// The default client does not follow redirects so that URL validation cannot be bypassed.
+    /// Custom clients should also be configured with <c>AllowAutoRedirect = false</c>.
+    /// </remarks>
     public HttpClient? HttpClient { get; set; }
 
     /// <summary>

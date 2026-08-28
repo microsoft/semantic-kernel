@@ -229,3 +229,52 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
             assert await collection.collection_exists() is False
             collection_names = await store.list_collection_names()
             assert collection_name not in collection_names
+
+    async def test_search_with_filter(
+        self,
+        stores: dict[str, Callable[[], VectorStore]],
+        record_type: type,
+    ):
+        """Test vector search with equality filters, including apostrophe and injection payloads.
+
+        This is a regression test for the Cosmos DB NoSQL filter SQL-injection issue: filter
+        constants must be bound as query parameters, so that:
+          * an equality filter returns only the matching record(s),
+          * a value containing an apostrophe (e.g. O'Reilly) works instead of raising HTTP 400, and
+          * a malicious value (\\' OR true --) is treated as an inert literal and does not bypass
+            the filter.
+        """
+        vector = [0.1, 0.2, 0.3, 0.4, 0.5]
+        records = [
+            record_type(id="red-1", product_type="red", description="red record", vector=vector),
+            record_type(id="blue-1", product_type="blue", description="blue record", vector=vector),
+            record_type(id="oreilly-1", product_type="O'Reilly", description="apostrophe record", vector=vector),
+        ]
+
+        async with stores["azure_cosmos_db_no_sql"]() as store:
+            collection_name = "search_with_filter"
+            collection = store.get_collection(collection_name=collection_name, record_type=record_type)
+
+            try:
+                await collection.ensure_collection_exists()
+                await collection.upsert(records)
+
+                # Equality filter returns only the matching record.
+                results = await collection.search(vector=vector, filter=lambda x: x.product_type == "red", top=10)
+                matched = [result.record async for result in results.results]
+                assert {record.id for record in matched} == {"red-1"}
+
+                # A value containing an apostrophe must be handled as a literal (no HTTP 400).
+                results = await collection.search(vector=vector, filter=lambda x: x.product_type == "O'Reilly", top=10)
+                matched = [result.record async for result in results.results]
+                assert {record.id for record in matched} == {"oreilly-1"}
+
+                # A SQL-injection payload must not bypass the filter; it matches no record.
+                results = await collection.search(
+                    vector=vector, filter=lambda x: x.product_type == "\\' OR true --", top=10
+                )
+                matched = [result.record async for result in results.results]
+                assert matched == []
+            finally:
+                await collection.ensure_collection_deleted()
+                assert await collection.collection_exists() is False

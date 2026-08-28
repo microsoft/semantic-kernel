@@ -4,12 +4,11 @@ import logging
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Sequence
 from os import environ, path
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from microsoft_agents.activity import ActivityTypes
 from microsoft_agents.copilotstudio.client import AgentType, CopilotClient, PowerPlatformCloud
-from msal import ConfidentialClientApplication, PublicClientApplication
+from msal import PublicClientApplication
 from msal_extensions import FilePersistence, PersistedTokenCache, build_encrypted_persistence
 from pydantic import ValidationError
 
@@ -69,18 +68,10 @@ class _CopilotStudioAgentTokenFactory:
         *,
         settings: CopilotStudioAgentSettings,
         cache_path: str,
-        mode: CopilotStudioAgentAuthMode,
-        client_secret: str | None = None,
-        client_certificate: Path | None = None,
-        user_assertion: str | None = None,
         scopes: Sequence[str] | None = None,
     ) -> None:
         self.settings = settings
         self.cache = self._get_msal_token_cache(cache_path)
-        self.mode = mode
-        self.client_secret = client_secret
-        self.client_cert_path = client_certificate
-        self.user_assertion = user_assertion
         self.scopes = scopes or ["https://api.powerplatform.com/.default"]
 
     @staticmethod
@@ -105,52 +96,7 @@ class _CopilotStudioAgentTokenFactory:
 
     def acquire(self) -> str:
         """Return a valid bearer token or raise AgentInitializationException."""
-        if self.mode is CopilotStudioAgentAuthMode.SERVICE:
-            # SERVICE auth wiring is present but not yet supported end-to-end.
-            logger.warning("SERVICE authentication mode is not yet supported; falling back to error.")
-            raise AgentInitializationException(
-                "Copilot Studio SERVICE authentication is not available yet. Please use INTERACTIVE mode instead."
-            )
-
-        match self.mode:
-            case CopilotStudioAgentAuthMode.SERVICE:
-                return self._acquire_service_token()  # unreachable until the guard is removed
-            case _:
-                return self._acquire_interactive_token()
-
-    def _new_confidential_client(self, **extra_kwargs) -> ConfidentialClientApplication:
-        return ConfidentialClientApplication(
-            client_id=self.settings.app_client_id,
-            authority=f"https://login.microsoftonline.com/{self.settings.tenant_id}",
-            token_cache=self.cache,
-            **extra_kwargs,
-        )
-
-    def _acquire_service_token(self) -> str:
-        if not self.client_secret and not self.client_cert_path:
-            raise AgentInitializationException(
-                "client_secret *or* client_certificate is required for service-to-service auth."
-            )
-
-        kwargs: dict[str, Any] = {}
-        if self.client_secret:
-            kwargs["client_credential"] = self.client_secret
-        else:  # certificate
-            if not self.client_cert_path:
-                raise AgentInitializationException(
-                    "If no client_secret is provided, a client_certificate is required for service-to-service auth."
-                )
-            kwargs["client_credential"] = {
-                "private_key": Path(self.client_cert_path).read_text(),
-                "thumbprint": self._cert_thumbprint(self.client_cert_path),
-            }
-
-        app = self._new_confidential_client(**kwargs)
-
-        # proactive caching
-        result = app.acquire_token_silent(self.scopes, account=None) or app.acquire_token_for_client(scopes=self.scopes)
-
-        return self._unwrap(result)
+        return self._acquire_interactive_token()
 
     # interactive
     def _acquire_interactive_token(self) -> str:
@@ -173,15 +119,6 @@ class _CopilotStudioAgentTokenFactory:
             return result["access_token"]
         _log_auth_failure(result)
         raise AgentInitializationException("Authentication failed; see logs for category and correlation code.")
-
-    @staticmethod
-    def _cert_thumbprint(cert_path: Path) -> str:
-        import hashlib
-        import ssl
-
-        pem_bytes = Path(cert_path).read_bytes()
-        der_bytes = ssl.PEM_cert_to_DER_cert(pem_bytes.decode())
-        return hashlib.sha1(der_bytes, usedforsecurity=False).hexdigest().upper()
 
 
 # endregion
@@ -326,11 +263,9 @@ class CopilotStudioAgent(Agent):
     @staticmethod
     def create_client(
         *,
-        auth_mode: CopilotStudioAgentAuthMode | Literal["interactive", "service"] | None = None,
+        auth_mode: CopilotStudioAgentAuthMode | Literal["interactive"] | None = None,
         agent_identifier: str | None = None,
         app_client_id: str | None = None,
-        client_secret: str | None = None,
-        client_certificate: str | None = None,
         cloud: PowerPlatformCloud | None = None,
         copilot_agent_type: AgentType | None = None,
         custom_power_platform_cloud: str | None = None,
@@ -343,12 +278,10 @@ class CopilotStudioAgent(Agent):
         """Create the Copilot Studio Agent Client.
 
         Args:
-            auth_mode: The authentication mode. This can be either `interactive` or `service`.
+            auth_mode: The authentication mode. Only `interactive` is currently supported.
             agent_identifier: The agent identifier. This is the `Schema Name` of the agent from the
                 Copilot Studio Advanced Metadata settings.
             app_client_id: The app client ID. This is the app ID of the app registration configured in Entra.
-            client_secret: The client secret. This is the secret of the app registration.
-            client_certificate: The client certificate. This is the certificate of the app registration.
             cloud: The cloud environment.
             copilot_agent_type: The type of Copilot agent.
             custom_power_platform_cloud: The custom Power Platform cloud.
@@ -375,8 +308,6 @@ class CopilotStudioAgent(Agent):
                 custom_power_platform_cloud=custom_power_platform_cloud,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
-                client_secret=client_secret,
-                client_certificate=client_certificate,
                 user_assertion=user_assertion,
                 auth_mode=auth_mode,
             )
@@ -394,12 +325,6 @@ class CopilotStudioAgent(Agent):
         token = _CopilotStudioAgentTokenFactory(
             settings=connection_settings,
             cache_path=cache_file,
-            mode=connection_settings.auth_mode,
-            client_secret=connection_settings.client_secret.get_secret_value()
-            if connection_settings.client_secret
-            else None,
-            client_certificate=Path(client_certificate) if client_certificate else None,
-            user_assertion=user_assertion,
         ).acquire()
 
         return CopilotClient(connection_settings, token)
