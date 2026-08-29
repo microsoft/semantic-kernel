@@ -47,7 +47,7 @@ template: |
     If there is not a fitting function available to validate the result, I can provide the final answer in a clear and human-readable format.
     [END THOUGHT PROCESS]
 
-    IMOPRTANT REMINDER: your each response should contain only one next step and only single one $JSON_BLOB. Do not provide more than one step.  
+    IMPORTANT REMINDER: each response should contain only one next step and only a single $JSON_BLOB. Do not provide more than one step.
     Let's break down the problem step by step and think about the best approach.
 
     Begin!
