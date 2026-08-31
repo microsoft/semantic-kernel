@@ -200,12 +200,12 @@ async def main():
         url="http://localhost:8001/mcp",
         auth=oauth_auth,
         timeout=60.0,
-    ) as oath_plugin:
+    ) as oauth_plugin:
         agent = ChatCompletionAgent(
             service=AzureChatCompletion(credential=AzureCliCredential()),
             name="ProtectedAgent",
             instructions="Answer the users questions.",
-            plugins=[oath_plugin],
+            plugins=[oauth_plugin],
         )
 
         for user_input in USER_INPUTS:
