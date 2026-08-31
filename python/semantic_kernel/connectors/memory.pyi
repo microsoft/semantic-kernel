@@ -14,6 +14,7 @@ from .chroma import ChromaCollection, ChromaStore
 from .faiss import FaissCollection, FaissStore
 from .in_memory import InMemoryCollection, InMemoryStore
 from .mongodb import MongoDBAtlasCollection, MongoDBAtlasSettings, MongoDBAtlasStore
+from .oracle import OracleCollection, OracleSettings, OracleStore
 from .pinecone import PineconeCollection, PineconeSettings, PineconeStore
 from .postgres import PostgresCollection, PostgresSettings, PostgresStore
 from .qdrant import QdrantCollection, QdrantSettings, QdrantStore
@@ -41,6 +42,9 @@ __all__ = [
     "MongoDBAtlasCollection",
     "MongoDBAtlasSettings",
     "MongoDBAtlasStore",
+    "OracleCollection",
+    "OracleSettings",
+    "OracleStore",
     "PineconeCollection",
     "PineconeSettings",
     "PineconeStore",
