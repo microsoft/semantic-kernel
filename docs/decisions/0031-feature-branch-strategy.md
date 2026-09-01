@@ -144,7 +144,7 @@ Currently the priorities are ordered but not necessarily needs to be implemented
 
 Chosen option: "Feature Branch Strategy", because it allows individual features to be developed in isolation, minimizing conflicts with the main branch and facilitating easier code reviews.
 
-## Fequent Asked Questions
+## Frequent Asked Questions
 
 ### Is there a migration strategy for initiatives that followed the old contribution way with forks, and now have to switch to branches in microsoft/semantic-kernel?
 
