@@ -1,0 +1,48 @@
+[package]
+name = "semantic_kernel"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Core semantic kernel functionality for AI orchestration and LLM integration"
+
+[dependencies]
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+sk-macros = { path = "../sk-macros" }
+futures = "0.3"
+
+[dev-dependencies]
+mockall.workspace = true
+tracing-subscriber.workspace = true
+sk-openai = { path = "../sk-openai" }
+
+[features]
+default = ["mock"]
+mock = []
+
+[[example]]
+name = "hello_prompt"
+required-features = ["mock"]
+
+[[example]]
+name = "math_plugin"
+path = "../examples/math_plugin.rs"
+required-features = ["mock"]
+
+[[example]]
+name = "semantic_greet"
+path = "../examples/semantic_greet.rs"
+required-features = ["mock"]
+
+[[example]]
+name = "hello_openai"
