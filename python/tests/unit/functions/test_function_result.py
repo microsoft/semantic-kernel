@@ -63,6 +63,25 @@ def test_function_result_str_empty_value():
     assert str(result) == ""
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (0, "0"),
+        (0.0, "0.0"),
+        (False, "False"),
+        ("", ""),
+        ([], ""),
+        ({}, ""),
+    ],
+)
+def test_function_result_str_with_falsy_value(value, expected):
+    result = FunctionResult(
+        function=KernelFunctionMetadata(name="test_function", is_prompt=False, is_asynchronous=False),
+        value=value,
+    )
+    assert str(result) == expected
+
+
 def test_function_result_str_with_conversion_error():
     class Unconvertible:
         def __str__(self):
