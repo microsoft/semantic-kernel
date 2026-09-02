@@ -1,0 +1,103 @@
+# Semantic Kernel Automated Code Review — OSOP Portable Workflow
+#
+# AI-powered PR review: fetch the diff, analyze complexity and patterns
+# in parallel, generate a structured review, post comments on GitHub,
+# and request changes if critical issues are found.
+#
+# Validate: osop validate code-review-pipeline.osop.yaml
+
+osop_version: "1.0"
+id: "semantic-kernel-code-review"
+name: "Automated Code Review"
+description: "Fetch PR diff → parallel analysis → generate review → post comments."
+version: "1.0.0"
+tags: [semantic-kernel, code-review, github, llm, devtools]
+
+nodes:
+  - id: "fetch_diff"
+    type: "api"
+    subtype: "rest"
+    name: "Fetch PR Diff"
+    description: "Pull the diff and file list from the GitHub PR API."
+    config:
+      url: "https://api.github.com/repos/{owner}/{repo}/pulls/{number}"
+
+  - id: "analyze_complexity"
+    type: "agent"
+    subtype: "llm"
+    name: "Analyze Complexity"
+    description: "Measure cyclomatic complexity, function length, and nesting depth."
+    config:
+      model: "gpt-4o"
+      plugins: [code_analysis]
+
+  - id: "check_patterns"
+    type: "agent"
+    subtype: "llm"
+    name: "Check Patterns & Security"
+    description: "Scan for anti-patterns, SQL injection, hardcoded secrets, and OWASP issues."
+    config:
+      model: "gpt-4o"
+      plugins: [security_scanner, pattern_matcher]
+
+  - id: "check_tests"
+    type: "agent"
+    subtype: "llm"
+    name: "Check Test Coverage"
+    description: "Verify new code paths have corresponding test cases."
+    config:
+      model: "gpt-4o"
+
+  - id: "generate_review"
+    type: "agent"
+    subtype: "llm"
+    name: "Generate Review"
+    description: "Synthesize all analysis into a structured review with severity levels."
+    config:
+      model: "gpt-4o"
+      output_schema:
+        summary: "string"
+        issues: [{ file: "string", line: "int", severity: "string", message: "string" }]
+        verdict: "approve | request_changes"
+
+  - id: "post_comments"
+    type: "api"
+    subtype: "rest"
+    name: "Post Review Comments"
+    description: "Submit inline comments and overall review via GitHub API."
+    config:
+      url: "https://api.github.com/repos/{owner}/{repo}/pulls/{number}/reviews"
+
+  - id: "request_changes"
+    type: "api"
+    subtype: "rest"
+    name: "Request Changes"
+    description: "Mark the PR as 'changes requested' when critical issues are found."
+
+edges:
+  - from: "fetch_diff"
+    to: "analyze_complexity"
+    mode: "parallel"
+  - from: "fetch_diff"
+    to: "check_patterns"
+    mode: "parallel"
+  - from: "fetch_diff"
+    to: "check_tests"
+    mode: "parallel"
+  - from: "analyze_complexity"
+    to: "generate_review"
+    mode: "sequential"
+  - from: "check_patterns"
+    to: "generate_review"
+    mode: "sequential"
+  - from: "check_tests"
+    to: "generate_review"
+    mode: "sequential"
+  - from: "generate_review"
+    to: "post_comments"
+    mode: "sequential"
+  - from: "generate_review"
+    to: "request_changes"
+    mode: "conditional"
+    when: "verdict == 'request_changes'"
+    label: "Critical issues found"
