@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import logging
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
     from _typeshed import SupportsKeysAndGetItem
 
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelArguments(dict):
@@ -108,15 +111,45 @@ class KernelArguments(dict):
         return self
 
     def dumps(self, include_execution_settings: bool = False) -> str:
-        """Serializes the KernelArguments to a JSON string."""
+        """Serializes the KernelArguments to a JSON string.
+
+        Handles arguments that contain objects with circular references (e.g.,
+        KernelProcessStepContext) by falling back to their string representation.
+        """
         data = dict(self)
         if include_execution_settings and self.execution_settings:
             data["execution_settings"] = self.execution_settings
 
-        def default(obj):
+        seen: set[int] = set()
+
+        def default(obj: Any) -> Any:
+            obj_id = id(obj)
+            if obj_id in seen:
+                return f"<circular ref: {type(obj).__name__}>"
+            seen.add(obj_id)
+
             if isinstance(obj, BaseModel):
-                return obj.model_dump()
+                try:
+                    return obj.model_dump()
+                except Exception:
+                    return f"<{type(obj).__name__}>"
 
             return str(obj)
 
-        return json.dumps(data, default=default)
+        try:
+            return json.dumps(data, default=default)
+        except ValueError:
+            # Catch circular reference errors that json.dumps raises when
+            # model_dump() produces dicts with internal circular references.
+            # This can happen with complex runtime objects like
+            # KernelProcessStepContext whose step_message_channel holds
+            # back-references to the process graph.
+            logger.debug("Circular reference detected while serializing KernelArguments, using string fallback.")
+            safe_data: dict[str, Any] = {}
+            for key, value in data.items():
+                try:
+                    json.dumps(value, default=default)
+                    safe_data[key] = value
+                except (ValueError, TypeError):
+                    safe_data[key] = f"<{type(value).__name__}>"
+            return json.dumps(safe_data, default=default)
