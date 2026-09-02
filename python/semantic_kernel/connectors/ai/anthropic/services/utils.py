@@ -10,6 +10,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     """Format a user message to the expected object for the Anthropic client.
 
@@ -30,10 +32,23 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     Returns:
         The formatted user message.
     """
-    return {
-        "role": "user",
-        "content": message.content,
-    }
+    if not any(isinstance(item,ImageContent) for item in message.items):
+        return {"role": "user","content": message.content}
+    else:
+        content_items: list[dict[str, Any]] = []
+        for content in message.items:
+            if isinstance(content, TextContent):
+                content_items.append({"type": "text", "text": content.text})
+            elif isinstance(content, ImageContent):
+                if (content.data):
+                    content_items.append({"type":"image","source":{"type": "base64","data":content.data_string,"media_type":content.mime_type if content.mime_type else content.default_mime_type}})    
+                elif (content.uri):
+                    content_items.append({"type":"image","source":{"type":"url","url":f"{content.uri}"}})
+                else:
+                    logger.warning(
+                        "Unsupported item type in User message while formatting chat history for Anthropic AI"
+                        f" Inference: {type(content)}")
+        return {"role": "user","content": content_items}
 
 
 def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
