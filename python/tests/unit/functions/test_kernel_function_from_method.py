@@ -520,6 +520,49 @@ def test_parse_invalid_list_raises_exception(get_custom_type_function_pydantic):
         func._parse_parameter(value, param_type)
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("true", True),
+        ("True", True),
+        ("1", True),
+        ("false", False),
+        ("False", False),
+        ("FALSE", False),
+        ("0", False),
+        (" false ", False),
+        (True, True),
+        (False, False),
+        (1, True),
+        (0, False),
+    ],
+)
+def test_parse_bool_parameter(get_custom_type_function_pydantic, value, expected):
+    func = get_custom_type_function_pydantic
+    result = func._parse_parameter(value, bool)
+    assert result is expected
+
+
+def test_parse_invalid_bool_string_raises_exception(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    with pytest.raises(FunctionExecutionException, match=r"Cannot parse string 'yes' as bool."):
+        func._parse_parameter("yes", bool)
+
+
+async def test_bool_parameter_from_string_argument(kernel: Kernel):
+    @kernel_function
+    def func_bool(enabled: bool) -> str:
+        return f"enabled={enabled}"
+
+    func = kernel.add_function(plugin_name="test", function_name="func_bool", function=func_bool)
+
+    res = await kernel.invoke(func, KernelArguments(enabled="false"))
+    assert str(res) == "enabled=False"
+
+    res = await kernel.invoke(func, KernelArguments(enabled="true"))
+    assert str(res) == "enabled=True"
+
+
 def test_parse_dict_with_init_non_pydantic(get_custom_type_function_nonpydantic):
     func = get_custom_type_function_nonpydantic
     value = {"id": "3", "name": "Alice"}
