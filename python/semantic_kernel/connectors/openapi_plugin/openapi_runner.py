@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import json
 import logging
 from collections import OrderedDict
@@ -7,6 +8,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from inspect import isawaitable
 from typing import Any
 from urllib.parse import urlparse, urlunparse
+from urllib.request import getproxies
 
 import httpx
 from openapi_core import Spec
@@ -27,6 +29,33 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def _pin_url_to_address(url: str, address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> tuple[str, str, str]:
+    """Rewrite a URL so the connection targets `address` while keeping the original host identity.
+
+    Returns the address-form URL, the `Host` header value and the TLS SNI hostname, all
+    derived from the original URL so that the request on the wire is unchanged apart from
+    the address it is delivered to. IPv6 bracketing, the port and any userinfo are
+    preserved by `httpx.URL.copy_with`.
+    """
+    original = httpx.URL(url)
+    return (
+        str(original.copy_with(host=str(address))),
+        original.netloc.decode("ascii"),
+        original.raw_host.decode("ascii"),
+    )
+
+
+def _has_environment_proxy() -> bool:
+    """Return whether a proxy is configured in the environment for outbound HTTP requests.
+
+    Deliberately conservative: any configured proxy disables address pinning, because a
+    proxy resolves the target name itself, so an address resolved locally is neither the
+    one used for the connection nor necessarily reachable or correct from the proxy.
+    """
+    proxies = getproxies()
+    return any(proxies.get(scheme) for scheme in ("http", "https", "all"))
 
 
 @experimental
@@ -134,7 +163,13 @@ class OpenApiRunner:
         arguments: KernelArguments | None = None,
         options: RestApiRunOptions | None = None,
     ) -> str:
-        """Runs the operation defined in the OpenAPI manifest."""
+        """Runs the operation defined in the OpenAPI manifest.
+
+        When the URL is validated by DNS resolution, the request issued by the built-in
+        client is pinned to one of the validated addresses. Requests made through a
+        caller-supplied `http_client`, or while an environment proxy is configured, use
+        that transport's own name resolution and are not pinned.
+        """
         if not arguments:
             arguments = KernelArguments()
         url = self.build_operation_url(
@@ -143,7 +178,7 @@ class OpenApiRunner:
             server_url_override=options.server_url_override if options else None,
             api_host_url=options.api_host_url if options else None,
         )
-        await validate_server_url(url, self.server_url_validation_options)
+        validated_addresses = await validate_server_url(url, self.server_url_validation_options)
         headers = operation.build_headers(arguments=arguments)
         payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
 
@@ -168,22 +203,52 @@ class OpenApiRunner:
 
         timeout = options.timeout if options and hasattr(options, "timeout") and options.timeout is not None else None
 
+        # Pin the connection to an address the validator actually vetted so that a name which
+        # resolves to a public address during validation cannot resolve to a private one at
+        # connect time (DNS rebinding). The list is empty when there is nothing to pin.
+        pinned_addresses = validated_addresses
+        if pinned_addresses and _has_environment_proxy():
+            logger.debug("An environment proxy is configured; the OpenAPI request address is not pinned.")
+            pinned_addresses = []
+
         async def fetch():
-            async def make_request(client: httpx.AsyncClient):
+            async def make_request(
+                client: httpx.AsyncClient,
+                pin_to: ipaddress.IPv4Address | ipaddress.IPv6Address | None = None,
+            ):
                 merged_headers = client.headers.copy()
                 merged_headers.update(headers)
+                request_url = url
+                extensions: dict[str, Any] = {}
+                if pin_to is not None:
+                    request_url, merged_headers["Host"], extensions["sni_hostname"] = _pin_url_to_address(url, pin_to)
                 response = await client.request(
                     method=operation.method,
-                    url=url,
+                    url=request_url,
                     headers=merged_headers,
                     json=json.loads(payload) if payload else None,
+                    extensions=extensions,
                 )
                 response.raise_for_status()
                 return response.text
 
             if hasattr(self, "http_client") and self.http_client is not None:
+                # A caller-supplied client owns its transport configuration (proxies, mounts,
+                # custom resolvers), so its connections are left untouched.
                 return await make_request(self.http_client)
             async with httpx.AsyncClient(timeout=timeout) as client:
-                return await make_request(client)
+                if not pinned_addresses:
+                    return await make_request(client)
+                # Every vetted address is an acceptable target, so keep the resolver's
+                # fallback behaviour by trying the next one when a connection cannot be
+                # established. Only connection failures are retried, so no request is
+                # ever delivered more than once.
+                *fallback_addresses, final_address = pinned_addresses
+                for address in fallback_addresses:
+                    try:
+                        return await make_request(client, pin_to=address)
+                    except (httpx.ConnectError, httpx.ConnectTimeout):
+                        logger.debug("Could not connect to validated address %s, trying the next one.", address)
+                return await make_request(client, pin_to=final_address)
 
         return await fetch()
