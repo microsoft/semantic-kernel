@@ -25,7 +25,7 @@ public sealed class AggregatorAgentTests()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAssistantAgentTests>()
+            .AddUserSecrets<AggregatorAgentTests>()
             .Build();
 
     /// <summary>

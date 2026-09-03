@@ -20,9 +20,9 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Download coverage report
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -44,7 +44,7 @@ jobs:
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@v1.1.57
+        uses: MishaKav/pytest-coverage-comment@1bdbba85fb74a2fdc1ec66383acec1091610f82b # v1.1.57
         with:
           github-token: ${{ github.token }}
           issue-number: ${{ env.PR_NUMBER }}

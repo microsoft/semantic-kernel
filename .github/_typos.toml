@@ -32,6 +32,7 @@ extend-exclude = [
 
 [default.extend-words]
 ACI = "ACI"               # Azure Container Instance
+CPY = "CPY"               # Ruff copyright lint rule prefix
 exercize = "exercize"     # test typos
 gramatical = "gramatical" # test typos
 Guid = "Guid"             # Globally Unique Identifier

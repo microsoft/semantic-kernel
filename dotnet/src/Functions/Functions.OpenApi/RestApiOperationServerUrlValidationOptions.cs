@@ -31,11 +31,9 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// used to opt specific intranet hosts back in.
 /// </para>
 /// <para>
-/// <b>Known limitation:</b> URL validation is performed before the HTTP request is sent. If the
-/// <see cref="System.Net.Http.HttpClient"/> used to invoke the plugin has automatic redirect
-/// following enabled (the default), an attacker that controls a public host may redirect the
-/// request to a private address. Configure your <see cref="System.Net.Http.HttpClient"/> with
-/// <c>AllowAutoRedirect = false</c> when consuming OpenAPI documents from untrusted sources.
+/// The OpenAPI plugin's default HTTP client does not follow redirects, preventing redirects
+/// from bypassing this validation. Caller-provided HTTP clients must also be configured with
+/// <c>AllowAutoRedirect = false</c> to preserve this guarantee.
 /// </para>
 /// </remarks>
 [Experimental("SKEXP0040")]
