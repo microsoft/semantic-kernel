@@ -12,7 +12,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import torch
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, TextIteratorStreamer, pipeline
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Pipeline, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -180,6 +180,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        generator: _Seq2SeqGenerator | Pipeline
         if task in {"summarization", "text2text-generation"}:
             generator = _create_seq2seq_generator(ai_model_id, task, device, model_kwargs, pipeline_kwargs)
         else:
