@@ -138,6 +138,8 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Configure AWS Credentials
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -154,7 +156,7 @@ jobs:
         id: run_tests_ai_services
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
 
   python-merge-gate-multi-modality:
     name: Python Pre-Merge Integration Tests - Multi-Modality
@@ -226,6 +228,8 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Configure AWS Credentials
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -242,7 +246,7 @@ jobs:
         id: run_tests_agents
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
 
   python-merge-gate-ollama:
     name: Python Pre-Merge Integration Tests - Ollama
@@ -422,6 +426,8 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Configure AWS Credentials
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -446,14 +452,14 @@ jobs:
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
         timeout-minutes: 5
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/embeddings
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/embeddings
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         timeout-minutes: 5
@@ -483,7 +489,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
       - name: Run Integration Tests - Multi-Modality
         id: run_tests_multi_modality
         timeout-minutes: 5
