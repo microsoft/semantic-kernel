@@ -215,11 +215,11 @@ class ChatHistory(KernelBaseModel):
 
     def _prepare_for_add(
         self, role: AuthorRole, content: str | None = None, items: list[KernelContent] | None = None, **kwargs: Any
-    ) -> dict[str, str]:
+    ) -> dict[str, Any]:
         """Prepare a message to be added to the history."""
         kwargs["role"] = role
 
-        if role == AuthorRole.TOOL and content is not None and not items:
+        if role == AuthorRole.TOOL and content and not items:
             tool_call_id = kwargs.pop("tool_call_id", None)
             function_name = kwargs.pop("function_name", "unknown")
             function_result_content = FunctionResultContent(
