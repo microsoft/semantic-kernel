@@ -25,7 +25,7 @@ public abstract class ChatHistoryAgent : Agent
     /// </summary>
     /// <remarks>
     /// The reducer is automatically applied to the history before invoking the agent, only when using
-    /// an <see cref="AgentChat"/>. It must be explicitly applied via <see cref="ReduceAsync"/>.
+    /// an <see cref="AgentChat"/>. For manual control, use the <c>ReduceAsync</c> methods.
     /// </remarks>
     [Experimental("SKEXP0110")]
     public IChatHistoryReducer? HistoryReducer { get; init; }
@@ -67,6 +67,28 @@ public abstract class ChatHistoryAgent : Agent
     [Experimental("SKEXP0110")]
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
+
+    /// <summary>
+    /// Reduces the provided history for a specific trigger event.
+    /// </summary>
+    /// <param name="history">The source history.</param>
+    /// <param name="triggerEvent">The trigger event that is invoking the reduction.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns><see langword="true"/> if reduction occurred.</returns>
+    [Experimental("SKEXP0110")]
+    public Task<bool> ReduceAsync(ChatHistory history, ChatReducerTriggerEvent triggerEvent, CancellationToken cancellationToken = default)
+    {
+        // If the reducer supports triggers, only reduce if it's configured for this trigger
+        if (this.HistoryReducer is IChatHistoryReducerWithTrigger triggerReducer)
+        {
+            if (!triggerReducer.ShouldTriggerOn(triggerEvent))
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+        return history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
+    }
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
