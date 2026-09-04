@@ -3,13 +3,13 @@
 using System;
 using System.IO;
 using System.Linq;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.ML.OnnxRuntimeGenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -134,6 +134,6 @@ internal sealed class InformationItem
     [TextSearchResultValue]
     public string Text { get; set; } = string.Empty;
 
-    [VectorStoreVector(Dimensions: 384)]
+    [VectorStoreVector(384)]
     public string Embedding => this.Text;
 }

@@ -84,8 +84,8 @@ jobs:
     outputs:
       pythonChanges: ${{ steps.filter.outputs.python}}
     steps:
-      - uses: actions/checkout@v5
-      - uses: dorny/paths-filter@v2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         id: filter
         with:
           filters: |
@@ -119,9 +119,9 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
       COMPLETIONS_CONCEPT_SAMPLE: "true"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -131,21 +131,23 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Google auth
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -154,7 +156,7 @@ jobs:
         id: run_tests_ai_services
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
 
   python-merge-gate-multi-modality:
     name: Python Pre-Merge Integration Tests - Multi-Modality
@@ -174,9 +176,9 @@ jobs:
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -186,7 +188,7 @@ jobs:
           uv sync --all-extras --dev
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -215,9 +217,9 @@ jobs:
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -226,14 +228,16 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -242,7 +246,7 @@ jobs:
         id: run_tests_agents
         shell: bash
         run: |
-          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+          uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
 
   python-merge-gate-ollama:
     name: Python Pre-Merge Integration Tests - Ollama
@@ -264,9 +268,9 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
       COMPLETIONS_CONCEPT_SAMPLE: "true"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -329,9 +333,9 @@ jobs:
           - 8080:8080
           - 50051:50051
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -342,7 +346,7 @@ jobs:
           uv sync --all-extras --dev
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -387,9 +391,9 @@ jobs:
           - 8080:8080
           - 50051:50051
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           version: "0.5.x"
           enable-cache: true
@@ -415,14 +419,16 @@ jobs:
           ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
           ollama list
       - name: Google auth
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        # Bedrock tests are disabled while the integration credentials are invalid.
+        if: false
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -435,7 +441,7 @@ jobs:
           Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -446,14 +452,14 @@ jobs:
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/completions
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
         timeout-minutes: 5
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" ./tests/integration/embeddings
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/embeddings
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         timeout-minutes: 5
@@ -483,7 +489,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/agents
+          uv run pytest -v -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
       - name: Run Integration Tests - Multi-Modality
         id: run_tests_multi_modality
         timeout-minutes: 5
@@ -534,19 +540,19 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: core.setFailed('Integration Tests Cancelled!')
 
       - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@v1.0.9
+        uses: skitionek/notify-microsoft-teams@11e40c38c3a629ae65a985b582eca4897b01e79e # v1.0.9
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
@@ -556,7 +562,7 @@ jobs:
           title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
-        uses: skitionek/notify-microsoft-teams@v1.0.9
+        uses: skitionek/notify-microsoft-teams@11e40c38c3a629ae65a985b582eca4897b01e79e # v1.0.9
         if: github.ref != 'refs/heads/main'
         with:
           webhook_url: NONE

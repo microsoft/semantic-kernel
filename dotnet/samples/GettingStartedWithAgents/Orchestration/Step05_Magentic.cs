@@ -21,10 +21,10 @@ namespace GettingStarted.Orchestration;
 public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     private const string ManagerModel = "o3-mini";
-    private const string ResearcherModel = "gpt-4o-search-preview";
+    private const string ResearcherModel = "gpt-5-search-api";
 
     /// <summary>
-    /// Require OpenAI services in order to use "gpt-4o-search-preview" model
+    /// Require OpenAI services in order to use "gpt-5-search-api" model
     /// </summary>
     protected override bool ForceOpenAI => true;
 
