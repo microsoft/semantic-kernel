@@ -271,11 +271,10 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Deny requests unless the endpoint host is explicitly allowed.
+        if (this._settings.AllowedDomains?.Contains(uri.Host) != true)
         {
-            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+            throw new InvalidOperationException("Sending requests to the provided location is not allowed, add allowed domains to the AllowedDomains property on the SessionsPythonSettings.");
         }
 
         using var request = new HttpRequestMessage(method, uri)

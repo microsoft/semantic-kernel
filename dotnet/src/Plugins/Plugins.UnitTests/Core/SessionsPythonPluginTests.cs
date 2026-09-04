@@ -33,7 +33,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         endpoint: new Uri("http://localhost:8888"))
     {
         CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+        AllowedDomains = ["localhost"]
     };
 
     private readonly SessionsPythonSettings _settingsWithFileOperationsEnabled;
@@ -57,6 +58,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = ["localhost"],
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! },
             AllowedDownloadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
@@ -351,17 +353,39 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
-        // Act
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // Act and assert
+        if (isAllowed)
         {
             await sut.ListFilesAsync();
         }
-        catch when (!isAllowed)
+        else
         {
-            // Ignore exception if the endpoint is not allowed since we expect it
+            await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsNullAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = null;
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsEmptyAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [];
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
     }
 
     [Fact]

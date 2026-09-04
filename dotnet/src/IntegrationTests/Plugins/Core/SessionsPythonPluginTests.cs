@@ -45,6 +45,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = [new Uri(_spConfiguration.Endpoint).Host],
             // Enable file operations for integration tests
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetFullPath("TestData") },

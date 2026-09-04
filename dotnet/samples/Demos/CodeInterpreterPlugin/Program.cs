@@ -54,9 +54,13 @@ async Task<string> TokenProvider(CancellationToken cancellationToken)
     return cachedToken;
 }
 
+var sessionEndpoint = new Uri(endpoint);
 var settings = new SessionsPythonSettings(
         sessionId: Guid.NewGuid().ToString(),
-        endpoint: new Uri(endpoint));
+        endpoint: sessionEndpoint)
+{
+    AllowedDomains = [sessionEndpoint.Host]
+};
 
 // Uncomment the following lines to enable file upload operations (disabled by default for security)
 // settings.EnableDangerousFileUploads = true;
