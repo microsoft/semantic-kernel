@@ -33,7 +33,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         endpoint: new Uri("http://localhost:8888"))
     {
         CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+        AllowedDomains = ["localhost"]
     };
 
     private readonly SessionsPythonSettings _settingsWithFileOperationsEnabled;
@@ -57,6 +58,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = ["localhost"],
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! },
             AllowedDownloadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
@@ -335,6 +337,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("FAKE-TEST-HOST.IO", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
@@ -351,17 +354,63 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
-        // Act
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // Act and assert
+        if (isAllowed)
         {
             await sut.ListFilesAsync();
         }
-        catch when (!isAllowed)
+        else
         {
-            // Ignore exception if the endpoint is not allowed since we expect it
+            await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsNullAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = null;
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsEmptyAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [];
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldRejectRedirectResponseFromNonRedirectingClientAsync()
+    {
+        // Arrange
+        await using var server = new RedirectLoopbackServer("metadata/instance", "application/json", []);
+        using var httpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
+        using var nonRedirectingClient = new HttpClient(httpClientHandler);
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(nonRedirectingClient);
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri(server.BaseUri, "start"))
+        {
+            AllowedDomains = [server.BaseUri.Host],
+            CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        };
+        var sut = new SessionsPythonPlugin(settings, httpClientFactoryMock.Object);
+
+        // Act and assert
+        await Assert.ThrowsAsync<HttpOperationException>(() => sut.ListFilesAsync());
+        Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
     }
 
     [Fact]
@@ -539,6 +588,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
                 sessionId: Guid.NewGuid().ToString(),
                 endpoint: new Uri("http://localhost:8888"))
             {
+                AllowedDomains = ["localhost"],
                 AllowedDownloadDirectories = new[] { tempDir }
             };
 
