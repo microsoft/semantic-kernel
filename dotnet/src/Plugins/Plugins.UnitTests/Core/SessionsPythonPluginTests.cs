@@ -337,6 +337,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("FAKE-TEST-HOST.IO", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
@@ -386,6 +387,29 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Act and assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldRejectRedirectResponseFromNonRedirectingClientAsync()
+    {
+        // Arrange
+        await using var server = new RedirectLoopbackServer("metadata/instance", "application/json", []);
+        using var nonRedirectingClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(nonRedirectingClient);
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri(server.BaseUri, "start"))
+        {
+            AllowedDomains = [server.BaseUri.Host],
+            CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        };
+        var sut = new SessionsPythonPlugin(settings, httpClientFactoryMock.Object);
+
+        // Act and assert
+        await Assert.ThrowsAsync<HttpOperationException>(() => sut.ListFilesAsync());
+        Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
     }
 
     [Fact]
@@ -563,6 +587,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
                 sessionId: Guid.NewGuid().ToString(),
                 endpoint: new Uri("http://localhost:8888"))
             {
+                AllowedDomains = ["localhost"],
                 AllowedDownloadDirectories = new[] { tempDir }
             };
 

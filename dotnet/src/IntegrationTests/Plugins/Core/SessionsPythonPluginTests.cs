@@ -190,7 +190,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         public HttpClient CreateClient(string name)
         {
-            var client = new HttpClient();
+            var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
             this._httpClients.Add(client);
             return client;
         }

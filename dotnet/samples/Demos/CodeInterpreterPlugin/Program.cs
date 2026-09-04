@@ -77,7 +77,9 @@ var builder =
 
 // Change the log level to Trace to see more detailed logs
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
-builder.Services.AddHttpClient();
+builder.Services
+    .AddHttpClient(string.Empty)
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton((sp)
     => new SessionsPythonPlugin(
         settings,

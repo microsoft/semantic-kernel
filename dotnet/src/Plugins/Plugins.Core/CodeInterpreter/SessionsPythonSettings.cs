@@ -28,6 +28,10 @@ public class SessionsPythonSettings
     /// Gets or sets the domains to which the plugin may send requests.
     /// If <c>null</c> or empty, all requests are denied.
     /// </summary>
+    /// <remarks>
+    /// Configure the HTTP client factory used by <see cref="SessionsPythonPlugin"/> with automatic redirects disabled
+    /// to prevent redirects from bypassing this allowlist.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains { get; set; }
 
     /// <summary>
