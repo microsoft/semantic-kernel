@@ -64,4 +64,4 @@ chat_completion = AzureChatCompletion(service_id="test", env_file_path=env_file_
 
 ### 4. Microsoft Entra Authentication
 
-To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#microsoft-entra-token-authentication).
+To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#azure-authentication).
