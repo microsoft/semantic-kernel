@@ -369,7 +369,7 @@ public abstract class Agent
     }
 
     /// <summary>
-    /// Notfiy the given thread that a new message is available.
+    /// Notify the given thread that a new message is available.
     /// </summary>
     /// <remarks>
     /// <para>

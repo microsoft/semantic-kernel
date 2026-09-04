@@ -20,12 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: Get changed files
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42 # v1
+        continue-on-error: true
+
       - name: Use custom config file
-        uses: crate-ci/typos@v1.36.2
+        uses: crate-ci/typos@631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
         with:
+          files: ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.added_modified || '.' }}
           config: .github/_typos.toml
           write_changes: false
