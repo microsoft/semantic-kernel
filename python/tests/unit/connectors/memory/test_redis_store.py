@@ -276,6 +276,12 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+async def test_delete_with_prefix_json_uses_prefixed_key(collection_with_prefix_json, mock_delete_json):
+    await collection_with_prefix_json._inner_delete(["id1"])
+
+    mock_delete_json.assert_awaited_once_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
