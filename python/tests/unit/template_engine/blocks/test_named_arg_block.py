@@ -31,6 +31,22 @@ def test_init_with_val():
     assert isinstance(named_arg_block.value, ValBlock)
 
 
+@mark.parametrize(
+    ("content", "expected"),
+    [
+        ("test='2^10'", "2^10"),
+        ('test="it\'s"', "it's"),
+        ("test='a\"b'", 'a"b'),
+    ],
+    ids=["caret", "single_quote_in_double", "double_quote_in_single"],
+)
+def test_init_with_val_special_chars(content, expected):
+    # A quoted named-arg value may contain a caret or the other quote character;
+    # the value char class wrongly excluded them, raising NamedArgBlockSyntaxError.
+    named_arg_block = NamedArgBlock(content=content)
+    assert named_arg_block.value.value == expected
+
+
 def test_type_property():
     named_arg_block = NamedArgBlock(content="test=$test_var")
     assert named_arg_block.type == BlockTypes.NAMED_ARG
