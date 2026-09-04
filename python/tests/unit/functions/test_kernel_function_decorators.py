@@ -39,6 +39,14 @@ class MiscClass:
         return input
 
     @kernel_function
+    def func_forward_ref_list(self, items: list["InputObject"]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_colliding_with_module(self, items: list["pytest"]):
+        return items
+
+    @kernel_function
     def func_input_annotated(self, input: Annotated[str, "input description"]):
         return input
 
@@ -280,3 +288,61 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert description == annotation_dict.get("description")
     assert type_ == annotation_dict["type_"]
     assert is_required == annotation_dict["is_required"]
+
+
+def test_kernel_function_resolves_forward_ref_in_list_parameter():
+    """list["InputObject"] on a kernel function parameter resolves to list[InputObject]."""
+    my_func = getattr(MiscClass(), "func_forward_ref_list")
+    param = my_func.__kernel_function_parameters__[0]
+
+    assert param["name"] == "items"
+    assert param["type_"] == "list[InputObject]"
+    assert param["type_object"] == list[InputObject]
+
+
+@pytest.mark.parametrize(
+    ("annotation", "expected_type_object", "expected_description"),
+    [
+        (list["InputObject"], list[InputObject], None),
+        (dict[str, "InputObject"], dict[str, InputObject], None),
+        (Annotated[list["InputObject"], "description"], list[InputObject], "description"),
+        (list["InputObject"] | None, list[InputObject], None),
+    ],
+)
+def test_process_signature_resolves_forward_refs_with_globalns(annotation, expected_type_object, expected_description):
+    param = Parameter(
+        name="items",
+        annotation=annotation,
+        default=Parameter.empty,
+        kind=Parameter.POSITIONAL_OR_KEYWORD,
+    )
+    func_sig = Signature(parameters=[param])
+
+    annotations = _process_signature(func_sig, globals())
+
+    assert annotations[0]["type_object"] == expected_type_object
+    assert annotations[0].get("description") == expected_description
+
+
+def test_process_signature_without_globalns_leaves_forward_refs_unchanged():
+    """Callers that pass no namespace get the previous behaviour."""
+    param = Parameter(
+        name="items",
+        annotation=list["InputObject"],
+        default=Parameter.empty,
+        kind=Parameter.POSITIONAL_OR_KEYWORD,
+    )
+    func_sig = Signature(parameters=[param])
+
+    annotations = _process_signature(func_sig)
+
+    assert annotations[0]["type_object"] == list["InputObject"]
+
+
+def test_kernel_function_forward_ref_that_names_a_module_is_left_unresolved():
+    """A reference colliding with a non type global must not be substituted or raise at decoration."""
+    my_func = getattr(MiscClass(), "func_forward_ref_colliding_with_module")
+    param = my_func.__kernel_function_parameters__[0]
+
+    assert param["type_"] == "list[pytest]"
+    assert param["type_object"] == list["pytest"]
