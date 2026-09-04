@@ -229,6 +229,7 @@
 
 - [Bing Text Search as Plugin](./search/bing_text_search_as_plugin.py)
 - [Brave Text Search as Plugin](./search/brave_text_search_as_plugin.py)
+- [Exa Text Search as Plugin](./search/exa_text_search_as_plugin.py)
 - [Google Text Search as Plugin](./search/google_text_search_as_plugin.py)
 
 ### Service Selector - Shows how to create and use a custom service selector class
