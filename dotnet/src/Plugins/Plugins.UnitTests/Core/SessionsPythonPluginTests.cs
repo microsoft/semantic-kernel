@@ -394,7 +394,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
     {
         // Arrange
         await using var server = new RedirectLoopbackServer("metadata/instance", "application/json", []);
-        using var nonRedirectingClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+        using var httpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
+        using var nonRedirectingClient = new HttpClient(httpClientHandler);
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
         httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(nonRedirectingClient);
         var settings = new SessionsPythonSettings(
