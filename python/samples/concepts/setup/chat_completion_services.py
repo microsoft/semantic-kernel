@@ -1,13 +1,38 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
+
+from pydantic import SecretStr
 
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+
+class OrcaRouterSettings(KernelBaseSettings):
+    """OrcaRouter model settings.
+
+    The settings are first loaded from environment variables with the prefix 'ORCAROUTER_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+
+    Optional settings for prefix 'ORCAROUTER_' are:
+    - api_key: SecretStr - OrcaRouter API key, see https://www.orcarouter.ai
+        (Env var ORCAROUTER_API_KEY)
+    - chat_model_id: str | None - The OrcaRouter chat model ID to use.
+        (Env var ORCAROUTER_CHAT_MODEL_ID)
+    - env_file_path: if provided, the .env settings are read from this file path location
+    """
+
+    env_prefix: ClassVar[str] = "ORCAROUTER_"
+
+    api_key: SecretStr | None = None
+    chat_model_id: str | None = None
 
 
 class Services(str, Enum):
@@ -28,6 +53,7 @@ class Services(str, Enum):
     ONNX = "onnx"
     VERTEX_AI = "vertex_ai"
     DEEPSEEK = "deepseek"
+    ORCAROUTER = "orcarouter"
     NVIDIA = "nvidia"
 
 
@@ -65,6 +91,7 @@ def get_chat_completion_service_and_request_settings(
         Services.ONNX: lambda: get_onnx_chat_completion_service_and_request_settings(),
         Services.VERTEX_AI: lambda: get_vertex_ai_chat_completion_service_and_request_settings(),
         Services.DEEPSEEK: lambda: get_deepseek_chat_completion_service_and_request_settings(),
+        Services.ORCAROUTER: lambda: get_orcarouter_chat_completion_service_and_request_settings(),
         Services.NVIDIA: lambda: get_nvidia_chat_completion_service_and_request_settings(),
     }
 
@@ -401,6 +428,53 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
         async_client=AsyncOpenAI(
             api_key=openai_settings.api_key.get_secret_value(),
             base_url="https://api.deepseek.com",
+        ),
+    )
+    request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
+
+    return chat_service, request_settings
+
+
+def get_orcarouter_chat_completion_service_and_request_settings() -> tuple[
+    "ChatCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return OrcaRouter chat completion service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The OrcaRouter endpoint can be accessed via the OpenAI connector, as the OrcaRouter API is
+    compatible with the OpenAI API.
+    Set the `ORCAROUTER_API_KEY` environment variable to the OrcaRouter API key.
+    Set the `ORCAROUTER_CHAT_MODEL_ID` environment variable to the OrcaRouter model ID.
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from openai import AsyncOpenAI
+
+    from semantic_kernel.connectors.ai.open_ai import (
+        OpenAIChatCompletion,
+        OpenAIChatPromptExecutionSettings,
+    )
+
+    orcarouter_settings = OrcaRouterSettings()
+    if not orcarouter_settings.api_key:
+        raise ServiceInitializationError("The OrcaRouter API key is required.")
+    if not orcarouter_settings.chat_model_id:
+        raise ServiceInitializationError("The OrcaRouter model ID is required.")
+
+    chat_service = OpenAIChatCompletion(
+        ai_model_id=orcarouter_settings.chat_model_id,
+        service_id=service_id,
+        async_client=AsyncOpenAI(
+            api_key=orcarouter_settings.api_key.get_secret_value(),
+            base_url="https://api.orcarouter.ai/v1",
         ),
     )
     request_settings = OpenAIChatPromptExecutionSettings(service_id=service_id)
