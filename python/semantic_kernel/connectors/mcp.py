@@ -886,9 +886,9 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         }
         if self.headers:
             args["headers"] = self.headers
-        if self.timeout:
+        if self.timeout is not None:
             args["timeout"] = self.timeout
-        if self.sse_read_timeout:
+        if self.sse_read_timeout is not None:
             args["sse_read_timeout"] = self.sse_read_timeout
         if self.terminate_on_close is not None:
             args["terminate_on_close"] = self.terminate_on_close
