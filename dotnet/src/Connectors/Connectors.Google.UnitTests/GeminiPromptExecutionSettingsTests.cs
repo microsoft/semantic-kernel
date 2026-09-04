@@ -194,6 +194,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         string json = $$"""
                         {
                           "model_id": "gemini-pro",
+                          "service_id": "gemini-service",
                           "temperature": 0.7,
                           "top_p": 0.7,
                           "top_k": 25,
@@ -207,23 +208,30 @@ public sealed class GeminiPromptExecutionSettingsTests
                               "threshold": "{{threshold.Label}}"
                             }
                           ],
+                          "labels": { "env": "test", "team": "sk" },
+                          "cached_content": "projects/p/locations/l/cachedContents/c",
                           "thinking_config": {{thinkingConfigJson}}
                         }
                         """;
         var executionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json);
+        executionSettings!.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto();
 
         // Act
-        var clone = executionSettings!.Clone() as GeminiPromptExecutionSettings;
+        var clone = executionSettings.Clone() as GeminiPromptExecutionSettings;
 
         // Assert
         Assert.NotNull(clone);
         Assert.Equal(executionSettings.ModelId, clone.ModelId);
+        Assert.Equal(executionSettings.ServiceId, clone.ServiceId);
         Assert.Equal(executionSettings.Temperature, clone.Temperature);
         Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
         Assert.Equivalent(executionSettings.StopSequences, clone.StopSequences);
         Assert.Equivalent(executionSettings.SafetySettings, clone.SafetySettings);
         Assert.Equal(executionSettings.AudioTimestamp, clone.AudioTimestamp);
         Assert.Equivalent(executionSettings.ThinkingConfig, clone.ThinkingConfig);
+        Assert.Equivalent(executionSettings.Labels, clone.Labels);
+        Assert.Equal(executionSettings.CachedContent, clone.CachedContent);
+        Assert.Same(executionSettings.FunctionChoiceBehavior, clone.FunctionChoiceBehavior);
     }
 
     [Fact]
