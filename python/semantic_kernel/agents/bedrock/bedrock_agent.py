@@ -698,7 +698,6 @@ class BedrockAgent(BedrockAgentBase):
         """Create a ChatHistoryChannel.
 
         Args:
-            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
             thread_id: The ID of the thread. If None, a new thread will be created.
 
         Returns:
