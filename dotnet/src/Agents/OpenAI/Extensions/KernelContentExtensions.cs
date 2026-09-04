@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -10,11 +11,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 internal static class KernelContentExtensions
 {
-    internal static ResponseContentPart ToResponseContentPart(this KernelContent content)
+    internal static ResponseContentPart ToResponseContentPart(this KernelContent content, AuthorRole? role = null)
     {
         return content switch
         {
-            TextContent textContent => textContent.ToResponseContentPart(),
+            TextContent textContent => textContent.ToResponseContentPart(role),
             ImageContent imageContent => imageContent.ToResponseContentPart(),
             BinaryContent binaryContent => binaryContent.ToResponseContentPart(),
             FileReferenceContent fileReferenceContent => fileReferenceContent.ToResponseContentPart(),
@@ -22,9 +23,11 @@ internal static class KernelContentExtensions
         };
     }
 
-    internal static ResponseContentPart ToResponseContentPart(this TextContent content)
+    internal static ResponseContentPart ToResponseContentPart(this TextContent content, AuthorRole? role = null)
     {
-        return ResponseContentPart.CreateInputTextPart(content.Text);
+        return role == AuthorRole.Assistant
+            ? ResponseContentPart.CreateOutputTextPart(content.Text, annotations: [])
+            : ResponseContentPart.CreateInputTextPart(content.Text);
     }
 
     internal static ResponseContentPart ToResponseContentPart(this ImageContent content)
