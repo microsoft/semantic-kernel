@@ -106,7 +106,8 @@ internal sealed class RedirectLoopbackServer : IAsyncDisposable
         while (!string.IsNullOrEmpty(header));
 
         var requestTarget = requestLine?.Split(' ')[1];
-        if (requestTarget == "/start")
+        var requestPath = requestTarget?.Split('?')[0];
+        if (!string.Equals(requestPath, this._redirectTargetPath, StringComparison.Ordinal))
         {
             var response = $"HTTP/1.1 302 Found\r\nLocation: {new Uri(this.BaseUri, this._redirectTargetPath.TrimStart('/'))}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
             await stream.WriteAsync(Encoding.ASCII.GetBytes(response), cancellationToken).ConfigureAwait(false);
