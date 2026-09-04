@@ -187,10 +187,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private sealed class HttpClientFactory : IHttpClientFactory, IDisposable
     {
         private readonly List<HttpClient> _httpClients = [];
+        private readonly List<HttpClientHandler> _httpClientHandlers = [];
 
         public HttpClient CreateClient(string name)
         {
-            var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+            var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            var client = new HttpClient(handler, disposeHandler: false);
+            this._httpClientHandlers.Add(handler);
             this._httpClients.Add(client);
             return client;
         }
@@ -198,6 +201,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         public void Dispose()
         {
             this._httpClients.ForEach(client => client.Dispose());
+            this._httpClientHandlers.ForEach(handler => handler.Dispose());
         }
     }
 }
