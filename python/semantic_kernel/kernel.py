@@ -596,7 +596,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         These need to be set to the function name, without the plugin_name.
 
         Args:
-            kernel: The kernel instance to use.
             prompts: A list of prompt templates to expose as prompts.
             server_name: The name of the server.
             version: The version of the server.

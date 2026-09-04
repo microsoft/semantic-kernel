@@ -98,7 +98,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
             collection (str): The collection to search in.
             query (str): The query to search for.
             limit (int): The maximum number of results to return. (default: {1})
-            min_relevance_score (float): The minimum relevance score to return. (default: {0.0})
+            min_relevance_score (float): The minimum relevance score to return. (default: {0.7})
             with_embeddings (bool): Whether to return the embeddings of the results. (default: {False})
 
         Returns:

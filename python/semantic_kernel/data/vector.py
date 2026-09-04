@@ -1335,7 +1335,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         """Get records based on the ordering and selection criteria.
 
         Args:
-            include_vectors: Include the vectors in the response. Default is True.
+            include_vectors: Include the vectors in the response. Default is False.
                 Some vector stores do not support retrieving without vectors, even when set to false.
                 Some vector stores have specific parameters to control that behavior, when
                 that parameter is set, include_vectors is ignored.
@@ -1370,7 +1370,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
 
         Args:
             key: The key to get.
-            include_vectors: Include the vectors in the response. Default is True.
+            include_vectors: Include the vectors in the response. Default is False.
                 Some vector stores do not support retrieving without vectors, even when set to false.
                 Some vector stores have specific parameters to control that behavior, when
                 that parameter is set, include_vectors is ignored.
@@ -1396,7 +1396,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
 
         Args:
             keys: The keys to get, if keys are provided, key is ignored.
-            include_vectors: Include the vectors in the response. Default is True.
+            include_vectors: Include the vectors in the response. Default is False.
                 Some vector stores do not support retrieving without vectors, even when set to false.
                 Some vector stores have specific parameters to control that behavior, when
                 that parameter is set, include_vectors is ignored.
@@ -1423,7 +1423,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         Args:
             key: The key to get.
             keys: The keys to get, if keys are provided, key is ignored.
-            include_vectors: Include the vectors in the response. Default is True.
+            include_vectors: Include the vectors in the response. Default is False.
                 Some vector stores do not support retrieving without vectors, even when set to false.
                 Some vector stores have specific parameters to control that behavior, when
                 that parameter is set, include_vectors is ignored.
