@@ -16,7 +16,7 @@ The samples support Stdio, SSE, and Streamable HTTP transports. A Stdio server r
 
 Some other common runners are [uvx](https://docs.astral.sh/uv/guides/tools/), for python servers and [docker](https://www.docker.com/), for containerized servers.
 
-The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin. For Streamable HTTP server, MCPStreamableHttpPlugin can be used.
+The code shown works the same for an SSE server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin. For Streamable HTTP server, MCPStreamableHttpPlugin can be used.
 
 The reverse, using Semantic Kernel as a server, can be found in the [demos/mcp_server](../../demos/mcp_server/) folder.
 
@@ -34,10 +34,10 @@ async with MCPStreamableHttpPlugin(
     name="ParallelSearch",
     url="https://search.parallel.ai/mcp",
     load_prompts=False,
-) as plugin:
+) as mcp_plugin:
     kernel = Kernel()
-    functions = kernel.add_plugin(plugin)
-    print(sorted(functions.functions))
+    plugin = kernel.add_plugin(mcp_plugin)
+    print(sorted(plugin.functions))
 ```
 
 This discovers the server's tools. To let an agent use them, pass `plugins=[plugin]` to the agent and invoke it inside the context manager, as in [the HTTP sample](agent_with_http_mcp_plugin.py). That sample's Azure configuration is still required when using its agent. Omit the plugin from the agent to disable access.
