@@ -18,7 +18,7 @@
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.100.7" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.100.7" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.100.9" />
-    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
+    <PackageVersion Include="AWS.Bedrock.MEAI" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.7" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.100.7" />
     <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.1.0" />
