@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -206,6 +207,100 @@ public sealed class OpenAIChatCompletionExtraBodyTests : IDisposable
     }
 
     [Fact]
+    public async Task ExtraBodyToolsDoesNotEmitDuplicateToolsKeyInRequestBodyAsync()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["tools"] = new[] { new { type = "web_search" } },
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
+        Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task ExtraBodyDoesNotEmitDuplicateTopLevelKeysInRequestBodyAsync()
+    {
+        // Arrange
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.7,
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["temperature"] = 0.5,
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int tempKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("temperature"));
+        Assert.Equal(1, tempKeyCount);
+        Assert.Equal(0.5, doc.RootElement.GetProperty("temperature").GetDouble());
+    }
+
+    [Fact]
+    public async Task ExtraBodyJsonPathToolsDoesNotEmitDuplicateToolsKeyAsync()
+    {
+        // Arrange - JSONPath root notation: ["$.tools"]
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["$.tools"] = new[] { new { type = "web_search" } },
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
+        Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task ExtraBodyJsonPathNestedToolsDoesNotEmitDuplicateToolsKeyAsync()
+    {
+        // Arrange - JSONPath array indexing notation: ["$.tools[0].type"]
+        var service = new OpenAIChatCompletionService("gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ExtraBody = new Dictionary<string, object?>
+            {
+                ["$.tools[0].type"] = "web_search",
+            },
+        };
+
+        // Act
+        await service.GetChatMessageContentsAsync(this._chatHistory, settings);
+
+        // Assert
+        using var doc = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        int toolsKeyCount = doc.RootElement.EnumerateObject().Count(p => p.NameEquals("tools"));
+        Assert.Equal(1, toolsKeyCount);
+        Assert.Equal("web_search", doc.RootElement.GetProperty("tools")[0].GetProperty("type").GetString());
+    }
+
+    [Fact]
+
     public void FromExecutionSettingsRoundTripPreservesExtraBody()
     {
         // Arrange - deserializing through the base type (e.g. via PromptTemplateConfig) should preserve extra_body.
