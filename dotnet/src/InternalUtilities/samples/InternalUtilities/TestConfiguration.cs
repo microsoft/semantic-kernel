@@ -36,6 +36,7 @@ public sealed class TestConfiguration
     public static PineconeConfig Pinecone => LoadSection<PineconeConfig>();
     public static BingConfig Bing => LoadSection<BingConfig>();
     public static GoogleConfig Google => LoadSection<GoogleConfig>();
+    public static KeenableConfig Keenable => LoadSection<KeenableConfig>();
     public static TavilyConfig Tavily => LoadSection<TavilyConfig>();
     public static GithubConfig Github => LoadSection<GithubConfig>();
     public static PostgresConfig Postgres => LoadSection<PostgresConfig>();
@@ -189,6 +190,12 @@ public sealed class TestConfiguration
     {
         public string ApiKey { get; set; }
         public string SearchEngineId { get; set; }
+    }
+
+    public class KeenableConfig
+    {
+        public string Endpoint { get; set; } = "https://api.keenable.ai";
+        public string? ApiKey { get; set; }
     }
 
     public class TavilyConfig

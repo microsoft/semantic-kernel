@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Brave;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
+using Microsoft.SemanticKernel.Plugins.Web.Keenable;
 using Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
 namespace Microsoft.SemanticKernel;
@@ -67,6 +68,24 @@ public static class WebKernelBuilderExtensions
         Verify.NotNull(builder);
         builder.Services.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
 
+        return builder;
+    }
+
+    /// <summary>
+    /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> to register the <see cref="ITextSearch"/> on.</param>
+    /// <param name="apiKey">Optional API key used to authenticate requests against the Search service. When null or empty the public endpoint is used.</param>
+    /// <param name="options">Instance of <see cref="KeenableTextSearchOptions"/> to used when creating the <see cref="KeenableTextSearch"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    public static IKernelBuilder AddKeenableTextSearch(
+        this IKernelBuilder builder,
+        string? apiKey = null,
+        KeenableTextSearchOptions? options = null,
+        string? serviceId = default)
+    {
+        Verify.NotNull(builder);
+        builder.Services.AddKeenableTextSearch(apiKey, options, serviceId);
         return builder;
     }
 
