@@ -27,6 +27,7 @@ env:
   DEVFLOW_REF: main
   TARGET_REPO_PATH: ${{ github.workspace }}/target-repo
   DEVFLOW_PATH: ${{ github.workspace }}/devflow
+  MODEL_CONFIG_PATH: ${{ github.workspace }}/devflow/config.ci.yaml
 
 jobs:
   review:
