@@ -13,6 +13,10 @@ _IMPORTS = {
     "BraveWebPages": ".brave",
     "BraveWebPage": ".brave",
     "BraveSearchResponse": ".brave",
+    "KeenableSearch": ".keenable",
+    "KeenableSettings": ".keenable",
+    "KeenableWebPage": ".keenable",
+    "KeenableSearchResponse": ".keenable",
 }
 
 

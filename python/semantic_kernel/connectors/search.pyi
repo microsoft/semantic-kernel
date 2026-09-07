@@ -8,6 +8,7 @@ from .google_search import (
     GoogleSearchResult,
     GoogleSearchSettings,
 )
+from .keenable import KeenableSearch, KeenableSearchResponse, KeenableSettings, KeenableWebPage
 
 __all__ = [
     "BraveSearch",
@@ -20,4 +21,8 @@ __all__ = [
     "GoogleSearchResponse",
     "GoogleSearchResult",
     "GoogleSearchSettings",
+    "KeenableSearch",
+    "KeenableSearchResponse",
+    "KeenableSettings",
+    "KeenableWebPage",
 ]
