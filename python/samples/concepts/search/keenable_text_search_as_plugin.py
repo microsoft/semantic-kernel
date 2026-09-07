@@ -86,8 +86,8 @@ async def log_keenable_filter(
         print("Calling Keenable search with arguments:")
         if "query" in context.arguments:
             print(f'  Query: "{context.arguments["query"]}"')
-        if "count" in context.arguments:
-            print(f'  Count: "{context.arguments["count"]}"')
+        if "top" in context.arguments:
+            print(f'  Top: "{context.arguments["top"]}"')
         if "skip" in context.arguments:
             print(f'  Skip: "{context.arguments["skip"]}"')
         await next(context)

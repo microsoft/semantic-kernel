@@ -265,7 +265,7 @@ class KeenableSearch(KernelBaseModel, TextSearch):
     def _build_request_body(self, query: str, options: SearchOptions) -> dict[str, str | int]:
         body: dict[str, str | int] = {
             "query": query or "",
-            "max_results": min(options.top + options.skip, MAX_RESULTS),
+            "max_results": options.top + options.skip,
         }
         if not options.filter:
             return body
