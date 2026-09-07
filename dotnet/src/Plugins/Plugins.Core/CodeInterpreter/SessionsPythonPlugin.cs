@@ -37,6 +37,10 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="httpClientFactory">The HTTP client factory.</param>
     /// <param name="authTokenProvider">Optional provider for auth token generation.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <remarks>
+    /// The <paramref name="httpClientFactory"/> must create clients with automatic redirects disabled
+    /// to prevent redirects from bypassing <see cref="SessionsPythonSettings.AllowedDomains"/>.
+    /// </remarks>
     public SessionsPythonPlugin(
         SessionsPythonSettings settings,
         IHttpClientFactory httpClientFactory,
@@ -271,11 +275,11 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Deny requests unless the endpoint host is explicitly allowed.
+        if (this._settings.AllowedDomains?.Contains(uri.Host, StringComparer.OrdinalIgnoreCase) != true)
         {
-            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+            throw new InvalidOperationException(
+                $"Sending requests to host '{uri.Host}' is not allowed. Add the host to {nameof(SessionsPythonSettings.AllowedDomains)}.");
         }
 
         using var request = new HttpRequestMessage(method, uri)
