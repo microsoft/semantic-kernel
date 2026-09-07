@@ -235,6 +235,32 @@ public sealed class KeenableTextSearchTests : IDisposable
     }
 
     [Theory]
+    [InlineData("http://search.example.com")]
+    [InlineData("ftp://search.example.com/")]
+    public void NonHttpsEndpointThrowsArgumentException(string endpoint)
+    {
+        // Act & Assert - the API key is sent as a header, so a clear-text endpoint is refused up front
+        var e = Assert.Throws<ArgumentException>(() => new KeenableTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Endpoint = new Uri(endpoint) }));
+        Assert.Contains("must use HTTPS", e.Message);
+        Assert.Equal("options", e.ParamName);
+    }
+
+    [Fact]
+    public async Task TotalCountIsNullBecauseTheApiDoesNotReportOneAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new KeenableTextSearch(options: new() { HttpClient = this._httpClient });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, IncludeTotalCount = true });
+
+        // Assert - four results come back, but TotalCount stays null like the Tavily connector
+        Assert.Equal(4, (await result.Results.ToListAsync()).Count);
+        Assert.Null(result.TotalCount);
+    }
+
+    [Theory]
     [InlineData("https://search.example.com", false, "https://search.example.com/v1/search/public")]
     [InlineData("https://search.example.com/", true, "https://search.example.com/v1/search")]
     [InlineData("https://search.example.com/proxy", false, "https://search.example.com/proxy/v1/search/public")]
@@ -587,6 +613,64 @@ public sealed class KeenableTextSearchTests : IDisposable
         };
         var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await textSearch.SearchAsync("test", searchOptions));
         Assert.Contains("Property 'Description' cannot be mapped", exception.Message);
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+    }
+
+    [Fact]
+    public async Task LinqOrElseThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSKResponseJson));
+        ITextSearch<KeenableWebPage> textSearch = new KeenableTextSearch(options: new() { HttpClient = this._httpClient });
+
+        // Act & Assert - OR cannot be sent as one request; merging both sides would search only the last site
+        var searchOptions = new TextSearchOptions<KeenableWebPage>
+        {
+            Top = 4,
+            Filter = page => page.Site == "learn.microsoft.com" || page.Site == "github.com"
+        };
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await textSearch.SearchAsync("test", searchOptions));
+        Assert.StartsWith("Logical OR (||) is not supported", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("combined with &&", exception.Message);
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+    }
+
+    [Fact]
+    public async Task LinqInequalityThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSKResponseJson));
+        ITextSearch<KeenableWebPage> textSearch = new KeenableTextSearch(options: new() { HttpClient = this._httpClient });
+
+        // Act & Assert
+        var searchOptions = new TextSearchOptions<KeenableWebPage>
+        {
+            Top = 4,
+            Filter = page => page.Site != "github.com"
+        };
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await textSearch.SearchAsync("test", searchOptions));
+        Assert.StartsWith("Inequality operator (!=) on property 'Site' is not supported", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("client-side or run multiple queries", exception.Message);
+        Assert.DoesNotContain("!(", exception.Message);
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+    }
+
+    [Fact]
+    public async Task LinqNotThrowsNotSupportedExceptionAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSKResponseJson));
+        ITextSearch<KeenableWebPage> textSearch = new KeenableTextSearch(options: new() { HttpClient = this._httpClient });
+
+        // Act & Assert
+        var searchOptions = new TextSearchOptions<KeenableWebPage>
+        {
+            Top = 4,
+            Filter = page => !(page.Site == "github.com")
+        };
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await textSearch.SearchAsync("test", searchOptions));
+        Assert.StartsWith("NOT operator (!)", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Only equality comparisons (==) on Site, PublishedAfter and PublishedBefore", exception.Message);
         Assert.Empty(this._messageHandlerStub.RequestUris);
     }
 

@@ -38,8 +38,14 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// <param name="options">Options used when creating this instance of <see cref="KeenableTextSearch"/>.</param>
     public KeenableTextSearch(string? apiKey = null, KeenableTextSearchOptions? options = null)
     {
+        var endpoint = options?.Endpoint ?? new Uri(DefaultUri);
+        if (!string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"The Keenable endpoint must use HTTPS, got '{endpoint}'. The API key is sent as a request header and must not travel in clear text.", nameof(options));
+        }
+
         this._apiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
-        this._uri = BuildSearchUri(options?.Endpoint ?? new Uri(DefaultUri), this._apiKey is null);
+        this._uri = BuildSearchUri(endpoint, this._apiKey is null);
         this._searchOptions = options;
         this._logger = options?.LoggerFactory?.CreateLogger(typeof(KeenableTextSearch)) ?? NullLogger.Instance;
         this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
@@ -60,7 +66,8 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
         var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -72,7 +79,8 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
         var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -84,7 +92,8 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
         var filters = ExtractFiltersFromLegacy(searchOptions.Filter);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions.Skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<object>(this.GetResultsAsObjectAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -98,10 +107,11 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// <inheritdoc/>
     async Task<KernelSearchResults<string>> ITextSearch<KeenableWebPage>.SearchAsync(string query, TextSearchOptions<KeenableWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        var (modifiedQuery, top, skip, filters) = ExtractSearchParameters(query, searchOptions);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = includeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -109,10 +119,11 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// <inheritdoc/>
     async Task<KernelSearchResults<TextSearchResult>> ITextSearch<KeenableWebPage>.GetTextSearchResultsAsync(string query, TextSearchOptions<KeenableWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        var (modifiedQuery, top, skip, filters) = ExtractSearchParameters(query, searchOptions);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = includeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -120,10 +131,11 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// <inheritdoc/>
     async Task<KernelSearchResults<KeenableWebPage>> ITextSearch<KeenableWebPage>.GetSearchResultsAsync(string query, TextSearchOptions<KeenableWebPage>? searchOptions, CancellationToken cancellationToken)
     {
-        var (modifiedQuery, top, skip, includeTotalCount, filters) = ExtractSearchParameters(query, searchOptions);
+        var (modifiedQuery, top, skip, filters) = ExtractSearchParameters(query, searchOptions);
         KeenableSearchResponse? searchResponse = await this.ExecuteSearchAsync(modifiedQuery, top, skip, filters, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = includeTotalCount ? searchResponse?.Results.Count : null;
+        // The API does not report a total count.
+        long? totalCount = null;
 
         return new KernelSearchResults<KeenableWebPage>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
@@ -137,15 +149,14 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// This is the primary entry point for the LINQ-based filtering path.
     /// Keenable supports query modification via Title.Contains() which appends terms to the query.
     /// </summary>
-    private static (string ModifiedQuery, int Top, int Skip, bool IncludeTotalCount, List<(string FieldName, object Value)> Filters) ExtractSearchParameters<TRecord>(string query, TextSearchOptions<TRecord>? searchOptions)
+    private static (string ModifiedQuery, int Top, int Skip, List<(string FieldName, object Value)> Filters) ExtractSearchParameters<TRecord>(string query, TextSearchOptions<TRecord>? searchOptions)
     {
         var top = searchOptions?.Top ?? 3;
         var skip = searchOptions?.Skip ?? 0;
-        var includeTotalCount = searchOptions?.IncludeTotalCount ?? false;
 
         if (searchOptions?.Filter == null)
         {
-            return (query, top, skip, includeTotalCount, []);
+            return (query, top, skip, []);
         }
 
         var filters = new List<(string FieldName, object Value)>();
@@ -158,12 +169,13 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
             ? $"{query} {string.Join(" ", queryTerms)}".Trim()
             : query;
 
-        return (modifiedQuery, top, skip, includeTotalCount, filters);
+        return (modifiedQuery, top, skip, filters);
     }
 
     /// <summary>
     /// Walks a LINQ expression tree and extracts Keenable API filter key-value pairs and query terms directly.
-    /// Supports equality expressions, Contains() method calls, and logical AND/OR operators.
+    /// Supports equality comparisons on Site, PublishedAfter and PublishedBefore, Title.Contains() and Site.Contains(),
+    /// combined with logical AND only. OR, NOT and inequality cannot be expressed as a single request and are rejected.
     /// </summary>
     /// <param name="expression">The expression to analyze.</param>
     /// <param name="filters">The list to add filter key-value pairs to.</param>
@@ -172,11 +184,15 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     {
         switch (expression)
         {
-            case BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse } binaryExpr:
-                // Handle AND/OR expressions by recursively analyzing both sides
+            case BinaryExpression { NodeType: ExpressionType.AndAlso } binaryExpr:
+                // Handle AND expressions by recursively analyzing both sides; every clause ends up in the same request
                 ExtractFiltersFromExpression(binaryExpr.Left, filters, queryTerms);
                 ExtractFiltersFromExpression(binaryExpr.Right, filters, queryTerms);
                 break;
+
+            case BinaryExpression { NodeType: ExpressionType.OrElse }:
+                // A single request cannot express alternatives; merging both sides would silently search only the last one
+                throw new NotSupportedException(UnsupportedFilterMessage("Logical OR (||)"));
 
             case BinaryExpression { NodeType: ExpressionType.Equal } binaryExpr:
                 ProcessEqualityClause(binaryExpr, filters);
@@ -187,7 +203,7 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
                 break;
 
             case BinaryExpression binaryExpr:
-                throw new NotSupportedException($"Binary expression type '{binaryExpr.NodeType}' is not supported. Supported operators: AndAlso (&&), OrElse (||), Equal (==), NotEqual (!=).");
+                throw new NotSupportedException(UnsupportedFilterMessage($"Binary expression type '{binaryExpr.NodeType}'"));
 
             case UnaryExpression { NodeType: ExpressionType.Not } unaryExpr:
                 ProcessNotExpression(unaryExpr);
@@ -198,7 +214,7 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
                 break;
 
             default:
-                throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported in Keenable search filters.");
+                throw new NotSupportedException(UnsupportedFilterMessage($"Expression type '{expression.NodeType}'"));
         }
     }
 
@@ -258,12 +274,9 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
             propertyName = rightMember.Member.Name;
         }
 
-        if (propertyName != null)
-        {
-            throw new NotSupportedException($"Inequality operator (!=) is not directly supported for property '{propertyName}'. Use NOT operator instead: !(page.{propertyName} == value).");
-        }
-
-        throw new NotSupportedException("Unable to extract property name and value from inequality expression.");
+        throw new NotSupportedException(UnsupportedFilterMessage(propertyName is null
+            ? "Inequality operator (!=)"
+            : $"Inequality operator (!=) on property '{propertyName}'"));
     }
 
     /// <summary>
@@ -271,13 +284,16 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// </summary>
     private static void ProcessNotExpression(UnaryExpression unaryExpr)
     {
-        if (unaryExpr.Operand is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.Equal)
-        {
-            throw new NotSupportedException("NOT operator (!) with equality is not directly supported. Most web search APIs don't support negative filtering.");
-        }
-
-        throw new NotSupportedException("NOT operator (!) is only supported with simple equality expressions.");
+        throw new NotSupportedException(UnsupportedFilterMessage($"NOT operator (!) on '{unaryExpr.Operand}'"));
     }
+
+    /// <summary>
+    /// Builds the message for an unsupported filter construct, stating what the connector does support.
+    /// </summary>
+    private static string UnsupportedFilterMessage(string what) =>
+        $"{what} is not supported in Keenable search filters. " +
+        "Only equality comparisons (==) on Site, PublishedAfter and PublishedBefore, Title.Contains() and Site.Contains(), combined with &&, are supported. " +
+        "Apply other conditions client-side or run multiple queries.";
 
     /// <summary>
     /// Processes a method call expression (Contains) and maps to filters or query terms directly.

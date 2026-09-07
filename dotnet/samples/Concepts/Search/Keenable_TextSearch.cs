@@ -152,12 +152,12 @@ public class Keenable_TextSearch(ITestOutputHelper output) : BaseTest(output)
             WriteHorizontalRule();
         }
 
-        // Example 2: Title.Contains appends terms to the query, combined with a publication date floor
-        Console.WriteLine("\n--- Example 2: Title Contains + Published After ---\n");
+        // Example 2: Compound AND filter, a site restriction combined with a publication date floor
+        Console.WriteLine("\n--- Example 2: Site + Published After ---\n");
         var compoundOptions = new TextSearchOptions<KeenableWebPage>
         {
             Top = 2,
-            Filter = page => page.Title != null && page.Title.Contains("Kernel") && page.PublishedAfter == "2025-01-01"
+            Filter = page => page.Site == "github.com" && page.PublishedAfter == "2025-01-01"
         };
         var compoundResults = await textSearch.GetSearchResultsAsync(query, compoundOptions);
         await foreach (KeenableWebPage page in compoundResults.Results)
