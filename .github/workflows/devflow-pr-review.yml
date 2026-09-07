@@ -28,6 +28,7 @@ env:
   TARGET_REPO_PATH: ${{ github.workspace }}/target-repo
   DEVFLOW_PATH: ${{ github.workspace }}/devflow
   MODEL_CONFIG_PATH: ${{ github.workspace }}/devflow/config.ci.yaml
+  DEVFLOW_REVIEW_DIAGNOSTICS_DIR: ${{ github.workspace }}/devflow/data/review-publish-failures
 
 jobs:
   review:
@@ -138,3 +139,10 @@ jobs:
             --pr-url "$PR_URL" \
             --github-username "$GITHUB_ACTOR" \
             --no-require-comment-selection
+
+      - name: Archive review diagnostics privately
+        if: ${{ failure() && steps.review.outcome == 'failure' }}
+        working-directory: ${{ env.DEVFLOW_PATH }}
+        env:
+          DEVFLOW_TOKEN: ${{ secrets.DEVFLOW_TOKEN }}
+        run: uv run python scripts/archive_review_diagnostics.py
