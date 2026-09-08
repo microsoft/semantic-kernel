@@ -158,9 +158,7 @@ async def test_google_ai_text_embedding_no_telemetry(google_ai_unit_test_env):
     """Test that GoogleAITextEmbedding does not send the User-Agent header when telemetry is disabled."""
     with (
         patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base.IS_TELEMETRY_ENABLED", False),
-        patch(
-            "semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_embedding.Client"
-        ) as mock_client,
+        patch("semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_embedding.Client") as mock_client,
     ):
         mock_instance = mock_client.return_value.__enter__.return_value
         mock_instance.aio.models.embed_content = AsyncMock()
