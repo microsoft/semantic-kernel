@@ -142,9 +142,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
         else:
             with Client(
-                api_key=self.service_settings.api_key.get_secret_value(),
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
                 http_options=self._get_http_options(),
-            ) as client:  # type: ignore[union-attr]
+            ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_text_content(response, candidate) for candidate in response.candidates]  # type: ignore
@@ -185,9 +185,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                     yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
         else:
             with Client(
-                api_key=self.service_settings.api_key.get_secret_value(),
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
                 http_options=self._get_http_options(),
-            ) as client:  # type: ignore[union-attr]
+            ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
 

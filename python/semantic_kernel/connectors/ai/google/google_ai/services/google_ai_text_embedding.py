@@ -138,9 +138,9 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
                 response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
         else:
             with Client(
-                api_key=self.service_settings.api_key.get_secret_value(),
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
                 http_options=self._get_http_options(),
-            ) as client:  # type: ignore[union-attr]
+            ) as client:
                 response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
 
         return [embedding.values for embedding in response.embeddings]  # type: ignore

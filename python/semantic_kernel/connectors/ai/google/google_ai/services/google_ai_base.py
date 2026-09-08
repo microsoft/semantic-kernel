@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from typing import Any, ClassVar
+from typing import ClassVar
 
-from google.genai import Client
+from google.genai import Client, types
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.const import USER_AGENT
@@ -20,7 +20,7 @@ class GoogleAIBase(KernelBaseModel, ABC):
 
     client: Client | None = None
 
-    def _get_http_options(self) -> dict[str, Any] | None:
+    def _get_http_options(self) -> types.HttpOptionsDict | None:
         """Get the HTTP options for the Google AI client.
 
         Returns:
@@ -29,4 +29,4 @@ class GoogleAIBase(KernelBaseModel, ABC):
         if not IS_TELEMETRY_ENABLED:
             return None
 
-        return {"headers": {USER_AGENT: SEMANTIC_KERNEL_USER_AGENT}}
+        return types.HttpOptionsDict(headers={USER_AGENT: SEMANTIC_KERNEL_USER_AGENT})
