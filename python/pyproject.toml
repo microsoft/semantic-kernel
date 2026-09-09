@@ -88,7 +88,7 @@ faiss = [
 ]
 google = [
     "google-cloud-aiplatform>=1.114,<1.134",
-    "google-genai >= 1.51,< 1.75"
+    "google-genai >= 1.51,< 2.21"
 ]
 hugging_face = [
     "transformers[torch] >= 5.5.0,< 6.0",
@@ -152,7 +152,7 @@ sql = [
 ]
 usearch = [
     "usearch >= 2.16,< 2.25",
-    "pyarrow>=12.0,<24.0"
+    "pyarrow>=12.0,<26.0"
 ]
 weaviate = [
     "weaviate-client>=4.17.0,<5.0",
@@ -160,7 +160,7 @@ weaviate = [
 
 [dependency-groups]
 dev = [
-    "pre-commit ~= 3.7",
+    "pre-commit >= 3.7,< 5.0",
     "ipykernel >= 6.29,< 8.0",
     "nbconvert ~= 7.16",
     "pytest >= 8.2,< 10.0",
