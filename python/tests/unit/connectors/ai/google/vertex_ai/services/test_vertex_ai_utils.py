@@ -197,3 +197,15 @@ def test_vertex_ai_function_call_format_empty_parameters() -> None:
     )
     result = kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
     assert isinstance(result, FunctionDeclaration)
+
+
+def test_vertex_ai_function_call_format_rejects_ambiguous_plugin_name() -> None:
+    metadata = KernelFunctionMetadata(
+        name="time",
+        plugin_name="utils__get",
+        description="Ambiguous plugin name",
+        is_prompt=False,
+    )
+
+    with pytest.raises(ServiceInvalidRequestError, match="cannot be represented safely"):
+        kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
