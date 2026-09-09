@@ -45,6 +45,15 @@ FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE = {
 GEMINI_FUNCTION_NAME_SEPARATOR = "__"
 
 
+def validate_gemini_plugin_name(plugin_name: str | None) -> None:
+    """Reject plugin names that collide with Gemini's function-name separator."""
+    if plugin_name and GEMINI_FUNCTION_NAME_SEPARATOR in plugin_name:
+        raise ServiceInvalidRequestError(
+            f"Gemini function names use '{GEMINI_FUNCTION_NAME_SEPARATOR}' to separate plugin and function names; "
+            f"plugin name {plugin_name!r} contains that separator and cannot be represented safely."
+        )
+
+
 def format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_function_name: str) -> str:
     """Format the Gemini function name to the kernel function fully qualified name."""
     if GEMINI_FUNCTION_NAME_SEPARATOR in gemini_function_name:
