@@ -209,3 +209,15 @@ def test_vertex_ai_function_call_format_rejects_ambiguous_plugin_name() -> None:
 
     with pytest.raises(ServiceInvalidRequestError, match="cannot be represented safely"):
         kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
+
+
+def test_vertex_ai_function_call_format_rejects_plugin_name_ending_in_separator_prefix() -> None:
+    metadata = KernelFunctionMetadata(
+        name="time",
+        plugin_name="utils_",
+        description="Plugin name overlaps the separator prefix",
+        is_prompt=False,
+    )
+
+    with pytest.raises(ServiceInvalidRequestError, match="cannot be represented safely"):
+        kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
