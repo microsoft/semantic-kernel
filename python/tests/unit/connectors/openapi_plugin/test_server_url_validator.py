@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import socket
 
 import pytest
@@ -168,3 +169,38 @@ async def test_validate_server_url_blocks_empty_dns_response():
 
     with pytest.raises(FunctionExecutionException, match="returned no addresses"):
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
+
+
+async def test_validate_server_url_returns_validated_addresses_for_pinning():
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return ["93.184.216.34", "198.41.0.4"]
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address("93.184.216.34"),
+        ipaddress.ip_address("198.41.0.4"),
+    ]
+
+
+async def test_validate_server_url_returns_validated_ipv6_address_for_pinning():
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return ["2606:2800:220:1:248:1893:25c8:1946"]
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address("2606:2800:220:1:248:1893:25c8:1946")
+    ]
+
+
+async def test_validate_server_url_returns_no_addresses_for_literal_ip_host():
+    assert await validate_server_url("https://93.184.216.34/api") == []
+
+
+async def test_validate_server_url_returns_no_addresses_for_allowed_base_url():
+    options = ServerUrlValidationOptions(allowed_base_urls=["http://api.example.com"])
+    assert await validate_server_url("http://api.example.com/api", options) == []
+
+
+async def test_validate_server_url_returns_no_addresses_when_private_access_is_allowed():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    assert await validate_server_url("https://internal.example/api", options) == []
