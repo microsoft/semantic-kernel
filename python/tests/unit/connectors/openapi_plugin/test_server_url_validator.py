@@ -204,3 +204,40 @@ async def test_validate_server_url_blocks_hostname_resolving_to_azure_wire_serve
 
     with pytest.raises(FunctionExecutionException, match="Azure metadata"):
         await validate_server_url("https://wireserver-host.example.com/machine/", dns_resolver=fake_resolver)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://169.254.169.254/latest/meta-data/",
+        "https://169.254.170.2/v2/credentials",
+        "https://100.100.100.200/latest/meta-data/",
+        "https://[fd00:ec2::254]/latest/meta-data/",
+        "https://[::ffff:169.254.169.254]/latest/meta-data/",
+        "https://[64:ff9b::169.254.169.254]/latest/meta-data/",
+    ],
+)
+async def test_validate_server_url_blocks_cloud_metadata_even_with_private_network_access(url: str):
+    """The call site promises metadata endpoints are always blocked; these are the ones that
+    share a category with ordinary private addresses and so are not caught by category."""
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+
+    with pytest.raises(FunctionExecutionException, match="cloud instance metadata endpoint"):
+        await validate_server_url(url, options)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://10.0.0.5/",
+        "https://172.16.0.1/",
+        "https://192.168.1.50/v1",
+        # Same category as the Alibaba Cloud metadata address above, so this also pins the
+        # blocklist to named addresses rather than to the category they fall in.
+        "https://100.64.0.1/",
+    ],
+)
+async def test_validate_server_url_still_allows_ordinary_private_addresses(url: str):
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+
+    await validate_server_url(url, options)
