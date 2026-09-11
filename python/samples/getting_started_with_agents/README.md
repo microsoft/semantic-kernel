@@ -24,7 +24,7 @@ Example|Description
 ---|---
 [step01_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step01_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
 [step02_chat_completion_agent_thread_management](../getting_started_with_agents/chat_completion/step02_chat_completion_agent_thread_management.py)|How to create and use a chat completion with a thread.
-[step03_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step03_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
+[step03_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step03_chat_completion_agent_with_kernel.py)|How to create and use a chat completion agent with the AI service created on the kernel.
 [step04_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step04_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
 [step05_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step05_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
 [step06_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step06_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
