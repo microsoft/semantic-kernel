@@ -99,9 +99,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A list of chat message contents representing the response(s) from the LLM.
         """
-        from semantic_kernel.connectors.ai.function_calling_utils import (
-            merge_function_results,
-        )
+        from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -210,9 +208,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Yields:
             A stream representing the response(s) from the LLM.
         """
-        from semantic_kernel.connectors.ai.function_calling_utils import (
-            merge_streaming_function_results,
-        )
+        from semantic_kernel.connectors.ai.function_calling_utils import merge_streaming_function_results
 
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -316,6 +312,13 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
                 if any(result.terminate for result in results if result is not None):
                     break
+            else:
+                # Do a final call, without function calling when the max has been reached.
+                self._reset_function_choice_settings(settings)
+                async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
+                    chat_history, settings
+                ):
+                    yield streaming_chat_message_contents
 
     async def get_streaming_chat_message_content(
         self,
