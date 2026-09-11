@@ -94,7 +94,7 @@ Now, you can create a thread, add chat messages to the agent, and invoke it with
 
 In certain scenarios, you may prefer to reuse an existing agent definition rather than creating a new one. This can be done by calling `await client.agents.get_agent(...)` instead of `await client.agents.create_agent(...)`. 
 
-For a practical example, refer to the [`step7_azure_ai_agent_retrieval`](./step7_azure_ai_agent_retrieval.py) sample.
+For a practical example, refer to the [`step07_azure_ai_agent_retrieval`](./step07_azure_ai_agent_retrieval.py) sample.
 
 ## Requests and Rate Limits
 

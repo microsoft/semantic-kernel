@@ -225,9 +225,8 @@
 - [Simple Chatbot](./reasoning/simple_reasoning.py)
 - [Simple Function Calling](./reasoning/simple_reasoning_function_calling.py)
 
-### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
+### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/search.py) services information
 
-- [Bing Text Search as Plugin](./search/bing_text_search_as_plugin.py)
 - [Brave Text Search as Plugin](./search/brave_text_search_as_plugin.py)
 - [Google Text Search as Plugin](./search/google_text_search_as_plugin.py)
 
