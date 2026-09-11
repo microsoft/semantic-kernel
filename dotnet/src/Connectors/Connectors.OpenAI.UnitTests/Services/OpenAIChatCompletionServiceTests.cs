@@ -1007,10 +1007,11 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
     [Theory]
     [InlineData(null, null)]
+    [InlineData("string", "none")]
+    [InlineData("string", "minimal")]
     [InlineData("string", "low")]
     [InlineData("string", "medium")]
     [InlineData("string", "high")]
-    [InlineData("string", "minimal")]
     [InlineData("ChatReasonEffortLevel.Low", "low")]
     [InlineData("ChatReasonEffortLevel.Medium", "medium")]
     [InlineData("ChatReasonEffortLevel.High", "high")]
