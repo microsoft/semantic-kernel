@@ -25,6 +25,21 @@ _AZURE_WIRE_SERVER_CATEGORY = "Azure metadata (WireServer)"
 # 64:ff9b:1::/48. IPv4 addresses embedded in these ranges must be classified too.
 _NAT64_PREFIXES = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
 
+# Cloud instance metadata services other than WireServer. These answer with instance
+# credentials, so they stay blocked even when allow_private_network_access=True. Each one
+# sits inside a range the private-address checks already flag, but the category it lands in
+# is generic -- "link-local", "carrier-grade NAT", "private (IPv6 ULA)" -- and those
+# categories also cover ordinary private addresses that the option is meant to permit, so
+# the gate cannot identify these by category and has to name them.
+#   169.254.169.254  IMDS, shared by AWS, Azure, GCP and OCI
+#   169.254.170.2    ECS task metadata
+#   100.100.100.200  Alibaba Cloud
+#   fd00:ec2::254    AWS IMDS over IPv6
+_CLOUD_METADATA_ADDRESSES = frozenset(
+    ipaddress.ip_address(address)
+    for address in ("169.254.169.254", "169.254.170.2", "100.100.100.200", "fd00:ec2::254")
+)
+
 
 class ServerUrlValidationOptions(KernelBaseModel):
     """Options for validating OpenAPI operation request URLs."""
@@ -230,6 +245,12 @@ def _reject_cloud_metadata_host(parsed_url: ParseResult) -> None:
 
     Only literal IP hosts are checked: private-network mode deliberately does not
     resolve hostnames, so a hostname pointing at a metadata endpoint is out of scope.
+
+    WireServer is recognised by its category. The remaining metadata endpoints share a
+    category with ordinary private addresses, so they are matched by address instead;
+    without that, ``169.254.169.254`` -- the IMDS address for AWS, GCP and Azure alike --
+    would be permitted here while the call site claims metadata endpoints are always
+    blocked.
     """
     host = parsed_url.hostname
     if host is None:
@@ -241,12 +262,37 @@ def _reject_cloud_metadata_host(parsed_url: ParseResult) -> None:
         return
 
     blocked, category = try_categorize_non_public_address(ip_address)
-    if blocked and category == _AZURE_WIRE_SERVER_CATEGORY:
+    if not blocked:
+        return
+
+    if category == _AZURE_WIRE_SERVER_CATEGORY:
         raise FunctionExecutionException(
             f"The request URI '{parsed_url.geturl()}' is not allowed: the host is the Azure "
             f"metadata endpoint (WireServer, {ip_address}), which is blocked even when "
             "allow_private_network_access=True to prevent SSRF against cloud metadata services."
         )
+
+    if _is_cloud_metadata_address(ip_address):
+        raise FunctionExecutionException(
+            f"The request URI '{parsed_url.geturl()}' is not allowed: the host is a cloud "
+            f"instance metadata endpoint ({ip_address}), which is blocked even when "
+            "allow_private_network_access=True to prevent SSRF against cloud metadata services."
+        )
+
+
+def _is_cloud_metadata_address(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Return whether an address is a well-known cloud instance metadata endpoint.
+
+    IPv6 forms that embed an IPv4 address are resolved to the embedded address first, so
+    ``::ffff:169.254.169.254`` and ``64:ff9b::169.254.169.254`` are recognised as well.
+    """
+    if isinstance(address, ipaddress.IPv6Address):
+        embedded_ipv4 = _extract_embedded_ipv4(address)
+        if embedded_ipv4 is not None:
+            return embedded_ipv4 in _CLOUD_METADATA_ADDRESSES
+        if address.ipv4_mapped is not None:
+            return address.ipv4_mapped in _CLOUD_METADATA_ADDRESSES
+    return address in _CLOUD_METADATA_ADDRESSES
 
 
 def _try_classify_ipv4(address: ipaddress.IPv4Address) -> tuple[bool, str]:
