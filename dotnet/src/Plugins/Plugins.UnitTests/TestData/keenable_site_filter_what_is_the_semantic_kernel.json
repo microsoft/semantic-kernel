@@ -1,0 +1,26 @@
+{
+  "query": "What is the Semantic Kernel?",
+  "results": [
+    {
+      "title": "Understanding the kernel in Semantic Kernel",
+      "url": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+      "description": "",
+      "snippet": "Understanding the kernel The kernel is the central component of Semantic Kernel. At its simplest, the kernel is a Dependency Injection container that manages all of the services and plugins necessary to run your AI application.",
+      "acquired_at": "2026-08-16T18:59:09Z"
+    },
+    {
+      "title": "Semantic Kernel Components",
+      "url": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/semantic-kernel-components",
+      "description": "",
+      "snippet": "Tip For more information on using AI services see Adding AI services to Semantic Kernel. Vector Store (Memory) Connectors The Semantic Kernel Vector Store connectors provide an abstraction layer that exposes vector stores from different providers via a common interface.",
+      "acquired_at": "2026-08-15T23:44:16Z"
+    },
+    {
+      "title": "Introduction to Semantic Kernel",
+      "url": "https://learn.microsoft.com/en-us/semantic-kernel/overview",
+      "description": "",
+      "snippet": "When a request is made the model calls a function, and Semantic Kernel is the middleware translating the model’s request to a function call and passes the results back to the model.",
+      "acquired_at": "2026-08-20T22:24:03Z"
+    }
+  ]
+}
