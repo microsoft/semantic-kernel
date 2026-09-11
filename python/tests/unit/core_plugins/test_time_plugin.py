@@ -178,9 +178,39 @@ def test_time_zone_offset():
         assert plugin.time_zone_offset() == "+0000"
 
 
+def test_time_zone_offset_naive_now_is_not_empty():
+    """strftime('%z') on a naive datetime returns '' (Python docs); the plugin
+    must attach the local timezone instead of returning an empty string."""
+    plugin = TimePlugin()
+    naive_now = datetime.datetime(2031, 1, 12, 12, 24, 56)
+
+    with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
+        dt.now.return_value = naive_now
+        offset = plugin.time_zone_offset()
+
+    # The expected value cancels out the machine's local timezone because
+    # both sides run astimezone() on the same naive datetime.
+    assert offset == naive_now.astimezone().strftime("%z")
+    assert offset != ""
+
+
 def test_time_zone_name():
     plugin = TimePlugin()
 
     with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
         dt.now.return_value = test_mock_now
         assert plugin.time_zone_name() == "UTC"
+
+
+def test_time_zone_name_naive_now_is_not_empty():
+    """strftime('%Z') on a naive datetime returns '' (Python docs); the plugin
+    must attach the local timezone instead of returning an empty string."""
+    plugin = TimePlugin()
+    naive_now = datetime.datetime(2031, 1, 12, 12, 24, 56)
+
+    with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
+        dt.now.return_value = naive_now
+        name = plugin.time_zone_name()
+
+    assert name == naive_now.astimezone().strftime("%Z")
+    assert name != ""
