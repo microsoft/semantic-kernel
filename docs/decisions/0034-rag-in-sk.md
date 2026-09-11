@@ -101,7 +101,7 @@ Tools for data **reading** is out of scope as for now.
 
 ### Option 1 [Supported] - Prompt concatenation
 
-This option allows to manually construct a prompt with data, so LLM can respond to query based on provided context. It can be achieved by using manual string concatenation or by using prompt template and Kernel arguments. Developers are responsible for integration with vector DB of their choice, data search and prompt construction to send it to LLM.
+This option allows you to manually construct a prompt with data, so LLM can respond to query based on provided context. It can be achieved by using manual string concatenation or by using prompt template and Kernel arguments. Developers are responsible for integration with vector DB of their choice, data search and prompt construction to send it to LLM.
 
 This approach doesn't include any memory connectors in Semantic Kernel out-of-the-box, but at the same time it gives an opportunity for developers to handle their data in the way that works for them the best.
 
