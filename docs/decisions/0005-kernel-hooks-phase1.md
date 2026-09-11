@@ -66,7 +66,7 @@ Pros:
 
 - Common pattern for observing and also changing data exposed as parameter into the delegate signature for (Get/Set) scenarios
 - Registering a callback gives back the registration object that can be used to cancel the execution of the function in the future.
-- Recursive approach, allows to register multiple callbacks for the same event, and also allows to register callbacks on top of pre existing callbacks.
+- Recursive approach, allows you to register multiple callbacks for the same event, and also allows you to register callbacks on top of pre existing callbacks.
 
 Cons:
 
