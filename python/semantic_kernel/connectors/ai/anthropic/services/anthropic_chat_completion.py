@@ -62,6 +62,7 @@ if TYPE_CHECKING:
 ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
     "end_turn": SemanticKernelFinishReason.STOP,
     "max_tokens": SemanticKernelFinishReason.LENGTH,
+    "stop_sequence": SemanticKernelFinishReason.STOP,
     "tool_use": SemanticKernelFinishReason.TOOL_CALLS,
 }
 
@@ -270,7 +271,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         finish_reason = None
         if response.stop_reason:
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[response.stop_reason]
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP.get(response.stop_reason)
 
         return ChatMessageContent(
             inner_content=response,
@@ -308,7 +309,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[str(stream_event.delta.stop_reason)]
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP.get(str(stream_event.delta.stop_reason))
             output_tokens = stream_event.usage.output_tokens
             if metadata is None:
                 metadata = {"usage": {"output_tokens": output_tokens}}
