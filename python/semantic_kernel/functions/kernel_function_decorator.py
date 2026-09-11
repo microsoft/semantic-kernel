@@ -6,6 +6,8 @@ from collections.abc import Callable
 from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
 from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+
 NoneType = type(None)
 logger = logging.getLogger(__name__)
 
@@ -65,7 +67,7 @@ def kernel_function(
         logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
         func_sig = signature(func, eval_str=True)
 
-        annotations = _process_signature(func_sig)
+        annotations = _process_signature(func_sig, getattr(func, "__globals__", None))
         logger.debug(f"{annotations=}")
 
         setattr(func, "__kernel_function_parameters__", annotations)
@@ -112,8 +114,15 @@ def _get_underlying_type(annotation: Any) -> Any:
     return annotation
 
 
-def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
-    """Process the signature of the function."""
+def _process_signature(func_sig: Signature, globalns: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Process the signature of the function.
+
+    Args:
+        func_sig: The signature of the function.
+        globalns: The function's module globals, used to resolve forward references such as
+            ``list["Model"]`` in parameter annotations. ``signature(..., eval_str=True)`` evaluates an
+            annotation that is a string, but not a string nested inside a generic alias.
+    """
     annotations = []
 
     for arg in func_sig.parameters.values():
@@ -126,6 +135,8 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
             underlying_type = _get_underlying_type(annotation)
         else:
             underlying_type = annotation
+        if globalns is not None:
+            underlying_type = KernelJsonSchemaBuilder.resolve_forward_refs(underlying_type, globalns)
         parsed_annotation["type_object"] = underlying_type
         annotations.append(parsed_annotation)
 
