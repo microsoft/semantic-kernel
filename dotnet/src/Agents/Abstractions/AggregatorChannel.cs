@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -15,6 +17,13 @@ namespace Microsoft.SemanticKernel.Agents;
 internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
     private readonly AgentChat _chat = chat;
+    private readonly Func<IReadOnlyList<ChatMessageContent>, ChatMessageContent?>? _messageSelector = null;
+
+    public AggregatorChannel(AgentChat chat, Func<IReadOnlyList<ChatMessageContent>, ChatMessageContent?>? messageSelector)
+        : this(chat)
+    {
+        this._messageSelector = messageSelector;
+    }
 
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
@@ -25,6 +34,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        List<ChatMessageContent>? messages = agent.Mode == AggregatorMode.Custom ? [] : null;
         ChatMessageContent? lastMessage = null;
 
         await foreach (ChatMessageContent message in this._chat.InvokeAsync(cancellationToken).ConfigureAwait(false))
@@ -34,6 +44,8 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             {
                 yield return (IsVisible: true, message);
             }
+
+            messages?.Add(message);
 
             lastMessage = message;
         }
@@ -49,6 +61,15 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
                 };
 
             yield return (IsVisible: true, message);
+        }
+
+        if (agent.Mode == AggregatorMode.Custom)
+        {
+            ChatMessageContent? selected = this.SelectMessage(messages!);
+            if (selected is not null)
+            {
+                yield return (IsVisible: true, selected);
+            }
         }
     }
 
@@ -90,6 +111,16 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
                 yield return new StreamingChatMessageContent(finalMessage.Role, finalMessage.Content) { AuthorName = finalMessage.AuthorName };
                 messages.Add(finalMessage);
             }
+            else if (agent.Mode == AggregatorMode.Custom)
+            {
+                IReadOnlyList<ChatMessageContent> generatedMessages = history.Take(history.Count - initialCount).ToList();
+                ChatMessageContent? selected = this.SelectMessage(generatedMessages);
+                if (selected is not null)
+                {
+                    yield return new StreamingChatMessageContent(selected.Role, selected.Content) { AuthorName = selected.AuthorName };
+                    messages.Add(selected);
+                }
+            }
         }
     }
 
@@ -108,4 +139,15 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
     protected internal override string Serialize() =>
         JsonSerializer.Serialize(this._chat.Serialize());
+
+    private ChatMessageContent? SelectMessage(IReadOnlyList<ChatMessageContent> messages)
+    {
+        if (this._messageSelector is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(AggregatorAgent.MessageSelector)} must be configured when {nameof(AggregatorAgent.Mode)} is {AggregatorMode.Custom}.");
+        }
+
+        return this._messageSelector(messages);
+    }
 }
