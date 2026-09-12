@@ -39,3 +39,18 @@ pip install semantic-kernel[mcp]
 cd python/samples/concepts/mcp
 python <name>.py
 ```
+### BGPT sample
+
+The `agent_with_bgpt_mcp_plugin.py` sample demonstrates how to connect
+Semantic Kernel to the BGPT MCP server using `MCPStreamableHttpPlugin`
+for evidence-based scientific literature retrieval.
+
+Before running the sample, configure the required Azure OpenAI
+environment variables as described in the sample file.
+
+Run the sample:
+
+```bash
+cd python/samples/concepts/mcp
+python agent_with_bgpt_mcp_plugin.py
+```
