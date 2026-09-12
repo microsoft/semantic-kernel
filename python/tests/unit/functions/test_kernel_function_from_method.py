@@ -257,6 +257,20 @@ async def test_required_param_not_supplied(kernel: Kernel):
         await func.invoke(kernel=kernel, arguments=KernelArguments())
 
 
+async def test_none_default_param_not_supplied(kernel: Kernel):
+    @kernel_function()
+    def my_function(input: str = None) -> str | None:
+        return input
+
+    func = KernelFunction.from_method(my_function, "test")
+
+    result = await func.invoke(kernel=kernel, arguments=KernelArguments())
+
+    assert result.value is None
+    assert func.parameters[0].is_required is False
+    assert func.parameters[0].default_value is None
+
+
 async def test_service_execution_with_complex_object(kernel: Kernel):
     class InputObject(KernelBaseModel):
         arg1: str

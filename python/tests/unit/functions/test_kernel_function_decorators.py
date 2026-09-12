@@ -18,6 +18,11 @@ class InputObject(KernelBaseModel):
     arg2: int
 
 
+class EqualityErrorDefault:
+    def __eq__(self, other):
+        raise ValueError("equality should not be called")
+
+
 class MiscClass:
     __test__ = False
 
@@ -48,6 +53,14 @@ class MiscClass:
 
     @kernel_function
     def func_input_optional(self, input: str | None = "test"):
+        return input
+
+    @kernel_function
+    def func_input_none_default(self, input: str = None):
+        return input
+
+    @kernel_function
+    def func_input_custom_default(self, input: object = EqualityErrorDefault()):
         return input
 
     @kernel_function
@@ -137,6 +150,24 @@ def test_kernel_function_param_optional():
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_param_none_default():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_none_default")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
+    assert not my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0]["default_value"] is None
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_param_default_does_not_call_equality():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_custom_default")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "object"
+    assert not my_func.__kernel_function_parameters__[0]["is_required"]
+    assert isinstance(my_func.__kernel_function_parameters__[0]["default_value"], EqualityErrorDefault)
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
