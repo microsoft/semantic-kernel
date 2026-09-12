@@ -71,7 +71,7 @@ async def main() -> None:
                                 # Show Annotation Content if it exist
                                 if isinstance(item, AnnotationContent):
                                     print(f"\n`{item.quote}` => {item.file_id}")
-                                    response_content = await client.agents.get_file_content(file_id=item.file_id)
+                                    response_content = await client.agents.files.get_content(file_id=item.file_id)
                                     content_bytes = bytearray()
                                     async for chunk in response_content:
                                         content_bytes.extend(chunk)
