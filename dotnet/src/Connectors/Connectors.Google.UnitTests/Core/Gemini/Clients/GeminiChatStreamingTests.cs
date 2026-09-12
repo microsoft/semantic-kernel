@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -467,6 +468,64 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         var thirdMessage = messages[2];
         Assert.Equal(" 42.", thirdMessage.Content);
+    }
+
+    [Fact]
+    public async Task ShouldEmitUsageMetricsOnceForStreamingResponseAsync()
+    {
+        // Arrange
+        var streamingResponse = """
+            data: {"candidates": [{"content": {"parts": [{"text": "One"}], "role": "model"}, "index": 0}], "usageMetadata": {"promptTokenCount": 101, "candidatesTokenCount": 202, "totalTokenCount": 303}}
+
+            data: {"candidates": [{"content": {"parts": [{"text": " two"}], "role": "model"}, "index": 0}], "usageMetadata": {"promptTokenCount": 101, "candidatesTokenCount": 202, "totalTokenCount": 303}}
+
+            data: {"candidates": [{"content": {"parts": [{"text": " three"}], "role": "model"}, "index": 0}], "usageMetadata": {"promptTokenCount": 101, "candidatesTokenCount": 202, "totalTokenCount": 303}}
+
+            data: {"candidates": [{"content": {"parts": [{"text": " four"}], "role": "model"}, "index": 0}], "usageMetadata": {"promptTokenCount": 101, "candidatesTokenCount": 202, "totalTokenCount": 303}}
+
+            data: {"candidates": [{"content": {"parts": [{"text": " five"}], "role": "model"}, "finishReason": "STOP", "index": 0}], "usageMetadata": {"promptTokenCount": 101, "candidatesTokenCount": 202, "totalTokenCount": 303}}
+
+            data: {"candidates": [{"content": {"parts": [{"text": ""}], "role": "model"}, "finishReason": "STOP", "index": 0}]}
+
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(streamingResponse);
+
+        var measurements = new Dictionary<string, List<int>>
+        {
+            ["Microsoft.SemanticKernel.Connectors.Google.tokens.prompt"] = [],
+            ["Microsoft.SemanticKernel.Connectors.Google.tokens.completion"] = [],
+            ["Microsoft.SemanticKernel.Connectors.Google.tokens.total"] = [],
+        };
+
+        using MeterListener listener = new();
+        listener.InstrumentPublished = (instrument, listener) =>
+        {
+            if (measurements.ContainsKey(instrument.Name))
+            {
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
+        {
+            if (measurements.TryGetValue(instrument.Name, out var instrumentMeasurements))
+            {
+                instrumentMeasurements.Add(measurement);
+            }
+        });
+        listener.Start();
+
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.Equal(6, messages.Count);
+        Assert.Equal(1, measurements["Microsoft.SemanticKernel.Connectors.Google.tokens.prompt"].Count(measurement => measurement == 101));
+        Assert.Equal(1, measurements["Microsoft.SemanticKernel.Connectors.Google.tokens.completion"].Count(measurement => measurement == 202));
+        Assert.Equal(1, measurements["Microsoft.SemanticKernel.Connectors.Google.tokens.total"].Count(measurement => measurement == 303));
     }
 
     private static ChatHistory CreateSampleChatHistory()
