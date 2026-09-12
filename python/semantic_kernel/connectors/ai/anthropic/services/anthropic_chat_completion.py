@@ -3,7 +3,8 @@
 import json
 import logging
 import sys
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Mapping
+from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
@@ -54,6 +55,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
 )
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -83,6 +85,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         service_id: str | None = None,
         api_key: str | None = None,
         async_client: AsyncAnthropic | None = None,
+        default_headers: Mapping[str, str] | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -95,6 +98,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             api_key: The optional API key to use. If provided will override,
                 the env vars or .env file value.
             async_client: An existing client to use.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
             env_file_path: Use the environment settings file as a fallback
                 to environment variables.
             env_file_encoding: The encoding of the environment settings file.
@@ -112,9 +117,16 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if not anthropic_settings.chat_model_id:
             raise ServiceInitializationError("The Anthropic chat model ID is required.")
 
+        # Merge APP_INFO into the headers if it exists
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
         if not async_client:
             async_client = AsyncAnthropic(
                 api_key=anthropic_settings.api_key.get_secret_value(),
+                default_headers=merged_headers,
             )
 
         super().__init__(
