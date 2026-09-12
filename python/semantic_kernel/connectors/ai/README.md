@@ -44,6 +44,7 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
 |             | [`HuggingFaceTextEmbedding`](./hugging_face/services/hf_text_embedding.py) |
 | Mistral AI | [`MistralAIChatCompletion`](./mistral_ai/services/mistral_ai_chat_completion.py) |
 |            | [`MistralAITextEmbedding`](./mistral_ai/services/mistral_ai_text_embedding.py) |
+| MiniMax | [`MiniMaxTextToAudio`](./minimax/services/minimax_text_to_audio.py) |
 | [Nvidia](./nvidia/README.md) | [`NvidiaTextEmbedding`](./nvidia/services/nvidia_text_embedding.py) |
 | Ollama | [`OllamaChatCompletion`](./ollama/services/ollama_chat_completion.py) |
 |        | [`OllamaTextCompletion`](./ollama/services/ollama_text_completion.py) |
