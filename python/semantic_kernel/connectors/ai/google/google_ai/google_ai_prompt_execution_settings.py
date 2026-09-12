@@ -18,6 +18,21 @@ class GoogleAIPromptExecutionSettings(PromptExecutionSettings):
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     top_p: float | None = None
     top_k: int | None = None
+    thinking_level: Literal["minimal", "low", "medium", "high"] | str | None = None
+
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+
+        This method extracts the thinking_level from the settings dictionary
+        and maps it to the thinking_config expected by the Google AI SDK.
+        """
+        settings_dict = super().prepare_settings_dict(**kwargs)
+
+        thinking_level = settings_dict.pop("thinking_level", None)
+        if thinking_level:
+            settings_dict["thinking_config"] = {"thinking_level": thinking_level}
+
+        return settings_dict
 
 
 class GoogleAITextPromptExecutionSettings(GoogleAIPromptExecutionSettings):
