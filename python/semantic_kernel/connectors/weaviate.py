@@ -160,13 +160,13 @@ class WeaviateSettings(KernelBaseSettings):
 
             if enabled == 0:
                 raise ServiceInvalidExecutionSettingsError(
-                    "Weaviate settings must specify either a ",
-                    "Weaviate Cloud instance, a local Weaviate instance, or the client embedding options.",
+                    "Weaviate settings must specify either a Weaviate Cloud instance, a local Weaviate "
+                    "instance, or the client embedding options."
                 )
             if enabled > 1:
                 raise ServiceInvalidExecutionSettingsError(
-                    "Weaviate settings must specify only one of the following: ",
-                    "Weaviate Cloud instance, a local Weaviate instance, or the client embedding options.",
+                    "Weaviate settings must specify only one of the following: Weaviate Cloud instance, "
+                    "a local Weaviate instance, or the client embedding options."
                 )
 
         return data
@@ -278,8 +278,8 @@ class WeaviateCollection(
                     async_client = use_async_with_embedded()
                 else:
                     raise NotImplementedError(
-                        "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
-                        " a local Weaviate instance, or the client embedding options.",
+                        "Weaviate settings must specify either a custom client, a Weaviate Cloud "
+                        "instance, a local Weaviate instance, or the client embedding options."
                     )
             except Exception as e:
                 raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
@@ -749,8 +749,8 @@ class WeaviateStore(VectorStore):
                     async_client = use_async_with_embedded()
                 else:
                     raise NotImplementedError(
-                        "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
-                        " a local Weaviate instance, or the client embedding options.",
+                        "Weaviate settings must specify either a custom client, a Weaviate Cloud "
+                        "instance, a local Weaviate instance, or the client embedding options."
                     )
             except Exception as e:
                 raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
