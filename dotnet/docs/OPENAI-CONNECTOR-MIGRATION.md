@@ -73,6 +73,14 @@ We have the two only specific cases where we attempted to auto-correct the endpo
    + http://any-host-and-port/v1
    ```
 
+   For example, an OpenAI-compatible provider such as TokenLab should be
+   configured with its OpenAI-compatible base URL:
+
+   ```diff
+   - https://api.tokenlab.sh
+   + https://api.tokenlab.sh/v1
+   ```
+
 ## 6. SemanticKernel MetaPackage
 
 To be retro compatible with the new OpenAI and AzureOpenAI Connectors, our `Microsoft.SemanticKernel` meta package changed its dependency to use the new `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package that depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package. This way if you are using the metapackage, no change is needed to get access to `Azure` related types.
