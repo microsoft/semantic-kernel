@@ -73,6 +73,22 @@ We have the two only specific cases where we attempted to auto-correct the endpo
    + http://any-host-and-port/v1
    ```
 
+### 5.1 OpenAI-Compatible Endpoints Example (e.g., PZERO)
+
+When connecting to third-party OpenAI-compatible endpoints such as PZERO (`https://api.pzero.studio/v1`), provide the `/v1` root endpoint, API key, and model ID:
+
+```csharp
+using Microsoft.SemanticKernel;
+
+var builder = Kernel.CreateBuilder();
+builder.AddOpenAIChatCompletion(
+    modelId: "deepseek-v4-flash",
+    endpoint: new Uri("https://api.pzero.studio/v1"),
+    apiKey: Environment.GetEnvironmentVariable("PZERO_API_KEY")!
+);
+var kernel = builder.Build();
+```
+
 ## 6. SemanticKernel MetaPackage
 
 To be retro compatible with the new OpenAI and AzureOpenAI Connectors, our `Microsoft.SemanticKernel` meta package changed its dependency to use the new `Microsoft.SemanticKernel.Connectors.AzureOpenAI` package that depends on the `Microsoft.SemanticKernel.Connectors.OpenAI` package. This way if you are using the metapackage, no change is needed to get access to `Azure` related types.
@@ -181,15 +197,14 @@ The type also changed from `CompletionsUsage` to `ChatTokenUsage`.
 ```diff
 - Before
 - var usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
-- var completionTokesn = usage?.CompletionTokens ?? 0;
+- var completionTokens = usage?.CompletionTokens ?? 0;
 - var promptTokens = usage?.PromptTokens ?? 0;
 
 + After
 + var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
 + var promptTokens = usage?.InputTokens ?? 0;
-+ var completionTokens = completionTokens: usage?.OutputTokens ?? 0;
-
-totalTokens: usage?.TotalTokens ?? 0;
++ var completionTokens = usage?.OutputTokens ?? 0;
++ var totalTokens = usage?.TotalTokens ?? 0;
 ```
 
 #### 9.9 OpenAIClient
