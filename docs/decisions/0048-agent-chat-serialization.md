@@ -15,7 +15,7 @@ Formalizing a mechanism that supports serialization and deserialization of any `
 #### Goals
 - **Capture & Restore Primary Chat History**: The primary `AgentChat` history must be captured and restored for full fidelity.
 - **Capture & Restore Channel State**: In addition to the primary chat history, the state for each `AgentChannel` within the `AgentChat` must be captured and restored.
-- **Capture Agent Metadata**: Capturing the agent Identifier, Name, and Type upon serialization provides a guidance on how to restore the `AgentChat` during deserialization.
+- **Capture Agent Metadata**: Capturing the agent Identifier, Name, and Type upon serialization provides guidance on how to restore the `AgentChat` during deserialization.
 
 
 #### Non-Goals
