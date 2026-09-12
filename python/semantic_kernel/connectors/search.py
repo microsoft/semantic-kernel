@@ -13,6 +13,10 @@ _IMPORTS = {
     "BraveWebPages": ".brave",
     "BraveWebPage": ".brave",
     "BraveSearchResponse": ".brave",
+    "ExaSearch": ".exa",
+    "ExaSettings": ".exa",
+    "ExaSearchResult": ".exa",
+    "ExaSearchResponse": ".exa",
 }
 
 
