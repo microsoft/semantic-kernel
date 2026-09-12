@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import socket
 
 import pytest
+from pytest import raises
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
@@ -17,7 +19,7 @@ from semantic_kernel.exceptions import FunctionExecutionException
     [
         ("127.0.0.1", "loopback"),
         ("127.255.255.254", "loopback"),
-        ("169.254.169.254", "link-local"),
+        ("169.254.10.10", "link-local"),
         ("169.254.0.1", "link-local"),
         ("10.0.0.1", "private (RFC1918)"),
         ("172.16.0.1", "private (RFC1918)"),
@@ -76,7 +78,7 @@ def test_try_categorize_non_public_address_allows_public_addresses(address: str)
 
 async def test_validate_server_url_rejects_literal_link_local_ipv4():
     with pytest.raises(FunctionExecutionException, match="link-local"):
-        await validate_server_url("https://169.254.169.254/latest/meta-data/")
+        await validate_server_url("https://169.254.10.10/latest/meta-data/")
 
 
 async def test_validate_server_url_rejects_literal_loopback_ipv6():
@@ -120,7 +122,7 @@ async def test_validate_server_url_allows_private_network_access_after_scheme_ga
 async def test_validate_server_url_blocks_hostname_resolving_to_link_local():
     async def fake_resolver(host: str):
         assert host == "evil.example.com"
-        return ["169.254.169.254"]
+        return ["169.254.10.10"]
 
     with pytest.raises(FunctionExecutionException, match="link-local"):
         await validate_server_url("https://evil.example.com/latest/meta-data/", dns_resolver=fake_resolver)
@@ -168,3 +170,108 @@ async def test_validate_server_url_blocks_empty_dns_response():
 
     with pytest.raises(FunctionExecutionException, match="returned no addresses"):
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
+
+
+CLOUD_METADATA_ENDPOINTS = [
+    "169.254.169.254",  # AWS IMDS, GCP, Azure, OCI, DigitalOcean
+    "169.254.170.2",  # AWS ECS task IAM role credentials
+    "169.254.170.23",  # AWS EKS Pod Identity Agent
+    "168.63.129.16",  # Azure WireServer (publicly routable)
+    "100.100.100.200",  # Alibaba Cloud
+    "192.0.0.192",  # Oracle Cloud (Classic)
+    "169.254.42.42",  # Scaleway
+]
+
+
+@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
+async def test_cloud_metadata_endpoints_blocked(address):
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://{address}/latest/meta-data/")
+
+
+@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
+async def test_cloud_metadata_endpoints_blocked_with_private_access(address):
+    """`allow_private_network_access` covers your own network, not the credential endpoint."""
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    with raises(FunctionExecutionException, match="cloud metadata endpoint"):
+        await validate_server_url(f"https://{address}/latest/meta-data/", options)
+
+
+async def test_private_network_access_still_permits_rfc1918():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    await validate_server_url("https://10.0.0.5/resource", options)
+
+
+async def test_private_network_access_still_permits_loopback():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    await validate_server_url("https://127.0.0.1/resource", options)
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "64:ff9b::169.254.169.254",  # NAT64 well-known prefix (RFC 6052)
+        "64:ff9b:1::169.254.169.254",  # NAT64 local-use prefix (RFC 8215)
+        "2002:a9fe:a9fe::",  # 6to4 (RFC 3056)
+        "::ffff:169.254.169.254",  # IPv4-mapped
+    ],
+)
+async def test_ipv6_forms_carrying_a_blocked_ipv4_are_rejected(address):
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{address}]/latest/meta-data/")
+
+
+async def test_teredo_carrying_a_blocked_ipv4_is_rejected():
+    """Teredo obfuscates the client IPv4 by XOR-ing the low 32 bits with all ones."""
+    target = ipaddress.IPv4Address("169.254.169.254")
+    low = bytes(byte ^ 0xFF for byte in target.packed)
+    teredo = ipaddress.IPv6Address(b"\x20\x01\x00\x00" + b"\x00" * 8 + low)
+
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{teredo}]/latest/meta-data/")
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "64:ff9b::1.1.1.1",  # NAT64 well-known prefix pointing at a public IPv4
+        "2002:0101:0101::",  # 6to4 pointing at 1.1.1.1
+        "2606:4700:4700::1111",  # plain public IPv6
+    ],
+)
+async def test_ipv6_forms_carrying_a_public_ipv4_are_allowed(address):
+    """Decoding must not reject legitimate NAT64/6to4 targets."""
+    await validate_server_url(f"https://[{address}]/resource")
+
+
+def _rfc6052(prefix_length: int, target: str) -> ipaddress.IPv6Address:
+    """Embed an IPv4 address in the RFC 8215 local-use prefix at one of RFC 6052's lengths."""
+    packed = ipaddress.IPv4Address(target).packed
+    address = bytearray(16)
+    address[0:6] = b"\x00\x64\xff\x9b\x00\x01"
+    if prefix_length == 96:
+        address[12:16] = packed
+    elif prefix_length == 64:
+        address[9:13] = packed
+    elif prefix_length == 56:
+        address[7] = packed[0]
+        address[9:12] = packed[1:4]
+    elif prefix_length == 48:
+        address[6:8] = packed[0:2]
+        address[9:11] = packed[2:4]
+    return ipaddress.IPv6Address(bytes(address))
+
+
+@pytest.mark.parametrize("prefix_length", [96, 64, 56, 48])
+@pytest.mark.parametrize("target", ["1.1.1.1", "169.254.169.254"])
+async def test_nat64_local_use_prefix_is_blocked_at_every_embedding_length(prefix_length, target):
+    """The whole RFC 8215 local-use prefix is refused rather than decoded at a guessed length.
+
+    RFC 6052 only puts the embedded address in bytes 12-15 for a /96; the shorter lengths put the
+    suffix there, which the RFC says SHOULD be zero. Decoding those bytes regardless read 0.0.0.0
+    out of an ordinary public target and rejected it as "unspecified", while declining to decode
+    would have let the metadata address through at every length but /96. Neither is inferable from
+    the address, so the prefix is blocked as a whole.
+    """
+    with raises(FunctionExecutionException):
+        await validate_server_url(f"https://[{_rfc6052(prefix_length, target)}]/resource")
