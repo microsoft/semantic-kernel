@@ -228,6 +228,27 @@ def test_build_optional():
     assert schema == {"type": ["integer", "null"]}
 
 
+def test_get_json_schema_none_type():
+    # NoneType maps to the JSON Schema "null" type, not "object".
+    assert KernelJsonSchemaBuilder.get_json_schema(type(None)) == {"type": "null"}
+
+
+def test_build_none_type():
+    assert KernelJsonSchemaBuilder.build(type(None)) == {"type": "null"}
+
+
+def test_build_union_with_none():
+    # A union of more than two members that includes None must represent the
+    # None member as {"type": "null"}, not {"type": "object"}.
+    schema = KernelJsonSchemaBuilder.build(Union[int, str, None])
+    assert schema == {"anyOf": [{"type": "integer"}, {"type": "string"}, {"type": "null"}]}
+
+
+def test_build_from_type_name_none():
+    assert KernelJsonSchemaBuilder.build_from_type_name("None") == {"type": "null"}
+    assert KernelJsonSchemaBuilder.build_from_type_name("NoneType") == {"type": "null"}
+
+
 def test_build_model_schema_for_many_types():
     schema = KernelJsonSchemaBuilder.build(MockModel)
     expected = """
