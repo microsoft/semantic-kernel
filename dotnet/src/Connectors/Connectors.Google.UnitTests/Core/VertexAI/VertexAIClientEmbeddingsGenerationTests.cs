@@ -136,6 +136,66 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         Assert.Equal(expectedVersion, header);
     }
 
+    [Fact]
+    public async Task ShouldUseEmbedContentEndpointForGeminiEmbeddingModelAsync()
+    {
+        // Arrange
+        string modelId = "gemini-embedding-2";
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
+            File.ReadAllText("./TestData/vertex_embed_content_response.json"));
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.EndsWith($"models/{modelId}:embedContent", requestUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ShouldUsePredictEndpointForLegacyEmbeddingModelAsync()
+    {
+        // Arrange
+        string modelId = "textembedding-gecko";
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.EndsWith($"models/{modelId}:predict", requestUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ShouldReturnValidEmbeddingsResponseForGeminiEmbeddingModelAsync()
+    {
+        // Arrange
+        string modelId = "gemini-embedding-2";
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
+            File.ReadAllText("./TestData/vertex_embed_content_response.json"));
+        var dataToEmbed = new List<string>()
+        {
+            "Write a story about a magic backpack."
+        };
+
+        // Act
+        var embeddings = await client.GenerateEmbeddingsAsync(dataToEmbed);
+
+        // Assert
+        VertexAIEmbedContentResponse testDataResponse = JsonSerializer.Deserialize<VertexAIEmbedContentResponse>(
+            await File.ReadAllTextAsync("./TestData/vertex_embed_content_response.json"))!;
+        Assert.NotNull(embeddings);
+        Assert.Single(embeddings);
+        Assert.Equal(testDataResponse.Embedding.Values, embeddings[0]);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
