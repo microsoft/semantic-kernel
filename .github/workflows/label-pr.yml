@@ -11,11 +11,36 @@ on: [pull_request_target]
 jobs:
   add_label:
     runs-on: ubuntu-latest
+    environment: github-app-auth
     permissions:
       contents: read
-      pull-requests: write
+      id-token: write
 
     steps:
+      - name: Checkout GitHub automation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          sparse-checkout: .github/actions/github-app-token
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Get GitHub automation token
+        id: github-auth
+        uses: ./.github/actions/github-app-token
+        with:
+          mode: ${{ vars.GH_APP_AUTH_MODE }}
+          azure-client-id: ${{ secrets.GH_APP_AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.GH_APP_AZURE_TENANT_ID }}
+          azure-subscription-id: ${{ secrets.GH_APP_AZURE_SUBSCRIPTION_ID }}
+          key-vault-name: ${{ secrets.GH_APP_KEY_VAULT_NAME }}
+          key-name: ${{ secrets.GH_APP_KEY_NAME }}
+          github-app-client-id: ${{ secrets.GH_APP_CLIENT_ID }}
+          github-app-installation-id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+          repository: ${{ github.repository }}
+          permission-profile: pull-requests
+          fallback-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+
       - uses: actions/labeler@b8dd2d9be0f68b860e7dae5dae7d772984eacd6d # v6.2.0
         with:
-          repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
+          repo-token: ${{ steps.github-auth.outputs.token }}
