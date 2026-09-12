@@ -38,6 +38,7 @@
 |  | [OllamaTextEmbedding](../../../semantic_kernel/connectors/ai/ollama/services/ollama_text_embedding.py) | ai_model_id, <br> host | OLLAMA_EMBEDDING_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No |  |
 | Onnx | [OnnxGenAIChatCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) | template, <br> ai_model_path | N/A, <br> ONNX_GEN_AI_CHAT_MODEL_FOLDER | Yes, <br> Yes | [OnnxGenAISettings](../../../semantic_kernel/connectors/ai/onnx/onnx_gen_ai_settings.py) |
 |  | [OnnxGenAITextCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_text_completion.py) | ai_model_path | ONNX_GEN_AI_TEXT_MODEL_FOLDER | Yes |  |
+| Perplexity | [PerplexityChatCompletion](../../../semantic_kernel/connectors/ai/perplexity/services/perplexity_chat_completion.py) | ai_model_id, <br> api_key, <br> base_url | PERPLEXITY_CHAT_MODEL_ID, <br> PERPLEXITY_API_KEY, <br> PERPLEXITY_BASE_URL | Yes (default: sonar-pro), <br> Yes, <br> No | [PerplexitySettings](../../../semantic_kernel/connectors/ai/perplexity/settings/perplexity_settings.py) |
 
 ## Agent Framework Settings used across SK
 
