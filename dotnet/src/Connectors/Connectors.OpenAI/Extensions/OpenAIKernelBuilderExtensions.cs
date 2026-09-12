@@ -271,6 +271,44 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
+    /// Adds an OpenAI-compatible audio-to-text service with a custom endpoint to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">Model name.</param>
+    /// <param name="endpoint">OpenAI-compatible API endpoint.</param>
+    /// <param name="apiKey">Optional API key.</param>
+    /// <param name="orgId">OpenAI organization id.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddOpenAIAudioToText(
+        this IKernelBuilder builder,
+        string modelId,
+        Uri endpoint,
+        string? apiKey = null,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(endpoint);
+
+        Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
+            new(modelId,
+                endpoint,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
+
+        builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>

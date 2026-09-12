@@ -158,6 +158,32 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void ItCanAddAudioToTextServiceWithCustomEndpoint()
+    {
+        // Arrange
+        var endpoint = new Uri("http://localhost:10095/v1");
+        var sut = new ServiceCollection();
+
+        // Act
+        var service = sut.AddOpenAIAudioToText("model", endpoint)
+            .BuildServiceProvider()
+            .GetRequiredService<IAudioToTextService>();
+
+        // Assert
+        Assert.Equal(endpoint.ToString(), service.Attributes[AIServiceExtensions.EndpointKey]);
+    }
+
+    [Fact]
+    public void ItThrowsWhenAddingAudioToTextServiceWithoutCustomEndpoint()
+    {
+        // Arrange
+        var sut = new ServiceCollection();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => sut.AddOpenAIAudioToText("model", endpoint: null!));
+    }
+
+    [Fact]
     public void ItCanAddAudioToTextServiceWithOpenAIClient()
     {
         // Arrange
