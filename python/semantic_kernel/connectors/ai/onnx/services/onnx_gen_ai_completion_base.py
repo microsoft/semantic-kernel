@@ -37,7 +37,9 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             ServiceInitializationError: When model cannot be loaded
         """
         if not ready:
-            raise ImportError("onnxruntime-genai is not installed.")
+            raise ServiceInitializationError(
+                "onnxruntime-genai is not installed. Please install it with `pip install semantic-kernel[onnx]`."
+            )
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
             with open(json_gen_ai_config) as file:
@@ -86,8 +88,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
 
             while not generator.is_done():
                 generator.generate_next_token()
-                new_token_choices = [self.tokenizer_stream.decode(token) for token in generator.get_next_tokens()]
-                yield new_token_choices
+                yield [self.tokenizer_stream.decode(token) for token in generator.get_next_tokens()]
             del generator
         except Exception as ex:
             raise ServiceInvalidResponseError("Failed Inference with ONNX", ex) from ex
