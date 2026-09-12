@@ -1,0 +1,28 @@
+[package]
+name = "sk-agent"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Agent Framework for Semantic Kernel Rust - Multi-step agents with orchestration patterns"
+
+[dependencies]
+semantic_kernel = { path = "../semantic_kernel" }
+sk-plan = { path = "../sk-plan" }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+[dev-dependencies]
+mockall = { workspace = true }
+anyhow = { workspace = true }

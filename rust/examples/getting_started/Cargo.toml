@@ -1,0 +1,44 @@
+[package]
+name = "getting_started"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step1_create_kernel"
+path = "step1_create_kernel.rs"
+
+[[bin]]
+name = "step2_add_plugins"
+path = "step2_add_plugins.rs"
+
+
+[[bin]]
+name = "step4_dependency_injection"
+path = "step4_dependency_injection.rs"
+
+[[bin]]
+name = "step5_chat_prompt"
+path = "step5_chat_prompt.rs"
+
+[[bin]]
+name = "step7_observability"
+path = "step7_observability.rs"
+
+[[bin]]
+name = "step8_pipelining"
+path = "step8_pipelining.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-openai = { path = "../../sk-openai" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+dotenv = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+futures = "0.3"
+regex = "1.0"
+chrono = { workspace = true }
+rand = "0.8"
