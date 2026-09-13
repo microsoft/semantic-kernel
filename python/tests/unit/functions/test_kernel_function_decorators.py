@@ -280,3 +280,44 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert description == annotation_dict.get("description")
     assert type_ == annotation_dict["type_"]
     assert is_required == annotation_dict["is_required"]
+
+
+def test_shared_annotation_metadata_dict_not_mutated():
+    """A dict used as Annotated metadata must not be mutated when parsed.
+
+    The same metadata dict can be reused across multiple kernel functions
+    (e.g. shared parameter docs); parsing one function's signature must not
+    remove the "description" key for the next function.
+    """
+    shared_meta = {"description": "shared description"}
+
+    @kernel_function
+    def func_one(arg: Annotated[int, shared_meta]) -> str:
+        return "one"
+
+    @kernel_function
+    def func_two(arg: Annotated[int, shared_meta]) -> str:
+        return "two"
+
+    # the user-provided dict is unchanged
+    assert shared_meta == {"description": "shared description"}
+
+    params_one = {p["name"]: p.get("description") for p in func_one.__kernel_function_parameters__}
+    params_two = {p["name"]: p.get("description") for p in func_two.__kernel_function_parameters__}
+
+    assert params_one["arg"] == "shared description"
+    assert params_two["arg"] == "shared description"
+
+
+def test_annotation_metadata_dict_other_keys_still_applied():
+    """Keys other than 'description' in a metadata dict must still be applied, without mutation."""
+    meta = {"description": "the description", "default_value": 42}
+
+    @kernel_function
+    def func(arg: Annotated[int, meta]) -> str:
+        return "ok"
+
+    assert meta == {"description": "the description", "default_value": 42}
+    param = func.__kernel_function_parameters__[0]
+    assert param["description"] == "the description"
+    assert param["default_value"] == 42
