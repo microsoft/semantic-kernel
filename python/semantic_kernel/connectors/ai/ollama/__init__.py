@@ -5,10 +5,12 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
     OllamaEmbeddingPromptExecutionSettings,
     OllamaPromptExecutionSettings,
     OllamaTextPromptExecutionSettings,
+    OllamaTextToImagePromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_to_image import OllamaTextToImage
 
 __all__ = [
     "OllamaChatCompletion",
@@ -18,4 +20,6 @@ __all__ = [
     "OllamaTextCompletion",
     "OllamaTextEmbedding",
     "OllamaTextPromptExecutionSettings",
+    "OllamaTextToImage",
+    "OllamaTextToImagePromptExecutionSettings",
 ]

@@ -56,6 +56,7 @@ def ollama_unit_test_env(monkeypatch, host, exclude_list):
         "OLLAMA_CHAT_MODEL_ID": "test_chat_model_id",
         "OLLAMA_TEXT_MODEL_ID": "test_text_model_id",
         "OLLAMA_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+        "OLLAMA_IMAGE_MODEL_ID": "test_image_model_id",
         "OLLAMA_HOST": host,
     }
 

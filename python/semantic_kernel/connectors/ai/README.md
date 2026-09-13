@@ -48,5 +48,6 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
 | Ollama | [`OllamaChatCompletion`](./ollama/services/ollama_chat_completion.py) |
 |        | [`OllamaTextCompletion`](./ollama/services/ollama_text_completion.py) |
 |        | [`OllamaTextEmbedding`](./ollama/services/ollama_text_embedding.py) |
+|        | [`OllamaTextToImage`](./ollama/services/ollama_text_to_image.py) |
 | Onnx | [`OnnxGenAIChatCompletion`](./onnx/services/onnx_gen_ai_chat_completion.py) |
 |      | [`OnnxGenAITextCompletion`](./onnx/services/onnx_gen_ai_text_completion.py) |
