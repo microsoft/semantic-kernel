@@ -37,3 +37,11 @@ class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
 
 class OllamaEmbeddingPromptExecutionSettings(OllamaPromptExecutionSettings):
     """Settings for Ollama embedding prompt execution."""
+
+
+class OllamaTextToImagePromptExecutionSettings(OllamaPromptExecutionSettings):
+    """Settings for Ollama text to image execution."""
+
+    width: int | None = None
+    height: int | None = None
+    steps: int | None = None
