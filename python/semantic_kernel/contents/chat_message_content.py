@@ -246,6 +246,8 @@ class ChatMessageContent(KernelContent):
             if field not in ["role", "name", "encoding", "finish_reason", "status", "ai_model_id"]:
                 continue
             value = getattr(self, field)
+            if value is None:
+                continue
             if isinstance(value, Enum):
                 value = value.value
             root.set(field, value)

@@ -46,6 +46,18 @@ def test_xml_roundtrip_preserves_message_status(status: Status, serializer):
     assert restored[0].status is status
 
 
+@pytest.mark.parametrize("serializer", [str, ChatHistory.to_prompt], ids=["str", "to_prompt"])
+def test_xml_serialization_omits_cleared_message_status(serializer):
+    message = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Working", status=Status.IN_PROGRESS)
+    message.status = None
+
+    xml = serializer(ChatHistory(messages=[message]))
+    restored = ChatHistory.from_rendered_prompt(xml)
+
+    assert "status=" not in xml
+    assert restored[0].status is None
+
+
 def test_init_with_system_message_only():
     system_msg = "test message"
     chat_history = ChatHistory(system_message=system_msg)
