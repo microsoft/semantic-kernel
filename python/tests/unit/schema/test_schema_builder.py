@@ -6,6 +6,7 @@ from typing import Annotated, Any, Optional, Union
 from unittest.mock import Mock
 
 import pytest
+from pydantic import Field
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -74,6 +75,10 @@ class PydanticStep(KernelBaseModel):
 class PydanticReasoning(KernelBaseModel):
     steps: list[PydanticStep]
     final_answer: str
+
+
+class PydanticModelWithConstrainedField(KernelBaseModel):
+    top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
 
 
 class NonPydanticStep:
@@ -154,6 +159,13 @@ def test_build_model_schema():
     }
     result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
+
+
+def test_build_model_schema_uses_pydantic_description_with_constraints():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithConstrainedField)
+
+    assert schema["properties"]["top_p"] == {"type": "number", "description": "nucleus sampling"}
+    json.dumps(schema)
 
 
 def test_build_from_type_name():
