@@ -243,7 +243,7 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(self.tag)
         for field in self.model_fields_set:
-            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
+            if field not in ["role", "name", "encoding", "finish_reason", "status", "ai_model_id"]:
                 continue
             value = getattr(self, field)
             if isinstance(value, Enum):
