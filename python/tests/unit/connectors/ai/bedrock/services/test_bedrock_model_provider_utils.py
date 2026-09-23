@@ -157,6 +157,12 @@ def test_inference_profile_with_bedrock_model() -> None:
     eu_meta_inference_profile = "eu.meta.llama3-2-3b-instruct-v1:0"
     assert BedrockModelProvider.to_model_provider(eu_meta_inference_profile) == BedrockModelProvider.META
 
+    us_openai_inference_profile = "us.openai.gpt-6-sol"
+    assert BedrockModelProvider.to_model_provider(us_openai_inference_profile) == BedrockModelProvider.OPENAI
+
+    global_openai_inference_profile = "global.openai.gpt-6-luna"
+    assert BedrockModelProvider.to_model_provider(global_openai_inference_profile) == BedrockModelProvider.OPENAI
+
     unknown_inference_profile = "unknown"
     with pytest.raises(ValueError, match="Model ID unknown does not contain a valid model provider name."):
         BedrockModelProvider.to_model_provider(unknown_inference_profile)

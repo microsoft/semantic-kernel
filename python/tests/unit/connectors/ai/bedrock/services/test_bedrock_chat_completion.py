@@ -169,6 +169,7 @@ def test_prepare_system_message_for_request(mock_client, bedrock_unit_test_env, 
         "ai21.jamba",
         "meta.llama",
         "mistral.ai",
+        "openai.gpt",
     ],
 )
 @patch.object(boto3, "client", return_value=Mock())
@@ -183,7 +184,17 @@ def test_prepare_settings_for_request(mock_client, model_id, chat_history) -> No
     assert parsed_settings["messages"] == bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
     assert parsed_settings["system"] == bedrock_chat_completion._prepare_system_messages_for_request(chat_history)
     assert isinstance(parsed_settings["inferenceConfig"], dict)
-    assert all([parsed_settings["inferenceConfig"].values()])
+    assert parsed_settings["inferenceConfig"] == {}
+
+
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_settings_for_request_with_stop(mock_client, chat_history) -> None:
+    """Test that stop sequences are sent only when they are set"""
+    bedrock_chat_completion = BedrockChatCompletion(model_id="anthropic.claude")
+    settings = BedrockChatPromptExecutionSettings(stop=["world"])
+    parsed_settings = bedrock_chat_completion._prepare_settings_for_request(chat_history, settings)
+
+    assert parsed_settings["inferenceConfig"] == {"stopSequences": ["world"]}
 
 
 @pytest.mark.parametrize(
@@ -213,7 +224,7 @@ def test_prepare_settings_for_request_with_application_inference_profile(mock_cl
     assert parsed_settings["messages"] == bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
     assert parsed_settings["system"] == bedrock_chat_completion._prepare_system_messages_for_request(chat_history)
     assert isinstance(parsed_settings["inferenceConfig"], dict)
-    assert all([parsed_settings["inferenceConfig"].values()])
+    assert parsed_settings["inferenceConfig"] == {}
 
 
 # endregion
@@ -232,6 +243,7 @@ def test_prepare_settings_for_request_with_application_inference_profile(mock_cl
         "ai21.jamba",
         "meta.llama",
         "mistral.ai",
+        "openai.gpt",
     ],
 )
 async def test_bedrock_chat_completion(
@@ -288,6 +300,7 @@ async def test_bedrock_chat_completion(
         "ai21.jamba",
         "meta.llama",
         "mistral.ai",
+        "openai.gpt",
     ],
 )
 async def test_bedrock_streaming_chat_completion(
@@ -339,6 +352,7 @@ async def test_bedrock_streaming_chat_completion(
         "ai21.jamba",
         "meta.llama",
         "mistral.ai",
+        "openai.gpt",
     ],
 )
 async def test_bedrock_streaming_chat_completion_invalid_event(

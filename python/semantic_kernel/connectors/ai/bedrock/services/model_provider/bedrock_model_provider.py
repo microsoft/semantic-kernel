@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider import (
     bedrock_cohere,
     bedrock_meta_llama,
     bedrock_mistralai,
+    bedrock_openai,
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -33,6 +34,7 @@ class BedrockModelProvider(Enum):
     COHERE = "cohere"
     META = "meta"
     MISTRALAI = "mistral"
+    OPENAI = "openai"
 
     @classmethod
     def to_model_provider(cls, model_id: str) -> "BedrockModelProvider":
@@ -118,6 +120,7 @@ CHAT_COMPLETION_ADDITIONAL_MODEL_REQUEST_FIELDS_MAPPING: dict[
     BedrockModelProvider.AI21LABS: bedrock_ai21_labs.get_chat_completion_additional_model_request_fields,
     BedrockModelProvider.META: bedrock_meta_llama.get_chat_completion_additional_model_request_fields,
     BedrockModelProvider.MISTRALAI: bedrock_mistralai.get_chat_completion_additional_model_request_fields,
+    BedrockModelProvider.OPENAI: bedrock_openai.get_chat_completion_additional_model_request_fields,
 }
 
 

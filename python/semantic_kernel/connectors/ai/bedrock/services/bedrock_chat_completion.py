@@ -211,7 +211,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "maxTokens": settings.max_tokens,
                 "temperature": settings.temperature,
                 "topP": settings.top_p,
-                "stopSequences": settings.stop,
+                "stopSequences": settings.stop or None,
             }),
             "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
                 self.ai_model_id, settings, model_provider=self.bedrock_model_provider
