@@ -40,6 +40,7 @@ namespace Microsoft.SemanticKernel.Plugins.Document;
 /// <para>
 /// This plugin is secure by default. <see cref="AllowedDirectories"/> must be explicitly configured
 /// before any file operations are permitted. By default, all file paths are denied.
+/// UNC and extended file paths, including mixed-separator forms, are not supported.
 /// </para>
 /// <para>
 /// When exposing this plugin to an LLM via auto function calling, ensure that
@@ -161,13 +162,25 @@ public sealed class DocumentPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return PathUtilities.GetSafeFullPath(expanded);
+        // Full-path normalization does not access the filesystem. Re-check before
+        // resolving symbolic links, since relative paths can resolve to a UNC share.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(fullPath);
     }
 
     private static bool IsUncOrExtendedPath(string path)
     {
-        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
+        // "\??\" is an NT object-manager prefix that Path.GetFullPath leaves unchanged
+        // and that can still target UNC shares (e.g., \??\UNC\server\share).
+        return (path.Length >= 2 &&
+                (path[0] is '/' or '\\') &&
+                (path[1] is '/' or '\\')) ||
+            path.StartsWith(@"\??\", StringComparison.Ordinal);
     }
 
     /// <summary>

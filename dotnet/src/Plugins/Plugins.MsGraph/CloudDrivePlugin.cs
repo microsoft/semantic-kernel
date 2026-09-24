@@ -22,6 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// <see cref="AllowedReadPaths"/>, and <see cref="AllowedSharePaths"/> must be explicitly configured
 /// before file upload, read, or share-link operations are permitted.
 /// By default, all paths are denied.
+/// Local upload paths must not be UNC or extended paths, including mixed-separator forms.
 /// </para>
 /// <para>
 /// When exposing this plugin to an LLM via auto function calling, ensure that
@@ -298,8 +299,7 @@ public sealed class CloudDrivePlugin
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -310,13 +310,29 @@ public sealed class CloudDrivePlugin
 
         // Re-check after expansion: an env var could have expanded to a UNC
         // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            expanded.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(expanded))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return Path.GetFullPath(expanded);
+        // Relative paths can resolve to a UNC share during full-path normalization.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return fullPath;
+    }
+
+    private static bool IsUncOrExtendedPath(string path)
+    {
+        // "\??\" is an NT object-manager prefix that Path.GetFullPath leaves unchanged
+        // and that can still target UNC shares (e.g., \??\UNC\server\share).
+        return (path.Length >= 2 &&
+                (path[0] is '/' or '\\') &&
+                (path[1] is '/' or '\\')) ||
+            path.StartsWith(@"\??\", StringComparison.Ordinal);
     }
 
     /// <summary>

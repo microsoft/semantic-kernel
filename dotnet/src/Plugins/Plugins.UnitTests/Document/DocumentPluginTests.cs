@@ -172,8 +172,9 @@ public class DocumentPluginTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", traversalPath));
     }
 
-    [Fact]
-    public async Task ItDeniesUncPathsAsync()
+    [Theory]
+    [MemberData(nameof(UncPathTestData.Paths), MemberType = typeof(UncPathTestData))]
+    public async Task ItDeniesUncOrExtendedPathsAsync(string filePath)
     {
         // Arrange
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
@@ -183,13 +184,17 @@ public class DocumentPluginTests
             AllowedDirectories = [Path.GetTempPath()]
         };
 
-        // Act & Assert — UNC paths are rejected
-        await Assert.ThrowsAnyAsync<Exception>(async () => await target.ReadTextAsync("\\\\UNC\\server\\folder\\file.docx"));
-        await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "\\\\UNC\\server\\folder\\file.docx"));
+        // Act & Assert
+        var readException = await Assert.ThrowsAsync<ArgumentException>(() => target.ReadTextAsync(filePath));
+        Assert.Equal("path", readException.ParamName);
+        Assert.StartsWith("Invalid file path, UNC paths are not supported.", readException.Message);
 
-        // Act & Assert — forward-slash UNC paths are rejected too
-        await Assert.ThrowsAnyAsync<Exception>(async () => await target.ReadTextAsync("//UNC/server/folder/file.docx"));
-        await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "//UNC/server/folder/file.docx"));
+        var writeException = await Assert.ThrowsAsync<ArgumentException>(() => target.AppendTextAsync("text", filePath));
+        Assert.Equal("path", writeException.ParamName);
+        Assert.StartsWith("Invalid file path, UNC paths are not supported.", writeException.Message);
+
+        fileSystemConnectorMock.VerifyNoOtherCalls();
+        documentConnectorMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -349,17 +354,18 @@ public class DocumentPluginTests
         }
     }
 
-    [Fact]
-    public async Task ItDeniesUncPathsIntroducedViaEnvVarExpansionAsync()
+    [Theory]
+    [MemberData(nameof(UncPathTestData.Paths), MemberType = typeof(UncPathTestData))]
+    public async Task ItDeniesUncOrExtendedPathsIntroducedViaEnvVarExpansionAsync(string filePath)
     {
-        // Arrange — env var that expands to a UNC path
+        // Arrange
         var allowedFolder = Path.Combine(Path.GetTempPath(), "sandbox");
         var envVarName = "SK_TEST_UNC_" + Guid.NewGuid().ToString("N")[..8];
 
         try
         {
-            Environment.SetEnvironmentVariable(envVarName, @"\\evil-server\share");
-            var maliciousPath = $"%{envVarName}%{Path.DirectorySeparatorChar}secret.docx";
+            Environment.SetEnvironmentVariable(envVarName, filePath);
+            var maliciousPath = $"%{envVarName}%";
 
             var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
             var documentConnectorMock = new Mock<IDocumentConnector>();
@@ -368,12 +374,89 @@ public class DocumentPluginTests
                 AllowedDirectories = [allowedFolder]
             };
 
-            // Act & Assert — expanded path is UNC, should be rejected
-            await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(maliciousPath));
+            // Act & Assert
+            var readException = await Assert.ThrowsAsync<ArgumentException>(() => target.ReadTextAsync(maliciousPath));
+            Assert.Equal("path", readException.ParamName);
+            Assert.StartsWith("Invalid file path, UNC paths are not supported.", readException.Message);
+
+            var writeException = await Assert.ThrowsAsync<ArgumentException>(() => target.AppendTextAsync("text", maliciousPath));
+            Assert.Equal("path", writeException.ParamName);
+            Assert.StartsWith("Invalid file path, UNC paths are not supported.", writeException.Message);
+
+            fileSystemConnectorMock.VerifyNoOtherCalls();
+            documentConnectorMock.VerifyNoOtherCalls();
         }
         finally
         {
             Environment.SetEnvironmentVariable(envVarName, null);
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItUsesCanonicalPathAfterEnvVarExpansionAsync(bool fileExists)
+    {
+        var folderPath = Path.GetTempPath();
+        var filePath = Path.Combine(folderPath, Guid.NewGuid().ToString("N") + ".docx");
+        var envVarName = "SK_TEST_DOCUMENT_" + Guid.NewGuid().ToString("N");
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        fileSystemConnectorMock.Setup(c => c.GetFileContentStreamAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(Stream.Null);
+        fileSystemConnectorMock.Setup(c => c.FileExistsAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(fileExists);
+        documentConnectorMock.Setup(c => c.ReadText(Stream.Null)).Returns("content");
+        documentConnectorMock.Setup(c => c.AppendText(Stream.Null, "text"));
+
+        if (fileExists)
+        {
+            fileSystemConnectorMock.Setup(c => c.GetWriteableFileStreamAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(Stream.Null);
+        }
+        else
+        {
+            fileSystemConnectorMock.Setup(c => c.CreateFileAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(Stream.Null);
+            documentConnectorMock.Setup(c => c.Initialize(Stream.Null));
+        }
+
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [folderPath]
+        };
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, folderPath);
+            var expandedPath = Path.Combine($"%{envVarName}%", "subdir", "..", Path.GetFileName(filePath));
+
+            Assert.Equal("content", await target.ReadTextAsync(expandedPath));
+            await target.AppendTextAsync("text", expandedPath);
+
+            fileSystemConnectorMock.VerifyAll();
+            documentConnectorMock.VerifyAll();
+            fileSystemConnectorMock.VerifyNoOtherCalls();
+            documentConnectorMock.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
+    [Fact]
+    public async Task ItAllowsSingleCharacterRelativePathAsync()
+    {
+        var filePath = Path.GetFullPath("x");
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        fileSystemConnectorMock.Setup(c => c.GetFileContentStreamAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(Stream.Null);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        documentConnectorMock.Setup(c => c.ReadText(Stream.Null)).Returns("content");
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Environment.CurrentDirectory]
+        };
+
+        Assert.Equal("content", await target.ReadTextAsync("x"));
+
+        fileSystemConnectorMock.VerifyAll();
+        documentConnectorMock.VerifyAll();
     }
 }

@@ -169,17 +169,19 @@ public class CloudDrivePluginTests
             await target.UploadFileAsync(traversalPath, "/remote.txt"));
     }
 
-    [Fact]
-    public async Task ItDeniesUncPathsAsync()
+    [Theory]
+    [MemberData(nameof(UncPathTestData.Paths), MemberType = typeof(UncPathTestData))]
+    public async Task ItDeniesUncOrExtendedPathsAsync(string filePath)
     {
         // Arrange
         Mock<ICloudDriveConnector> connectorMock = new();
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
-        // Act & Assert — UNC paths are rejected (ArgumentException on Windows, InvalidOperationException on Linux
-        // where the path is canonicalized differently and fails the allowlist check instead)
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
-            await target.UploadFileAsync("\\\\UNC\\server\\folder\\file.txt", "/remote.txt"));
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => target.UploadFileAsync(filePath, "/remote.txt"));
+        Assert.Equal("path", exception.ParamName);
+        Assert.StartsWith("Invalid file path, UNC paths are not supported.", exception.Message);
+        connectorMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -227,10 +229,11 @@ public class CloudDrivePluginTests
         try
         {
             Environment.SetEnvironmentVariable(envVarName, tempDir);
-            var envVarPath = Path.Combine($"%{envVarName}%", "testfile.txt");
+            var envVarPath = Path.Combine($"%{envVarName}%", "subdir", "..", "testfile.txt");
+            var canonicalPath = Path.Combine(tempDir, "testfile.txt");
 
-            Mock<ICloudDriveConnector> connectorMock = new();
-            connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+            connectorMock.Setup(c => c.UploadSmallFileAsync(canonicalPath, "/remote.txt", It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir], AllowedUploadDestinationPaths = ["/"] };
@@ -300,29 +303,51 @@ public class CloudDrivePluginTests
         }
     }
 
-    [Fact]
-    public async Task ItDeniesEnvVarExpansionToUncPathAsync()
+    [Theory]
+    [MemberData(nameof(UncPathTestData.Paths), MemberType = typeof(UncPathTestData))]
+    public async Task ItDeniesEnvVarExpansionToUncOrExtendedPathAsync(string filePath)
     {
-        // Arrange — env var that expands to a UNC path should be rejected
+        // Arrange
         var envVarName = "SK_TEST_UNC_" + Guid.NewGuid().ToString("N")[..8];
         var originalValue = Environment.GetEnvironmentVariable(envVarName);
 
         try
         {
-            Environment.SetEnvironmentVariable(envVarName, "\\\\server\\share");
-            var maliciousPath = Path.Combine($"%{envVarName}%", "secret.txt");
+            Environment.SetEnvironmentVariable(envVarName, filePath);
+            var maliciousPath = $"%{envVarName}%";
 
             Mock<ICloudDriveConnector> connectorMock = new();
             CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
 
-            // Act & Assert — UNC path after env-var expansion should be rejected
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
-                await target.UploadFileAsync(maliciousPath, "/remote.txt"));
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => target.UploadFileAsync(maliciousPath, "/remote.txt"));
+            Assert.Equal("path", exception.ParamName);
+            Assert.StartsWith("Invalid file path, UNC paths are not supported.", exception.Message);
+            connectorMock.VerifyNoOtherCalls();
         }
         finally
         {
             Environment.SetEnvironmentVariable(envVarName, originalValue);
         }
+    }
+
+    [Fact]
+    public async Task ItAllowsSingleCharacterRelativePathAsync()
+    {
+        var filePath = Path.GetFullPath("x");
+        Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+        connectorMock.Setup(c => c.UploadSmallFileAsync(filePath, "/remote.txt", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        CloudDrivePlugin target = new(connectorMock.Object)
+        {
+            AllowedUploadDirectories = [Environment.CurrentDirectory],
+            AllowedUploadDestinationPaths = ["/"]
+        };
+
+        await target.UploadFileAsync("x", "/remote.txt");
+
+        connectorMock.VerifyAll();
+        connectorMock.VerifyNoOtherCalls();
     }
 
     [Fact]
