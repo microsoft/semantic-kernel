@@ -14,10 +14,10 @@ from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pydantic import SecretStr, ValidationError
 from redis.asyncio.client import Redis
-from redis.exceptions import ResponseError
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+from redis.exceptions import ResponseError
 from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery

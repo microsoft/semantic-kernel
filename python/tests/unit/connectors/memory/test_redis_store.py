@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
+from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import ResponseError
 
 from semantic_kernel.connectors.redis import (
     RedisCollectionTypes,
@@ -12,9 +14,6 @@ from semantic_kernel.connectors.redis import (
     RedisJsonCollection,
     RedisStore,
 )
-from redis.exceptions import ConnectionError as RedisConnectionError
-from redis.exceptions import ResponseError
-
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 BASE_PATH = "redis.asyncio.client.Redis"
