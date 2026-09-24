@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 # This concept sample shows how to use the OpenAI connector with PZERO's
 # OpenAI-compatible endpoint: https://api.pzero.studio/v1
@@ -39,8 +40,11 @@ settings.temperature = 0.7
 chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
-    prompt="{{$chat_history}}{{$user_input}}",
-    template_format="semantic-kernel",
+    prompt_template_config=PromptTemplateConfig(
+        template="{{$chat_history}}{{$user_input}}",
+        template_format="semantic-kernel",
+        allow_dangerously_set_content=True,
+    ),
     prompt_execution_settings=settings,
 )
 
