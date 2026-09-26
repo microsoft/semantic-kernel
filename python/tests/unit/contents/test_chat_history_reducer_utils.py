@@ -274,3 +274,9 @@ def test_extract_range_preserve_pairs_parallel_calls_filtered_result():
         history, start=2, end=len(history), filter_func=lambda m: m is result_paris, preserve_pairs=True
     )
     assert extracted == [result_tokyo, done]
+
+    # A message interleaved between the call and its results keeps its position
+    note = ChatMessageContent(role=AuthorRole.USER, content="also Tokyo")
+    history = [call, note, result_paris, result_tokyo]
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+    assert extracted == history
