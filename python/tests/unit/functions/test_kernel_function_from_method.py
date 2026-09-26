@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
+import types
 from collections.abc import AsyncGenerator, Iterable
 from typing import Annotated, Any
 from unittest.mock import Mock
@@ -566,3 +568,73 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+@pytest.fixture
+def stub_agent_framework(monkeypatch):
+    """Stub the optional `agent_framework` dependency so as_agent_framework_tool can be exercised."""
+
+    class AIFunction:
+        def __init__(self, *, name, description, input_model, func):
+            self.name = name
+            self.description = description
+            self.input_model = input_model
+            self.func = func
+
+    module = types.ModuleType("agent_framework")
+    module.AIFunction = AIFunction
+    monkeypatch.setitem(sys.modules, "agent_framework", module)
+
+
+def test_as_agent_framework_tool_keeps_defaults_and_required(stub_agent_framework):
+    @kernel_function(name="search", description="search things")
+    def search(
+        query: Annotated[str, "search query"],
+        top_k: Annotated[int, "number of results"] = 5,
+        include_meta: Annotated[bool, "include metadata"] = False,
+        offset: Annotated[int, "results to skip"] = 0,
+        label: Annotated[str, "label"] = "",
+    ) -> str:
+        return f"{query}:{top_k}:{include_meta}:{offset}:{label}"
+
+    func = KernelFunction.from_method(search, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    # Only the parameter without a default should be required.
+    assert schema.get("required") == ["query"]
+    # Falsy defaults (0, False, "") must survive, not be dropped as if they were None.
+    assert schema["properties"]["top_k"]["default"] == 5
+    assert schema["properties"]["include_meta"]["default"] is False
+    assert schema["properties"]["offset"]["default"] == 0
+    assert schema["properties"]["label"]["default"] == ""
+
+
+def test_as_agent_framework_tool_none_defaults_accept_none(stub_agent_framework):
+    @kernel_function(name="configure", description="configure things")
+    def configure(
+        q: Annotated[str, "required query"],
+        tag: Annotated[str | None, "tag"] = None,
+        n: Annotated[int | None, "n"] = None,
+    ) -> str:
+        return f"{q}:{tag}:{n}"
+
+    func = KernelFunction.from_method(configure, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    # Only the parameter without any default is required; a None default still
+    # makes a parameter optional, it must not be conflated with "no default".
+    assert schema.get("required") == ["q"]
+    assert schema["properties"]["tag"]["default"] is None
+    assert schema["properties"]["n"]["default"] is None
+
+    # The model must accept both an omitted value and an explicit None for the
+    # None-defaulted parameters.
+    instance = tool.input_model(q="x")
+    assert instance.tag is None
+    assert instance.n is None
+
+    instance_explicit = tool.input_model(q="x", tag=None, n=None)
+    assert instance_explicit.tag is None
+    assert instance_explicit.n is None

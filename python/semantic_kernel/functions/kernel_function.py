@@ -447,12 +447,20 @@ class KernelFunction(KernelBaseModel):
         fields = {}
         for param in self.parameters:
             if param.include_in_function_choices:
-                if param.default_value is not None:
+                if param.is_required:
+                    fields[param.name] = (param.type_, Field(description=param.description))
+                else:
+                    # A parameter that isn't required may still carry an actual default of None
+                    # (e.g. `tag: str | None = None`), which is different from having no default
+                    # at all. The annotation needs to accept None in that case, or pydantic
+                    # rejects the None default and any explicit None passed by the caller.
+                    annotation = param.type_
+                    if param.default_value is None:
+                        annotation = f"{param.type_} | None"
                     fields[param.name] = (
-                        param.type_,
+                        annotation,
                         Field(description=param.description, default=param.default_value),
                     )
-                fields[param.name] = (param.type_, Field(description=param.description))
         input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
