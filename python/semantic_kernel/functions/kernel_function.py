@@ -454,9 +454,22 @@ class KernelFunction(KernelBaseModel):
                     # (e.g. `tag: str | None = None`), which is different from having no default
                     # at all. The annotation needs to accept None in that case, or pydantic
                     # rejects the None default and any explicit None passed by the caller.
-                    annotation = param.type_
-                    if param.default_value is None:
-                        annotation = f"{param.type_} | None"
+                    if param.type_object is not None:
+                        # Prefer the real type object when we have one: it is unambiguous,
+                        # unlike the type_ string, which collapses a multi-type union such as
+                        # `str | int | None` into "str, int" (no way to tell it apart from a
+                        # literal two-argument type).
+                        annotation: Any = param.type_object
+                        if param.default_value is None:
+                            annotation = param.type_object | None
+                    else:
+                        annotation = param.type_
+                        # type_ is a comma-joined string for a multi-type union (e.g. "str, int")
+                        # when no single non-None type could be resolved; appending "| None" to
+                        # that would produce an invalid forward reference, so it is left alone,
+                        # same as it already behaves without this fix.
+                        if param.default_value is None and param.type_ and "," not in param.type_:
+                            annotation = f"{param.type_} | None"
                     fields[param.name] = (
                         annotation,
                         Field(description=param.description, default=param.default_value),

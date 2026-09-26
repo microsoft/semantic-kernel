@@ -2,6 +2,7 @@
 import sys
 import types
 from collections.abc import AsyncGenerator, Iterable
+from dataclasses import dataclass
 from typing import Annotated, Any
 from unittest.mock import Mock
 
@@ -256,6 +257,30 @@ async def test_required_param_not_supplied(kernel: Kernel):
     func = KernelFunction.from_method(my_function, "test")
 
     with pytest.raises(FunctionExecutionException):
+        await func.invoke(kernel=kernel, arguments=KernelArguments())
+
+
+async def test_optional_annotation_without_default_raises_typeerror_on_invoke(kernel: Kernel):
+    """Pins a pre-existing gap, unrelated to as_agent_framework_tool, found while reviewing it.
+
+    `_parse_parameter` marks `is_required=False` for any annotation containing NoneType,
+    including a bare `x: str | None` with no `= None` in the signature. `gather_function_parameters`
+    then treats a missing argument for a non-required parameter as fine to just skip, rather than
+    supplying `None`. But the underlying Python function still has no default for `x`, so calling
+    it without `x` raises a raw TypeError, not the FunctionExecutionException `is_required` implies.
+    Fixing this needs a way to tell "no default in the signature" apart from "annotation includes
+    None", which _process_signature does not currently retain; that is a bigger change than this
+    PR's scope, so this only pins the current behaviour.
+    """
+
+    @kernel_function()
+    def my_function(x: str | None) -> str:
+        return str(x)
+
+    func = KernelFunction.from_method(my_function, "test")
+    assert func.parameters[0].is_required is False
+
+    with pytest.raises(TypeError, match="missing 1 required positional argument"):
         await func.invoke(kernel=kernel, arguments=KernelArguments())
 
 
@@ -638,3 +663,56 @@ def test_as_agent_framework_tool_none_defaults_accept_none(stub_agent_framework)
     instance_explicit = tool.input_model(q="x", tag=None, n=None)
     assert instance_explicit.tag is None
     assert instance_explicit.n is None
+
+
+@dataclass
+class _ProbeCustomType:
+    id: str = ""
+
+
+def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent_framework):
+    """A None-defaulted `list[str]` or dataclass/BaseModel parameter has a real
+    `type_object`, unlike a plain string, so the annotation can be built from it
+    directly (`param.type_object | None`) instead of the type_ string.
+    """
+
+    @kernel_function(name="configure", description="configure things")
+    def configure(
+        q: Annotated[str, "required query"],
+        b: Annotated[list[str] | None, "b"] = None,
+        c: Annotated[_ProbeCustomType | None, "c"] = None,
+    ) -> str:
+        return f"{q}:{b}:{c}"
+
+    func = KernelFunction.from_method(configure, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    assert schema.get("required") == ["q"]
+    assert schema["properties"]["b"]["default"] is None
+    assert schema["properties"]["c"]["default"] is None
+
+    instance = tool.input_model(q="x")
+    assert instance.b is None
+    assert instance.c is None
+
+    instance_explicit = tool.input_model(q="x", b=["y"], c=_ProbeCustomType(id="z"))
+    assert instance_explicit.b == ["y"]
+    assert instance_explicit.c == _ProbeCustomType(id="z")
+
+
+def test_as_agent_framework_tool_multi_type_union_stays_broken(stub_agent_framework):
+    """`str | int | None` has no single non-None type, so `type_object` is None and the
+    loop falls back to the comma-joined type_ string "str, int". Appending "| None" to
+    that would only make it worse (an invalid forward reference), so this case is left
+    exactly as broken as it already was before this fix: this pins that it is a
+    pre-existing gap, not something this change regresses.
+    """
+
+    @kernel_function(name="probe", description="probe things")
+    def probe(q: Annotated[str, "required"], a: Annotated[str | int | None, "a"] = None) -> str:
+        return f"{q}:{a}"
+
+    func = KernelFunction.from_method(probe, "test")
+    with pytest.raises(TypeError, match="Forward references must evaluate to types"):
+        func.as_agent_framework_tool()
