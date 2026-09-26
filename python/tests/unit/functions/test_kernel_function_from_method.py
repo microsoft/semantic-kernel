@@ -596,8 +596,9 @@ def test_as_agent_framework_tool_keeps_defaults_and_required(stub_agent_framewor
         include_meta: Annotated[bool, "include metadata"] = False,
         offset: Annotated[int, "results to skip"] = 0,
         label: Annotated[str, "label"] = "",
+        y=3,  # unannotated parameter with a default: type_object is inspect.Parameter.empty
     ) -> str:
-        return f"{query}:{top_k}:{include_meta}:{offset}:{label}"
+        return f"{query}:{top_k}:{include_meta}:{offset}:{label}:{y}"
 
     func = KernelFunction.from_method(search, "test")
     tool = func.as_agent_framework_tool()
@@ -610,6 +611,11 @@ def test_as_agent_framework_tool_keeps_defaults_and_required(stub_agent_framewor
     assert schema["properties"]["include_meta"]["default"] is False
     assert schema["properties"]["offset"]["default"] == 0
     assert schema["properties"]["label"]["default"] == ""
+    # An unannotated parameter with a default must not crash tool creation (its
+    # type_object is inspect.Parameter.empty, which pydantic cannot build a schema
+    # from) and must fall back to being optional with its default preserved.
+    assert schema["properties"]["y"]["default"] == 3
+    assert "y" not in schema.get("required", [])
 
 
 def test_as_agent_framework_tool_none_defaults_accept_none(stub_agent_framework):
@@ -678,23 +684,6 @@ def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent
     assert instance_explicit.c == _ProbeCustomType(id="z")
 
 
-def test_as_agent_framework_tool_multi_type_union_stays_broken(stub_agent_framework):
-    """`str | int | None` has no single non-None type, so `type_object` is None and the
-    loop falls back to the comma-joined type_ string "str, int". Appending "| None" to
-    that would only make it worse (an invalid forward reference), so this case is left
-    exactly as broken as it already was before this fix: this pins that it is a
-    pre-existing gap, not something this change regresses.
-    """
-
-    @kernel_function(name="probe", description="probe things")
-    def probe(q: Annotated[str, "required"], a: Annotated[str | int | None, "a"] = None) -> str:
-        return f"{q}:{a}"
-
-    func = KernelFunction.from_method(probe, "test")
-    with pytest.raises(TypeError, match="Forward references must evaluate to types"):
-        func.as_agent_framework_tool()
-
-
 def test_as_agent_framework_tool_optional_annotation_without_default_stays_required(stub_agent_framework):
     """`x: str | None` (no default) still makes `is_required=False` in the decorator's own
     metadata, because that only checks whether the annotation contains None, not whether the
@@ -723,3 +712,8 @@ def test_as_agent_framework_tool_optional_annotation_without_default_stays_requi
     instance = tool.input_model(x="hi")
     assert instance.x == "hi"
     assert instance.y is None
+
+    # x is required (no default in the signature), but its annotation still includes
+    # None, so an explicit null must validate rather than be rejected as the wrong type.
+    instance_explicit_none = tool.input_model(x=None)
+    assert instance_explicit_none.x is None

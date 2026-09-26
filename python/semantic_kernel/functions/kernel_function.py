@@ -463,27 +463,39 @@ class KernelFunction(KernelBaseModel):
                 is_required = param.is_required or (
                     sig_param is not None and sig_param.default is inspect.Parameter.empty
                 )
+                # _process_signature stores inspect.Parameter.empty as type_object for an
+                # unannotated parameter, and pydantic cannot build a schema from that, so it
+                # counts the same as "no usable type object" alongside None.
+                type_object = param.type_object
+                if type_object is inspect.Parameter.empty:
+                    type_object = None
+                annotation: Any = param.type_
                 if is_required:
-                    fields[param.name] = (param.type_, Field(description=param.description))
+                    # This parameter is only required because the signature has no default;
+                    # the decorator's own is_required is False, meaning the annotation itself
+                    # includes None (e.g. `x: str | None` with no default). An explicit None
+                    # should still validate, and the schema should say so.
+                    if not param.is_required and type_object is not None:
+                        annotation = type_object | None
+                    fields[param.name] = (annotation, Field(description=param.description))
                 else:
                     # A parameter that isn't required may still carry an actual default of None
                     # (e.g. `tag: str | None = None`), which is different from having no default
                     # at all. The annotation needs to accept None in that case, or pydantic
                     # rejects the None default and any explicit None passed by the caller.
-                    if param.type_object is not None:
+                    if type_object is not None:
                         # Prefer the real type object when we have one: it is unambiguous,
                         # unlike the type_ string, which collapses a multi-type union such as
                         # `str | int | None` into "str, int" (no way to tell it apart from a
                         # literal two-argument type).
-                        annotation: Any = param.type_object
+                        annotation = type_object
                         if param.default_value is None:
-                            annotation = param.type_object | None
+                            annotation = type_object | None
                     else:
                         annotation = param.type_
                         # type_ is a comma-joined string for a multi-type union (e.g. "str, int")
                         # when no single non-None type could be resolved; appending "| None" to
-                        # that would produce an invalid forward reference, so it is left alone,
-                        # same as it already behaves without this fix.
+                        # that would produce an invalid forward reference, so it is left alone.
                         if param.default_value is None and param.type_ and "," not in param.type_:
                             annotation = f"{param.type_} | None"
                     fields[param.name] = (
