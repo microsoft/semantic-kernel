@@ -209,15 +209,9 @@ def extract_range(
                             # remove it from the slice so we don't process it again
                             sliced.remove(paired_idx)
                     continue
-                # keep all
+                # keep all: each paired message is appended when its own index is reached,
+                # so messages interleaved between a call and its results keep their order
                 extracted.append(msg)
-                for paired_idx in paired_indices:
-                    if paired_idx > idx and paired_idx in sliced:
-                        # We'll skip the pair in the normal iteration by removing from slice
-                        # but add it to extracted right now
-                        extracted.append(history[paired_idx])
-                        sliced.remove(paired_idx)
-                    # if paired_idx < idx, it was already processed, so do not add duplicates
                 i += 1
                 continue
             # If the paired_idx is outside [start, end), there's no conflict
