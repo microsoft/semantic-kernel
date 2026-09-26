@@ -426,6 +426,7 @@ class KernelFunction(KernelBaseModel):
         Returns:
             AIFunction: The agent framework tool.
         """
+        import inspect
         import json
 
         from pydantic import Field, create_model
@@ -444,10 +445,25 @@ class KernelFunction(KernelBaseModel):
             kernel = Kernel()
         name = name or self.name
         description = description or self.description
+
+        # `param.is_required` is False for any annotation that contains None (e.g. both
+        # `x: str | None` and `x: str | None = None`), even though only the second one
+        # actually has a default. Without correcting for that, a parameter that Python
+        # itself still requires would be built as optional here, and invoking the tool
+        # with it omitted would raise a raw TypeError from the underlying call instead of
+        # failing input validation the way a missing required field should. When the
+        # function has a real Python callable, recover the distinction from its signature.
+        method = getattr(self, "method", None)
+        signature = inspect.signature(method) if method is not None else None
+
         fields = {}
         for param in self.parameters:
             if param.include_in_function_choices:
-                if param.is_required:
+                sig_param = signature.parameters.get(param.name) if signature is not None and param.name else None
+                is_required = param.is_required or (
+                    sig_param is not None and sig_param.default is inspect.Parameter.empty
+                )
+                if is_required:
                     fields[param.name] = (param.type_, Field(description=param.description))
                 else:
                     # A parameter that isn't required may still carry an actual default of None

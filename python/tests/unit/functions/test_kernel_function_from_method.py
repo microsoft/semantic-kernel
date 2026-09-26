@@ -7,6 +7,7 @@ from typing import Annotated, Any
 from unittest.mock import Mock
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
@@ -257,30 +258,6 @@ async def test_required_param_not_supplied(kernel: Kernel):
     func = KernelFunction.from_method(my_function, "test")
 
     with pytest.raises(FunctionExecutionException):
-        await func.invoke(kernel=kernel, arguments=KernelArguments())
-
-
-async def test_optional_annotation_without_default_raises_typeerror_on_invoke(kernel: Kernel):
-    """Pins a pre-existing gap, unrelated to as_agent_framework_tool, found while reviewing it.
-
-    `_parse_parameter` marks `is_required=False` for any annotation containing NoneType,
-    including a bare `x: str | None` with no `= None` in the signature. `gather_function_parameters`
-    then treats a missing argument for a non-required parameter as fine to just skip, rather than
-    supplying `None`. But the underlying Python function still has no default for `x`, so calling
-    it without `x` raises a raw TypeError, not the FunctionExecutionException `is_required` implies.
-    Fixing this needs a way to tell "no default in the signature" apart from "annotation includes
-    None", which _process_signature does not currently retain; that is a bigger change than this
-    PR's scope, so this only pins the current behaviour.
-    """
-
-    @kernel_function()
-    def my_function(x: str | None) -> str:
-        return str(x)
-
-    func = KernelFunction.from_method(my_function, "test")
-    assert func.parameters[0].is_required is False
-
-    with pytest.raises(TypeError, match="missing 1 required positional argument"):
         await func.invoke(kernel=kernel, arguments=KernelArguments())
 
 
@@ -716,3 +693,33 @@ def test_as_agent_framework_tool_multi_type_union_stays_broken(stub_agent_framew
     func = KernelFunction.from_method(probe, "test")
     with pytest.raises(TypeError, match="Forward references must evaluate to types"):
         func.as_agent_framework_tool()
+
+
+def test_as_agent_framework_tool_optional_annotation_without_default_stays_required(stub_agent_framework):
+    """`x: str | None` (no default) still makes `is_required=False` in the decorator's own
+    metadata, because that only checks whether the annotation contains None, not whether the
+    Python signature has a default. Python itself still requires `x`, so the bridge recovers
+    that from the real callable's signature and keeps `x` required, while `y: str | None = None`,
+    which genuinely has a default, stays optional.
+    """
+
+    @kernel_function(name="probe", description="probe things")
+    def probe(x: Annotated[str | None, "x, no default"], y: Annotated[str | None, "y, defaulted"] = None) -> str:
+        return f"{x}:{y}"
+
+    func = KernelFunction.from_method(probe, "test")
+    assert func.parameters[0].is_required is False  # the decorator's own metadata, unchanged
+
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    assert schema.get("required") == ["x"]
+    assert "y" not in (schema.get("required") or [])
+    assert schema["properties"]["y"]["default"] is None
+
+    with pytest.raises(ValidationError):
+        tool.input_model()
+
+    instance = tool.input_model(x="hi")
+    assert instance.x == "hi"
+    assert instance.y is None
