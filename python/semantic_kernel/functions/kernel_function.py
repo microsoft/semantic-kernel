@@ -471,11 +471,10 @@ class KernelFunction(KernelBaseModel):
                     type_object = None
                 annotation: Any = param.type_
                 if is_required:
-                    # This parameter is only required because the signature has no default;
-                    # the decorator's own is_required is False, meaning the annotation itself
-                    # includes None (e.g. `x: str | None` with no default). An explicit None
-                    # should still validate, and the schema should say so.
                     if not param.is_required and type_object is not None:
+                        # Only the signature makes it required: the annotation itself includes
+                        # None (e.g. `x: str | None` with no default), so an explicit None
+                        # should still validate, and the schema should say so.
                         annotation = type_object | None
                     fields[param.name] = (annotation, Field(description=param.description))
                 else:
@@ -485,14 +484,12 @@ class KernelFunction(KernelBaseModel):
                     # rejects the None default and any explicit None passed by the caller.
                     if type_object is not None:
                         # Prefer the real type object when we have one: it is unambiguous,
-                        # unlike the type_ string, which collapses a multi-type union such as
-                        # `str | int | None` into "str, int" (no way to tell it apart from a
-                        # literal two-argument type).
+                        # unlike the type_ string, which turns a multi-type union such as
+                        # `str | int | None` into "str, int", a string pydantic cannot evaluate.
                         annotation = type_object
                         if param.default_value is None:
                             annotation = type_object | None
                     else:
-                        annotation = param.type_
                         # type_ is a comma-joined string for a multi-type union (e.g. "str, int")
                         # when no single non-None type could be resolved; appending "| None" to
                         # that would produce an invalid forward reference, so it is left alone.

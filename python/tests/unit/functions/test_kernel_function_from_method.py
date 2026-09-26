@@ -649,12 +649,12 @@ def test_as_agent_framework_tool_none_defaults_accept_none(stub_agent_framework)
 
 
 @dataclass
-class _ProbeCustomType:
+class _CustomType:
     id: str = ""
 
 
 def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent_framework):
-    """A None-defaulted `list[str]` or dataclass/BaseModel parameter has a real
+    """A None-defaulted `list[str]` or dataclass parameter has a real
     `type_object`, unlike a plain string, so the annotation can be built from it
     directly (`param.type_object | None`) instead of the type_ string.
     """
@@ -663,7 +663,7 @@ def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent
     def configure(
         q: Annotated[str, "required query"],
         b: Annotated[list[str] | None, "b"] = None,
-        c: Annotated[_ProbeCustomType | None, "c"] = None,
+        c: Annotated[_CustomType | None, "c"] = None,
     ) -> str:
         return f"{q}:{b}:{c}"
 
@@ -679,9 +679,9 @@ def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent
     assert instance.b is None
     assert instance.c is None
 
-    instance_explicit = tool.input_model(q="x", b=["y"], c=_ProbeCustomType(id="z"))
+    instance_explicit = tool.input_model(q="x", b=["y"], c=_CustomType(id="z"))
     assert instance_explicit.b == ["y"]
-    assert instance_explicit.c == _ProbeCustomType(id="z")
+    assert instance_explicit.c == _CustomType(id="z")
 
 
 def test_as_agent_framework_tool_optional_annotation_without_default_stays_required(stub_agent_framework):
