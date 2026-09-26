@@ -157,6 +157,32 @@ async def test_structured_outputs_transform_invoke_with_messages():
         assert len(mock_get_chat_message_content.call_args[0][0].messages) == 3
 
 
+async def test_structured_outputs_transform_keeps_invocations_isolated():
+    """Each invocation should send only its own messages to the chat service."""
+    mock_model = MockModel(name="John Doe", age=30)
+
+    with patch.object(
+        MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
+    ) as mock_get_chat_message_content:
+        mock_get_chat_message_content.return_value = ChatMessageContent(
+            role="assistant", content=mock_model.model_dump_json()
+        )
+        service = MockChatCompletionService(ai_model_id="test_model")
+        transform = structured_outputs_transform(target_structure=MockModel, service=service)
+
+        first = ChatMessageContent(role="user", content="first invocation")
+        second = ChatMessageContent(role="user", content="second invocation")
+        assert await transform(first) == mock_model
+        assert await transform(second) == mock_model
+
+        histories = [call.args[0] for call in mock_get_chat_message_content.call_args_list]
+        assert len(histories) == 2
+        assert histories[0] is not histories[1]
+        assert histories[0].messages == [histories[0].messages[0], first]
+        assert histories[1].messages == [histories[1].messages[0], second]
+        assert histories[0].messages[0] == histories[1].messages[0]
+
+
 async def test_structured_outputs_transform_invoke_unsupported_type():
     """Test the structured_outputs_transform function and invoke the transform with messages of unsupported type."""
 
