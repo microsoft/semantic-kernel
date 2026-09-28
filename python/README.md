@@ -1,5 +1,10 @@
 # Get Started with Semantic Kernel Python
 
+> [!IMPORTANT]
+> Semantic Kernel is now [Microsoft Agent Framework](https://github.com/microsoft/agent-framework)! Microsoft Agent Framework (MAF) is the enterprise‑ready successor to Semantic Kernel. Microsoft Agent Framework is now available at version 1.0 as a production-ready release: stable APIs, and a commitment to long-term support. Whether you're building a single assistant or orchestrating a fleet of specialized agents, Microsoft Agent Framework 1.0 gives you enterprise-grade multi-agent orchestration, multi-provider model support, and cross-runtime interoperability via A2A and MCP.
+>
+> Learn more about Semantic Kernel and Agent Framework here: [Semantic Kernel and Microsoft Agent Framework on the Agent Framework blog](https://devblogs.microsoft.com/agent-framework/semantic-kernel-and-microsoft-agent-framework/), and try out the [Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel).
+
 Highlights
 - Flexible Agent Framework: build, orchestrate, and deploy AI agents and multi-agent systems
 - Multi-Agent Systems: Model workflows and collaboration between AI specialists
@@ -126,6 +131,7 @@ from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.functions import kernel_function, KernelArguments
 
+
 class MenuPlugin:
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
@@ -141,10 +147,12 @@ class MenuPlugin:
     ) -> Annotated[str, "Returns the price of the menu item."]:
         return "$9.99"
 
+
 class MenuItem(BaseModel):
     # Used for structured outputs
     price: float
     name: str
+
 
 async def main():
     # Configure structured outputs format
@@ -157,7 +165,7 @@ async def main():
         name="SK-Assistant",
         instructions="You are a helpful assistant.",
         plugins=[MenuPlugin()],
-        arguments=KernelArguments(settings)
+        arguments=KernelArguments(settings),
     )
 
     response = await agent.get_response("What is the price of the soup special?")
@@ -166,7 +174,8 @@ async def main():
     # Output:
     # The price of the Clam Chowder, which is the soup special, is $9.99.
 
-asyncio.run(main()) 
+
+asyncio.run(main())
 ```
 
 You can explore additional getting started agent samples [here](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents).
@@ -181,6 +190,7 @@ from semantic_kernel.agents import ChatCompletionAgent, GroupChatOrchestration, 
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
+
 def get_agents():
     return [
         ChatCompletionAgent(
@@ -194,6 +204,7 @@ def get_agents():
             service=AzureChatCompletion(),
         ),
     ]
+
 
 async def main():
     agents = get_agents()
@@ -214,6 +225,7 @@ async def main():
     # Final Slogan: "Feel the Charge: Adventure Meets Affordability in Your New Electric SUV!"
 
     await runtime.stop_when_idle()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

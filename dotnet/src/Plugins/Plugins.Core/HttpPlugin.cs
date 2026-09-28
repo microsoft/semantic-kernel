@@ -23,6 +23,9 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// When exposing this plugin to an LLM via auto function calling, ensure that
 /// <see cref="AllowedDomains"/> is restricted to trusted values only.
 /// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
@@ -43,10 +46,11 @@ public sealed class HttpPlugin
     /// <param name="client">The HTTP client to use.</param>
     /// <remarks>
     /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
     /// </remarks>
     [ActivatorUtilitiesConstructor]
     public HttpPlugin(HttpClient? client = null) =>
-        this._client = client ?? HttpClientProvider.GetHttpClient();
+        this._client = client ?? HttpClientProvider.GetNonRedirectingHttpClient();
 
     /// <summary>
     /// List of allowed domains to send requests to.
@@ -54,6 +58,7 @@ public sealed class HttpPlugin
     /// <remarks>
     /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
     /// with trusted domains before any requests will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
     /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
