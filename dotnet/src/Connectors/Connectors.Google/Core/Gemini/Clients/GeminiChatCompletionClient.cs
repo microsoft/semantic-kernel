@@ -143,10 +143,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Verify.NotNullOrWhiteSpace(projectId);
 
         string versionSubLink = GetApiVersionSubLink(apiVersion);
+        string baseUri = GetVertexAIBaseUri(location);
 
         this._modelId = modelId;
-        this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
-        this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
+        this._chatGenerationEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
+        this._chatStreamingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
 
     /// <summary>
@@ -322,7 +323,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         ValidateChatHistory(chatHistory);
 
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings, kernel);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
 
         if (this.Logger.IsEnabled(LogLevel.Trace))

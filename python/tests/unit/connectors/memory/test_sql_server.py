@@ -42,11 +42,31 @@ class TestQueryBuilder:
         result = str(qb).strip()
         assert result == "id, name, age;"
 
+    def test_query_builder_escape_identifier(self):
+        assert QueryBuilder.escape_identifier("simple") == "[simple]"
+        assert QueryBuilder.escape_identifier("has]bracket") == "[has]]bracket]"
+        assert QueryBuilder.escape_identifier("two]]brackets") == "[two]]]]brackets]"
+        assert QueryBuilder.escape_identifier("") == "[]"
+
     def test_query_builder_append_table_name(self):
         qb = QueryBuilder()
         qb.append_table_name("dbo", "Users", prefix="SELECT * FROM", suffix=";", newline=False)
         result = str(qb).strip()
         assert result == "SELECT * FROM [dbo].[Users] ;"
+
+    def test_query_builder_append_table_name_escapes_closing_bracket(self):
+        qb = QueryBuilder()
+        qb.append_table_name("my]schema", "my]table", prefix="SELECT * FROM", suffix=";")
+        result = str(qb).strip()
+        assert result == "SELECT * FROM [my]]schema].[my]]table] ;"
+
+    def test_query_builder_append_table_name_prevents_sql_injection(self):
+        qb = QueryBuilder()
+        qb.append("DROP TABLE IF EXISTS")
+        qb.append_table_name("dbo", "]; EXEC xp_cmdshell('whoami'); --", suffix=";")
+        result = str(qb)
+        assert "EXEC xp_cmdshell" not in result.split("].[")[0], "SQL injection should not escape bracket quoting"
+        assert "[dbo].[]]; EXEC xp_cmdshell('whoami'); --]" in result
 
     def test_query_builder_remove_last(self):
         qb = QueryBuilder("SELECT * FROM table;")
@@ -121,9 +141,30 @@ class TestQueryBuildFunctions:
         cmd_str = str(cmd.query)
         assert (
             cmd_str
-            == 'BEGIN\nCREATE TABLE [dbo].[Test] \n ("id" nvarchar(255) NOT NULL,\n"name" nvarchar(max) NULL,\n"age" '
-            'int NULL,\n"embedding" VECTOR(1536) NULL,\nPRIMARY KEY (id) \n) ;\nEND\n'
+            == "BEGIN\nCREATE TABLE [dbo].[Test] \n ([id] nvarchar(255) NOT NULL,\n[name] nvarchar(max) NULL,\n[age] "
+            "int NULL,\n[embedding] VECTOR(1536) NULL,\nPRIMARY KEY ([id]) \n) ;\nEND\n"
         )
+
+    def test_build_create_table_query_escapes_single_quote_in_object_id(self):
+        key_field = VectorStoreField("key", name="id", type="str")
+        cmd = _build_create_table_query("dbo", "test'table", key_field, [], [], if_not_exists=True)
+        cmd_str = str(cmd.query)
+        # Single quote must be escaped inside the OBJECT_ID N'...' string literal
+        assert "OBJECT_ID(N'[dbo].[test''table]'" in cmd_str
+
+    def test_build_create_table_query_uses_storage_name_for_primary_key(self):
+        key_field = VectorStoreField("key", name="id", type="str", storage_name="pk_id")
+        cmd = _build_create_table_query("dbo", "Test", key_field, [], [])
+        cmd_str = str(cmd.query)
+        assert "[pk_id] nvarchar" in cmd_str
+        assert "PRIMARY KEY ([pk_id])" in cmd_str
+
+    def test_build_merge_query_output_uses_storage_name(self):
+        key_field = VectorStoreField("key", name="id", type="str", storage_name="pk_id")
+        records = [{"pk_id": "1"}]
+        cmd = _build_merge_query("dbo", "Test", key_field, [], [], records)
+        cmd_str = str(cmd.query)
+        assert "OUTPUT inserted.[pk_id] INTO @UpsertedKeys" in cmd_str
 
     def test_delete_table_query(self):
         schema = "dbo"
@@ -170,11 +211,17 @@ class TestQueryBuildFunctions:
         assert cmd.parameters[3] == json.dumps(records[0]["embedding"])
         str_cmd = str(cmd)
         assert str_cmd == (
-            "DECLARE @UpsertedKeys TABLE (KeyColumn nvarchar(255));\nMERGE INTO [dbo].[Test] AS t\nUSING ( "
-            "VALUES  (?, ?, ?, ?) ) AS s (id, name, age, embedding)  ON (t.id = s.id) \nWHEN MATCHED THEN\nUPDATE "
-            "SET t.name = s.name, t.age = s.age, t.embedding = s.embedding\nWHEN NOT MATCHED THEN\nINSERT "
-            "(id, name, age, embedding)  VALUES (s.id, s.name, s.age, s.embedding)  \nOUTPUT inserted.id "
-            "INTO @UpsertedKeys (KeyColumn);\nSELECT KeyColumn FROM @UpsertedKeys;\n"
+            "DECLARE @UpsertedKeys TABLE (KeyColumn nvarchar(255));\n"
+            "MERGE INTO [dbo].[Test] AS t\n"
+            "USING ( VALUES  (?, ?, ?, ?) ) AS s ([id], [name], [age], [embedding])  "
+            "ON (t.[id] = s.[id]) \n"
+            "WHEN MATCHED THEN\n"
+            "UPDATE SET t.[name] = s.[name], t.[age] = s.[age], t.[embedding] = s.[embedding]\n"
+            "WHEN NOT MATCHED THEN\n"
+            "INSERT ([id], [name], [age], [embedding])  "
+            "VALUES (s.[id], s.[name], s.[age], s.[embedding])  \n"
+            "OUTPUT inserted.[id] INTO @UpsertedKeys (KeyColumn);\n"
+            "SELECT KeyColumn FROM @UpsertedKeys;\n"
         )
 
     def test_build_select_query(self):
@@ -192,7 +239,7 @@ class TestQueryBuildFunctions:
         cmd = _build_select_query(schema, table, key_field, data_fields, vector_fields, keys)
         assert cmd.parameters == ["test"]
         str_cmd = str(cmd)
-        assert str_cmd == "SELECT\nid, name, age, embedding FROM [dbo].[Test] \nWHERE id IN\n (?) ;"
+        assert str_cmd == "SELECT\n[id], [name], [age], [embedding] FROM [dbo].[Test] \nWHERE [id] IN\n (?) ;"
 
     def test_build_delete_query(self):
         schema = "dbo"
@@ -230,7 +277,7 @@ class TestQueryBuildFunctions:
         assert cmd.parameters[0] == json.dumps(vector)
         str_cmd = str(cmd)
         assert (
-            str_cmd == "SELECT id, name, age, VECTOR_DISTANCE('cosine', embedding, CAST(? AS VECTOR(5))) as "
+            str_cmd == "SELECT [id], [name], [age], VECTOR_DISTANCE('cosine', [embedding], CAST(? AS VECTOR(5))) as "
             "_vector_distance_value\n FROM [dbo].[Test] \nORDER BY "
             "_vector_distance_value ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
         )
@@ -378,11 +425,17 @@ class TestSqlServerCollection:
         await collection.upsert(record)
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             (
-                "DECLARE @UpsertedKeys TABLE (KeyColumn nvarchar(255));\nMERGE INTO [dbo].[test] AS t\nUSING ( VALUES"
-                "  (?, ?, ?) ) AS s (id, content, vector)  ON (t.id = s.id) \nWHEN MATCHED THEN\nUPDATE SET t.content"
-                " = s.content, t.vector = s.vector\nWHEN NOT MATCHED THEN\nINSERT (id, content, vector)  VALUES (s.id, "
-                "s.content, s.vector)  \nOUTPUT inserted.id INTO @UpsertedKeys (KeyColumn);\nSELECT KeyColumn "
-                "FROM @UpsertedKeys;\n"
+                "DECLARE @UpsertedKeys TABLE (KeyColumn nvarchar(255));\n"
+                "MERGE INTO [dbo].[test] AS t\n"
+                "USING ( VALUES  (?, ?, ?) ) AS s ([id], [content], [vector])  "
+                "ON (t.[id] = s.[id]) \n"
+                "WHEN MATCHED THEN\n"
+                "UPDATE SET t.[content] = s.[content], t.[vector] = s.[vector]\n"
+                "WHEN NOT MATCHED THEN\n"
+                "INSERT ([id], [content], [vector])  "
+                "VALUES (s.[id], s.[content], s.[vector])  \n"
+                "OUTPUT inserted.[id] INTO @UpsertedKeys (KeyColumn);\n"
+                "SELECT KeyColumn FROM @UpsertedKeys;\n"
             ),
             ("1", "test", json.dumps([0.1, 0.2, 0.3, 0.4, 0.5])),
         )
@@ -415,7 +468,7 @@ class TestSqlServerCollection:
         mock_cursor.__iter__.return_value = [row]
         record = await collection.get(key, include_vectors=True)
         mock_cursor.execute.assert_called_with(
-            "SELECT\nid, content, vector FROM [dbo].[test] \nWHERE id IN\n (?) ;", ("1",)
+            "SELECT\n[id], [content], [vector] FROM [dbo].[test] \nWHERE [id] IN\n (?) ;", ("1",)
         )
         assert record["id"] == "1"
         assert record["content"] == "test"
@@ -478,7 +531,7 @@ class TestSqlServerCollection:
             assert record.score == 0.1
         mock_cursor.execute.assert_called_with(
             (
-                "SELECT id, content, VECTOR_DISTANCE('cosine', vector, CAST(? AS VECTOR(5))) as "
+                "SELECT [id], [content], VECTOR_DISTANCE('cosine', [vector], CAST(? AS VECTOR(5))) as "
                 "_vector_distance_value\n FROM [dbo].[test] \n WHERE [content] = ? \nORDER BY _vector_distance_value "
                 "ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
             ),
@@ -502,8 +555,10 @@ class TestSqlServerCollection:
         await collection.ensure_collection_exists()
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             (
-                "IF OBJECT_ID(N' [dbo].[test] ', N'U') IS NULL\nBEGIN\nCREATE TABLE [dbo].[test] \n (\"id\" nvarchar"
-                '(255) NOT NULL,\n"content" nvarchar(max) NULL,\n"vector" VECTOR(5) NULL,\nPRIMARY KEY (id) \n) ;'
+                "IF OBJECT_ID(N'[dbo].[test]', N'U') IS NULL\n"
+                "BEGIN\nCREATE TABLE [dbo].[test] \n ([id] nvarchar"
+                "(255) NOT NULL,\n[content] nvarchar(max) NULL,\n[vector] VECTOR(5) NULL,\n"
+                "PRIMARY KEY ([id]) \n) ;"
                 "\nEND\n"
             ),
             (),

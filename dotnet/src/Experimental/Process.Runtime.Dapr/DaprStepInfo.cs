@@ -50,6 +50,11 @@ public record DaprStepInfo
             throw new KernelException($"Unable to create inner step type from assembly qualified name `{this.InnerStepDotnetType}`");
         }
 
+        if (!typeof(KernelProcessStep).IsAssignableFrom(innerStepType))
+        {
+            throw new KernelException($"Type '{this.InnerStepDotnetType}' is not a valid KernelProcessStep type.");
+        }
+
         return new KernelProcessStepInfo(innerStepType, this.State, this.Edges);
     }
 

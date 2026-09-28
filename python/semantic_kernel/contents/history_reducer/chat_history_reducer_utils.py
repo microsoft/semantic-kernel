@@ -66,6 +66,7 @@ def locate_safe_reduction_index(
     target_count: int,
     threshold_count: int = 0,
     offset_count: int = 0,
+    has_system_message: bool = False,
 ) -> int | None:
     """Identify the index of the first message at or beyond the specified target_count.
 
@@ -83,11 +84,27 @@ def locate_safe_reduction_index(
         threshold_count: The threshold beyond target_count required to trigger reduction.
                          If total messages <= (target_count + threshold_count), no reduction occurs.
         offset_count: Optional number of messages to skip at the start (e.g. existing summary messages).
+        has_system_message: Whether the history contains a system message that will be preserved
+                           separately. When True, the target_count is adjusted to account for the
+                           system message being re-added after reduction.
 
     Returns:
         The index that identifies the starting point for a reduced history that does not orphan
         sensitive content. Returns None if reduction is not needed.
     """
+    # Adjust target_count to account for the system message that will be preserved separately.
+    # This matches the .NET SDK behavior.
+    if has_system_message:
+        target_count -= 1
+        if target_count <= 0:
+            logger.warning(
+                "target_count after accounting for system message is %d; reduction will keep only the system message.",
+                target_count,
+            )
+            # Reduce to just the system message — return index past all non-system messages.
+            # The caller will prepend the system message to the empty/minimal tail.
+            return len(history)
+
     total_count = len(history)
     threshold_index = total_count - (threshold_count or 0) - target_count
     if threshold_index <= offset_count:
@@ -220,5 +237,12 @@ def extract_range(
 
 @experimental
 def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
-    """Return True if the message has any function call or function result."""
+    """Return True if the message has any function call or function result.
+
+    Also returns True for TOOL role messages, which are always responses to
+    a preceding assistant message with tool_calls and must not be separated
+    from it.
+    """
+    if msg.role == AuthorRole.TOOL:
+        return True
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)
