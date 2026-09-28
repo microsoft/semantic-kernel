@@ -29,7 +29,7 @@ internal sealed class MCPResourceTemplatesSample : BaseSample
         Console.WriteLine($"Running the {nameof(MCPResourceTemplatesSample)} sample.");
 
         // Create an MCP client
-        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+        McpClient mcpClient = await CreateMcpClientAsync();
 
         // Retrieve list of resource templates provided by the MCP server and display them
         IList<McpClientResourceTemplate> resourceTemplates = await mcpClient.ListResourceTemplatesAsync();
@@ -48,7 +48,7 @@ internal sealed class MCPResourceTemplatesSample : BaseSample
         string prompt = "What is the Semantic Kernel?";
 
         // Retrieve relevant to the prompt records via MCP resource template
-        ReadResourceResult resource = await mcpClient.ReadResourceAsync($"vectorStore://records/{prompt}");
+        ReadResourceResult resource = await mcpClient.ReadResourceAsync(new Uri($"vectorStore://records/{prompt}"));
 
         // Add the resource content/records to the chat history and prompt the AI model to explain what SK is
         ChatHistory chatHistory = [];

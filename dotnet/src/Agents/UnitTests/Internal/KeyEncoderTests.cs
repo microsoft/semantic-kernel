@@ -18,16 +18,16 @@ public class KeyEncoderTests
     public void VerifyKeyEncoderUniqueness()
     {
         // Act
-        this.VerifyHashEquivalancy([]);
-        this.VerifyHashEquivalancy(nameof(KeyEncoderTests));
-        this.VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
+        this.VerifyHashEquivalency([]);
+        this.VerifyHashEquivalency(nameof(KeyEncoderTests));
+        this.VerifyHashEquivalency(nameof(KeyEncoderTests), "http://localhost", "zoo");
 
         // Assert: Verify "well-known" value
         string localHash = KeyEncoder.GenerateHash([typeof(ChatHistoryChannel).FullName!]);
         Assert.Equal("Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=", localHash);
     }
 
-    private void VerifyHashEquivalancy(params string[] keys)
+    private void VerifyHashEquivalency(params string[] keys)
     {
         // Act
         string hash1 = KeyEncoder.GenerateHash(keys);

@@ -178,7 +178,7 @@ public class StructuredDataServiceTests
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1);
+        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
@@ -218,7 +218,7 @@ public class StructuredDataServiceTests
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1);
+        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
@@ -256,7 +256,7 @@ public class StructuredDataServiceTests
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1);
+        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, NullableDate = testDate },
@@ -470,7 +470,7 @@ public class StructuredDataServiceTests
         public int Id { get; set; }
         public string? Name { get; set; }
 
-        public DateTime? NullableDate { get; set; }
+        public DateTimeOffset? NullableDate { get; set; }
         public int? NullableInt { get; set; }
         public double? NullableDouble { get; set; }
         public bool? NullableBool { get; set; }

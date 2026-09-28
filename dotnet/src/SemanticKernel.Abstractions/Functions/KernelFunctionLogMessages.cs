@@ -161,7 +161,22 @@ internal static partial class KernelFunctionLogMessages
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionResultValue(logger, pluginName, functionName, "Failed to log function result value", ex);
+                // Fall back to ToString() when JSON serialization isn't supported for this type
+                // (e.g. Microsoft.Extensions.AI.TextContent is not registered in AbstractionsJsonContext)
+                try
+                {
+                    var toStringValue = resultValue?.Value?.ToString() ?? string.Empty;
+                    s_logFunctionResultValue(logger, pluginName, functionName, toStringValue, null);
+                }
+                catch (Exception toStringEx)
+                {
+                    s_logFunctionResultValue(
+                        logger,
+                        pluginName,
+                        functionName,
+                        "Failed to log function result value",
+                        new AggregateException(ex, toStringEx));
+                }
             }
         }
     }

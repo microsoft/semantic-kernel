@@ -51,7 +51,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string>? Stop
+    public IList<string>? Stop
     {
         get => this._stop;
 
@@ -131,13 +131,72 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Enables or disables thinking for reasoning models such as deepseek-r1, qwen3, and phi4-reasoning.
+    /// Set to <c>false</c> to disable thinking and receive a standard response when using a model that
+    /// enables thinking by default. Set to <c>true</c> to explicitly enable thinking.
+    /// When <c>null</c> (the default), the model's own default behavior is used.
+    /// </summary>
+    /// <remarks>
+    /// When thinking is active, the model's reasoning output lands in a separate thinking stream
+    /// rather than in the main response content. Setting this to <c>false</c> suppresses thinking
+    /// so that all output appears in the standard response field.
+    /// </remarks>
+    [JsonPropertyName("think")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Think
+    {
+        get => this._think;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._think = value;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override void Freeze()
+    {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
+        base.Freeze();
+
+        if (this._stop is not null)
+        {
+            this._stop = new System.Collections.ObjectModel.ReadOnlyCollection<string>(this._stop);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OllamaPromptExecutionSettings()
+        {
+            ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            TopK = this.TopK,
+            NumPredict = this.NumPredict,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+            Think = this.Think,
+        };
+    }
+
     #region private
 
-    private List<string>? _stop;
+    private IList<string>? _stop;
     private float? _temperature;
     private float? _topP;
     private int? _topK;
     private int? _numPredict;
+    private bool? _think;
 
     #endregion
 }

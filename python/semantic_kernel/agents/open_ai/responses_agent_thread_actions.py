@@ -1111,11 +1111,17 @@ class ResponsesAgentThreadActions:
 
     @classmethod
     async def _invoke_function_calls(
-        cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+        cls: type[_T],
+        kernel: "Kernel",
+        fccs: list["FunctionCallContent"],
+        chat_history: "ChatHistory",
+        function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> list[Any]:
         """Invoke the function calls."""
         tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
+            kernel.invoke_function_call(
+                function_call=function_call, chat_history=chat_history, function_behavior=function_behavior
+            )
             for function_call in fccs
         ]
         return await asyncio.gather(*tasks)
@@ -1185,6 +1191,11 @@ class ResponsesAgentThreadActions:
             "parallel_tool_calls": parallel_tool_calls,
         }
 
+        # Add text option if it exists
+        text = merged.get("text")
+        if text is not None:
+            options["text"] = text
+
         # Add reasoning to the options if it is provided.
         # Note that non-reasoning capable models will throw an error if this is set.
         if reasoning is not None:
@@ -1209,10 +1220,19 @@ class ResponsesAgentThreadActions:
         if agent.tools:
             tools.extend(agent.tools)
 
-        # TODO(evmattso): make sure to respect filters on FCB
-        if kernel.plugins:
-            funcs = kernel.get_full_list_of_function_metadata()
-            tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
+        if not function_choice_behavior.enable_kernel_functions:
+            return tools
+
+        if not kernel.plugins:
+            return tools
+
+        funcs = (
+            kernel.get_list_of_function_metadata(function_choice_behavior.filters)
+            if function_choice_behavior.filters
+            else kernel.get_full_list_of_function_metadata()
+        )
+
+        tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools
 

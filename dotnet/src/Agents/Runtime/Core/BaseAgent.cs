@@ -89,11 +89,7 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// <inheritdoc/>
     public virtual ValueTask<JsonElement> SaveStateAsync()
     {
-#if !NETCOREAPP
-        return JsonDocument.Parse("{}").RootElement.AsValueTask();
-#else
-        return ValueTask.FromResult(JsonDocument.Parse("{}").RootElement);
-#endif
+        return new ValueTask<JsonElement>(JsonElement.Parse("{}"));
     }
 
     /// <inheritdoc/>

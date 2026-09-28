@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Extensions;
+
 public class OpenApiSchemaExtensionsTests
 {
     [Fact]

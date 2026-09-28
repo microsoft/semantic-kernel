@@ -68,7 +68,7 @@ internal static class BedrockModelUtilities
             .Select(m => new Message
             {
                 Role = MapAuthorRoleToConversationRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
+                Content = [new() { Text = m.Content }]
             })
             .ToList();
     }

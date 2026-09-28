@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 namespace FunctionCalling;
+
 public class AzureAIInference_FunctionCalling : BaseTest
 {
     private readonly LoggingHandler _handler;

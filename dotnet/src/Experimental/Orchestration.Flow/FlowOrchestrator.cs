@@ -73,6 +73,6 @@ public class FlowOrchestrator
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
-        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments()).ConfigureAwait(false);
+        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? []).ConfigureAwait(false);
     }
 }

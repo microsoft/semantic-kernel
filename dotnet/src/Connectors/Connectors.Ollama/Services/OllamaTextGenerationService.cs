@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -147,7 +148,8 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
                 NumPredict = settings.NumPredict
             },
             Model = selectedModel,
-            Stream = true
+            Stream = true,
+            Think = settings.Think.HasValue ? (OllamaSharp.Models.Chat.ThinkValue?)settings.Think.Value : null
         };
 
         return request;

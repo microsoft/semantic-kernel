@@ -15,7 +15,7 @@ from numpy import array, ndarray
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
     NvidiaEmbeddingPromptExecutionSettings,
 )
@@ -73,7 +73,10 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
         if not nvidia_settings.api_key:
             logger.warning("API_KEY is missing, inference may fail.")
         if not client:
-            client = AsyncOpenAI(api_key=nvidia_settings.api_key.get_secret_value(), base_url=nvidia_settings.base_url)
+            client = AsyncOpenAI(
+                api_key=nvidia_settings.api_key.get_secret_value() if nvidia_settings.api_key else None,
+                base_url=nvidia_settings.base_url,
+            )
         super().__init__(
             ai_model_id=nvidia_settings.embedding_model_id,
             api_key=nvidia_settings.api_key.get_secret_value() if nvidia_settings.api_key else None,

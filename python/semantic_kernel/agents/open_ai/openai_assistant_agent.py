@@ -7,7 +7,8 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
+from openai import AsyncOpenAI
+from openai._types import Omit, omit
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
@@ -34,6 +35,7 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -138,9 +140,9 @@ class AssistantAgentThread(AgentThread):
         self,
         client: AsyncOpenAI,
         thread_id: str | None = None,
-        messages: Iterable["ThreadCreateMessage"] | NotGiven = NOT_GIVEN,
-        metadata: dict[str, Any] | NotGiven = NOT_GIVEN,
-        tool_resources: ToolResources | NotGiven = NOT_GIVEN,
+        messages: Iterable["ThreadCreateMessage"] | Omit = omit,
+        metadata: dict[str, Any] | Omit = omit,
+        tool_resources: ToolResources | Omit = omit,
     ) -> None:
         """Initialize the OpenAI Assistant Thread.
 
@@ -757,6 +759,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -782,6 +785,8 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             top_p: The top p.
             truncation_strategy: The truncation strategy.
             polling_options: The polling options at the run-level.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -828,6 +833,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             if is_visible and response.metadata.get("code") is not True:
@@ -865,6 +871,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
@@ -891,6 +898,8 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             top_p: The top p.
             truncation_strategy: The truncation strategy.
             polling_options: The polling options at the run-level.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -936,6 +945,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             message.metadata["thread_id"] = thread.id
@@ -972,6 +982,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent.
@@ -998,6 +1009,8 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            function_choice_behavior: The function choice behavior to control which kernel
+                functions are available. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -1046,6 +1059,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             output_messages=collected_messages,
             kernel=kernel,
             arguments=arguments,
+            function_choice_behavior=function_choice_behavior,
             **run_level_params,  # type: ignore
         ):
             # Before yielding the current streamed message, emit any new full messages first

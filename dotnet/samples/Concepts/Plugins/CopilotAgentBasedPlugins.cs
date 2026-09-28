@@ -20,7 +20,7 @@ namespace Plugins;
 /// 2. Configure authentication for the APIs
 /// 3. Call functions from the loaded plugins
 ///
-/// Running this test requires the following configuration in `dotnet\samples\Concepts\bin\Debug\net8.0\appsettings.Development.json`:
+/// Running this test requires the following configuration in `dotnet\samples\Concepts\bin\Debug\net10.0\appsettings.Development.json`:
 ///
 /// ```json
 /// {

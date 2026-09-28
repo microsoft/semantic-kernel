@@ -13,7 +13,7 @@ In this example we setup Chat Client from ONNX Connector with [Microsoft's Phi-3
 
 ## Prerequisites
 
-- [.NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0).
 - [NVIDIA GPU](https://www.nvidia.com/en-us/geforce/graphics-cards)
 - [NVIDIA CUDA v12 Toolkit](https://developer.nvidia.com/cuda-12-0-0-download-archive)
 - [NVIDIA cuDNN v9.11](https://developer.nvidia.com/cudnn-9-11-0-download-archive)

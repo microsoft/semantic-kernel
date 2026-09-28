@@ -139,14 +139,14 @@ public class HybridCompletion_Fallback(ITestOutputHelper output) : BaseTest(outp
 internal sealed class FallbackChatClient : IChatClient
 {
     private readonly IList<IChatClient> _chatClients;
-    private static readonly List<HttpStatusCode> s_defaultFallbackStatusCodes = new()
-    {
+    private static readonly List<HttpStatusCode> s_defaultFallbackStatusCodes =
+    [
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
         HttpStatusCode.BadGateway,
         HttpStatusCode.ServiceUnavailable,
         HttpStatusCode.GatewayTimeout
-    };
+    ];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FallbackChatClient"/> class.

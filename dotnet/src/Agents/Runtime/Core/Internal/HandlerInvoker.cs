@@ -33,7 +33,7 @@ internal sealed class HandlerInvoker
                     (i.GetGenericTypeDefinition() == typeof(IHandle<>) ||
                     (i.GetGenericTypeDefinition() == typeof(IHandle<,>))));
 
-        Dictionary<Type, HandlerInvoker> invokers = new();
+        Dictionary<Type, HandlerInvoker> invokers = [];
         foreach (Type interface_ in candidateInterfaces)
         {
             MethodInfo handleAsync =

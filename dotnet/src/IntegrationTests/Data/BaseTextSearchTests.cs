@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Type or member is obsolete - Testing legacy non-generic ITextSearch interface
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

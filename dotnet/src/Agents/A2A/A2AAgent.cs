@@ -167,7 +167,7 @@ public sealed class A2AAgent : Agent
 
         var messageSendParams = new MessageSendParams
         {
-            Message = new Message
+            Message = new AgentMessage
             {
                 MessageId = Guid.NewGuid().ToString(),
                 Role = MessageRole.User,
@@ -193,7 +193,7 @@ public sealed class A2AAgent : Agent
                 Console.WriteLine();
             }
         }
-        else if (response is Message messageResponse)
+        else if (response is AgentMessage messageResponse)
         {
             foreach (var part in messageResponse.Parts)
             {

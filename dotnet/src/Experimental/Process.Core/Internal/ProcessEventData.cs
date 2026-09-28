@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Process.Internal;
+
 internal class ProcessEventData
 {
     /// <summary>

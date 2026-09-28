@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
@@ -27,6 +28,8 @@ public class ChatCompletionAgentFixture : AgentFixture
     private ChatHistoryAgentThread? _createdThread;
 
     public override Agent Agent => this._agent!;
+
+    public override MAAI.AIAgent AIAgent => this._agent!.AsAIAgent();
 
     public override AgentThread AgentThread => this._thread!;
 
@@ -61,7 +64,7 @@ public class ChatCompletionAgentFixture : AgentFixture
         return Task.CompletedTask;
     }
 
-    public async override Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
 

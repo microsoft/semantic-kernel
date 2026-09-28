@@ -103,7 +103,7 @@ public class CreatePluginFromOpenApiSpec_Klarna(ITestOutputHelper output) : Base
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-#if NET5_0_OR_GREATER
+#if NET
             request.Options.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var functionContext);
 #else
             request.Properties.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var functionContext);

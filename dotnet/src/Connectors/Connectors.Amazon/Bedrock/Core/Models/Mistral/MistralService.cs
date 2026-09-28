@@ -77,7 +77,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            AdditionalModelResponseFieldPaths = []
         };
         return converseRequest;
     }
@@ -122,7 +122,7 @@ internal sealed class MistralService : IBedrockTextGenerationService, IBedrockCh
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            AdditionalModelResponseFieldPaths = []
         };
         return converseRequest;
     }
