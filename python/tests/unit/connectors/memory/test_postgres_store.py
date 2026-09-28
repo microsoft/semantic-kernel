@@ -385,8 +385,6 @@ def filter_collection(vector_store):
         ("x.id == 1.5", '"id" = %s', [1.5]),
         ("x.id == True", '"id" = %s', [True]),
         ("x.id == False", '"id" = %s', [False]),
-        ("x.tenant == None", '"tenant" = %s', [None]),
-        ("x.tenant != None", '"tenant" <> %s', [None]),
         ("x.id == x.id", '"id" = "id"', []),
         ("id == 1", '"id" = %s', [1]),
         (
@@ -402,6 +400,57 @@ def test_filter_parser(filter_collection, expression, expected_sql, expected_par
     assert clause.as_string() == expected_sql
     assert params == expected_params
     assert [type(value) for value in params] == [type(value) for value in expected_params]
+
+
+@pytest.mark.parametrize(
+    "expression, expected_sql, expected_params",
+    [
+        ("x.tenant == None", '"tenant" IS NULL', []),
+        ("x.tenant != None", '"tenant" IS NOT NULL', []),
+        ("None == x.tenant", '"tenant" IS NULL', []),
+        ("None != x.tenant", '"tenant" IS NOT NULL', []),
+        ("None == None", "TRUE", []),
+        ("None != None", "FALSE", []),
+        ("'value' != None", "TRUE", []),
+        ("None == 'value'", "FALSE", []),
+        ("0 != None", "TRUE", []),
+        ("False == None", "FALSE", []),
+        ("not x.tenant == None", 'NOT ("tenant" IS NULL)', []),
+        ("not x.tenant != None", 'NOT ("tenant" IS NOT NULL)', []),
+        ("x.tenant == None or x.id == 1", '("tenant" IS NULL OR "id" = %s)', [1]),
+        ("None == x.tenant == None", '("tenant" IS NULL AND "tenant" IS NULL)', []),
+        ("'value' == x.tenant != None", '(%s = "tenant" AND "tenant" IS NOT NULL)', ["value"]),
+    ],
+)
+def test_null_filter_parser(filter_collection, expression, expected_sql, expected_params):
+    clause, params = filter_collection._build_filter(f"lambda x: {expression}")
+
+    assert clause.as_string() == expected_sql
+    assert params == expected_params
+
+
+def test_null_filter_query_parameter_order(filter_collection):
+    filters = [
+        "lambda x: x.id > 0",
+        "lambda x: x.tenant == None or x.tenant == 'value'",
+        "lambda x: x.id < 5",
+    ]
+    query, params, _ = filter_collection._construct_vector_query([1, 0, 0], VectorSearchOptions(filter=filters))
+
+    assert query.as_string() == (
+        'SELECT "id", "tenant", "label""name", "embedding" <=> %s as "sk_pg_distance" '
+        'FROM "public"."filter_records" WHERE ("id" > %s) '
+        'AND (("tenant" IS NULL OR "tenant" = %s)) AND ("id" < %s) ORDER BY "sk_pg_distance" LIMIT 3'
+    )
+    assert params == ["[1.0,0.0,0.0]", 0, "value", 5]
+
+
+def test_dynamic_null_filter(filter_collection):
+    filter = default_dynamic_filter_function(parameters=[KernelParameterMetadata(name="tenant")], tenant=None)
+    clause, params = filter_collection._build_filter(filter)
+
+    assert clause.as_string() == '"tenant" IS NULL'
+    assert params == []
 
 
 @pytest.mark.parametrize(
@@ -442,12 +491,17 @@ def test_filter_identifier_quoting(filter_collection):
     "expression, error",
     [
         ("x.unknown == 1", VectorStoreOperationException),
+        ("x.unknown == None", VectorStoreOperationException),
+        ("None != x.unknown", VectorStoreOperationException),
         ("unknown == 1", VectorStoreOperationException),
         ("x.id in []", VectorStoreOperationException),
         ("x.id not in []", VectorStoreOperationException),
         ("x.id == b'bytes'", VectorStoreOperationException),
         ("x.id == 1j", VectorStoreOperationException),
+        ("None == b'bytes'", VectorStoreOperationException),
+        ("1j != None", VectorStoreOperationException),
         ("x.id is None", NotImplementedError),
+        ("x.id is not None", NotImplementedError),
         ("x.id == -1", NotImplementedError),
         ("x.id == +1", NotImplementedError),
         ("x.id == ~1", NotImplementedError),

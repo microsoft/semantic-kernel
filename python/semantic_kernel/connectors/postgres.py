@@ -312,6 +312,7 @@ class PostgresCollection(
 
     Search filters accept Python lambdas or strings containing lambda expressions, not raw SQL.
     Filter values are passed separately from the SQL command as query parameters.
+    Comparisons using ``== None`` and ``!= None`` match null and non-null fields, respectively.
     """
 
     connection_pool: AsyncConnectionPool | None = None
@@ -865,9 +866,23 @@ class PostgresCollection(
                             right_node = node.comparators[idx]
                             comparisons.append(parse(ast.Compare(left=left_node, ops=[op], comparators=[right_node])))
                         return sql.SQL("({})").format(sql.SQL(" AND ").join(comparisons))
-                    left = parse(node.left)
-                    right = parse(node.comparators[0])
+                    left_node = node.left
+                    right_node = node.comparators[0]
                     op = node.ops[0]
+                    if isinstance(op, (ast.Eq, ast.NotEq)):
+                        if isinstance(left_node, ast.Constant) and left_node.value is None:
+                            left_node, right_node = right_node, left_node
+                        if isinstance(right_node, ast.Constant) and right_node.value is None:
+                            if isinstance(left_node, ast.Constant) and (
+                                left_node.value is None or isinstance(left_node.value, (str, int, float, bool))
+                            ):
+                                matches = (left_node.value is None) == isinstance(op, ast.Eq)
+                                return sql.SQL("TRUE" if matches else "FALSE")
+                            return sql.SQL("{} IS NULL" if isinstance(op, ast.Eq) else "{} IS NOT NULL").format(
+                                parse(left_node)
+                            )
+                    left = parse(left_node)
+                    right = parse(right_node)
                     match op:
                         case ast.In():
                             return sql.SQL("{} IN {}").format(left, right)

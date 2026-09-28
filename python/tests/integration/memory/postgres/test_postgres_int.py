@@ -264,7 +264,7 @@ async def test_search(vector_store: PostgresStore):
 @vectorstoremodel
 class FilteredDataModel(BaseModel):
     id: Annotated[int, VectorStoreField("key")]
-    tenant: Annotated[str, VectorStoreField("data")]
+    tenant: Annotated[str | None, VectorStoreField("data")]
     embedding: Annotated[
         list[float] | None,
         VectorStoreField(
@@ -337,3 +337,46 @@ async def test_search_filters(
     )
     assert [result async for result in no_matches.results] == []
     assert no_matches.total_count == (0 if include_total_count else None)
+
+
+@pytest.mark.parametrize("include_total_count", [False, True])
+@pytest.mark.parametrize(
+    "filter, expected_ids",
+    [
+        ("lambda x: x.tenant == None", {1, 4}),
+        ("lambda x: x.tenant != None", {2, 3}),
+        ("lambda x: None == x.tenant", {1, 4}),
+        ("lambda x: None != x.tenant", {2, 3}),
+        ("lambda x: None == None", {1, 2, 3, 4}),
+        ("lambda x: None != None", set()),
+        ("lambda x: None != 'value'", {1, 2, 3, 4}),
+        ("lambda x: False == None", set()),
+        ("lambda x: not x.tenant == None", {2, 3}),
+        ("lambda x: not x.tenant != None", {1, 4}),
+        ("lambda x: x.tenant == None or x.tenant == 'value'", {1, 2, 4}),
+        ("lambda x: x.id > 1 and x.tenant == None", {4}),
+        (["lambda x: x.id >= 3", "lambda x: x.tenant == None"], {4}),
+        (["lambda x: x.id > 1", "lambda x: None != x.tenant"], {2, 3}),
+        ("lambda x: None == x.tenant == None", {1, 4}),
+        ("lambda x: x.tenant == ''", {3}),
+    ],
+)
+async def test_search_null_filters(
+    filtered_collection: PostgresCollection[int, FilteredDataModel],
+    include_total_count: bool,
+    filter: str | list[str],
+    expected_ids: set[int],
+):
+    await filtered_collection.upsert([
+        FilteredDataModel(id=1, tenant=None, embedding=[1.0, 0.0, 0.0]),
+        FilteredDataModel(id=2, tenant="value", embedding=[1.0, 0.0, 0.0]),
+        FilteredDataModel(id=3, tenant="", embedding=[1.0, 0.0, 0.0]),
+        FilteredDataModel(id=4, tenant=None, embedding=[1.0, 0.0, 0.0]),
+    ])
+
+    results = await filtered_collection.search(
+        vector=[1.0, 0.0, 0.0], filter=filter, include_total_count=include_total_count, top=10
+    )
+
+    assert {result.record.id async for result in results.results} == expected_ids
+    assert results.total_count == (len(expected_ids) if include_total_count else None)
