@@ -27,58 +27,6 @@
     <Project Path="samples/GettingStartedWithVectorStores/GettingStartedWithVectorStores.csproj" />
     <Project Path="samples/LearnResources/LearnResources.csproj" />
   </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/">
-    <File Path="samples/AgentFrameworkMigration/README.md" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/OpenAI/">
-    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step01_Basics/OpenAI_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step02_ToolCall/OpenAI_Step02_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAI/Step03_DependencyInjection/OpenAI_Step03_DependencyInjection.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAI/">
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step01_Basics/AzureOpenAI_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step02_ToolCall/AzureOpenAI_Step02_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step03_DependencyInjection/AzureOpenAI_Step03_DependencyInjection.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAI/Step04_ToolCall_WithOpenAPI/AzureOpenAI_Step04_ToolCall_WithOpenAPI.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/OpenAIAssistants/">
-    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step01_Basics/OpenAIAssistants_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step02_ToolCall/OpenAIAssistants_Step02_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step03_DependencyInjection/OpenAIAssistants_Step03_DependencyInjection.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIAssistants/Step04_CodeInterpreter/OpenAIAssistants_Step04_CodeInterpreter.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAIAssistants/">
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step01_Basics/AzureOpenAIAssistants_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step02_ToolCall/AzureOpenAIAssistants_Step02_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step03_DependencyInjection/AzureOpenAIAssistants_Step03_DependencyInjection.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIAssistants/Step04_CodeInterpreter/AzureOpenAIAssistants_Step04_CodeInterpreter.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/OpenAIResponses/">
-    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step01_Basics/OpenAIResponses_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step02_ReasoningModel/OpenAIResponses_Step02_ReasoningModel.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step03_ToolCall/OpenAIResponses_Step03_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/OpenAIResponses/Step04_DependencyInjection/OpenAIResponses_Step04_DependencyInjection.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/AzureOpenAIResponses/">
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step01_Basics/AzureOpenAIResponses_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step02_ReasoningModel/AzureOpenAIResponses_Step02_ReasoningModel.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step03_ToolCall/AzureOpenAIResponses_Step03_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureOpenAIResponses/Step04_DependencyInjection/AzureOpenAIResponses_Step04_DependencyInjection.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/AzureAIFoundry/">
-    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step01_Basics/AzureAIFoundry_Step01_Basics.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step02_ToolCall/AzureAIFoundry_Step02_ToolCall.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step03_DependencyInjection/AzureAIFoundry_Step03_DependencyInjection.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AzureAIFoundry/Step04_CodeInterpreter/AzureAIFoundry_Step04_CodeInterpreter.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/AgentOrchestrations/">
-    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step01_Concurrent/AgentOrchestrations_Step01_Concurrent.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step02_Sequential/AgentOrchestrations_Step02_Sequential.csproj" />
-    <Project Path="samples/AgentFrameworkMigration/AgentOrchestrations/Step03_Handoff/AgentOrchestrations_Step03_Handoff.csproj" />
-  </Folder>
-  <Folder Name="/samples/AgentFrameworkMigration/Playground/">
-    <Project Path="samples/AgentFrameworkMigration/Playground/SemanticKernelBasic/SemanticKernelBasic.csproj" />
-  </Folder>
   <Folder Name="/samples/Demos/">
     <File Path="samples/Demos/README.md" />
     <Project Path="samples/Demos/AIModelRouter/AIModelRouter.csproj" />
@@ -122,26 +70,6 @@
       <BuildDependency Project="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
     </Project>
     <Project Path="samples/Demos/ModelContextProtocolClientServer/MCPServer/MCPServer.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessFrameworkWithAspire/">
-    <File Path="samples/Demos/ProcessFrameworkWithAspire/README.md" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.AppHost/ProcessFramework.Aspire.AppHost.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/ProcessFramework.Aspire.ProcessOrchestrator.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ServiceDefaults/ProcessFramework.Aspire.ServiceDefaults.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.Shared/ProcessFramework.Aspire.Shared.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.SummaryAgent/ProcessFramework.Aspire.SummaryAgent.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.TranslatorAgent/ProcessFramework.Aspire.TranslatorAgent.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/" />
-  <Folder Name="/samples/Demos/ProcessFrameworkWithSignalR/src/">
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.AppHost/ProcessFramework.Aspire.SignalR.AppHost.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ProcessOrchestrator/ProcessFramework.Aspire.SignalR.ProcessOrchestrator.csproj" />
-    <Project Path="samples/Demos/ProcessFrameworkWithSignalR/src/ProcessFramework.Aspire.SignalR.ServiceDefaults/ProcessFramework.Aspire.SignalR.ServiceDefaults.csproj" />
-  </Folder>
-  <Folder Name="/samples/Demos/ProcessWithCloudEvents/">
-    <File Path="samples/Demos/ProcessWithCloudEvents/README.md" />
-    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Grpc/ProcessWithCloudEvents.Grpc.csproj" />
-    <Project Path="samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Processes/ProcessWithCloudEvents.Processes.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/IntegrationTests/IntegrationTests.csproj" />
@@ -192,24 +120,6 @@
     <Project Path="src/Connectors/Connectors.Onnx/Connectors.Onnx.csproj" />
     <Project Path="src/Connectors/Connectors.OpenAI.UnitTests/Connectors.OpenAI.UnitTests.csproj" />
     <Project Path="src/Connectors/Connectors.OpenAI/Connectors.OpenAI.csproj" />
-  </Folder>
-  <Folder Name="/src/VectorData/">
-    <File Path="src/VectorData/Directory.Build.props" />
-    <Project Path="src/VectorData/AzureAISearch/AzureAISearch.csproj" />
-    <Project Path="src/VectorData/Chroma/Chroma.csproj" />
-    <Project Path="src/VectorData/CosmosMongoDB/CosmosMongoDB.csproj" />
-    <Project Path="src/VectorData/CosmosNoSql/CosmosNoSql.csproj" />
-    <Project Path="src/VectorData/InMemory/InMemory.csproj" />
-    <Project Path="src/VectorData/Milvus/Milvus.csproj" />
-    <Project Path="src/VectorData/MongoDB/MongoDB.csproj" />
-    <Project Path="src/VectorData/PgVector/PgVector.csproj" />
-    <Project Path="src/VectorData/Pinecone/Pinecone.csproj" />
-    <Project Path="src/VectorData/Qdrant/Qdrant.csproj" />
-    <Project Path="src/VectorData/Redis/Redis.csproj" />
-    <Project Path="src/VectorData/SqliteVec/SqliteVec.csproj" />
-    <Project Path="src/VectorData/SqlServer/SqlServer.csproj" />
-    <Project Path="src/VectorData/VectorData.Abstractions/VectorData.Abstractions.csproj" />
-    <Project Path="src/VectorData/Weaviate/Weaviate.csproj" />
   </Folder>
   <Folder Name="/src/experimental/">
     <Project Path="src/Experimental/Orchestration.Flow.IntegrationTests/Experimental.Orchestration.Flow.IntegrationTests.csproj" />
@@ -363,34 +273,5 @@
     <Project Path="src/Plugins/Plugins.StructuredData.EntityFramework/Plugins.StructuredData.EntityFramework.csproj" />
     <Project Path="src/Plugins/Plugins.UnitTests/Plugins.UnitTests.csproj" />
     <Project Path="src/Plugins/Plugins.Web/Plugins.Web.csproj" />
-  </Folder>
-  <Folder Name="/test/" />
-  <Folder Name="/test/VectorData/">
-    <Project Path="test/VectorData/AzureAISearch.ConformanceTests/AzureAISearch.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/AzureAISearch.UnitTests/AzureAISearch.UnitTests.csproj" />
-    <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
-    <Project Path="test/VectorData/CosmosMongoDB.ConformanceTests/CosmosMongoDB.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/CosmosMongoDB.UnitTests/CosmosMongoDB.UnitTests.csproj" />
-    <Project Path="test/VectorData/CosmosNoSql.ConformanceTests/CosmosNoSql.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/CosmosNoSql.UnitTests/CosmosNoSql.UnitTests.csproj" />
-    <Project Path="test/VectorData/InMemory.ConformanceTests/InMemory.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/InMemory.UnitTests/InMemory.UnitTests.csproj" />
-    <Project Path="test/VectorData/MongoDB.ConformanceTests/MongoDB.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/MongoDB.UnitTests/MongoDB.UnitTests.csproj" />
-    <Project Path="test/VectorData/PgVector.ConformanceTests/PgVector.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/PgVector.UnitTests/PgVector.UnitTests.csproj" />
-    <Project Path="test/VectorData/Pinecone.ConformanceTests/Pinecone.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Pinecone.UnitTests/Pinecone.UnitTests.csproj" />
-    <Project Path="test/VectorData/Qdrant.ConformanceTests/Qdrant.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Qdrant.UnitTests/Qdrant.UnitTests.csproj" />
-    <Project Path="test/VectorData/Redis.ConformanceTests/Redis.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Redis.UnitTests/Redis.UnitTests.csproj" />
-    <Project Path="test/VectorData/SqliteVec.ConformanceTests/SqliteVec.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/SqliteVec.UnitTests/SqliteVec.UnitTests.csproj" />
-    <Project Path="test/VectorData/SqlServer.ConformanceTests/SqlServer.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.ConformanceTests/VectorData.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/VectorData.UnitTests/VectorData.UnitTests.csproj" />
-    <Project Path="test/VectorData/Weaviate.ConformanceTests/Weaviate.ConformanceTests.csproj" />
-    <Project Path="test/VectorData/Weaviate.UnitTests/Weaviate.UnitTests.csproj" />
   </Folder>
 </Solution>

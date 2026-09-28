@@ -33,19 +33,22 @@ internal sealed class Program
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         // Start a new conversation session.
-        using RealtimeSession session = await realtimeConversationClient.StartConversationSessionAsync("gpt-4o-realtime-preview");
+        using RealtimeSessionClient session = await realtimeConversationClient.StartConversationSessionAsync("gpt-4o-realtime-preview");
 
         // Initialize session options.
         // Session options control connection-wide behavior shared across all conversations,
         // including audio input format and voice activity detection settings.
-        ConversationSessionOptions sessionOptions = new()
+        RealtimeConversationSessionOptions sessionOptions = new()
         {
-            Voice = ConversationVoice.Alloy,
-            InputAudioFormat = RealtimeAudioFormat.Pcm16,
-            OutputAudioFormat = RealtimeAudioFormat.Pcm16,
-            InputTranscriptionOptions = new()
+            AudioOptions = new()
             {
-                Model = "whisper-1",
+                InputAudioOptions = new()
+                {
+                    AudioTranscriptionOptions = new()
+                    {
+                        Model = "whisper-1",
+                    },
+                },
             },
         };
 
@@ -58,7 +61,7 @@ internal sealed class Program
         // If any tools are available, set tool choice to "auto".
         if (sessionOptions.Tools.Count > 0)
         {
-            sessionOptions.ToolChoice = ConversationToolChoice.CreateAutoToolChoice();
+            sessionOptions.ToolChoice = RealtimeDefaultToolChoice.Auto;
         }
 
         // Configure session with defined options.
@@ -66,8 +69,8 @@ internal sealed class Program
 
         // Items such as user, assistant, or system messages, as well as input audio, can be sent to the session.
         // An example of sending user message to the session.
-        // ConversationItem can be constructed from Microsoft.SemanticKernel.ChatMessageContent if needed by mapping the relevant fields.
-        await session.AddItemAsync(RealtimeItem.CreateUserMessage(["I'm trying to decide what to wear on my trip."]));
+        // RealtimeItem can be constructed from Microsoft.SemanticKernel.ChatMessageContent if needed by mapping the relevant fields.
+        await session.AddItemAsync(RealtimeItem.CreateUserMessageItem("I'm trying to decide what to wear on my trip."));
 
         // Use audio file that contains a recorded question: "What's the weather like in San Francisco, California?"
         string inputAudioPath = FindFile("Assets\\realtime_whats_the_weather_pcm16_24khz_mono.wav");
@@ -81,115 +84,132 @@ internal sealed class Program
         Dictionary<string, StringBuilder> functionArgumentBuildersById = [];
 
         // Define a loop to receive conversation updates in the session.
-        await foreach (RealtimeUpdate update in session.ReceiveUpdatesAsync())
+        await foreach (RealtimeServerUpdate update in session.ReceiveUpdatesAsync())
         {
             // Notification indicating the start of the conversation session.
-            if (update is ConversationSessionStartedUpdate sessionStartedUpdate)
+            if (update is RealtimeServerUpdateSessionCreated sessionStartedUpdate)
             {
-                Console.WriteLine($"<<< Session started. ID: {sessionStartedUpdate.SessionId}");
+                Console.WriteLine($"<<< Session started. ID: {sessionStartedUpdate.EventId}");
                 Console.WriteLine();
             }
 
             // Notification indicating the start of detected voice activity.
-            if (update is InputAudioSpeechStartedUpdate speechStartedUpdate)
+            if (update is RealtimeServerUpdateInputAudioBufferSpeechStarted speechStartedUpdate)
             {
                 Console.WriteLine(
                     $"  -- Voice activity detection started at {speechStartedUpdate.AudioStartTime}");
             }
 
             // Notification indicating the end of detected voice activity.
-            if (update is InputAudioSpeechFinishedUpdate speechFinishedUpdate)
+            if (update is RealtimeServerUpdateInputAudioBufferSpeechStopped speechFinishedUpdate)
             {
                 Console.WriteLine(
                     $"  -- Voice activity detection ended at {speechFinishedUpdate.AudioEndTime}");
             }
 
             // Notification indicating the start of item streaming, such as a function call or response message.
-            if (update is OutputStreamingStartedUpdate itemStreamingStartedUpdate)
+            if (update is RealtimeServerUpdateResponseOutputItemAdded itemStreamingStartedUpdate)
             {
                 Console.WriteLine("  -- Begin streaming of new item");
-                if (!string.IsNullOrEmpty(itemStreamingStartedUpdate.FunctionName))
+                if (itemStreamingStartedUpdate.Item is RealtimeFunctionCallItem funcItem)
                 {
-                    Console.Write($"    {itemStreamingStartedUpdate.FunctionName}: ");
+                    Console.Write($"    {funcItem.FunctionName}: ");
                 }
             }
 
-            // Notification about item streaming delta, which may include audio transcript, audio bytes, or function arguments.
-            if (update is OutputDeltaUpdate deltaUpdate)
+            // Notification about audio transcript delta.
+            if (update is RealtimeServerUpdateResponseOutputAudioTranscriptDelta audioTranscriptDelta)
             {
-                Console.Write(deltaUpdate.AudioTranscript);
-                Console.Write(deltaUpdate.Text);
-                Console.Write(deltaUpdate.FunctionArguments);
+                Console.Write(audioTranscriptDelta.Delta);
+            }
 
-                // Handle audio bytes.
-                if (deltaUpdate.AudioBytes is not null)
+            // Notification about text delta.
+            if (update is RealtimeServerUpdateResponseOutputTextDelta textDelta)
+            {
+                Console.Write(textDelta.Delta);
+            }
+
+            // Notification about audio bytes delta.
+            if (update is RealtimeServerUpdateResponseOutputAudioDelta audioDelta)
+            {
+                if (audioDelta.Delta is not null)
                 {
-                    if (!outputAudioStreamsById.TryGetValue(deltaUpdate.ItemId, out MemoryStream? value))
+                    if (!outputAudioStreamsById.TryGetValue(audioDelta.ItemId, out MemoryStream? value))
                     {
                         value = new MemoryStream();
-                        outputAudioStreamsById[deltaUpdate.ItemId] = value;
+                        outputAudioStreamsById[audioDelta.ItemId] = value;
                     }
 
-                    value.Write(deltaUpdate.AudioBytes);
+                    value.Write(audioDelta.Delta.ToArray());
+                }
+            }
+
+            // Notification about function call arguments delta.
+            if (update is RealtimeServerUpdateResponseFunctionCallArgumentsDelta funcArgsDelta)
+            {
+                if (!functionArgumentBuildersById.TryGetValue(funcArgsDelta.ItemId, out StringBuilder? arguments))
+                {
+                    functionArgumentBuildersById[funcArgsDelta.ItemId] = arguments = new();
                 }
 
-                // Handle function arguments.
-                if (!functionArgumentBuildersById.TryGetValue(deltaUpdate.ItemId, out StringBuilder? arguments))
+                if (funcArgsDelta.Delta is not null)
                 {
-                    functionArgumentBuildersById[deltaUpdate.ItemId] = arguments = new();
-                }
-
-                if (!string.IsNullOrWhiteSpace(deltaUpdate.FunctionArguments))
-                {
-                    arguments.Append(deltaUpdate.FunctionArguments);
+                    arguments.Append(funcArgsDelta.Delta.ToString());
                 }
             }
 
             // Notification indicating the end of item streaming, such as a function call or response message.
             // At this point, audio transcript can be displayed on console, or a function can be called with aggregated arguments.
-            if (update is OutputStreamingFinishedUpdate itemStreamingFinishedUpdate)
+            if (update is RealtimeServerUpdateResponseOutputItemDone itemStreamingFinishedUpdate)
             {
                 Console.WriteLine();
-                Console.WriteLine($"  -- Item streaming finished, item_id={itemStreamingFinishedUpdate.ItemId}");
+                Console.WriteLine($"  -- Item streaming finished, response_id={itemStreamingFinishedUpdate.ResponseId}");
 
                 // If an item is a function call, invoke a function with provided arguments.
-                if (itemStreamingFinishedUpdate.FunctionCallId is not null)
+                if (itemStreamingFinishedUpdate.Item is RealtimeFunctionCallItem functionCallItem)
                 {
-                    Console.WriteLine($"    + Responding to tool invoked by item: {itemStreamingFinishedUpdate.FunctionName}");
+                    Console.WriteLine($"    + Responding to tool invoked by item: {functionCallItem.FunctionName}");
 
                     // Parse function name.
-                    var (functionName, pluginName) = ParseFunctionName(itemStreamingFinishedUpdate.FunctionName);
+                    var (functionName, pluginName) = ParseFunctionName(functionCallItem.FunctionName);
 
                     // Deserialize arguments.
-                    var argumentsString = functionArgumentBuildersById[itemStreamingFinishedUpdate.ItemId].ToString();
+                    var argumentsString = functionArgumentBuildersById.TryGetValue(functionCallItem.Id, out var sb) ? sb.ToString() : "{}";
                     var arguments = DeserializeArguments(argumentsString);
 
                     // Create a function call content based on received data.
                     var functionCallContent = new FunctionCallContent(
                         functionName: functionName,
                         pluginName: pluginName,
-                        id: itemStreamingFinishedUpdate.FunctionCallId,
+                        id: functionCallItem.CallId,
                         arguments: arguments);
 
                     // Invoke a function.
                     var resultContent = await functionCallContent.InvokeAsync(kernel);
 
                     // Create a function call output conversation item with function call result.
-                    RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
-                        callId: itemStreamingFinishedUpdate.FunctionCallId,
-                        output: ProcessFunctionResult(resultContent.Result));
+                    RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutputItem(
+                        callId: functionCallItem.CallId,
+                        functionOutput: ProcessFunctionResult(resultContent.Result));
 
                     // Send function call output conversation item to the session, so the model can use it for further processing.
                     await session.AddItemAsync(functionOutputItem);
                 }
                 // If an item is a response message, output it to the console.
-                else if (itemStreamingFinishedUpdate.MessageContentParts?.Count > 0)
+                else if (itemStreamingFinishedUpdate.Item is RealtimeMessageItem messageItem && messageItem.Content?.Count > 0)
                 {
-                    Console.Write($"    + [{itemStreamingFinishedUpdate.MessageRole}]: ");
+                    Console.Write($"    + [{messageItem.Role}]: ");
 
-                    foreach (ConversationContentPart contentPart in itemStreamingFinishedUpdate.MessageContentParts)
+                    foreach (RealtimeMessageContentPart contentPart in messageItem.Content)
                     {
-                        Console.Write(contentPart.AudioTranscript);
+                        if (contentPart is RealtimeOutputAudioMessageContentPart audioContentPart)
+                        {
+                            Console.Write(audioContentPart.Transcript);
+                        }
+                        else if (contentPart is RealtimeOutputTextMessageContentPart textContentPart)
+                        {
+                            Console.Write(textContentPart.Text);
+                        }
                     }
 
                     Console.WriteLine();
@@ -197,7 +217,7 @@ internal sealed class Program
             }
 
             // Notification indicating the completion of transcription from input audio.
-            if (update is InputAudioTranscriptionFinishedUpdate transcriptionCompletedUpdate)
+            if (update is RealtimeServerUpdateConversationItemInputAudioTranscriptionCompleted transcriptionCompletedUpdate)
             {
                 Console.WriteLine();
                 Console.WriteLine($"  -- User audio transcript: {transcriptionCompletedUpdate.Transcript}");
@@ -205,13 +225,13 @@ internal sealed class Program
             }
 
             // Notification about completed model response turn.
-            if (update is ResponseFinishedUpdate turnFinishedUpdate)
+            if (update is RealtimeServerUpdateResponseDone turnFinishedUpdate)
             {
-                Console.WriteLine($"  -- Model turn generation finished. Status: {turnFinishedUpdate.Status}");
+                Console.WriteLine($"  -- Model turn generation finished. Status: {turnFinishedUpdate.Response?.Status}");
 
-                // If the created session items contain a function name, it indicates a function call result has been provided,
+                // If the output items contain a function call, it indicates a function call result has been provided,
                 // and response updates can begin.
-                if (turnFinishedUpdate.CreatedItems.Any(item => item.FunctionName?.Length > 0))
+                if (turnFinishedUpdate.Response?.OutputItems?.Any(item => item is RealtimeFunctionCallItem) == true)
                 {
                     Console.WriteLine("  -- Ending client turn for pending tool responses");
 
@@ -225,10 +245,10 @@ internal sealed class Program
             }
 
             // Notification about error in conversation session.
-            if (update is RealtimeErrorUpdate errorUpdate)
+            if (update is RealtimeServerUpdateError errorUpdate)
             {
                 Console.WriteLine();
-                Console.WriteLine($"ERROR: {errorUpdate.Message}");
+                Console.WriteLine($"ERROR: {errorUpdate.Error?.Message}");
                 break;
             }
         }
@@ -337,7 +357,7 @@ internal sealed class Program
     }
 
     /// <summary>Helper method to convert Kernel plugins/function to realtime session conversation tools.</summary>
-    private static IEnumerable<ConversationTool> ConvertFunctions(Kernel kernel)
+    private static IEnumerable<RealtimeTool> ConvertFunctions(Kernel kernel)
     {
         foreach (var plugin in kernel.Plugins)
         {
@@ -347,10 +367,10 @@ internal sealed class Program
             {
                 var toolDefinition = metadata.ToOpenAIFunction().ToFunctionDefinition(false);
 
-                yield return new ConversationFunctionTool(name: toolDefinition.FunctionName)
+                yield return new RealtimeFunctionTool(functionName: toolDefinition.FunctionName)
                 {
-                    Description = toolDefinition.FunctionDescription,
-                    Parameters = toolDefinition.FunctionParameters
+                    FunctionDescription = toolDefinition.FunctionDescription,
+                    FunctionParameters = toolDefinition.FunctionParameters
                 };
             }
         }

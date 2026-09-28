@@ -116,6 +116,20 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
+    /// The thought signature for text responses with thinking enabled.
+    /// </summary>
+    /// <remarks>
+    /// When thinking is enabled, Gemini may return a signature on the last text part that should
+    /// be included in subsequent requests to maintain optimal reasoning quality. Unlike function
+    /// call signatures, text response signatures are recommended but not strictly validated.
+    /// </remarks>
+    public string? ThoughtSignature
+    {
+        get => this.GetValueFromDictionary(nameof(this.ThoughtSignature)) as string;
+        internal init => this.SetValueInDictionary(value, nameof(this.ThoughtSignature));
+    }
+
+    /// <summary>
     /// Converts a dictionary to a <see cref="GeminiMetadata"/> object.
     /// </summary>
     public static GeminiMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch

@@ -66,6 +66,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 
+#pragma warning disable CS0618 // Suppress obsolete warnings for legacy TextSearchOptions/TextSearchFilter usage
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="BingTextSearch"/> and use it with
     /// function calling to have the LLM include grounding context from the Microsoft Dev Blogs site in it's response.
@@ -143,4 +144,5 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
 
         return textSearch.CreateSearch(options);
     }
+#pragma warning restore CS0618
 }

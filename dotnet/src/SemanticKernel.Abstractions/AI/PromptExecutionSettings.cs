@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -182,6 +183,21 @@ public class PromptExecutionSettings
     /// <param name="chatHistory">Target chat history to prepare.</param>
     /// <returns>Prepared chat history.</returns>
     internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
+
+    /// <summary>
+    /// When some derived <see cref="PromptExecutionSettings"/> requires post-processing of the produced
+    /// <see cref="ChatOptions"/> (for example, setting <see cref="ChatOptions.RawRepresentationFactory"/>),
+    /// this method can be overridden. Called after the standard <c>ToChatOptions</c> conversion completes.
+    /// </summary>
+    /// <param name="options">The <see cref="ChatOptions"/> instance to prepare.</param>
+    protected virtual void PrepareChatOptionsForRequest(ChatOptions options) { }
+
+    /// <summary>
+    /// Internal bridge used by <c>PromptExecutionSettingsExtensions.ToChatOptions</c> without exposing
+    /// the protected <see cref="PrepareChatOptionsForRequest"/> publicly.
+    /// </summary>
+    /// <param name="options">Target <see cref="ChatOptions"/> to prepare.</param>
+    internal void ChatClientPrepareChatOptionsForRequest(ChatOptions options) => this.PrepareChatOptionsForRequest(options);
 
     #region private ================================================================================
 

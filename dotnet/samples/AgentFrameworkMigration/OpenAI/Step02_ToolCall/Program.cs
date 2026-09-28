@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using OpenAI;
+using OpenAI.Chat;
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
 var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
@@ -65,7 +66,7 @@ async Task SKAgent_As_AFAgentAsync()
     var agent = skAgent.AsAIAgent();
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -86,7 +87,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 async Task AFAgentAsync()
 {
-    var agent = new OpenAIClient(apiKey).GetChatClient(model).CreateAIAgent(
+    var agent = new OpenAIClient(apiKey).GetChatClient(model).AsAIAgent(
         instructions: "You are a helpful assistant",
         tools: [AIFunctionFactory.Create(GetWeather)]);
 

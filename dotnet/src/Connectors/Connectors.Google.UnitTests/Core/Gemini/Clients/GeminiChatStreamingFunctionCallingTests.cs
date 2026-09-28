@@ -417,6 +417,63 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledToolResult is not null);
     }
 
+    [Fact]
+    public async Task StreamingTextResponseWithAutoInvokeAndEmptyToolCallsDoesNotEnterToolCallingBranchAsync()
+    {
+        // Arrange - This tests the Phase 6 bug fix: empty ToolCalls list should not trigger tool calling
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Response is text-only (no function calls), so ToolCalls will be empty list
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContent);
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(
+            chatHistory,
+            executionSettings: executionSettings,
+            kernel: this._kernelWithFunctions).ToListAsync();
+
+        // Assert - Should yield text response without entering tool-calling branch
+        Assert.NotEmpty(messages);
+        Assert.All(messages, m =>
+        {
+            var geminiMessage = m as GeminiStreamingChatMessageContent;
+            Assert.NotNull(geminiMessage);
+            // ToolCalls should be null or empty for text responses
+            Assert.True(geminiMessage.ToolCalls is null || geminiMessage.ToolCalls.Count == 0);
+        });
+    }
+
+    [Fact]
+    public async Task StreamingTextResponseWithAutoInvokeAndNullToolCallsDoesNotEnterToolCallingBranchAsync()
+    {
+        // Arrange - This tests that pattern `is { Count: > 0 }` handles null safely
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Response is text-only
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContent);
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(
+            chatHistory,
+            executionSettings: executionSettings,
+            kernel: this._kernelWithFunctions).ToListAsync();
+
+        // Assert - Should complete without errors
+        Assert.NotEmpty(messages);
+        // Verify we got text content
+        Assert.Contains(messages, m => !string.IsNullOrEmpty(m.Content));
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();

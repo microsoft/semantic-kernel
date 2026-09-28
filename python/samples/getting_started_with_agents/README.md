@@ -32,7 +32,7 @@ Example|Description
 [step08_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step08_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
 [step09_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step09_chat_completion_agent_logging.py)|How to enable logging for agents.
 [step10_chat_completion_agent_structured_outputs](../getting_started_with_agents/chat_completion/step10_chat_completion_agent_structured_outputs.py)|How to use have a chat completion agent use structured outputs
-[step11_chat_completion_agent_declarative](../getting_started_with_agents/chat_completion/step11_chat_completion_agent_declarative.py)|How to create a chat compltion agent from a declarative spec.
+[step11_chat_completion_agent_declarative](../getting_started_with_agents/chat_completion/step11_chat_completion_agent_declarative.py)|How to create a chat completion agent from a declarative spec.
 
 ## Azure AI Agent
 

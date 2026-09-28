@@ -626,6 +626,83 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         Assert.Contains(ModifiedResult, secondRequestContent);
     }
 
+    [Fact]
+    public async Task FunctionCallWithThoughtSignatureIsCapturedInToolCallAsync()
+    {
+        // Arrange
+        var responseWithThoughtSignature = File.ReadAllText("./TestData/chat_function_with_thought_signature_response.json")
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseWithThoughtSignature);
+
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.EnableFunctions([this._timePluginNow])
+        };
+
+        // Act
+        var messages = await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
+
+        // Assert
+        Assert.Single(messages);
+        var geminiMessage = messages[0] as GeminiChatMessageContent;
+        Assert.NotNull(geminiMessage);
+        Assert.NotNull(geminiMessage.ToolCalls);
+        Assert.Single(geminiMessage.ToolCalls);
+        Assert.Equal("test-thought-signature-abc123", geminiMessage.ToolCalls[0].ThoughtSignature);
+    }
+
+    [Fact]
+    public async Task TextResponseWithThoughtSignatureIsCapturedInMetadataAsync()
+    {
+        // Arrange
+        var responseWithThoughtSignature = File.ReadAllText("./TestData/chat_text_with_thought_signature_response.json");
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(responseWithThoughtSignature);
+
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.Single(messages);
+        var geminiMessage = messages[0] as GeminiChatMessageContent;
+        Assert.NotNull(geminiMessage);
+        Assert.NotNull(geminiMessage.Metadata);
+        var metadata = geminiMessage.Metadata as GeminiMetadata;
+        Assert.NotNull(metadata);
+        Assert.Equal("text-response-thought-signature-xyz789", metadata.ThoughtSignature);
+    }
+
+    [Fact]
+    public async Task ThoughtSignatureIsIncludedInSubsequentRequestAsync()
+    {
+        // Arrange - First response has function call with ThoughtSignature
+        var responseWithThoughtSignature = File.ReadAllText("./TestData/chat_function_with_thought_signature_response.json")
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(responseWithThoughtSignature);
+        handlerStub.AddJsonResponse(this._responseContent); // Second response is text
+
+        using var httpClient = new HttpClient(handlerStub, false);
+        var client = this.CreateChatCompletionClient(httpClient: httpClient);
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
+
+        // Assert - Check that the second request includes the ThoughtSignature
+        var secondRequestContent = handlerStub.GetRequestContentAsString(1);
+        Assert.NotNull(secondRequestContent);
+        Assert.Contains("test-thought-signature-abc123", secondRequestContent);
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();

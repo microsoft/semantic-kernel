@@ -206,3 +206,66 @@ def test_from_file_directory():
         pytest.raises(ContentInitializationError, match="Path is not a file"),
     ):
         BinaryContent.from_file(temp_dir)
+
+
+def test_write_to_file_default_no_overwrite():
+    """Test write_to_file does not overwrite existing files by default."""
+    test_data = b"new data"
+    binary = BinaryContent(data=test_data, mime_type="text/plain")
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(b"old data")
+        temp_file_path = temp_file.name
+
+    try:
+        with pytest.raises(FileExistsError, match="File already exists and overwrite is disabled"):
+            binary.write_to_file(temp_file_path)
+        # Verify original file was not modified
+        assert Path(temp_file_path).read_bytes() == b"old data"
+    finally:
+        Path(temp_file_path).unlink()
+
+
+def test_write_to_file_overwrite_true():
+    """Test write_to_file with overwrite=True overwrites existing files."""
+    test_data = b"new data"
+    binary = BinaryContent(data=test_data, mime_type="text/plain")
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(b"old data")
+        temp_file_path = temp_file.name
+
+    try:
+        binary.write_to_file(temp_file_path, overwrite=True)
+        assert Path(temp_file_path).read_bytes() == test_data
+    finally:
+        Path(temp_file_path).unlink()
+
+
+def test_write_to_file_overwrite_false_existing_file():
+    """Test write_to_file with overwrite=False raises FileExistsError for existing files."""
+    test_data = b"new data"
+    binary = BinaryContent(data=test_data, mime_type="text/plain")
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(b"old data")
+        temp_file_path = temp_file.name
+
+    try:
+        with pytest.raises(FileExistsError, match="File already exists and overwrite is disabled"):
+            binary.write_to_file(temp_file_path, overwrite=False)
+        # Verify original file was not modified
+        assert Path(temp_file_path).read_bytes() == b"old data"
+    finally:
+        Path(temp_file_path).unlink()
+
+
+def test_write_to_file_overwrite_false_new_file():
+    """Test write_to_file with overwrite=False succeeds for new files."""
+    test_data = b"test data"
+    binary = BinaryContent(data=test_data, mime_type="text/plain")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file_path = Path(temp_dir) / "new_file.txt"
+        binary.write_to_file(temp_file_path, overwrite=False)
+        assert temp_file_path.read_bytes() == test_data

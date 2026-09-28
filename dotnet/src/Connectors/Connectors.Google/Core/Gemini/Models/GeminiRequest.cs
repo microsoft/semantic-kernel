@@ -23,6 +23,13 @@ internal sealed class GeminiRequest
         }
     };
 
+    /// <summary>
+    /// Synthetic envelope used as the <c>functionResponse.response</c> body when emitting a multimodal
+    /// (image) tool result. The actual image data is carried in <c>functionResponse.parts[].inlineData</c>;
+    /// the envelope keeps the required <c>response</c> field present and gives the model a short hint.
+    /// </summary>
+    private static readonly object s_imageFunctionResponseEnvelope = new { status = "success", message = "Image data attached" };
+
     [JsonPropertyName("contents")]
     public IList<GeminiContent> Contents { get; set; } = null!;
 
@@ -194,14 +201,24 @@ internal sealed class GeminiRequest
             case GeminiChatMessageContent { CalledToolResults: not null } contentWithCalledTools:
                 // Add all function responses as separate parts in a single message
                 parts.AddRange(contentWithCalledTools.CalledToolResults.Select(toolResult =>
-                    new GeminiPart
+                {
+                    var resultValue = toolResult.FunctionResult.GetValue<object>();
+
+                    // Handle ImageContent for multimodal tool results (Gemini 3+ only)
+                    if (resultValue is ImageContent imageContent)
+                    {
+                        return CreateImageFunctionResponsePart(toolResult.FullyQualifiedName, imageContent);
+                    }
+
+                    return new GeminiPart
                     {
                         FunctionResponse = new GeminiPart.FunctionResponsePart
                         {
                             FunctionName = toolResult.FullyQualifiedName,
-                            Response = new(toolResult.FunctionResult.GetValue<object>())
+                            Response = new(resultValue)
                         }
-                    }));
+                    };
+                }));
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
@@ -211,7 +228,8 @@ internal sealed class GeminiRequest
                         {
                             FunctionName = toolCall.FullyQualifiedName,
                             Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
-                        }
+                        },
+                        ThoughtSignature = toolCall.ThoughtSignature
                     }));
                 break;
             default:
@@ -222,6 +240,35 @@ internal sealed class GeminiRequest
         if (parts.Count == 0)
         {
             parts.Add(new GeminiPart { Text = content.Content ?? string.Empty });
+        }
+
+        // Restore ThoughtSignature for text responses (non-ToolCall messages)
+        // Per Google docs: "The final content part returned by the model may contain a thought_signature"
+        if (content is GeminiChatMessageContent geminiContent
+            && (geminiContent.ToolCalls is null || geminiContent.ToolCalls.Count == 0))
+        {
+            string? signature = null;
+
+            // Try typed GeminiMetadata first, then dictionary fallback for deserialized history
+            if (geminiContent.Metadata is GeminiMetadata meta)
+            {
+                signature = meta.ThoughtSignature;
+            }
+            else if (content.Metadata?.TryGetValue("ThoughtSignature", out var sigObj) == true
+                     && sigObj is string sigStr)
+            {
+                signature = sigStr;
+            }
+
+            if (signature is not null)
+            {
+                // Apply signature to last text part
+                var lastTextPart = parts.LastOrDefault(p => p.Text is not null);
+                if (lastTextPart is not null)
+                {
+                    lastTextPart.ThoughtSignature = signature;
+                }
+            }
         }
 
         return parts;
@@ -270,6 +317,37 @@ internal sealed class GeminiRequest
     {
         return imageContent.MimeType
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
+    }
+
+    /// <summary>
+    /// Creates a GeminiPart with FunctionResponse containing multimodal image data (Gemini 3+ only).
+    /// </summary>
+    private static GeminiPart CreateImageFunctionResponsePart(string functionName, ImageContent imageContent)
+    {
+        if (imageContent.Data is not { IsEmpty: false })
+        {
+            throw new InvalidOperationException("ImageContent in function result must contain binary data.");
+        }
+
+        return new GeminiPart
+        {
+            FunctionResponse = new GeminiPart.FunctionResponsePart
+            {
+                FunctionName = functionName,
+                Response = new(s_imageFunctionResponseEnvelope),
+                Parts =
+                [
+                    new GeminiPart.FunctionResponsePart.FunctionResponsePartContent
+                    {
+                        InlineData = new GeminiPart.InlineDataPart
+                        {
+                            MimeType = GetMimeTypeFromImageContent(imageContent),
+                            InlineData = Convert.ToBase64String(imageContent.Data.Value.ToArray())
+                        }
+                    }
+                ]
+            }
+        };
     }
 
     private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
