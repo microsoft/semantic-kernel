@@ -11,6 +11,7 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_requirem
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_uri import Uri
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.connectors.openapi_plugin.openapi_runner import OpenApiRunner
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -79,6 +80,12 @@ def create_functions_from_openapi(
         http_client=execution_settings.http_client if execution_settings else None,
         enable_dynamic_payload=execution_settings.enable_dynamic_payload if execution_settings else True,
         enable_payload_namespacing=execution_settings.enable_payload_namespacing if execution_settings else False,
+        server_url_validation_options=ServerUrlValidationOptions(
+            allowed_base_urls=execution_settings.server_url_validation_allowed_base_urls,
+            allow_private_network_access=execution_settings.allow_private_network_access,
+        )
+        if execution_settings
+        else None,
     )
 
     functions = []

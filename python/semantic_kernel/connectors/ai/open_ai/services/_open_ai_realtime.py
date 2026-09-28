@@ -480,8 +480,29 @@ class OpenAIRealtimeBase(OpenAIHandler, RealtimeClientBase):
         )
 
         # Step 4: Invoke the function call
-        chat_history = ChatHistory()
+        # Fail closed: only invoke when a function choice behavior is available so the allowlist can be enforced.
+        # Without it, kernel.invoke_function_call would skip allowlist validation and execute any named function.
         function_behavior = self._current_settings.function_choice_behavior if self._current_settings else None
+        if function_behavior is None:
+            logger.warning(
+                "Skipping function call '%s-%s' because no function choice behavior is configured; "
+                "allowlist validation cannot be enforced.",
+                plugin_name,
+                function_name,
+            )
+            created_output = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=item,
+                result="Function call was not invoked because function choice behavior is not configured.",
+            )
+            result = RealtimeFunctionResultEvent(
+                service_type=SendEvents.CONVERSATION_ITEM_CREATE,
+                function_result=created_output,
+            )
+            await self.send(result)
+            await self.send(RealtimeEvent(service_type=SendEvents.RESPONSE_CREATE))
+            yield result
+            return
+        chat_history = ChatHistory()
         await self._kernel.invoke_function_call(item, chat_history, function_behavior=function_behavior)
         created_output: FunctionResultContent = chat_history.messages[-1].items[0]  # type: ignore
         # Step 5: Create the function result event
@@ -710,8 +731,7 @@ class OpenAIRealtimeWebRTCBase(OpenAIRealtimeBase):
         if audio_output_callback:
             self.audio_output_callback = audio_output_callback
         while True:
-            event = await self._receive_buffer.get()
-            yield event
+            yield await self._receive_buffer.get()
 
     async def _send(self, event: RealtimeClientEvent) -> None:
         if not self.data_channel:
