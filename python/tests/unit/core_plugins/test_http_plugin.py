@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -250,25 +251,40 @@ async def test_allowed_domains_exact_subdomain_match():
     assert plugin._is_uri_allowed("https://other.example.com/path") is False
 
 
-# Security regression tests
+# Request validation tests
 
 
-async def test_default_constructor_denies_all():
-    """Test that default HttpPlugin() denies all requests (issue 115285)."""
+def test_default_constructor_allows_domains_and_logs_warning(caplog):
+    """Test that the default configuration remains unrestricted and logs a warning."""
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.core_plugins.http_plugin"):
+        plugin = HttpPlugin()
+
+    assert plugin._is_uri_allowed("https://example.com/path") is True
+    assert plugin._is_uri_allowed("https://any-domain.com:8443/path") is True
+    assert "without `allowed_domains`" in caplog.text
+    assert "requests to any HTTP or HTTPS domain are allowed" in caplog.text
+
+
+def test_allowed_domains_does_not_log_unrestricted_warning(caplog):
+    """Test that restricted configurations do not log the unrestricted warning."""
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.core_plugins.http_plugin"):
+        HttpPlugin(allowed_domains={"example.com"})
+
+    assert "without `allowed_domains`" not in caplog.text
+
+
+@patch("aiohttp.ClientSession.get")
+async def test_default_constructor_allows_requests_and_redirects(mock_get):
+    """Test that the default configuration preserves request and redirect behavior."""
+    mock_get.return_value.__aenter__.return_value.text.return_value = "OK"
+    mock_get.return_value.__aenter__.return_value.status = 200
+
     plugin = HttpPlugin()
-    assert plugin._is_uri_allowed("https://example.com/path") is False
-    assert plugin._is_uri_allowed("https://any-domain.com/path") is False
+    response = await plugin.get("https://example.com/path")
 
-
-@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
-async def test_default_constructor_blocks_requests(method):
-    """Test that default HttpPlugin() blocks all HTTP methods (issue 115285)."""
-    plugin = HttpPlugin()
-    with pytest.raises(FunctionExecutionException, match="Sending requests to the provided location is not allowed"):
-        if method in ["post", "put"]:
-            await getattr(plugin, method)(url="https://example.com/path", body={"key": "value"})
-        else:
-            await getattr(plugin, method)(url="https://example.com/path")
+    assert response == "OK"
+    _, kwargs = mock_get.call_args
+    assert kwargs["allow_redirects"] is True
 
 
 @patch("aiohttp.ClientSession.get")

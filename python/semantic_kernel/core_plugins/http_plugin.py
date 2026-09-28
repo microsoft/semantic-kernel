@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import logging
 from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
@@ -10,15 +11,20 @@ from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
+logger = logging.getLogger(__name__)
+
 
 class HttpPlugin(KernelBaseModel):
     """A plugin that provides HTTP functionality.
 
     Usage:
+        # Without domain restrictions (backward compatible, logs a warning):
+        kernel.add_plugin(HttpPlugin(), "http")
+
         # With allowed domains (recommended):
         kernel.add_plugin(HttpPlugin(allowed_domains=["example.com", "api.example.com"]), "http")
 
-        # Explicitly allow all domains (opt-in, less secure):
+        # Explicitly allow all domains, even when allowed_domains is also set:
         kernel.add_plugin(HttpPlugin(allow_all_domains=True), "http")
 
     Examples:
@@ -28,44 +34,51 @@ class HttpPlugin(KernelBaseModel):
         {{http.deleteAsync $url}}
 
     Security:
-        - By default, all requests are blocked unless ``allowed_domains`` is provided
-          or ``allow_all_domains`` is set to True.
+        - When ``allowed_domains`` is not provided, requests to any HTTP or HTTPS
+          domain are allowed for backward compatibility and a warning is logged.
         - When ``allowed_domains`` is set and ``allow_all_domains`` is False, HTTP
-          redirects are disabled to prevent redirect-based domain bypass (SSRF).
+          redirects are disabled to prevent redirect-based domain bypass.
         - When ``allow_all_domains`` is True, redirects are allowed regardless of
           whether ``allowed_domains`` is also set.
         - Only ``http`` and ``https`` URL schemes are permitted.
-        - Only standard ports (80, 443) are permitted by default. Set ``allowed_ports``
-          to permit additional ports. Port validation is skipped when
-          ``allow_all_domains`` is True.
+        - When domain restrictions are configured, only standard ports (80, 443)
+          are permitted by default. Set ``allowed_ports`` to permit additional ports.
     """
 
     allowed_domains: set[str] | None = None
-    """Set of allowed domains to send requests to."""
+    """Set of allowed domains to send requests to. If None, all domains are allowed."""
 
     allow_all_domains: bool = False
-    """When True, requests to any domain are allowed. Must be explicitly set."""
+    """When True, requests to any domain are allowed, overriding ``allowed_domains``."""
 
     allowed_ports: set[int] | None = None
-    """Set of ports permitted for outbound requests. Defaults to ``{80, 443}`` when not set.
+    """Set of ports permitted for outbound requests when domain restrictions are configured.
 
-    Ignored when ``allow_all_domains`` is True. Set explicitly to permit non-standard ports
-    (e.g. ``allowed_ports={443, 8443}``).
+    Defaults to ``{80, 443}`` when not set. Set explicitly to permit non-standard
+    ports (e.g. ``allowed_ports={443, 8443}``).
     """
 
     _ALLOWED_SCHEMES: ClassVar[frozenset[str]] = frozenset({"http", "https"})
     _DEFAULT_SCHEME_PORTS: ClassVar[dict[str, int]] = {"http": 80, "https": 443}
     _DEFAULT_ALLOWED_PORTS: ClassVar[frozenset[int]] = frozenset({80, 443})
 
+    def model_post_init(self, __context: Any) -> None:
+        """Warn when the plugin is configured without domain restrictions."""
+        super().model_post_init(__context)
+        if self.allowed_domains is None and not self.allow_all_domains:
+            logger.warning(
+                "HttpPlugin was created without `allowed_domains`; requests to any HTTP or HTTPS domain are allowed. "
+                "Set `allowed_domains` to restrict outbound requests."
+            )
+
     @property
     def _allow_redirects(self) -> bool:
         """Whether HTTP redirects should be followed.
 
-        Redirects are only allowed when ``allow_all_domains`` is True.
-        When domain restrictions are configured, redirects are disabled
-        to prevent redirect-based SSRF bypass.
+        Redirects are allowed when domain restrictions are not configured or
+        ``allow_all_domains`` is True.
         """
-        return self.allow_all_domains
+        return self.allow_all_domains or self.allowed_domains is None
 
     def _is_uri_allowed(self, url: str) -> bool:
         """Check if the URL's host and scheme are permitted.
@@ -94,8 +107,8 @@ class HttpPlugin(KernelBaseModel):
         except ValueError:
             return False
 
-        # If allow_all_domains is set, skip the domain and port allow-list checks.
-        if self.allow_all_domains:
+        # Preserve unrestricted behavior when no domain allow-list is configured.
+        if self.allow_all_domains or self.allowed_domains is None:
             return True
 
         # Enforce the port allow-list (deny-by-default to non-standard ports).
@@ -105,27 +118,22 @@ class HttpPlugin(KernelBaseModel):
         if port not in allowed_ports:
             return False
 
-        # If allowed_domains is set, check against it
-        if self.allowed_domains is not None:
-            return host.lower() in {domain.lower() for domain in self.allowed_domains}
-
-        # Default: deny all
-        return False
+        return host.lower() in {domain.lower() for domain in self.allowed_domains}
 
     def _validate_url(self, url: str) -> None:
         """Validate the URL before sending a request.
 
         Always checks that the URL is non-empty, uses an allowed scheme, and has a
-        syntactically valid port. When ``allow_all_domains`` is False, additionally
-        enforces the port and domain allow-lists.
+        syntactically valid port. When domain restrictions are configured,
+        additionally enforces the port and domain allow-lists.
 
         Args:
             url: The URL to validate.
 
         Raises:
             FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
-                has a malformed port, or (unless ``allow_all_domains`` is True) targets
-                a port or domain that is not allowed.
+                has a malformed port, or targets a configured port or domain that is
+                not allowed.
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
