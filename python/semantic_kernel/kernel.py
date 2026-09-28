@@ -347,6 +347,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     raise FunctionExecutionException(
                         f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                     )
+            elif function_behavior is None:
+                logger.debug(
+                    "invoke_function_call called without function_behavior. "
+                    "No allowlist validation will be performed for function '%s'. "
+                    "Pass a FunctionChoiceBehavior with filters to enable validation.",
+                    function_call.name,
+                )
             function_to_call = self.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
