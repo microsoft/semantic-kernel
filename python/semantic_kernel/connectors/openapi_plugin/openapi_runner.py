@@ -8,7 +8,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from inspect import isawaitable
 from typing import Any
 from urllib.parse import urlparse, urlunparse
-from urllib.request import getproxies
+from urllib.request import getproxies, proxy_bypass
 
 import httpx
 from openapi_core import Spec
@@ -47,15 +47,23 @@ def _pin_url_to_address(url: str, address: ipaddress.IPv4Address | ipaddress.IPv
     )
 
 
-def _has_environment_proxy() -> bool:
-    """Return whether a proxy is configured in the environment for outbound HTTP requests.
+def _proxy_carries(url: str) -> bool:
+    """Return whether a configured proxy would carry this specific request.
 
-    Deliberately conservative: any configured proxy disables address pinning, because a
-    proxy resolves the target name itself, so an address resolved locally is neither the
-    one used for the connection nor necessarily reachable or correct from the proxy.
+    A proxy resolves the target name itself, so an address resolved locally is neither the
+    one used for the connection nor necessarily reachable or correct from the proxy, and
+    pinning has to be dropped for such a request. That is decided per URL rather than per
+    process: a request whose scheme has no proxy, or whose host is exempted by `no_proxy`,
+    is sent directly and therefore keeps the address the policy vetted.
     """
+    parsed = httpx.URL(url)
     proxies = getproxies()
-    return any(proxies.get(scheme) for scheme in ("http", "https", "all"))
+    if not (proxies.get(parsed.scheme) or proxies.get("all")):
+        return False
+    host = f"[{parsed.host}]" if ":" in parsed.host else parsed.host
+    if parsed.port is not None:
+        host = f"{host}:{parsed.port}"
+    return not proxy_bypass(host)
 
 
 @experimental
@@ -167,8 +175,8 @@ class OpenApiRunner:
 
         When the URL is validated by DNS resolution, the request issued by the built-in
         client is pinned to one of the validated addresses. Requests made through a
-        caller-supplied `http_client`, or while an environment proxy is configured, use
-        that transport's own name resolution and are not pinned.
+        caller-supplied `http_client`, or through an environment proxy that carries this
+        URL, use that transport's own name resolution and are not pinned.
         """
         if not arguments:
             arguments = KernelArguments()
@@ -207,8 +215,8 @@ class OpenApiRunner:
         # resolves to a public address during validation cannot resolve to a private one at
         # connect time (DNS rebinding). The list is empty when there is nothing to pin.
         pinned_addresses = validated_addresses
-        if pinned_addresses and _has_environment_proxy():
-            logger.debug("An environment proxy is configured; the OpenAPI request address is not pinned.")
+        if pinned_addresses and _proxy_carries(url):
+            logger.debug("An environment proxy carries this URL; the OpenAPI request address is not pinned.")
             pinned_addresses = []
 
         async def fetch():

@@ -276,6 +276,61 @@ async def test_run_operation_does_not_pin_when_an_environment_proxy_is_configure
     assert "sni_hostname" not in requests[0].extensions
 
 
+@pytest.fixture
+def no_proxy_environment(monkeypatch):
+    """Clear every proxy variable so a test states the whole proxy environment it runs in."""
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "REQUEST_METHOD"):
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.delenv(name.lower(), raising=False)
+    return monkeypatch
+
+
+async def test_run_operation_pins_when_the_environment_proxy_is_bypassed_for_this_host(
+    monkeypatch, no_proxy_environment
+):
+    """`no_proxy` means this request is direct, so it must keep the address the policy vetted."""
+    no_proxy_environment.setenv("HTTPS_PROXY", "http://proxy.example:8080")
+    no_proxy_environment.setenv("NO_PROXY", HOST)
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
+    requests = install_capturing_client(monkeypatch)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert str(requests[0].url) == f"https://{PUBLIC_ADDRESS}/api/op"
+    assert requests[0].headers["Host"] == HOST
+    assert requests[0].extensions["sni_hostname"] == HOST
+
+
+async def test_run_operation_pins_when_the_environment_proxy_is_for_another_scheme(monkeypatch, no_proxy_environment):
+    """An `http_proxy` does not carry an https request, which therefore stays direct and pinned."""
+    no_proxy_environment.setenv("HTTP_PROXY", "http://proxy.example:8080")
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
+    requests = install_capturing_client(monkeypatch)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert str(requests[0].url) == f"https://{PUBLIC_ADDRESS}/api/op"
+    assert requests[0].headers["Host"] == HOST
+
+
+async def test_run_operation_does_not_pin_when_the_environment_proxy_carries_this_url(
+    monkeypatch, no_proxy_environment
+):
+    """The same environment, with this host not exempted, must still drop pinning."""
+    no_proxy_environment.setenv("HTTPS_PROXY", "http://proxy.example:8080")
+    no_proxy_environment.setenv("NO_PROXY", "unrelated.example")
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
+    requests = install_capturing_client(monkeypatch)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert str(requests[0].url) == f"https://{HOST}/api/op"
+    assert "sni_hostname" not in requests[0].extensions
+
+
 async def test_run_operation_does_not_pin_a_caller_supplied_client(monkeypatch):
     """A caller-supplied client owns its transport, so its requests are left untouched."""
     monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
