@@ -11,6 +11,7 @@ import pytest_asyncio
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.postgres import PostgresCollection, PostgresSettings, PostgresStore
+from semantic_kernel.data._shared import default_dynamic_filter_function
 from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
@@ -22,6 +23,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,
 )
+from semantic_kernel.functions import KernelParameterMetadata
 
 try:
     import psycopg  # noqa: F401
@@ -257,3 +259,81 @@ async def test_search(vector_store: PostgresStore):
 
         finally:
             await simple_collection.delete([r.id for r in records])
+
+
+@vectorstoremodel
+class FilteredDataModel(BaseModel):
+    id: Annotated[int, VectorStoreField("key")]
+    tenant: Annotated[str, VectorStoreField("data")]
+    embedding: Annotated[
+        list[float] | None,
+        VectorStoreField(
+            "vector", dimensions=3, index_kind=IndexKind.HNSW, distance_function=DistanceFunction.COSINE_DISTANCE
+        ),
+    ] = None
+
+
+@pytest_asyncio.fixture(params=["on", "off"])
+async def filtered_collection(request) -> AsyncGenerator[PostgresCollection[int, FilteredDataModel], None]:
+    settings = pg_settings.model_copy(update={"min_pool": 1, "max_pool": 1})
+    async with await settings.create_connection_pool(options=f"-c standard_conforming_strings={request.param}") as pool:
+        async with pool.connection() as conn:
+            cursor = await conn.execute("SHOW standard_conforming_strings")
+            assert await cursor.fetchone() == (request.param,)
+
+        collection = PostgresCollection(
+            record_type=FilteredDataModel,
+            collection_name=f"test_filters_{uuid.uuid4().hex}",
+            connection_pool=pool,
+        )
+        await collection.ensure_collection_exists()
+        try:
+            yield collection
+        finally:
+            await collection.ensure_collection_deleted()
+
+
+@pytest.mark.parametrize("include_total_count", [False, True])
+@pytest.mark.parametrize("filter_kind", ["single", "multiple", "membership", "dynamic"])
+@pytest.mark.parametrize("value", ["tenant_a", "O'Brien", "a\\' OR 1=1 --", "'; SELECT 1; --", "50%_%s\nnext"])
+async def test_search_filters(
+    filtered_collection: PostgresCollection[int, FilteredDataModel],
+    include_total_count: bool,
+    filter_kind: str,
+    value: str,
+):
+    await filtered_collection.upsert([
+        FilteredDataModel(id=1, tenant=value, embedding=[1.0, 0.0, 0.0]),
+        FilteredDataModel(id=2, tenant="tenant_b", embedding=[1.0, 0.0, 0.0]),
+        FilteredDataModel(id=3, tenant=value, embedding=[1.0, 0.0, 0.0]),
+    ])
+    filter = f"lambda x: x.tenant == {value!r}"
+    expected_ids = {1, 3}
+    if filter_kind == "multiple":
+        filter = [filter, "lambda x: x.id < 3"]
+        expected_ids = {1}
+    elif filter_kind == "membership":
+        filter = f"lambda x: x.tenant in [{value!r}, 'missing'] and x.id < 3"
+        expected_ids = {1}
+    elif filter_kind == "dynamic":
+        filter = default_dynamic_filter_function(
+            filter="lambda x: x.id < 3",
+            parameters=[KernelParameterMetadata(name="tenant")],
+            tenant=value,
+        )
+        expected_ids = {1}
+
+    results = await filtered_collection.search(
+        vector=[1.0, 0.0, 0.0], filter=filter, include_total_count=include_total_count, top=10
+    )
+
+    assert {result.record.id async for result in results.results} == expected_ids
+    assert results.total_count == (len(expected_ids) if include_total_count else None)
+
+    no_matches = await filtered_collection.search(
+        vector=[1.0, 0.0, 0.0],
+        filter="lambda x: x.tenant == 'missing'",
+        include_total_count=include_total_count,
+    )
+    assert [result async for result in no_matches.results] == []
+    assert no_matches.total_count == (0 if include_total_count else None)

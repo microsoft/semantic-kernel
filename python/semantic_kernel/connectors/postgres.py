@@ -308,7 +308,11 @@ class PostgresCollection(
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
-    """PostgreSQL collection implementation."""
+    """PostgreSQL collection implementation.
+
+    Search filters accept Python lambdas or strings containing lambda expressions, not raw SQL.
+    Filter values are passed separately from the SQL command as query parameters.
+    """
 
     connection_pool: AsyncConnectionPool | None = None
     db_schema: str = DEFAULT_SCHEMA
@@ -793,12 +797,13 @@ class PostgresCollection(
             table=sql.Identifier(self.collection_name),
         )
 
-        if where_clauses := self._build_filter(options.filter):  # type: ignore
-            query += (
-                sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
-                if isinstance(where_clauses, list)
-                else sql.SQL("WHERE {clause}").format(clause=where_clauses)
-            )
+        params: list[Any] = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
+        if filters := self._build_filter(options.filter):
+            clauses: list[sql.Composable] = []
+            for clause, values in filters if isinstance(filters, list) else [filters]:
+                clauses.append(sql.SQL("({})").format(clause))
+                params.extend(values)
+            query += sql.SQL(" WHERE {}").format(sql.SQL(" AND ").join(clauses))
 
         query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
             dist_col=sql.Identifier(self._distance_column_name),
@@ -832,9 +837,6 @@ class PostgresCollection(
                 subquery=query,
             )
 
-        # Convert the vector to a string for the query
-        params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
-
         return (
             query,
             params,
@@ -849,81 +851,73 @@ class PostgresCollection(
         )
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> Any:
-        # Comparison operations
-        match node:
-            case ast.Compare():
-                if len(node.ops) > 1:
-                    # Chain comparisons (e.g., 1 < x < 3) become AND of each comparison
-                    values = []
-                    for idx in range(len(node.ops)):
-                        left = node.left if idx == 0 else node.comparators[idx - 1]
-                        right = node.comparators[idx]
-                        op = node.ops[idx]
-                        values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
-                    return f"({' AND '.join(values)})"
-                left = self._lambda_parser(node.left)
-                right = self._lambda_parser(node.comparators[0])
-                op = node.ops[0]
-                match op:
-                    case ast.In():
-                        return f"{left} IN {right}"
-                    case ast.NotIn():
-                        return f"{left} NOT IN {right}"
-                    case ast.Eq():
-                        return f"{left} = {right}"
-                    case ast.NotEq():
-                        return f"{left} <> {right}"
-                    case ast.Gt():
-                        return f"{left} > {right}"
-                    case ast.GtE():
-                        return f"{left} >= {right}"
-                    case ast.Lt():
-                        return f"{left} < {right}"
-                    case ast.LtE():
-                        return f"{left} <= {right}"
-                raise NotImplementedError(f"Unsupported operator: {type(op)}")
-            case ast.BoolOp():
-                op = node.op  # type: ignore
-                values = [self._lambda_parser(v) for v in node.values]
-                if isinstance(op, ast.And):
-                    return f"({' AND '.join(values)})"
-                if isinstance(op, ast.Or):
-                    return f"({' OR '.join(values)})"
-                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
-            case ast.UnaryOp():
-                match node.op:
-                    case ast.Not():
-                        operand = self._lambda_parser(node.operand)
-                        return f"NOT ({operand})"
-                    case ast.UAdd() | ast.USub() | ast.Invert():
-                        raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
-            case ast.Attribute():
-                # Only allow attributes that are in the data model
-                if node.attr not in self.definition.storage_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.attr}' not in data model (storage property names are used)."
-                    )
-                return f'"{node.attr}"'
-            case ast.Name():
-                # Only allow names that are in the data model
-                if node.id not in self.definition.storage_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.id}' not in data model (storage property names are used)."
-                    )
-                return f'"{node.id}"'
-            case ast.Constant():
-                if isinstance(node.value, str):
-                    return "'" + node.value.replace("'", "''") + "'"
-                if node.value is None:
-                    return "NULL"
-                if isinstance(node.value, bool):
-                    return "TRUE" if node.value else "FALSE"
-                return str(node.value)
-            case ast.List():
-                # For IN/NOT IN lists
-                return "(" + ", ".join(self._lambda_parser(elt) for elt in node.elts) + ")"
-        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+    def _lambda_parser(self, node: ast.AST) -> tuple[sql.Composable, list[Any]]:
+        """Parse a filter into SQL with placeholders and its ordered parameter values."""
+        params: list[Any] = []
+
+        def parse(node: ast.AST) -> sql.Composable:
+            match node:
+                case ast.Compare():
+                    if len(node.ops) > 1:
+                        comparisons = []
+                        for idx, op in enumerate(node.ops):
+                            left_node = node.left if idx == 0 else node.comparators[idx - 1]
+                            right_node = node.comparators[idx]
+                            comparisons.append(parse(ast.Compare(left=left_node, ops=[op], comparators=[right_node])))
+                        return sql.SQL("({})").format(sql.SQL(" AND ").join(comparisons))
+                    left = parse(node.left)
+                    right = parse(node.comparators[0])
+                    op = node.ops[0]
+                    match op:
+                        case ast.In():
+                            return sql.SQL("{} IN {}").format(left, right)
+                        case ast.NotIn():
+                            return sql.SQL("{} NOT IN {}").format(left, right)
+                        case ast.Eq():
+                            return sql.SQL("{} = {}").format(left, right)
+                        case ast.NotEq():
+                            return sql.SQL("{} <> {}").format(left, right)
+                        case ast.Gt():
+                            return sql.SQL("{} > {}").format(left, right)
+                        case ast.GtE():
+                            return sql.SQL("{} >= {}").format(left, right)
+                        case ast.Lt():
+                            return sql.SQL("{} < {}").format(left, right)
+                        case ast.LtE():
+                            return sql.SQL("{} <= {}").format(left, right)
+                    raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                case ast.BoolOp():
+                    values = [parse(value) for value in node.values]
+                    if isinstance(node.op, ast.And):
+                        return sql.SQL("({})").format(sql.SQL(" AND ").join(values))
+                    if isinstance(node.op, ast.Or):
+                        return sql.SQL("({})").format(sql.SQL(" OR ").join(values))
+                    raise NotImplementedError(f"Unsupported BoolOp: {type(node.op)}")
+                case ast.UnaryOp():
+                    match node.op:
+                        case ast.Not():
+                            return sql.SQL("NOT ({})").format(parse(node.operand))
+                        case ast.UAdd() | ast.USub() | ast.Invert():
+                            raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
+                case ast.Attribute() | ast.Name():
+                    name = node.attr if isinstance(node, ast.Attribute) else node.id
+                    if name not in self.definition.storage_names:
+                        raise VectorStoreOperationException(
+                            f"Field '{name}' not in data model (storage property names are used)."
+                        )
+                    return sql.Identifier(name)
+                case ast.Constant():
+                    if not isinstance(node.value, (str, int, float, bool)) and node.value is not None:
+                        raise VectorStoreOperationException(f"Unsupported constant type: {type(node.value)}")
+                    params.append(node.value)
+                    return sql.Placeholder()
+                case ast.List():
+                    if not node.elts:
+                        raise VectorStoreOperationException("Empty lists are not supported in PostgreSQL filters.")
+                    return sql.SQL("({})").format(sql.SQL(", ").join(parse(elt) for elt in node.elts))
+            raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+
+        return parse(node), params
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
