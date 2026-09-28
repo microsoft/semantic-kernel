@@ -323,7 +323,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         ValidateChatHistory(chatHistory);
 
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings, kernel);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
 
         if (this.Logger.IsEnabled(LogLevel.Trace))
