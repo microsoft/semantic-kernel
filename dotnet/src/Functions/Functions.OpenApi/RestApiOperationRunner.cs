@@ -121,11 +121,6 @@ internal sealed class RestApiOperationRunner
     private readonly RestApiOperationServerUrlValidationOptions? _serverUrlValidationOptions;
 
     /// <summary>
-    /// Default allowed schemes when none are explicitly configured.
-    /// </summary>
-    private static readonly IReadOnlyList<string> s_defaultAllowedSchemes = ["https"];
-
-    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -191,7 +186,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<RestApiOperationResponse> RunAsync(
+    public async Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         KernelArguments arguments,
         RestApiOperationRunOptions? options = null,
@@ -199,80 +194,16 @@ internal sealed class RestApiOperationRunner
     {
         var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        this.ValidateUrl(url);
+        await ServerUrlValidator.ValidateAsync(url, this._serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
 
         var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
+        return await this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
-
-    /// <summary>
-    /// Validates the resolved URL against the configured server URL validation options.
-    /// </summary>
-    /// <param name="url">The resolved URL to validate.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the URL violates the validation rules.</exception>
-    private void ValidateUrl(Uri url)
-    {
-        if (this._serverUrlValidationOptions is null)
-        {
-            return;
-        }
-
-        // Validate the URI scheme.
-        var allowedSchemes = this._serverUrlValidationOptions.AllowedSchemes ?? s_defaultAllowedSchemes;
-        if (allowedSchemes.Count > 0)
-        {
-            bool schemeAllowed = false;
-            foreach (var scheme in allowedSchemes)
-            {
-                if (string.Equals(url.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    schemeAllowed = true;
-                    break;
-                }
-            }
-
-            if (!schemeAllowed)
-            {
-                throw new InvalidOperationException(
-                    $"The request URI scheme '{url.Scheme}' is not allowed. Allowed schemes: {string.Join(", ", allowedSchemes)}.");
-            }
-        }
-
-        // Validate the URL against the allowed base URLs.
-        if (this._serverUrlValidationOptions.AllowedBaseUrls is { Count: > 0 } allowedBaseUrls)
-        {
-            bool baseUrlAllowed = false;
-
-            foreach (var baseUrl in allowedBaseUrls)
-            {
-                // Use only scheme + authority + path for comparison, ignoring any query or fragment.
-                var baseUrlPath = baseUrl.GetLeftPart(UriPartial.Path);
-                var urlPath = url.GetLeftPart(UriPartial.Path);
-                var baseUrlWithSlash = baseUrlPath;
-                if (!baseUrlWithSlash.EndsWith("/", StringComparison.Ordinal))
-                {
-                    baseUrlWithSlash += "/";
-                }
-                if (string.Equals(urlPath, baseUrlPath, StringComparison.OrdinalIgnoreCase) ||
-                    urlPath.StartsWith(baseUrlWithSlash, StringComparison.OrdinalIgnoreCase))
-                {
-                    baseUrlAllowed = true;
-                    break;
-                }
-            }
-
-            if (!baseUrlAllowed)
-            {
-                throw new InvalidOperationException(
-                    $"The request URI '{url}' is not allowed. It does not match any of the allowed base URLs.");
-            }
-        }
-    }
 
     /// <summary>
     /// Sends an HTTP request.

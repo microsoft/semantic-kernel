@@ -265,6 +265,18 @@ class OpenApiParser:
                 summary = details.get("summary", None)
                 description = details.get("description", None)
 
+                # Exclude operations whose path would resolve to a different effective request target
+                # than the one offered to the selection predicate: a dot-segment (encoded or literal)
+                # or a non-relative (absolute / authority-changing) path. Excluding them here keeps
+                # operation selection and request construction on one canonical target so such a path
+                # cannot bypass an include/exclude operation-selection filter.
+                if RestApiOperation._contains_dot_segment(path) or RestApiOperation._is_non_relative_path(path):
+                    logger.warning(
+                        f"Skipping operation {operationId} at path '{path}' because it does not resolve to a "
+                        f"relative path on the configured server."
+                    )
+                    continue
+
                 context = OperationSelectionPredicateContext(operationId, path, method, description)
                 if (
                     execution_settings
