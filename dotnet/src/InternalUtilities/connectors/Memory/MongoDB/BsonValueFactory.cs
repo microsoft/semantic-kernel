@@ -21,10 +21,15 @@ internal static class BsonValueFactory
         => value switch
         {
             null => BsonNull.Value,
-            Guid guid => new BsonBinaryData(guid, GuidRepresentation.Standard),
-            object[] array => new BsonArray(Array.ConvertAll(array, Create)),
-            Array array => new BsonArray(array),
-            IEnumerable<object> enumerable => new BsonArray(enumerable.Select(Create)),
+            Guid v => new BsonBinaryData(v, GuidRepresentation.Standard),
+            DateTimeOffset v => new BsonDateTime(v.UtcDateTime),
+#if NET
+            DateOnly v => new BsonDateTime(v.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)),
+#endif
+            object[] v => new BsonArray(Array.ConvertAll(v, Create)),
+            Array v => new BsonArray(v),
+            IEnumerable<object> v => new BsonArray(v.Select(Create)),
+
             _ => BsonValue.Create(value)
         };
 }

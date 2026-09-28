@@ -39,7 +39,7 @@ req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 chat_function = kernel.add_function(
     prompt_template_config=PromptTemplateConfig(
         template="""{{system_message}}{{#each chat_history}}
-        {{#message role=role}}{{~content~}}{{/message}} {{/each}}""",
+        {{message_to_prompt}} {{/each}}""",
         template_format="handlebars",
         allow_dangerously_set_content=True,
     ),

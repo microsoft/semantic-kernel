@@ -17,6 +17,10 @@ public class OpenApiFunctionExecutionParameters
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
     /// </summary>
+    /// <remarks>
+    /// The default client does not follow redirects so that URL validation cannot be bypassed.
+    /// Custom clients should also be configured with <c>AllowAutoRedirect = false</c>.
+    /// </remarks>
     public HttpClient? HttpClient { get; set; }
 
     /// <summary>
@@ -97,6 +101,30 @@ public class OpenApiFunctionExecutionParameters
     /// A custom REST API parameter filter.
     /// </summary>
     public RestApiParameterFilter? ParameterFilter { get; set; }
+
+    /// <summary>
+    /// Options for validating server URLs before making HTTP requests, to help prevent
+    /// Server-Side Request Forgery (SSRF) attacks against private/internal infrastructure.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Validation is <b>on by default</b>: when this property is <c>null</c>, the plugin behaves
+    /// as if a default-constructed <see cref="RestApiOperationServerUrlValidationOptions"/> was
+    /// supplied. The implicit policy permits only HTTPS URLs that resolve to public IP
+    /// addresses, blocking loopback, link-local, RFC1918, IPv6 ULA, CGNAT and other
+    /// non-public ranges (including the cloud-metadata address <c>169.254.169.254</c>).
+    /// </para>
+    /// <para>
+    /// To allow plaintext HTTP or private/loopback hosts (for example for localhost
+    /// development or on-prem APIs), set
+    /// <see cref="RestApiOperationServerUrlValidationOptions.AllowedBaseUrls"/> with the
+    /// specific allowed origins, or set
+    /// <see cref="RestApiOperationServerUrlValidationOptions.AllowPrivateNetworkAccess"/>
+    /// to <c>true</c>.
+    /// </para>
+    /// </remarks>
+    [Experimental("SKEXP0040")]
+    public RestApiOperationServerUrlValidationOptions? ServerUrlValidationOptions { get; set; }
 
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.

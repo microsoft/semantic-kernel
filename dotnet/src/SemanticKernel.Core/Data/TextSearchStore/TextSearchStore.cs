@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -200,12 +202,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         var results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
-        return new(searchResult.Select(x =>
-            new TextSearchResult(x.Text ?? string.Empty)
-            {
-                Name = x.SourceName,
-                Link = x.SourceLink
-            }).ToAsyncEnumerable());
+        return new(results.ToAsyncEnumerable());
     }
 
     /// <inheritdoc/>

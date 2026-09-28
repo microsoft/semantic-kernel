@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Annotated, Any
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
@@ -355,6 +354,8 @@ def definition(
 
 @fixture
 def definition_pandas(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+    import pandas as pd
+
     return VectorStoreCollectionDefinition(
         fields=[
             VectorStoreField(

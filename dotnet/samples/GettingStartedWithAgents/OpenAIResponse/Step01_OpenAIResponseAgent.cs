@@ -15,7 +15,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -33,7 +33,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -48,7 +48,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentWithThreadedConversationAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in the users preferred language.",
@@ -84,7 +84,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentWithThreadedConversationStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in the users preferred language.",
@@ -116,7 +116,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentWithImageContentAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Provide a detailed description including the weather conditions.",

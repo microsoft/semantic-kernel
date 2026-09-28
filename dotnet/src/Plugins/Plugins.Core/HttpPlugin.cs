@@ -14,6 +14,19 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// A plugin that provides HTTP functionality.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. <see cref="AllowedDomains"/> must be explicitly configured
+/// before any HTTP requests are permitted. By default, all domains are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedDomains"/> is restricted to trusted values only.
+/// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
+/// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpPlugin
@@ -33,14 +46,20 @@ public sealed class HttpPlugin
     /// <param name="client">The HTTP client to use.</param>
     /// <remarks>
     /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
     /// </remarks>
     [ActivatorUtilitiesConstructor]
     public HttpPlugin(HttpClient? client = null) =>
-        this._client = client ?? HttpClientProvider.GetHttpClient();
+        this._client = client ?? HttpClientProvider.GetNonRedirectingHttpClient();
 
     /// <summary>
-    /// List of allowed domains to download from.
+    /// List of allowed domains to send requests to.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
+    /// with trusted domains before any requests will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
         get => this._allowedDomains;
@@ -100,7 +119,7 @@ public sealed class HttpPlugin
         this.SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
 
     #region private
-    private HashSet<string>? _allowedDomains;
+    private HashSet<string>? _allowedDomains = [];
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -110,7 +129,9 @@ public sealed class HttpPlugin
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is null || this._allowedDomains.Contains(uri.Host);
+        return this._allowedDomains is not null
+            && this._allowedDomains.Count > 0
+            && this._allowedDomains.Contains(uri.Host);
     }
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>

@@ -26,6 +26,7 @@ from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import 
     locate_safe_reduction_index,
     locate_summarization_boundary,
 )
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.content_exceptions import ChatHistoryReducerException
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -89,6 +90,21 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
         logger.info("Performing chat history summarization check...")
 
+        # Preserve system/developer messages so they are not lost during summarization.
+        # This matches the .NET SDK behavior and the truncation reducer.
+        # Only the first system/developer message is preserved; this mirrors .NET semantics.
+        # Exclude summary messages (which may have SYSTEM role) — they are generated content,
+        # not original system prompts.
+        system_message_index = next(
+            (
+                i
+                for i, msg in enumerate(history)
+                if msg.role in (AuthorRole.SYSTEM, AuthorRole.DEVELOPER) and not msg.metadata.get(SUMMARY_METADATA_KEY)
+            ),
+            -1,
+        )
+        system_message = history[system_message_index] if system_message_index >= 0 else None
+
         # 1. Identify where existing summary messages end
         insertion_point = locate_summarization_boundary(history)
         if insertion_point == len(history):
@@ -96,12 +112,19 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
             logger.warning("All messages are summaries, forcing boundary to 0.")
             insertion_point = 0
 
+        # Only adjust target_count if the system message would be truncated away.
+        # If the system message is already in the retained portion, no adjustment needed.
+        system_would_be_truncated = (
+            system_message is not None and system_message_index < len(history) - self.target_count
+        )
+
         # 2. Locate the safe reduction index
         truncation_index = locate_safe_reduction_index(
             history,
             self.target_count,
             self.threshold_count,
             offset_count=insertion_point,
+            has_system_message=system_would_be_truncated,
         )
         if truncation_index is None:
             logger.info("No valid truncation index found.")
@@ -138,7 +161,13 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
                 keep_existing_summaries = history[:insertion_point]
 
             remainder = history[truncation_index:]
+
+            # Prepend the system/developer message if it was summarized away.
+            # Use identity comparison to avoid false matches from value-equal messages.
             new_history = [*keep_existing_summaries, summary_msg, *remainder]
+            if system_message is not None and not any(m is system_message for m in new_history):
+                new_history = [system_message, *new_history]
+
             self.messages = new_history
 
             return self
@@ -151,8 +180,6 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
     async def _summarize(self, messages: list[ChatMessageContent]) -> ChatMessageContent | None:
         """Use the ChatCompletion service to generate a single summary message."""
-        from semantic_kernel.contents.utils.author_role import AuthorRole
-
         chat_history = ChatHistory(messages=messages)
         execution_settings = self.execution_settings or self.service.get_prompt_execution_settings_from_settings(
             PromptExecutionSettings()

@@ -5,7 +5,7 @@ These samples are more complex then most because of the nature of these API's. T
 To run these samples, you will need to have the following setup:
 
 - Environment variables for OpenAI (websocket or WebRTC), with your key and OPENAI_REALTIME_MODEL_ID set.
-- Environment variables for Azure (websocket only), set with your endpoint, optionally a key and AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME set. The API version needs to be at least `2024-10-01-preview`.
+- Environment variables for Azure (websocket only), set with your endpoint, optionally a key and AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME set. The API version needs to be at least `2025-08-28`.
 - To run the sample with a simple version of a class that handles the incoming and outgoing sound you need to install the following packages in your environment:
   - semantic-kernel[realtime]
   - pyaudio

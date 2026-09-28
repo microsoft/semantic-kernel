@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from google.cloud.aiplatform_v1beta1.types.content import Candidate
 from vertexai.generative_models import FunctionDeclaration, Part, Tool, ToolConfig
@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
+    sanitize_schema_for_google_ai,
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
@@ -89,14 +90,16 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
             if item.text:
                 parts.append(Part.from_text(item.text))
         elif isinstance(item, FunctionCallContent):
-            parts.append(
-                Part.from_dict({
-                    "function_call": {
-                        "name": item.name,
-                        "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
-                    }
-                })
-            )
+            part_dict: dict[str, Any] = {
+                "function_call": {
+                    "name": item.name,  # type: ignore[arg-type]
+                    "args": json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                }
+            }
+            thought_signature = item.metadata.get("thought_signature") if item.metadata else None
+            if thought_signature:
+                part_dict["thought_signature"] = thought_signature
+            parts.append(Part.from_dict(part_dict))
         elif isinstance(item, ImageContent):
             parts.append(_create_image_part(item))
         else:
@@ -135,13 +138,20 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 
 def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> FunctionDeclaration:
     """Convert the kernel function metadata to function calling format."""
+    properties: dict[str, Any] = {}
+    if metadata.parameters:
+        for param in metadata.parameters:
+            if param.name is None:
+                continue
+            prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
+            properties[param.name] = prop_schema
     return FunctionDeclaration(
         name=metadata.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR),
         description=metadata.description or "",
         parameters={
             "type": "object",
-            "properties": {param.name: param.schema_data for param in metadata.parameters},
-            "required": [p.name for p in metadata.parameters if p.is_required],
+            "properties": properties,
+            "required": [p.name for p in metadata.parameters if p.is_required and p.name is not None],
         },
     )
 
