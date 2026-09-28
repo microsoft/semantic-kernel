@@ -1,0 +1,37 @@
+name: GitHub automation tests
+
+on:
+  pull_request:
+    paths:
+      - ".github/actions/**"
+      - ".github/tests/**"
+      - ".github/workflows/devflow-pr-review.yml"
+      - ".github/workflows/github-automation-tests.yml"
+      - ".github/workflows/label-issues.yml"
+      - ".github/workflows/label-pr.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/actions/**"
+      - ".github/tests/**"
+      - ".github/workflows/devflow-pr-review.yml"
+      - ".github/workflows/github-automation-tests.yml"
+      - ".github/workflows/label-issues.yml"
+      - ".github/workflows/label-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Run JavaScript tests
+        run: node --test .github/tests/*.js
