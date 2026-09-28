@@ -202,12 +202,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         var results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
-        return new(searchResult.Select(x =>
-            new TextSearchResult(x.Text ?? string.Empty)
-            {
-                Name = x.SourceName,
-                Link = x.SourceLink
-            }).ToAsyncEnumerable());
+        return new(results.ToAsyncEnumerable());
     }
 
     /// <inheritdoc/>

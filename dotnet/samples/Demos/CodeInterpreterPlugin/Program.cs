@@ -54,9 +54,13 @@ async Task<string> TokenProvider(CancellationToken cancellationToken)
     return cachedToken;
 }
 
+var sessionEndpoint = new Uri(endpoint);
 var settings = new SessionsPythonSettings(
         sessionId: Guid.NewGuid().ToString(),
-        endpoint: new Uri(endpoint));
+        endpoint: sessionEndpoint)
+{
+    AllowedDomains = [sessionEndpoint.Host]
+};
 
 // Uncomment the following lines to enable file upload operations (disabled by default for security)
 // settings.EnableDangerousFileUploads = true;
@@ -73,7 +77,9 @@ var builder =
 
 // Change the log level to Trace to see more detailed logs
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
-builder.Services.AddHttpClient();
+builder.Services
+    .AddHttpClient(string.Empty)
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton((sp)
     => new SessionsPythonPlugin(
         settings,
