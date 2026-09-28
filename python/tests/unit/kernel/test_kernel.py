@@ -626,6 +626,101 @@ async def test_invoke_function_call_with_missing_or_unexpected_args(kernel: Kern
     ), "Expected fallback message not found in chat history."
 
 
+async def test_invoke_function_call_with_filters_blocks_unallowed_function(kernel: Kernel):
+    """Verify that when function_behavior has filters, an unallowed function is blocked."""
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.name = "HttpPlugin-GetAsync"
+    tool_call_mock.function_name = "GetAsync"
+    tool_call_mock.plugin_name = "HttpPlugin"
+    tool_call_mock.arguments = {"url": "http://169.254.169.254/"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.id = "test_id"
+
+    chat_history = ChatHistory()
+
+    safe_func_meta = KernelFunctionMetadata(name="safe_function", is_prompt=False, plugin_name="SafePlugin")
+    function_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["SafePlugin"]})
+
+    with patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[safe_func_meta]):
+        await kernel.invoke_function_call(
+            function_call=tool_call_mock,
+            chat_history=chat_history,
+            function_behavior=function_behavior,
+        )
+
+    # The function should have been blocked — an error message should be in chat history
+    assert len(chat_history.messages) == 1
+    assert "not allowed" in str(chat_history.messages[0].items[0].result) or "not part of the provided" in str(
+        chat_history.messages[0].items[0].result
+    )
+
+
+async def test_invoke_function_call_with_filters_allows_matching_function(kernel: Kernel, get_tool_call_mock):
+    """Verify that when function_behavior has filters, an allowed function proceeds (not blocked)."""
+    tool_call_mock = get_tool_call_mock
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_meta = KernelFunctionMetadata(
+        name="function", is_prompt=False, plugin_name="test", fully_qualified_name="test-function"
+    )
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_mock.parameters = []
+    func_result = FunctionResult(value="ok", function=func_meta)
+    func_mock.invoke = AsyncMock(return_value=func_result)
+
+    function_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["test"]})
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        await kernel.invoke_function_call(
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            function_behavior=function_behavior,
+        )
+
+    # The debug message for missing function_behavior should NOT have been logged
+    debug_calls = [call[0][0] for call in logger_mock.debug.call_args_list] if logger_mock.debug.called else []
+    assert not any("without function_behavior" in msg for msg in debug_calls)
+    # The exception logger should NOT have been called (function was allowed)
+    logger_mock.exception.assert_not_called()
+
+
+async def test_invoke_function_call_without_function_behavior_logs_debug(kernel: Kernel, get_tool_call_mock):
+    """Verify that calling invoke_function_call without function_behavior logs a debug message."""
+    tool_call_mock = get_tool_call_mock
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_mock.parameters = []
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = AsyncMock(return_value=func_result)
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        await kernel.invoke_function_call(
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            # function_behavior intentionally omitted
+        )
+
+    logger_mock.debug.assert_called()
+    debug_calls = [call[0][0] for call in logger_mock.debug.call_args_list]
+    assert any("without function_behavior" in msg for msg in debug_calls)
+
+
 # endregion
 # region Plugins
 
@@ -876,6 +971,37 @@ def test_get_function_from_fqn_wo_plugin(kernel: Kernel, custom_plugin_class):
     kernel.add_plugin(custom_plugin_class(), "TestPlugin")
     func = kernel.get_function_from_fully_qualified_function_name("getLightStatus")
     assert func
+
+
+def test_get_function_bare_name_single_match(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function(None, "getLightStatus")
+    assert func
+
+
+def test_get_function_bare_name_ambiguous_warns(kernel: Kernel, caplog):
+    import logging
+
+    class PluginA:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "a"
+
+    class PluginB:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "b"
+
+    kernel.add_plugin(PluginA(), "PluginA")
+    kernel.add_plugin(PluginB(), "PluginB")
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.functions.kernel_function_extension"):
+        func = kernel.get_function(None, "check_permissions")
+
+    # Warn-only: resolves to the first-registered match, but logs the ambiguity.
+    assert func is kernel.get_function("PluginA", "check_permissions")
+    assert "ambiguous" in caplog.text
+    assert "PluginA" in caplog.text and "PluginB" in caplog.text
 
 
 # endregion

@@ -5,6 +5,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -63,7 +64,8 @@ async Task SKAgent_As_AFAgentAsync()
 
 async Task AFAgentAsync()
 {
-    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsIChatClient(model).CreateAIAgent(
+    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsAIAgent(
+        model: model,
         instructions: "You are a helpful assistant",
         tools: [AIFunctionFactory.Create(GetWeather)]);
 

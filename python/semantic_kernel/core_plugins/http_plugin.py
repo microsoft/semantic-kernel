@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
 import aiohttp
@@ -15,23 +15,60 @@ class HttpPlugin(KernelBaseModel):
     """A plugin that provides HTTP functionality.
 
     Usage:
-        kernel.add_plugin(HttpPlugin(), "http")
-
-        # With allowed domains for security:
+        # With allowed domains (recommended):
         kernel.add_plugin(HttpPlugin(allowed_domains=["example.com", "api.example.com"]), "http")
+
+        # Explicitly allow all domains (opt-in, less secure):
+        kernel.add_plugin(HttpPlugin(allow_all_domains=True), "http")
 
     Examples:
         {{http.getAsync $url}}
         {{http.postAsync $url}}
         {{http.putAsync $url}}
         {{http.deleteAsync $url}}
+
+    Security:
+        - By default, all requests are blocked unless ``allowed_domains`` is provided
+          or ``allow_all_domains`` is set to True.
+        - When ``allowed_domains`` is set and ``allow_all_domains`` is False, HTTP
+          redirects are disabled to prevent redirect-based domain bypass (SSRF).
+        - When ``allow_all_domains`` is True, redirects are allowed regardless of
+          whether ``allowed_domains`` is also set.
+        - Only ``http`` and ``https`` URL schemes are permitted.
+        - Only standard ports (80, 443) are permitted by default. Set ``allowed_ports``
+          to permit additional ports. Port validation is skipped when
+          ``allow_all_domains`` is True.
     """
 
     allowed_domains: set[str] | None = None
-    """List of allowed domains to send requests to. If None, all domains are allowed."""
+    """Set of allowed domains to send requests to."""
+
+    allow_all_domains: bool = False
+    """When True, requests to any domain are allowed. Must be explicitly set."""
+
+    allowed_ports: set[int] | None = None
+    """Set of ports permitted for outbound requests. Defaults to ``{80, 443}`` when not set.
+
+    Ignored when ``allow_all_domains`` is True. Set explicitly to permit non-standard ports
+    (e.g. ``allowed_ports={443, 8443}``).
+    """
+
+    _ALLOWED_SCHEMES: ClassVar[frozenset[str]] = frozenset({"http", "https"})
+    _DEFAULT_SCHEME_PORTS: ClassVar[dict[str, int]] = {"http": 80, "https": 443}
+    _DEFAULT_ALLOWED_PORTS: ClassVar[frozenset[int]] = frozenset({80, 443})
+
+    @property
+    def _allow_redirects(self) -> bool:
+        """Whether HTTP redirects should be followed.
+
+        Redirects are only allowed when ``allow_all_domains`` is True.
+        When domain restrictions are configured, redirects are disabled
+        to prevent redirect-based SSRF bypass.
+        """
+        return self.allow_all_domains
 
     def _is_uri_allowed(self, url: str) -> bool:
-        """Check if the URL's host is in the allowed domains list.
+        """Check if the URL's host and scheme are permitted.
 
         Args:
             url: The URL to check.
@@ -39,25 +76,56 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             True if the URL is allowed, False otherwise.
         """
-        if self.allowed_domains is None:
-            return True
-
         parsed = urlparse(url)
-        host = parsed.hostname
-        if host is None:
+
+        # Validate scheme
+        if parsed.scheme.lower() not in self._ALLOWED_SCHEMES:
             return False
 
-        # Case-insensitive comparison
-        return host.lower() in {domain.lower() for domain in self.allowed_domains}
+        host = parsed.hostname
+        if not host:
+            return False
+
+        # Validate that the port component is syntactically valid, regardless of
+        # allow_all_domains. Accessing parsed.port raises ValueError for a malformed
+        # or out-of-range port.
+        try:
+            port = parsed.port
+        except ValueError:
+            return False
+
+        # If allow_all_domains is set, skip the domain and port allow-list checks.
+        if self.allow_all_domains:
+            return True
+
+        # Enforce the port allow-list (deny-by-default to non-standard ports).
+        if port is None:
+            port = self._DEFAULT_SCHEME_PORTS.get(parsed.scheme.lower())
+        allowed_ports = self.allowed_ports if self.allowed_ports is not None else self._DEFAULT_ALLOWED_PORTS
+        if port not in allowed_ports:
+            return False
+
+        # If allowed_domains is set, check against it
+        if self.allowed_domains is not None:
+            return host.lower() in {domain.lower() for domain in self.allowed_domains}
+
+        # Default: deny all
+        return False
 
     def _validate_url(self, url: str) -> None:
-        """Validate the URL, checking if it's not empty and is in the allowed domains.
+        """Validate the URL before sending a request.
+
+        Always checks that the URL is non-empty, uses an allowed scheme, and has a
+        syntactically valid port. When ``allow_all_domains`` is False, additionally
+        enforces the port and domain allow-lists.
 
         Args:
             url: The URL to validate.
 
         Raises:
-            FunctionExecutionException: If the URL is empty or not in the allowed domains.
+            FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
+                has a malformed port, or (unless ``allow_all_domains`` is True) targets
+                a port or domain that is not allowed.
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
@@ -77,7 +145,10 @@ class HttpPlugin(KernelBaseModel):
         """
         self._validate_url(url)
 
-        async with aiohttp.ClientSession() as session, session.get(url, raise_for_status=True) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+        ):
             return await response.text()
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
@@ -100,7 +171,9 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
-            session.post(url, headers=headers, data=data, raise_for_status=True) as response,
+            session.post(
+                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+            ) as response,
         ):
             return await response.text()
 
@@ -125,7 +198,9 @@ class HttpPlugin(KernelBaseModel):
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
-            session.put(url, headers=headers, data=data, raise_for_status=True) as response,
+            session.put(
+                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+            ) as response,
         ):
             return await response.text()
 
@@ -141,5 +216,8 @@ class HttpPlugin(KernelBaseModel):
         """
         self._validate_url(url)
 
-        async with aiohttp.ClientSession() as session, session.delete(url, raise_for_status=True) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.delete(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+        ):
             return await response.text()
