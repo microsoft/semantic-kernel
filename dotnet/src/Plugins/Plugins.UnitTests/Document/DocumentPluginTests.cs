@@ -186,6 +186,10 @@ public class DocumentPluginTests
         // Act & Assert — UNC paths are rejected
         await Assert.ThrowsAnyAsync<Exception>(async () => await target.ReadTextAsync("\\\\UNC\\server\\folder\\file.docx"));
         await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "\\\\UNC\\server\\folder\\file.docx"));
+
+        // Act & Assert — forward-slash UNC paths are rejected too
+        await Assert.ThrowsAnyAsync<Exception>(async () => await target.ReadTextAsync("//UNC/server/folder/file.docx"));
+        await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "//UNC/server/folder/file.docx"));
     }
 
     [Fact]

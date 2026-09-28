@@ -9,7 +9,7 @@ The sample can be configured in various ways:
 
 1. You can choose your preferred vector store by setting the `Rag:VectorStoreType` configuration setting in the `appsettings.json` file to one of the following values:
    1. AzureAISearch
-   1. CosmosMongoDB
+   1. AzureDocumentDB
    1. CosmosNoSql
    1. InMemory
    1. Qdrant
@@ -110,14 +110,14 @@ dotnet user-secrets set "VectorStores:AzureAISearch:Endpoint" "https://<yourserv
 dotnet user-secrets set "VectorStores:AzureAISearch:ApiKey" "<yoursecret>"
 ```
 
-### Azure CosmosDB MongoDB
+### Azure DocumentDB
 
-If you want to use Azure CosmosDB MongoDB as your vector store, you will need to create an instance of Azure CosmosDB MongoDB and add
+If you want to use Azure DocumentDB as your vector store, you will need to create an Azure DocumentDB instance and add
 the following secrets here:
 
 ```cli
-dotnet user-secrets set "VectorStores:CosmosMongoDB:ConnectionString" "<yourconnectionstring>"
-dotnet user-secrets set "VectorStores:CosmosMongoDB:DatabaseName" "<yourdbname>"
+dotnet user-secrets set "VectorStores:AzureDocumentDB:ConnectionString" "<yourconnectionstring>"
+dotnet user-secrets set "VectorStores:AzureDocumentDB:DatabaseName" "<yourdbname>"
 ```
 
 ### Azure CosmosDB NoSQL
