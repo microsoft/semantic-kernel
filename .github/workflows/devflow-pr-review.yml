@@ -15,8 +15,8 @@ on:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
+  copilot-requests: write
+  id-token: write
 
 concurrency:
   group: devflow-pr-review-${{ github.repository }}-${{ github.event.pull_request.number || github.run_id }}
@@ -27,14 +27,40 @@ env:
   DEVFLOW_REF: main
   TARGET_REPO_PATH: ${{ github.workspace }}/target-repo
   DEVFLOW_PATH: ${{ github.workspace }}/devflow
+  MODEL_CONFIG_PATH: ${{ github.workspace }}/devflow/config.ci.yaml
 
 jobs:
   review:
     runs-on: ubuntu-latest
+    environment: github-app-auth
     timeout-minutes: 60
     if: ${{ github.event_name != 'pull_request_target' || !github.event.pull_request.draft }}
 
     steps:
+      - name: Checkout GitHub automation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          sparse-checkout: .github/actions/github-app-token
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Get GitHub automation token
+        id: github-auth
+        uses: ./.github/actions/github-app-token
+        with:
+          mode: ${{ vars.GH_APP_AUTH_MODE }}
+          azure-client-id: ${{ secrets.GH_APP_AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.GH_APP_AZURE_TENANT_ID }}
+          azure-subscription-id: ${{ secrets.GH_APP_AZURE_SUBSCRIPTION_ID }}
+          key-vault-name: ${{ secrets.GH_APP_KEY_VAULT_NAME }}
+          key-name: ${{ secrets.GH_APP_KEY_NAME }}
+          github-app-client-id: ${{ secrets.GH_APP_CLIENT_ID }}
+          github-app-installation-id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+          repository: ${{ github.repository }}
+          permission-profile: devflow
+          fallback-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+
       - name: Resolve PR metadata
         id: pr
         shell: bash
@@ -64,7 +90,7 @@ jobs:
 
       # Safe checkout: base repo only, not the untrusted PR head.
       - name: Checkout target repo base
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
@@ -73,7 +99,7 @@ jobs:
 
       # Private DevFlow checkout: the PAT/token grants access to this repo's code.
       - name: Checkout DevFlow
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ env.DEVFLOW_REPOSITORY }}
           ref: ${{ env.DEVFLOW_REF }}
@@ -101,8 +127,8 @@ jobs:
         id: spam
         working-directory: ${{ env.DEVFLOW_PATH }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
+          DEVFLOW_GITHUB_TOKEN: ${{ steps.github-auth.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           PR_REPO: ${{ steps.pr.outputs.repo }}
@@ -112,6 +138,7 @@ jobs:
             --repo "$PR_REPO" \
             --pr-number "$PR_NUMBER" \
             --repo-path "${TARGET_REPO_PATH}" \
+            --github-token "$DEVFLOW_GITHUB_TOKEN" \
             --apply-labels
 
       - name: Stop after spam gate
@@ -127,8 +154,8 @@ jobs:
         id: review
         working-directory: ${{ env.DEVFLOW_PATH }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_COPILOT_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
+          DEVFLOW_GITHUB_TOKEN: ${{ steps.github-auth.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           SK_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           AGENT_REPO_PATH: ${{ env.TARGET_REPO_PATH }}
           PR_URL: ${{ steps.pr.outputs.pr_url }}
@@ -136,4 +163,5 @@ jobs:
           uv run python scripts/trigger_pr_review.py \
             --pr-url "$PR_URL" \
             --github-username "$GITHUB_ACTOR" \
+            --github-token "$DEVFLOW_GITHUB_TOKEN" \
             --no-require-comment-selection
