@@ -147,7 +147,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
     public async Task ChatCompletionWithWebSearchAsync()
     {
         // Arrange
-        var kernel = this.CreateAndInitializeKernel(modelIdOverride: "gpt-4o-search-preview");
+        var kernel = this.CreateAndInitializeKernel(modelIdOverride: "gpt-5-search-api");
         var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
         var settings = new OpenAIPromptExecutionSettings
         {
