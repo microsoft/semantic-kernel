@@ -1553,6 +1553,86 @@ public class RestApiOperationTests
         Assert.Equal("https://example.com/api/resources/a%20b/details", url.OriginalString);
     }
 
+    [Theory]
+    [InlineData("https://evil.com/admin")]
+    [InlineData("https://example.com:8443/admin")]
+    [InlineData("http://example.com/admin")]
+    [InlineData(@"\\evil.com\admin")]
+    [InlineData("https://user:pass@example.com/api/admin")]
+    [InlineData("https://user@example.com/api/data")]
+    [InlineData("https://example.com@evil.com/admin")]
+    public void ItShouldRejectOperationPathThatChangesRequestAuthority(string path)
+    {
+        // Arrange — an operation path that is an absolute URI (or otherwise changes the scheme,
+        // host, or port) resolves to a request off the configured server after URI construction.
+        // Such a path must be rejected so a credential-bearing request cannot be redirected to an
+        // unintended target even though it carries no dot-segment.
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: path,
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act & Assert — the resolved request target must stay on the configured server.
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("does not match the configured server", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldRejectSameAuthorityBasePathEscape()
+    {
+        // Arrange — an absolute path on the same authority but outside the configured base path must
+        // be rejected, so a request cannot be moved to a different route even when the scheme, host,
+        // and port all match the configured server.
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "https://example.com/other/admin",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act & Assert — the resolved request path must remain within the configured server base path.
+        var ex = Assert.Throws<KernelException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Contains("outside the configured server base path", ex.Message);
+    }
+
+    [Fact]
+    public void ItShouldBuildUrlForOperationPathOnTheConfiguredServer()
+    {
+        // Arrange — a normal relative operation path on the configured server.
+        var sut = new RestApiOperation(
+            id: "fake_id",
+            servers: [new RestApiServer("https://example.com/api")],
+            path: "/resources/item",
+            method: HttpMethod.Get,
+            description: "fake_description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: []
+        );
+
+        var arguments = new Dictionary<string, object?>();
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert — the reconciliation must not reject a legitimate same-server path.
+        Assert.Equal("https://example.com/api/resources/item", url.OriginalString);
+    }
+
     [Fact]
     public void ItShouldEncodeServerVariableValuesLookedUpByArgumentName()
     {

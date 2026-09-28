@@ -133,7 +133,7 @@ async def test_mcp_sampling_consent_callback_error_denies_request(caplog):
     assert "MCP sampling consent callback failed" in caplog.text
 
 
-async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(caplog):
+async def test_mcp_sampling_without_consent_callback_denies_by_default(caplog):
     plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
     params = types.CreateMessageRequestParams(
         messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
@@ -145,7 +145,28 @@ async def test_mcp_sampling_without_consent_callback_logs_auto_approve_warning(c
         result = await plugin.sampling_callback(MagicMock(), params)
 
     assert isinstance(result, types.ErrorData)
-    assert "auto-approved because no sampling consent callback was configured" in caplog.text
+    assert result.message == "Sampling denied: no consent callback configured."
+    assert "denied because no sampling consent callback was configured" in caplog.text
+
+
+async def test_mcp_sampling_auto_approve_logs_warning(caplog):
+    plugin = MCPSsePlugin(
+        name="TestMCPPlugin",
+        url="http://localhost:8080/sse",
+        sampling_auto_approve=True,
+    )
+    params = types.CreateMessageRequestParams(
+        messages=[types.SamplingMessage(role="user", content=types.TextContent(type="text", text="hello"))],
+        systemPrompt="server instructions",
+        maxTokens=100,
+    )
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        result = await plugin.sampling_callback(MagicMock(), params)
+
+    # No kernel configured, so the request is approved but then fails for lack of a chat service.
+    assert isinstance(result, types.ErrorData)
+    assert "auto-approved because sampling_auto_approve is enabled" in caplog.text
 
 
 async def test_mcp_tool_and_prompt_names_do_not_shadow_plugin_attributes():
@@ -432,3 +453,147 @@ async def test_mcp_normalization_function(mock_session, list_tool_calls_with_sla
     assert _normalize_mcp_name("weird\\name with spaces") == "weird-name-with-spaces"
     assert _normalize_mcp_name("simple_name") == "simple_name"
     assert _normalize_mcp_name("Name-With.Dots_And-Hyphens") == "Name-With.Dots_And-Hyphens"
+
+
+async def test_mcp_tool_name_collision_detected(caplog):
+    """Test that tools with names that normalize to the same identifier are detected and skipped."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(
+        tools=[
+            Tool(name="read-document", description="first tool", inputSchema={}),
+            Tool(name="read document", description="second tool", inputSchema={}),
+        ]
+    )
+    plugin.session = session
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_tools()
+
+    # Only the first tool should be registered
+    assert hasattr(plugin, "read-document")
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    # Warning should be emitted for the collision
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_prompt_name_collision_detected(caplog):
+    """Test that prompts with names that normalize to the same identifier are detected and skipped."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(tools=[])
+    session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[
+            types.Prompt(name="get-summary", description="first prompt", arguments=[]),
+            types.Prompt(name="get summary", description="second prompt", arguments=[]),
+        ]
+    )
+    plugin.session = session
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_prompts()
+
+    # Only the first prompt should be registered
+    assert hasattr(plugin, "get-summary")
+    func = getattr(plugin, "get-summary")
+    assert func.__kernel_function_description__ == "first prompt"
+    # Warning should be emitted for the collision
+    assert "get summary" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_tool_name_collision_detected_across_reload(caplog):
+    """Test that a later tool reload cannot overwrite a previously registered normalized name."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.side_effect = [
+        ListToolsResult(tools=[Tool(name="read-document", description="first tool", inputSchema={})]),
+        ListToolsResult(tools=[Tool(name="read document", description="second tool", inputSchema={})]),
+    ]
+    plugin.session = session
+
+    await plugin.load_tools()
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_tools()
+
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_prompt_does_not_replace_registered_tool_name(caplog):
+    """Test that a prompt does not rebind a normalized name already registered by a tool."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(
+        tools=[Tool(name="read-document", description="first tool", inputSchema={})]
+    )
+    session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[types.Prompt(name="read document", description="second item", arguments=[])]
+    )
+    plugin.session = session
+
+    await plugin.load_tools()
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_prompts()
+
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
+    """Test that excluded functions are rejected at call time, not just hidden from listing."""
+    from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
+    side_effect_called = False
+
+    @kernel_function(name="public_echo")
+    def public_echo(message: str) -> str:
+        return f"echo: {message}"
+
+    @kernel_function(name="secret_admin")
+    def secret_admin(target: str) -> str:
+        nonlocal side_effect_called
+        side_effect_called = True
+        return f"privileged action on {target}"
+
+    kernel.add_function(plugin_name="tools", function=public_echo)
+    kernel.add_function(plugin_name="tools", function=secret_admin)
+
+    server = create_mcp_server_from_kernel(kernel, excluded_functions=["secret_admin"])
+
+    # Verify the server was created with handlers
+    assert types.ListToolsRequest in server.request_handlers
+    assert types.CallToolRequest in server.request_handlers
+
+    # Mock _get_cached_tool_definition to bypass SDK request context requirements
+    # (normally set by a real MCP session transport)
+    async def _fake_get_cached_tool_definition(tool_name):
+        return None
+
+    server._get_cached_tool_definition = _fake_get_cached_tool_definition
+
+    # Build a proper CallToolRequest as the MCP SDK would send
+    call_tool_request = types.CallToolRequest(
+        method="tools/call",
+        params=types.CallToolRequestParams(name="secret_admin", arguments={}),
+    )
+
+    # The internal handler wraps our _call_tool; invoke via the registered handler
+    handler = server.request_handlers[types.CallToolRequest]
+    result = await handler(call_tool_request)
+
+    # The call must fail (isError=True) with the correct error message
+    assert result.root.isError is True, "Calling an excluded function should return an error"
+    assert any("Unknown tool" in c.text for c in result.root.content if hasattr(c, "text")), (
+        f"Expected 'Unknown tool' error, got: {result.root.content}"
+    )
+    assert not side_effect_called, "Excluded function's side effect should not have fired"

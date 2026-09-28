@@ -9,11 +9,15 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import 
     RestApiParameterLocation,
 )
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_run_options import RestApiRunOptions
+from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+    OpenAPIFunctionExecutionParameters,
+)
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
     _create_function_from_operation,
     create_functions_from_openapi,
 )
 from semantic_kernel.connectors.openapi_plugin.openapi_runner import OpenApiRunner
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -236,7 +240,10 @@ async def test_run_operation_uses_timeout_from_run_options():
         "info": {"title": "Test", "version": "1.0.0"},
         "paths": {},
     }
-    runner = OpenApiRunner(parsed_openapi_document=minimal_openapi_spec)
+    runner = OpenApiRunner(
+        parsed_openapi_document=minimal_openapi_spec,
+        server_url_validation_options=ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com"]),
+    )
     operation = MagicMock()
     operation.method = "GET"
     operation.build_headers.return_value = {}
@@ -274,3 +281,31 @@ async def test_run_operation_uses_timeout_from_run_options():
                 found = True
                 break
         assert found, f"httpx.AsyncClient was not called with timeout={desired_timeout}"
+
+
+@patch("semantic_kernel.connectors.openapi_plugin.openapi_manager.OpenApiRunner")
+@patch("semantic_kernel.connectors.openapi_plugin.openapi_manager.OpenApiParser")
+def test_create_functions_from_openapi_propagates_server_url_validation_settings(mock_parser_class, mock_runner_class):
+    parsed_doc = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test", "version": "1.0.0"},
+        "paths": {},
+    }
+    mock_parser = MagicMock()
+    mock_parser.parse.return_value = parsed_doc
+    mock_parser.create_rest_api_operations.return_value = {}
+    mock_parser_class.return_value = mock_parser
+    execution_settings = OpenAPIFunctionExecutionParameters(
+        server_url_validation_allowed_base_urls=["http://192.168.1.100/v1"],
+        allow_private_network_access=True,
+    )
+
+    create_functions_from_openapi(
+        plugin_name="test_plugin",
+        openapi_document_path="test_openapi_document_path",
+        execution_settings=execution_settings,
+    )
+
+    validation_options = mock_runner_class.call_args.kwargs["server_url_validation_options"]
+    assert validation_options.allowed_base_urls == ["http://192.168.1.100/v1"]
+    assert validation_options.allow_private_network_access is True
