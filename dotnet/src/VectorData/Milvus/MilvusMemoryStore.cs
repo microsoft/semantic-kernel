@@ -247,6 +247,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         var metadata = record.Metadata;
@@ -276,8 +277,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
         List<bool> isReferenceData = [];
         List<string> externalSourceNameData = [];
         List<string> idData = [];
@@ -291,13 +291,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         foreach (MemoryRecord record in records)
         {
             var metadata = record.Metadata;
-
-            if (idString.Length > 0)
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(metadata.Id).Append('"');
 
             isReferenceData.Add(metadata.IsReference);
             externalSourceNameData.Add(metadata.ExternalSourceName);
@@ -356,22 +349,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
-        foreach (string key in keys)
-        {
-            if (idString.Length > 0)
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(key).Append('"');
-        }
-
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
         IReadOnlyList<FieldData> fields = await this.Client
             .GetCollection(collectionName)
             .QueryAsync(
-                $"{IdFieldName} in [{idString}]",
+                BuildIdFilter(keys),
                 withEmbeddings ? this._queryParametersWithEmbedding : this._queryParametersWithoutEmbedding,
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
@@ -386,36 +368,16 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc />
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-        => this.Client.GetCollection(collectionName)
-            .DeleteAsync($@"{IdFieldName} in [""{key}""]", cancellationToken: cancellationToken);
+        => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
 
     /// <inheritdoc />
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
-        idString.Append(IdFieldName).Append(" in [");
-
-        bool first = true;
-        foreach (string id in keys)
-        {
-            if (first)
-            {
-                first = false;
-            }
-            else
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(id).Append('"');
-        }
-
-        idString.Append(']');
-
-        return this.Client
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
+        await this.Client
             .GetCollection(collectionName)
-            .DeleteAsync(idString.ToString(), cancellationToken: cancellationToken);
+            .DeleteAsync(BuildIdFilter(keys), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -443,6 +405,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         SearchResults results = await collection
@@ -459,23 +422,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         Dictionary<string, ReadOnlyMemory<float>>? embeddingMap = null;
         if (withEmbeddings)
         {
-            StringBuilder filter = new();
-            filter.Append(IdFieldName).Append(" in [");
-
-            for (int rowNum = 0; rowNum < ids.Count; rowNum++)
-            {
-                if (rowNum > 0)
-                {
-                    filter.Append(',');
-                }
-
-                filter.Append('"').Append(ids[rowNum]).Append('"');
-            }
-
-            filter.Append(']');
-
             IReadOnlyList<FieldData> fieldData = await collection.QueryAsync(
-                    filter.ToString(),
+                    BuildIdFilter(ids),
                     new() { OutputFields = { EmbeddingFieldName } },
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -500,6 +448,83 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                     results.Scores[rowNum]);
             }
         }
+    }
+
+    private async Task EnsureSupportedServerAsync(CancellationToken cancellationToken)
+    {
+        string version = await this.Client.GetVersionAsync(cancellationToken).ConfigureAwait(false);
+        ValidateServerVersion(version);
+    }
+
+    internal static void ValidateServerVersion(string version)
+    {
+        string numericVersion = version.StartsWith("v", StringComparison.Ordinal) ? version.Substring(1) : version;
+        // The official 2.3.0 release image reports "v2.3.0-dev".
+        if (numericVersion.EndsWith("-dev", StringComparison.Ordinal))
+        {
+            numericVersion = numericVersion.Substring(0, numericVersion.Length - 4);
+        }
+
+        // Older servers accept escaped strings but retain the escapes as part of the ID.
+        if (!Version.TryParse(numericVersion, out Version? parsedVersion) ||
+            parsedVersion < new Version(2, 3, 0))
+        {
+            throw new NotSupportedException($"Milvus 2.3.0 or newer is required to handle record IDs safely. The server reported version '{version}'.");
+        }
+    }
+
+    internal static string BuildIdFilter(IEnumerable<string> keys)
+    {
+        StringBuilder filter = new();
+        filter.Append(IdFieldName).Append(" in [");
+
+        bool first = true;
+        foreach (string key in keys)
+        {
+            if (!first)
+            {
+                filter.Append(',');
+            }
+
+            first = false;
+            filter.Append('"');
+            foreach (char character in key)
+            {
+                switch (character)
+                {
+                    case '\\':
+                        filter.Append(@"\\");
+                        break;
+                    case '"':
+                        filter.Append("\\\"");
+                        break;
+                    case '\r':
+                        filter.Append(@"\r");
+                        break;
+                    case '\n':
+                        filter.Append(@"\n");
+                        break;
+                    case '\t':
+                        filter.Append(@"\t");
+                        break;
+                    default:
+                        if (char.IsControl(character))
+                        {
+                            filter.Append(@"\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            filter.Append(character);
+                        }
+
+                        break;
+                }
+            }
+
+            filter.Append('"');
+        }
+
+        return filter.Append(']').ToString();
     }
 
     private MemoryRecord ReadMemoryRecord(IReadOnlyList<FieldData> data, int rowNum, ReadOnlyMemory<float>? externalEmbedding = null)
