@@ -429,6 +429,99 @@ async def test_mcp_normalization_function(mock_session, list_tool_calls_with_sla
     assert _normalize_mcp_name("Name-With.Dots_And-Hyphens") == "Name-With.Dots_And-Hyphens"
 
 
+async def test_mcp_tool_name_collision_detected(caplog):
+    """Test that tools with names that normalize to the same identifier are detected and skipped."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(
+        tools=[
+            Tool(name="read-document", description="first tool", inputSchema={}),
+            Tool(name="read document", description="second tool", inputSchema={}),
+        ]
+    )
+    plugin.session = session
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_tools()
+
+    # Only the first tool should be registered
+    assert hasattr(plugin, "read-document")
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    # Warning should be emitted for the collision
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_prompt_name_collision_detected(caplog):
+    """Test that prompts with names that normalize to the same identifier are detected and skipped."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(tools=[])
+    session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[
+            types.Prompt(name="get-summary", description="first prompt", arguments=[]),
+            types.Prompt(name="get summary", description="second prompt", arguments=[]),
+        ]
+    )
+    plugin.session = session
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_prompts()
+
+    # Only the first prompt should be registered
+    assert hasattr(plugin, "get-summary")
+    func = getattr(plugin, "get-summary")
+    assert func.__kernel_function_description__ == "first prompt"
+    # Warning should be emitted for the collision
+    assert "get summary" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_tool_name_collision_detected_across_reload(caplog):
+    """Test that a later tool reload cannot overwrite a previously registered normalized name."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.side_effect = [
+        ListToolsResult(tools=[Tool(name="read-document", description="first tool", inputSchema={})]),
+        ListToolsResult(tools=[Tool(name="read document", description="second tool", inputSchema={})]),
+    ]
+    plugin.session = session
+
+    await plugin.load_tools()
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_tools()
+
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
+async def test_mcp_prompt_does_not_replace_registered_tool_name(caplog):
+    """Test that a prompt does not rebind a normalized name already registered by a tool."""
+    plugin = MCPSsePlugin(name="TestMCPPlugin", url="http://localhost:8080/sse")
+    session = AsyncMock(spec=ClientSession)
+    session.list_tools.return_value = ListToolsResult(
+        tools=[Tool(name="read-document", description="first tool", inputSchema={})]
+    )
+    session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[types.Prompt(name="read document", description="second item", arguments=[])]
+    )
+    plugin.session = session
+
+    await plugin.load_tools()
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        await plugin.load_prompts()
+
+    func = getattr(plugin, "read-document")
+    assert func.__kernel_function_description__ == "first tool"
+    assert "read document" in caplog.text
+    assert "already registered" in caplog.text
+
+
 async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
     """Test that excluded functions are rejected at call time, not just hidden from listing."""
     from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel

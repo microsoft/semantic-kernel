@@ -7,7 +7,7 @@ from typing import TypeVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from pydantic import SecretStr, ValidationError
+from pydantic import ValidationError
 
 try:
     import microsoft_agents.copilotstudio.client  # type: ignore # noqa: F401
@@ -226,7 +226,6 @@ if copilot_installed:
         dummy_settings.app_client_id = "appid"
         dummy_settings.tenant_id = "tenantid"
         dummy_settings.auth_mode = CopilotStudioAgentAuthMode.INTERACTIVE
-        dummy_settings.client_secret = SecretStr("test-secret")
 
         monkeypatch.setattr(
             "semantic_kernel.agents.copilot_studio.copilot_studio_agent.CopilotStudioAgentSettings",
@@ -246,7 +245,7 @@ if copilot_installed:
                 tenant_id="tenantid",
                 environment_id="env-id",
                 agent_identifier="agent-name",
-                auth_mode=CopilotStudioAgentAuthMode.SERVICE,
+                auth_mode=CopilotStudioAgentAuthMode.INTERACTIVE,
             )
 
         mock_client_ctor.assert_called_once_with(dummy_settings, "fake-token")
@@ -254,19 +253,6 @@ if copilot_installed:
 
     class DummyCache:
         pass
-
-    class FakeAppSilent:
-        def __init__(self, client_id, authority, token_cache, client_credential=None, **kwargs):
-            pass
-
-        def get_accounts(self):
-            return [{"home_account_id": "acct1"}]
-
-        def acquire_token_silent(self, scopes, account):
-            return {"access_token": "silent-token"}
-
-        def acquire_token_interactive(self, scopes):
-            pytest.skip("Unexpected interactive flow in silent test")
 
     class FakeAppInteractive:
         def __init__(self, client_id, authority, token_cache):
@@ -306,54 +292,28 @@ if copilot_installed:
             staticmethod(lambda cache_path, fallback_to_plaintext=True: DummyCache()),
         )
 
-    @pytest.mark.parametrize(
-        "fake_app, expected_token, mode",
-        [
-            pytest.param(
-                FakeAppSilent,
-                "silent-token",
-                CopilotStudioAgentAuthMode.SERVICE,
-                marks=pytest.mark.skip(reason="Skipping SERVICE auth mode test as the mode is not yet supported."),
-            ),
-            (FakeAppInteractive, "interactive-token", CopilotStudioAgentAuthMode.INTERACTIVE),
-        ],
-    )
-    def test_acquire_token_success(monkeypatch, tmp_path, fake_app, expected_token, mode):
+    def test_acquire_token_success(monkeypatch, tmp_path):
         settings = CopilotStudioAgentSettings(app_client_id="id", tenant_id="tid")
         cache_path = str(tmp_path / "cache.bin")
 
-        monkeypatch.setattr(csa_mod, "PublicClientApplication", fake_app)
-        monkeypatch.setattr(csa_mod, "ConfidentialClientApplication", fake_app)
-
-        client_secret = None
-        if fake_app == FakeAppSilent:
-            client_secret = "test-secret"
+        monkeypatch.setattr(csa_mod, "PublicClientApplication", FakeAppInteractive)
 
         factory = _CopilotStudioAgentTokenFactory(
             settings=settings,
             cache_path=cache_path,
-            mode=mode,
-            client_secret=client_secret,
-            client_certificate=None,
-            user_assertion=None,
         )
         token = factory.acquire()
-        assert token == expected_token
+        assert token == "interactive-token"
 
     def test_acquire_token_error(monkeypatch, tmp_path):
         settings = CopilotStudioAgentSettings(app_client_id="id", tenant_id="tid")
         cache_path = str(tmp_path / "cache.bin")
 
         monkeypatch.setattr(csa_mod, "PublicClientApplication", FakeAppError)
-        monkeypatch.setattr(csa_mod, "ConfidentialClientApplication", FakeAppError)
 
         factory = _CopilotStudioAgentTokenFactory(
             settings=settings,
             cache_path=cache_path,
-            mode=CopilotStudioAgentAuthMode.INTERACTIVE,
-            client_secret=None,
-            client_certificate=None,
-            user_assertion=None,
         )
         with pytest.raises(AgentInitializationException):
             factory.acquire()
