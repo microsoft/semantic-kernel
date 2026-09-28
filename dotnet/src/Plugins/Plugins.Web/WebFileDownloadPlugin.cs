@@ -29,6 +29,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// values only. Unrestricted configuration may allow unintended downloads to
 /// local paths.
 /// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
 /// </remarks>
 public sealed class WebFileDownloadPlugin
 {
@@ -42,7 +45,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(HttpClientProvider.GetHttpClient(), loggerFactory)
+        this(HttpClientProvider.GetNonRedirectingHttpClient(), loggerFactory)
     {
     }
 
@@ -51,6 +54,9 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <remarks>
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// </remarks>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
@@ -63,6 +69,7 @@ public sealed class WebFileDownloadPlugin
     /// <remarks>
     /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
     /// with trusted domains before any downloads will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
     /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
@@ -214,14 +221,23 @@ public sealed class WebFileDownloadPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return PathUtilities.GetSafeFullPath(expanded);
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(fullPath);
     }
 
-    private static bool IsUncOrExtendedPath(string path)
-    {
-        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
-    }
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -232,7 +248,7 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }

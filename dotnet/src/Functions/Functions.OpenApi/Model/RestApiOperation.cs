@@ -168,7 +168,42 @@ public sealed class RestApiOperation
 
         var path = this.BuildPath(this.Path, arguments);
 
-        return new Uri(serverUrl, $"{path.TrimStart('/')}");
+        var url = new Uri(serverUrl, $"{path.TrimStart('/')}");
+
+        EnsureRequestTargetMatchesServer(serverUrl, url);
+
+        return url;
+    }
+
+    /// <summary>
+    /// Verifies that URI construction did not move the request off the configured server. A selected
+    /// operation path must resolve to a request on the same scheme, host, and port and within the
+    /// server's base path. Otherwise an absolute or authority-changing operation path (for example
+    /// "https://another-host/admin") could redirect a credential-bearing request to an unintended
+    /// target even though it carries no dot-segment. This complements <see cref="ValidatePathSegments"/>
+    /// so operation selection, path validation, and request construction share one canonical target.
+    /// </summary>
+    /// <param name="serverUrl">The configured server URL.</param>
+    /// <param name="requestUrl">The request URL produced by combining the server URL and operation path.</param>
+    private static void EnsureRequestTargetMatchesServer(Uri serverUrl, Uri requestUrl)
+    {
+        var serverAuthority = serverUrl.GetLeftPart(UriPartial.Authority);
+        var requestAuthority = requestUrl.GetLeftPart(UriPartial.Authority);
+
+        if (!string.Equals(serverAuthority, requestAuthority, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException($"The operation path resolves to '{requestAuthority}', which does not match the configured server '{serverAuthority}'.");
+        }
+
+        // GetServerUrl guarantees a trailing slash, so the server's base path always ends with '/'.
+        var basePath = serverUrl.AbsolutePath;
+        var requestPath = requestUrl.AbsolutePath;
+
+        if (!string.Equals(requestPath, basePath.TrimEnd('/'), StringComparison.Ordinal) &&
+            !requestPath.StartsWith(basePath, StringComparison.Ordinal))
+        {
+            throw new KernelException($"The operation path resolves to '{requestPath}', which is outside the configured server base path '{basePath}'.");
+        }
     }
 
     /// <summary>
@@ -420,6 +455,27 @@ public sealed class RestApiOperation
     /// <param name="path">The path to validate.</param>
     private static void ValidatePathSegments(string path)
     {
+        if (ContainsDotSegment(path))
+        {
+            throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the supplied path contains a dot-segment (. or ..), including percent-encoded
+    /// forms (e.g. "%2e%2e") that <see cref="Uri"/> canonicalizes at request time. This is used both to
+    /// reject such paths when building a request URL and to exclude them during operation selection so an
+    /// encoded dot-segment cannot bypass an include/exclude operation-selection filter.
+    /// </summary>
+    /// <param name="path">The path to inspect.</param>
+    /// <returns><see langword="true"/> if the path contains a dot-segment; otherwise, <see langword="false"/>.</returns>
+    internal static bool ContainsDotSegment(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
         // Split on the structural path separator first.
         foreach (var rawSegment in path.Split('/'))
         {
@@ -443,10 +499,12 @@ public sealed class RestApiOperation
             {
                 if (segment == "." || segment == "..")
                 {
-                    throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
