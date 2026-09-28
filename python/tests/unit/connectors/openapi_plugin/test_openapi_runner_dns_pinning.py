@@ -115,7 +115,9 @@ def install_recording_client(monkeypatch) -> dict:
     return record
 
 
-def install_capturing_client(monkeypatch, responses: list | None = None) -> list[httpx.Request]:
+def install_capturing_client(
+    monkeypatch, responses: list | None = None, client_kwargs: list | None = None
+) -> list[httpx.Request]:
     """Make the runner's built-in client capture the request it sends instead of connecting."""
     requests: list[httpx.Request] = []
     real_client_type = httpx.AsyncClient
@@ -129,6 +131,8 @@ def install_capturing_client(monkeypatch, responses: list | None = None) -> list
         return httpx.Response(200, text="response text")
 
     def client_factory(**kwargs):
+        if client_kwargs is not None:
+            client_kwargs.append(kwargs)
         return real_client_type(transport=httpx.MockTransport(handler), **kwargs)
 
     monkeypatch.setattr(httpx, "AsyncClient", client_factory)
@@ -329,6 +333,61 @@ async def test_run_operation_does_not_pin_when_the_environment_proxy_carries_thi
 
     assert str(requests[0].url) == f"https://{HOST}/api/op"
     assert "sni_hostname" not in requests[0].extensions
+
+
+async def test_run_operation_keeps_the_pinned_address_off_an_environment_proxy(monkeypatch, no_proxy_environment):
+    """httpx matches its proxy mounts against the rewritten URL, so the address needs its own exemption."""
+    no_proxy_environment.setenv("HTTPS_PROXY", "http://proxy.example:8080")
+    no_proxy_environment.setenv("NO_PROXY", HOST)
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
+    kwargs: list[dict] = []
+    install_capturing_client(monkeypatch, client_kwargs=kwargs)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert kwargs[0]["mounts"] == {f"all://{PUBLIC_ADDRESS}": None}
+
+
+async def test_run_operation_mounts_every_fallback_address_directly(monkeypatch, no_proxy_environment):
+    """The fallback addresses travel the same way as the first one."""
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS, SECOND_PUBLIC_ADDRESS]))
+    kwargs: list[dict] = []
+    install_capturing_client(monkeypatch, client_kwargs=kwargs)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert kwargs[0]["mounts"] == {
+        f"all://{PUBLIC_ADDRESS}": None,
+        f"all://{SECOND_PUBLIC_ADDRESS}": None,
+    }
+
+
+async def test_run_operation_brackets_an_ipv6_address_in_its_mount(monkeypatch, no_proxy_environment):
+    """An IPv6 mount pattern carries the same brackets the URL authority uses."""
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_IPV6_ADDRESS]))
+    kwargs: list[dict] = []
+    install_capturing_client(monkeypatch, client_kwargs=kwargs)
+    runner, operation = build_runner(f"https://{HOST}/api/op")
+
+    await runner.run_operation(operation, {}, None)
+
+    assert kwargs[0]["mounts"] == {f"all://[{PUBLIC_IPV6_ADDRESS}]": None}
+
+
+async def test_run_operation_mounts_nothing_when_it_does_not_pin(monkeypatch, no_proxy_environment):
+    """An unpinned request must be left entirely to the transport's own routing."""
+    monkeypatch.setattr(socket, "getaddrinfo", static_getaddrinfo(HOST, [PUBLIC_ADDRESS]))
+    kwargs: list[dict] = []
+    install_capturing_client(monkeypatch, client_kwargs=kwargs)
+    runner, operation = build_runner(
+        f"https://{HOST}/api/op", ServerUrlValidationOptions(allow_private_network_access=True)
+    )
+
+    await runner.run_operation(operation, {}, None)
+
+    assert kwargs[0]["mounts"] == {}
 
 
 async def test_run_operation_does_not_pin_a_caller_supplied_client(monkeypatch):

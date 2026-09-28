@@ -47,6 +47,25 @@ def _pin_url_to_address(url: str, address: ipaddress.IPv4Address | ipaddress.IPv
     )
 
 
+def _direct_mounts(
+    addresses: list[ipaddress.IPv4Address | ipaddress.IPv6Address],
+) -> dict[str, None]:
+    """Return httpx mounts that keep the pinned addresses off any environment proxy.
+
+    Pinning rewrites the request URL to the address, and httpx then matches its own
+    environment-proxy mounts against that address rather than against the hostname. A host
+    exempted by `no_proxy` would therefore be sent to the proxy in address form, undoing the
+    exemption. Mapping each vetted address to `None` mounts it on the default transport,
+    which is what this request was already determined to be: direct.
+    """
+    return {f"all://{_bracketed(address)}": None for address in addresses}
+
+
+def _bracketed(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> str:
+    """Return the address as it appears in a URL authority, bracketing IPv6."""
+    return f"[{address}]" if address.version == 6 else str(address)
+
+
 def _proxy_carries(url: str) -> bool:
     """Return whether a configured proxy would carry this specific request.
 
@@ -244,7 +263,7 @@ class OpenApiRunner:
                 # A caller-supplied client owns its transport configuration (proxies, mounts,
                 # custom resolvers), so its connections are left untouched.
                 return await make_request(self.http_client)
-            async with httpx.AsyncClient(timeout=timeout) as client:
+            async with httpx.AsyncClient(timeout=timeout, mounts=_direct_mounts(pinned_addresses)) as client:
                 if not pinned_addresses:
                     return await make_request(client)
                 # Every vetted address is an acceptable target, so keep the resolver's
