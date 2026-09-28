@@ -6,18 +6,13 @@ metadata:
     - markwallace
   tags:
     - basic
-model:  
+model:
   id: gpt-4o
-  api: chat
-  connection:
-    type: azure_openai
-    azure_deployment: gpt-4o
+  apiType: chat
   options:
     temperature: 0.0
-    max_tokens: 3000
-    top_p: 1.0
-    response_format: 
-      type: json_object    
+    maxOutputTokens: 3000
+    topP: 1.0
 ---
 system:
 You are a classifier agent that should know classify a problem into Easy/Medium/Hard based on the problem description.
