@@ -63,7 +63,7 @@ internal static class SseJsonParser
         finally
         {
             // Always dispose the stream immediately once enumeration is complete for any reason
-#if NETCOREAPP3_0_OR_GREATER
+#if NET
             await stream.DisposeAsync().ConfigureAwait(false);
 #else
             stream.Dispose();

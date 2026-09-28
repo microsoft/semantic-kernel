@@ -117,7 +117,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         var actualRequestContent = this.DelegatingHandler.RequestContent!;
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());
@@ -191,7 +191,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         var actualRequestContent = this.DelegatingHandler.RequestContent!;
         Assert.NotNull(actualRequestContent);
 
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
         Assert.Equal(5, messages.GetArrayLength());

@@ -21,5 +21,6 @@ def kernel_with_ai_service():
     mock_ai_service_client.get_chat_message_contents = AsyncMock(
         return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
     )
+    kernel.plugins = {}  # Ensure plugins dict is initialized to avoid AttributeError during tests
 
     return kernel, mock_ai_service_client

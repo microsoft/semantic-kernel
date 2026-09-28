@@ -79,7 +79,7 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v2:0";
-        List<string> prompts = new() { "King", "Queen", "Prince" };
+        List<string> prompts = ["King", "Queen", "Prince"];
         IAmazonBedrockRuntime? nullBedrockRuntime = null;
         bool notConfigured = false;
 

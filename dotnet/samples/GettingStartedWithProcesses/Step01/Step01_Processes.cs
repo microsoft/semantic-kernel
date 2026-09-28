@@ -187,7 +187,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
     /// </summary>
     private sealed class ChatBotState
     {
-        internal ChatHistory ChatMessages { get; } = new();
+        internal ChatHistory ChatMessages { get; } = [];
     }
 
     /// <summary>

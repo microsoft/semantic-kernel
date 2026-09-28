@@ -142,7 +142,7 @@ private void CaptureUsageDetails(string? modelId, IDictionary<string, object?>? 
   var completionTokens = 0;
   try
   {
-    var jsonObject = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(usageObject));
+    var jsonObject = JsonElement.Parse(JsonSerializer.Serialize(usageObject));
     promptTokens = jsonObject.GetProperty("PromptTokens").GetInt32();
     completionTokens = jsonObject.GetProperty("CompletionTokens").GetInt32();
   }

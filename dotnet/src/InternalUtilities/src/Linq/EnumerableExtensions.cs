@@ -12,7 +12,7 @@ internal static class EnumerableExtensions
     {
         Debug.Assert(source is not null);
 
-#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NET || NETSTANDARD2_1_OR_GREATER
         return Enumerable.TakeLast(source, count);
 #else
         return source.Skip(System.Math.Max(0, source.Count() - count));

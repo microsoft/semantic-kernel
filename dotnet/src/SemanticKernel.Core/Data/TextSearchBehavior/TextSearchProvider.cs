@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

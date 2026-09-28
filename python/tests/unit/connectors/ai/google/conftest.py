@@ -13,6 +13,7 @@ def service_id() -> str:
 @pytest.fixture()
 def chat_history() -> ChatHistory:
     chat_history = ChatHistory()
+    chat_history.add_system_message("system_prompt")
     chat_history.add_user_message("test_prompt")
     return chat_history
 

@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.0.0" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
@@ -15,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="MessagePack" /> <!-- Override vulnerable transitive dependency (2.5.192) from Aspire packages -->
   </ItemGroup>
 
   <ItemGroup>

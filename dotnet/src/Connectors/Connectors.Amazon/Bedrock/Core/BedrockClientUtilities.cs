@@ -21,12 +21,12 @@ internal sealed class BedrockClientUtilities
     /// <returns>The ActivityStatusCode for the Semantic Kernel</returns>
     internal static ActivityStatusCode ConvertHttpStatusCodeToActivityStatusCode(HttpStatusCode httpStatusCode)
     {
-        if ((int)httpStatusCode >= 200 && (int)httpStatusCode < 300)
+        if ((int)httpStatusCode is >= 200 and < 300)
         {
             // 2xx status codes represent success
             return ActivityStatusCode.Ok;
         }
-        if ((int)httpStatusCode >= 400 && (int)httpStatusCode < 600)
+        if ((int)httpStatusCode is >= 400 and < 600)
         {
             // 4xx and 5xx status codes represent errors
             return ActivityStatusCode.Error;

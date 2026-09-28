@@ -52,7 +52,7 @@ public sealed class OpenAIChatResponseFormatBuilderTests
             Assert.Equal(expectedStrict, strict.GetBoolean());
         }
 
-        var schemaElement = JsonDocument.Parse(schema.ToString()).RootElement;
+        var schemaElement = JsonElement.Parse(schema.ToString());
         var nameProperty = schemaElement.GetProperty("properties").GetProperty("name");
 
         Assert.Equal("object", schemaElement.GetProperty("type").GetString());
@@ -160,10 +160,10 @@ public sealed class OpenAIChatResponseFormatBuilderTests
 
         Assert.NotNull(schemaPropertyValue);
 
-        var jsonSchema = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(jsonSchemaProperty.GetValue(chatResponseFormat)));
+        var jsonSchema = JsonElement.Parse(JsonSerializer.Serialize(jsonSchemaProperty.GetValue(chatResponseFormat)));
 
         // Schema property gets serialized into a non-readable pattern in the jsonSchema JsonElement variable and needs to be returned separately.
-        var schema = JsonSerializer.Deserialize<JsonElement>(schemaPropertyValue.ToString()!);
+        var schema = JsonElement.Parse(schemaPropertyValue.ToString()!);
 
         return (jsonSchema, schema);
     }

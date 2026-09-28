@@ -15,7 +15,10 @@
     <NoWarn>$(NoWarn);CA1863</NoWarn> <!-- Cache a 'CompositeFormat' for repeated use in this formatting operation -->
     <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn> <!-- Consider calling ConfigureAwait on the awaited task -->
     <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Missing XML comment for publicly visible type or member -->
-    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->    
+    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->
+
+    <!-- Remove this after switching to C# 14 -->
+    <NoWarn>$(NoWarn);IDE0340</NoWarn> <!-- Use unbound generic type -->
   </PropertyGroup>
 
 </Project>

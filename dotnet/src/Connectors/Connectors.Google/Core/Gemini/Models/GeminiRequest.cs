@@ -23,6 +23,13 @@ internal sealed class GeminiRequest
         }
     };
 
+    /// <summary>
+    /// Synthetic envelope used as the <c>functionResponse.response</c> body when emitting a multimodal
+    /// (image) tool result. The actual image data is carried in <c>functionResponse.parts[].inlineData</c>;
+    /// the envelope keeps the required <c>response</c> field present and gives the model a short hint.
+    /// </summary>
+    private static readonly object s_imageFunctionResponseEnvelope = new { status = "success", message = "Image data attached" };
+
     [JsonPropertyName("contents")]
     public IList<GeminiContent> Contents { get; set; } = null!;
 
@@ -119,11 +126,19 @@ internal sealed class GeminiRequest
 
     private static GeminiRequest CreateGeminiRequest(ChatHistory chatHistory)
     {
+        var contents = chatHistory
+            .Where(message => message.Role != AuthorRole.System)
+            .Select(CreateGeminiContentFromChatMessage).ToList();
+
+        // Gemini specific fix: single turn requests must end with "user" role or no role, prevents issue #13262
+        if (contents.Count == 1 && contents[0].Role == AuthorRole.Assistant)
+        {
+            contents[0].Role = null;
+        }
+
         GeminiRequest obj = new()
         {
-            Contents = chatHistory
-                .Where(message => message.Role != AuthorRole.System)
-                .Select(CreateGeminiContentFromChatMessage).ToList(),
+            Contents = contents,
             SystemInstruction = CreateSystemMessages(chatHistory)
         };
         return obj;
@@ -183,15 +198,27 @@ internal sealed class GeminiRequest
         List<GeminiPart> parts = [];
         switch (content)
         {
-            case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                parts.Add(new GeminiPart
+            case GeminiChatMessageContent { CalledToolResults: not null } contentWithCalledTools:
+                // Add all function responses as separate parts in a single message
+                parts.AddRange(contentWithCalledTools.CalledToolResults.Select(toolResult =>
                 {
-                    FunctionResponse = new GeminiPart.FunctionResponsePart
+                    var resultValue = toolResult.FunctionResult.GetValue<object>();
+
+                    // Handle ImageContent for multimodal tool results (Gemini 3+ only)
+                    if (resultValue is ImageContent imageContent)
                     {
-                        FunctionName = contentWithCalledTool.CalledToolResult.FullyQualifiedName,
-                        Response = new(contentWithCalledTool.CalledToolResult.FunctionResult.GetValue<object>())
+                        return CreateImageFunctionResponsePart(toolResult.FullyQualifiedName, imageContent);
                     }
-                });
+
+                    return new GeminiPart
+                    {
+                        FunctionResponse = new GeminiPart.FunctionResponsePart
+                        {
+                            FunctionName = toolResult.FullyQualifiedName,
+                            Response = new(resultValue)
+                        }
+                    };
+                }));
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
@@ -201,7 +228,8 @@ internal sealed class GeminiRequest
                         {
                             FunctionName = toolCall.FullyQualifiedName,
                             Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
-                        }
+                        },
+                        ThoughtSignature = toolCall.ThoughtSignature
                     }));
                 break;
             default:
@@ -214,6 +242,35 @@ internal sealed class GeminiRequest
             parts.Add(new GeminiPart { Text = content.Content ?? string.Empty });
         }
 
+        // Restore ThoughtSignature for text responses (non-ToolCall messages)
+        // Per Google docs: "The final content part returned by the model may contain a thought_signature"
+        if (content is GeminiChatMessageContent geminiContent
+            && (geminiContent.ToolCalls is null || geminiContent.ToolCalls.Count == 0))
+        {
+            string? signature = null;
+
+            // Try typed GeminiMetadata first, then dictionary fallback for deserialized history
+            if (geminiContent.Metadata is GeminiMetadata meta)
+            {
+                signature = meta.ThoughtSignature;
+            }
+            else if (content.Metadata?.TryGetValue("ThoughtSignature", out var sigObj) == true
+                     && sigObj is string sigStr)
+            {
+                signature = sigStr;
+            }
+
+            if (signature is not null)
+            {
+                // Apply signature to last text part
+                var lastTextPart = parts.LastOrDefault(p => p.Text is not null);
+                if (lastTextPart is not null)
+                {
+                    lastTextPart.ThoughtSignature = signature;
+                }
+            }
+        }
+
         return parts;
     }
 
@@ -222,6 +279,7 @@ internal sealed class GeminiRequest
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
         AudioContent audioContent => CreateGeminiPartFromAudio(audioContent),
+        BinaryContent binaryContent => CreateGeminiPartFromBinary(binaryContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
 
@@ -261,6 +319,37 @@ internal sealed class GeminiRequest
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
     }
 
+    /// <summary>
+    /// Creates a GeminiPart with FunctionResponse containing multimodal image data (Gemini 3+ only).
+    /// </summary>
+    private static GeminiPart CreateImageFunctionResponsePart(string functionName, ImageContent imageContent)
+    {
+        if (imageContent.Data is not { IsEmpty: false })
+        {
+            throw new InvalidOperationException("ImageContent in function result must contain binary data.");
+        }
+
+        return new GeminiPart
+        {
+            FunctionResponse = new GeminiPart.FunctionResponsePart
+            {
+                FunctionName = functionName,
+                Response = new(s_imageFunctionResponseEnvelope),
+                Parts =
+                [
+                    new GeminiPart.FunctionResponsePart.FunctionResponsePartContent
+                    {
+                        InlineData = new GeminiPart.InlineDataPart
+                        {
+                            MimeType = GetMimeTypeFromImageContent(imageContent),
+                            InlineData = Convert.ToBase64String(imageContent.Data.Value.ToArray())
+                        }
+                    }
+                ]
+            }
+        };
+    }
+
     private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
     {
         // Binary data takes precedence over URI.
@@ -295,6 +384,42 @@ internal sealed class GeminiRequest
     {
         return audioContent.MimeType
                ?? throw new InvalidOperationException("Audio content MimeType is empty.");
+    }
+
+    private static GeminiPart CreateGeminiPartFromBinary(BinaryContent binaryContent)
+    {
+        // Binary data takes precedence over URI.
+        if (binaryContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    InlineData = Convert.ToBase64String(binaryContent.Data.Value.ToArray())
+                }
+            };
+        }
+
+        if (binaryContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromBinaryContent(binaryContent),
+                    FileUri = binaryContent.Uri ?? throw new InvalidOperationException("Binary content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Binary content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromBinaryContent(BinaryContent binaryContent)
+    {
+        return binaryContent.MimeType
+               ?? throw new InvalidOperationException("Binary content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
@@ -459,7 +584,12 @@ internal sealed class GeminiRequest
         if (executionSettings.ThinkingConfig is not null)
         {
             request.Configuration ??= new ConfigurationElement();
-            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig
+            {
+                ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget,
+                IncludeThoughts = executionSettings.ThinkingConfig.IncludeThoughts,
+                ThinkingLevel = executionSettings.ThinkingConfig.ThinkingLevel
+            };
         }
     }
 
@@ -511,5 +641,13 @@ internal sealed class GeminiRequest
         [JsonPropertyName("thinkingBudget")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ThinkingBudget { get; set; }
+
+        [JsonPropertyName("includeThoughts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? IncludeThoughts { get; set; }
+
+        [JsonPropertyName("thinkingLevel")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ThinkingLevel { get; set; }
     }
 }

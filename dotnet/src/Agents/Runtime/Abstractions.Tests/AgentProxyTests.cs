@@ -61,7 +61,7 @@ public class AgentProxyTests
     public async Task LoadStateTest()
     {
         // Arrange
-        JsonElement state = JsonDocument.Parse("{\"key\":\"value\"}").RootElement;
+        JsonElement state = JsonElement.Parse("{\"key\":\"value\"}");
 
         this.mockRuntime.Setup(r => r.LoadAgentStateAsync(this.agentId, state))
             .Returns(ValueTask.CompletedTask);
@@ -77,7 +77,7 @@ public class AgentProxyTests
     public async Task SaveStateTest()
     {
         // Arrange
-        JsonElement expectedState = JsonDocument.Parse("{\"key\":\"value\"}").RootElement;
+        JsonElement expectedState = JsonElement.Parse("{\"key\":\"value\"}");
 
         this.mockRuntime.Setup(r => r.SaveAgentStateAsync(this.agentId))
             .ReturnsAsync(expectedState);

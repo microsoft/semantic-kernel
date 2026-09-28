@@ -663,28 +663,28 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         // Arrange
         var document = new OpenApiDocument
         {
-            Servers = new List<OpenApiServer>
-        {
+            Servers =
+        [
             new() { Url = "https://global-server.com", Description = "Global server" }
-        }
+        ]
         };
 
         var pathItem = new OpenApiPathItem
         {
-            Servers = new List<OpenApiServer>
-        {
+            Servers =
+        [
             new() { Url = "https://path-server.com", Description = "Path server" }
-        },
+        ],
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
                 [OperationType.Get] = new OpenApiOperation
                 {
                     OperationId = "GetTest",
-                    Servers = new List<OpenApiServer>
-                {
+                    Servers =
+                [
                     new() { Url = "https://operation-server.com", Description = "Operation server" }
-                },
-                    Responses = new OpenApiResponses()
+                ],
+                    Responses = []
                 }
             }
         };

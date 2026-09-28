@@ -3,8 +3,6 @@
 import asyncio
 import logging
 
-from azure.identity import AzureCliCredential
-
 from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket, check_audio_devices
 from semantic_kernel.connectors.ai.open_ai import (
     AzureRealtimeExecutionSettings,
@@ -59,7 +57,11 @@ async def main() -> None:
         # for more details.
         voice="shimmer",
     )
-    realtime_client = AzureRealtimeWebsocket(settings=settings, credential=AzureCliCredential())
+    # Note: api_version (either through settings or directly in the client) must be set to "2025-08-28"
+    # for Azure OpenAI deployments realtime deployments.
+    realtime_client = AzureRealtimeWebsocket(
+        settings=settings,
+    )
     audio_player = AudioPlayerWebsocket()
     audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_client)
     # Create the settings for the session
@@ -84,7 +86,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: Start speaking. "
+        "Instructions: Start speaking when you see 'Session updated.' "
         "The model will detect when you stop and automatically start responding. "
         "Press ctrl + c to stop the program."
     )

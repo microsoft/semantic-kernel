@@ -459,12 +459,12 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     private sealed class SearchPlugin
     {
         [KernelFunction]
-        public List<Contact> GetContacts() => new()
-            {
+        public List<Contact> GetContacts() =>
+            [
                 new () { Name = "John Smith", Phone = "+1 (123) 456-7890", Position = "Developer" },
                 new () { Name = "Alice Doe", Phone = "+1 (987) 654-3120", Position = "Manager" },
                 new () { Name = "Emily Davis", Phone = "+1 (555) 555-5555", Position = "Designer" }
-            };
+            ];
     }
 
     #endregion

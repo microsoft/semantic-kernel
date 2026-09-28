@@ -184,7 +184,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
             });
 
         // Assert
-        List<AgentResponseItem<StreamingChatMessageContent>> results = new();
+        List<AgentResponseItem<StreamingChatMessageContent>> results = [];
         StringBuilder textResultBuilder = new();
         await foreach (var update in asyncResults)
         {

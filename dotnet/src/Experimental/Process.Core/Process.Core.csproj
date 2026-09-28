@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Process.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Process</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
@@ -34,8 +34,6 @@
   <ItemGroup>
     <PackageReference Include="JmesPath.Net" />
     <PackageReference Include="JsonSchema.Net.Generation" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <ItemGroup>

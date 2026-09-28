@@ -14,7 +14,7 @@ Here we have a simple Time Plugin created in C# that can be called from the AI M
 
 ## Prerequisites
 
-- [.NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ### Function Calling Enabled Models
 

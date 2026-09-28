@@ -799,7 +799,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
             while (index < chatMessage.Items.Count)
             {
                 var item = chatMessage.Items[index];
-                if (item is FunctionCallContent || item is FunctionResultContent)
+                if (item is FunctionCallContent or FunctionResultContent)
                 {
                     chatMessage.Items.Remove(item);
                     continue;

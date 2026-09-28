@@ -624,7 +624,7 @@ internal static class AssistantThreadActions
                 }
             }
             // Process image content
-            else if (itemContent.ImageFileId != null)
+            else if (!string.IsNullOrEmpty(itemContent.ImageFileId))
             {
                 content.Items.Add(new FileReferenceContent(itemContent.ImageFileId));
             }
@@ -649,7 +649,7 @@ internal static class AssistantThreadActions
             content.Items.Add(new StreamingTextContent(update.Text));
         }
         // Process image content
-        else if (update.ImageFileId != null)
+        else if (!string.IsNullOrEmpty(update.ImageFileId))
         {
             content.Items.Add(new StreamingFileReferenceContent(update.ImageFileId));
         }
@@ -695,7 +695,7 @@ internal static class AssistantThreadActions
         {
             foreach (var output in update.CodeInterpreterOutputs!)
             {
-                if (output.ImageFileId != null)
+                if (!string.IsNullOrEmpty(output.ImageFileId))
                 {
                     content.Items.Add(new StreamingFileReferenceContent(output.ImageFileId));
                 }

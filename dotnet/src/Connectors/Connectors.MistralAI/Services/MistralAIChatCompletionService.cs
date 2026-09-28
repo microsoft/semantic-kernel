@@ -52,7 +52,7 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
         => this.Client.GetStreamingChatMessageContentsAsync(chatHistory, cancellationToken, executionSettings, kernel);
 
     #region private
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private MistralClient Client { get; }
     #endregion
 }

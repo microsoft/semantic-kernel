@@ -25,6 +25,6 @@ internal sealed class Glossary
     [VectorStoreData]
     public string Definition { get; set; }
 
-    [VectorStoreVector(Dimensions: 1536)]
+    [VectorStoreVector(1536)]
     public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
 }

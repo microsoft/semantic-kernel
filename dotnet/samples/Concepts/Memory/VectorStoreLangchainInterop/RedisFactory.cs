@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using CommunityToolkit.VectorData.Redis;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Redis;
 using StackExchange.Redis;
 
 namespace Memory.VectorStoreLangchainInterop;
@@ -19,13 +19,13 @@ public static class RedisFactory
     /// </summary>
     private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreProperty>
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", typeof(string)),
             new VectorStoreDataProperty("Content", typeof(string)) { StorageName = "text" },
             new VectorStoreDataProperty("Source", typeof(string)) { StorageName = "source" },
             new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StorageName = "embedding" }
-        }
+        ]
     };
 
     /// <summary>

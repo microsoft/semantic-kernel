@@ -2,9 +2,6 @@
  *   Copyright (c) 2025 Microsoft
  *   All rights reserved.
  */
-import { useState } from "react";
-import "./App.css";
-import { GrpcDocumentationGenerationClient } from "./services/grpc/gen/documentGeneration.client";
 import {
     Button,
     Divider,
@@ -17,6 +14,8 @@ import {
     Option,
     Title1,
 } from "@fluentui/react-components";
+import { useState } from "react";
+import "./App.css";
 import {
     AppPages,
     AppPagesDetails,
@@ -28,6 +27,7 @@ import GenerateDocsChat, {
     NewDocument,
 } from "./components/GenerateDocumentsChat";
 import { ExitIcon } from "./components/Icons";
+import { GrpcDocumentationGenerationClient } from "./services/grpc/gen/documentGeneration.client";
 
 interface AppProps {
     grpcDocClient?: GrpcDocumentationGenerationClient;
@@ -218,7 +218,7 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
                         <Dropdown
                             onOptionSelect={(
                                 _e: any,
-                                data: { optionValue: CloudTechnology }
+                                data: { optionValue?: string }
                             ) =>
                                 setSelectedCloudTech(
                                     data.optionValue as CloudTechnology
@@ -244,7 +244,7 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
                         <Dropdown
                             onOptionSelect={(
                                 _e: any,
-                                data: { optionValue: AppPages }
+                                data: { optionValue?: string }
                             ) =>
                                 setSelectedAppPage(data.optionValue as AppPages)
                             }
