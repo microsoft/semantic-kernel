@@ -10,12 +10,37 @@ jobs:
     name: "Issue: add labels"
     if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
     runs-on: ubuntu-latest
+    environment: github-app-auth
     permissions:
-      issues: write
+      contents: read
+      id-token: write
     steps:
+      - name: Checkout GitHub automation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/actions/github-app-token
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Get GitHub automation token
+        id: github-auth
+        uses: ./.github/actions/github-app-token
+        with:
+          mode: ${{ vars.GH_APP_AUTH_MODE }}
+          azure-client-id: ${{ secrets.GH_APP_AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.GH_APP_AZURE_TENANT_ID }}
+          azure-subscription-id: ${{ secrets.GH_APP_AZURE_SUBSCRIPTION_ID }}
+          key-vault-name: ${{ secrets.GH_APP_KEY_VAULT_NAME }}
+          key-name: ${{ secrets.GH_APP_KEY_NAME }}
+          github-app-client-id: ${{ secrets.GH_APP_CLIENT_ID }}
+          github-app-installation-id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+          repository: ${{ github.repository }}
+          permission-profile: issues
+          fallback-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ steps.github-auth.outputs.token }}
           script: |
             // Get the issue body and title
             const body = context.payload.issue.body
