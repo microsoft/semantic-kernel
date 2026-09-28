@@ -17,6 +17,22 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// <summary>
 /// Plugin to download web files.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. Both <see cref="AllowedDomains"/> and <see cref="AllowedFolders"/>
+/// must be explicitly configured before any downloads are permitted. By default, all domains and all
+/// file paths are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedDomains"/> and <see cref="AllowedFolders"/> are restricted to trusted
+/// values only. Unrestricted configuration may allow unintended downloads to
+/// local paths.
+/// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
+/// </remarks>
 public sealed class WebFileDownloadPlugin
 {
     /// <summary>
@@ -29,7 +45,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(HttpClientProvider.GetHttpClient(), loggerFactory)
+        this(HttpClientProvider.GetNonRedirectingHttpClient(), loggerFactory)
     {
     }
 
@@ -38,6 +54,9 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <remarks>
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// </remarks>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
@@ -47,6 +66,11 @@ public sealed class WebFileDownloadPlugin
     /// <summary>
     /// List of allowed domains to download from.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
+    /// with trusted domains before any downloads will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
         get => this._allowedDomains;
@@ -54,8 +78,13 @@ public sealed class WebFileDownloadPlugin
     }
 
     /// <summary>
-    /// List of allowed folders to download to.
+    /// List of allowed folders to download to. Subdirectories of allowed folders are also permitted.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no folders allowed). Must be explicitly populated
+    /// with trusted directory paths before any downloads will succeed.
+    /// Paths are canonicalized before validation to prevent directory traversal.
+    /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
         get => this._allowedFolders;
@@ -63,14 +92,20 @@ public sealed class WebFileDownloadPlugin
     }
 
     /// <summary>
-    /// Set to true to disable overwriting existing files.
+    /// Set to false to allow overwriting existing files.
     /// </summary>
-    public bool DisableFileOverwrite { get; set; } = false;
+    /// <remarks>
+    /// Defaults to <c>true</c> (overwriting is disabled).
+    /// </remarks>
+    public bool DisableFileOverwrite { get; set; } = true;
 
     /// <summary>
     /// Set the maximum allowed download size.
     /// </summary>
-    public long MaximumDownloadSize { get; set; } = long.MaxValue;
+    /// <remarks>
+    /// Defaults to 10 MB.
+    /// </remarks>
+    public long MaximumDownloadSize { get; set; } = 10 * 1024 * 1024;
 
     /// <summary>
     /// Downloads a file to a local file path.
@@ -94,10 +129,15 @@ public sealed class WebFileDownloadPlugin
             throw new InvalidOperationException("Downloading from the provided location is not allowed.");
         }
 
-        var expandedFilePath = Environment.ExpandEnvironmentVariables(filePath);
+        var expandedFilePath = CanonicalizePath(filePath);
         if (!this.IsFilePathAllowed(expandedFilePath))
         {
             throw new InvalidOperationException("Downloading to the provided location is not allowed.");
+        }
+
+        if (this.DisableFileOverwrite && File.Exists(expandedFilePath))
+        {
+            throw new InvalidOperationException("Overwriting existing files is disabled.");
         }
 
         using HttpRequestMessage request = new(HttpMethod.Get, url);
@@ -115,7 +155,7 @@ public sealed class WebFileDownloadPlugin
         var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
 
         using Stream source = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
-        using FileStream destination = new(expandedFilePath, FileMode.Create);
+        using FileStream destination = new(expandedFilePath, fileMode);
 
         int bufferSize = 81920;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(81920);
@@ -150,8 +190,8 @@ public sealed class WebFileDownloadPlugin
     #region private
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private HashSet<string>? _allowedDomains;
-    private HashSet<string>? _allowedFolders;
+    private HashSet<string>? _allowedDomains = [];
+    private HashSet<string>? _allowedFolders = [];
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -161,25 +201,56 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is null || this._allowedDomains.Contains(uri.Host);
+        return this._allowedDomains is not null
+            && this._allowedDomains.Count > 0
+            && this._allowedDomains.Contains(uri.Host);
     }
+
+    private static string CanonicalizePath(string path)
+    {
+        Verify.NotNullOrWhiteSpace(path);
+
+        if (IsUncOrExtendedPath(path))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        var expanded = Environment.ExpandEnvironmentVariables(path);
+        if (IsUncOrExtendedPath(expanded))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(fullPath);
+    }
+
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
-    /// to verify it is in the allowed folder list.
+    /// to verify it is in the allowed folder list. Paths are canonicalized before comparison.
+    /// Subdirectories of allowed folders are also permitted.
     /// </summary>
     private bool IsFilePathAllowed(string path)
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        if (this.DisableFileOverwrite && File.Exists(path))
-        {
-            throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
 
         string? directoryPath = Path.GetDirectoryName(path);
@@ -195,7 +266,30 @@ public sealed class WebFileDownloadPlugin
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
-        return this._allowedFolders is null || this._allowedFolders.Contains(directoryPath);
+        if (this._allowedFolders is null || this._allowedFolders.Count == 0)
+        {
+            return false;
+        }
+
+        var canonicalDir = PathUtilities.GetSafeFullPath(directoryPath);
+
+        foreach (var allowedFolder in this._allowedFolders)
+        {
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedFolder);
+            var separator = Path.DirectorySeparatorChar.ToString();
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
+            {
+                canonicalAllowed += separator;
+            }
+
+            if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     #endregion
 }

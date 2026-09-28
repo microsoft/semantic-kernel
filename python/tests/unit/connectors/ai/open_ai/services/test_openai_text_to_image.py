@@ -267,3 +267,109 @@ async def test_edit_image_invalid_n_parameter():
         OpenAITextToImageExecutionSettings(n=0)
     with pytest.raises(pydantic.ValidationError):
         OpenAITextToImageExecutionSettings(n=11)
+
+
+@pytest.mark.asyncio
+async def test_generate_images_empty_prompt(openai_unit_test_env):
+    """Test that empty prompt raises ServiceInvalidRequestError."""
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    with pytest.raises(ServiceInvalidRequestError):
+        await service.generate_images("")
+
+
+@patch.object(OpenAITextToImageBase, "_send_request", new_callable=AsyncMock)
+async def test_generate_images_no_result(mock_generate, openai_unit_test_env):
+    """Test that empty response data raises ServiceResponseException."""
+    mock_generate.return_value = ImagesResponse(created=0, data=[], usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    with pytest.raises(ServiceResponseException):
+        await service.generate_images("prompt")
+
+
+@patch.object(OpenAITextToImageBase, "_send_request", new_callable=AsyncMock)
+async def test_generate_images_b64_json_response(mock_generate, openai_unit_test_env):
+    """Test that generate_images returns b64_json when url is not present."""
+    mock_generate.return_value = ImagesResponse(created=1, data=[Image(b64_json="base64encodeddata")], usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    result = await service.generate_images("prompt")
+    assert result == ["base64encodeddata"]
+
+
+@patch.object(OpenAITextToImageBase, "_send_request", new_callable=AsyncMock)
+async def test_generate_images_mixed_url_and_b64_response(mock_generate, openai_unit_test_env):
+    """Test that generate_images handles mixed url and b64_json responses."""
+    mock_generate.return_value = ImagesResponse(
+        created=2,
+        data=[Image(url="http://example.com/img1.png"), Image(b64_json="base64data")],
+        usage=None,
+    )
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    result = await service.generate_images("prompt")
+    assert result == ["http://example.com/img1.png", "base64data"]
+
+
+@patch.object(OpenAITextToImageBase, "_send_request", new_callable=AsyncMock)
+async def test_generate_images_with_default_settings(mock_generate, openai_unit_test_env):
+    """Test that generate_images works when no settings are provided."""
+    mock_generate.return_value = ImagesResponse(created=1, data=[Image(url="url")], usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    result = await service.generate_images("a beautiful sunset")
+    assert result == ["url"]
+    mock_generate.assert_awaited_once()
+
+
+@patch.object(OpenAITextToImageBase, "_send_request", new_callable=AsyncMock)
+async def test_generate_images_no_valid_image_data(mock_generate, openai_unit_test_env):
+    """Test that generate_images raises error when images have neither url nor b64_json."""
+    mock_generate.return_value = ImagesResponse(created=1, data=[Image()], usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    with pytest.raises(ServiceResponseException, match="No valid image data found"):
+        await service.generate_images("prompt")
+
+
+@pytest.mark.asyncio
+async def test_edit_image_neither_path_nor_file(openai_unit_test_env):
+    """Test that providing neither image_paths nor image_files raises ServiceInvalidRequestError."""
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    with pytest.raises(ServiceInvalidRequestError):
+        await service.edit_image(prompt="edit this")
+
+
+@patch.object(OpenAITextToImageBase, "_send_image_edit_request", new_callable=AsyncMock)
+async def test_edit_image_b64_json_response(mock_edit, openai_unit_test_env):
+    """Test editing an image returns b64_json when url is not present."""
+    mock_edit.return_value = ImagesResponse(created=1, data=[Image(b64_json="edited_b64")], usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    result = await service.edit_image(
+        prompt="edit this image",
+        image_paths=[sample_img],
+    )
+    assert result == ["edited_b64"]
+
+
+@patch.object(OpenAITextToImageBase, "_send_image_edit_request", new_callable=AsyncMock)
+async def test_edit_image_mixed_response(mock_edit, openai_unit_test_env):
+    """Test editing images handles mixed b64_json and url responses."""
+    mock_edit.return_value = ImagesResponse(
+        created=2,
+        data=[Image(b64_json="b64data"), Image(url="http://example.com/edited.png")],
+        usage=None,
+    )
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    result = await service.edit_image(
+        prompt="edit these images",
+        image_paths=[sample_img],
+    )
+    assert result == ["b64data", "http://example.com/edited.png"]
+
+
+@patch.object(OpenAITextToImageBase, "_send_image_edit_request", new_callable=AsyncMock)
+async def test_edit_image_response_no_data_attribute(mock_edit, openai_unit_test_env):
+    """Test that edit_image raises error when response has no valid data."""
+    mock_edit.return_value = ImagesResponse(created=1, data=None, usage=None)
+    service = OpenAITextToImage(ai_model_id=openai_unit_test_env["OPENAI_TEXT_TO_IMAGE_MODEL_ID"])
+    with pytest.raises(ServiceResponseException):
+        await service.edit_image(
+            prompt="edit",
+            image_paths=[sample_img],
+        )

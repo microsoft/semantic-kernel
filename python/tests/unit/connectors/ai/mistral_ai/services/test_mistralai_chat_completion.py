@@ -26,9 +26,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.contents import FunctionCallContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import (
-    ChatMessageContent,
-)
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import (
@@ -50,30 +48,52 @@ def mock_settings() -> MistralAIChatPromptExecutionSettings:
 @pytest.fixture
 def mock_mistral_ai_client_completion() -> Mistral:
     client = MagicMock(spec=Mistral)
-    client.chat = AsyncMock()
+    client.chat = MagicMock()
 
-    chat_completion_response = AsyncMock()
-    choices = [MagicMock(finish_reason="stop", message=MagicMock(role="assistant", content="Test"))]
-    chat_completion_response.choices = choices
-    client.chat.complete_async.return_value = chat_completion_response
+    # Use proper ChatCompletionResponse type so isinstance checks pass
+    chat_completion_response = ChatCompletionResponse(
+        id="test_id",
+        object="object",
+        created=12345,
+        usage=UsageInfo(prompt_tokens=10, completion_tokens=5, total_tokens=15),
+        model="test_model_id",
+        choices=[
+            ChatCompletionChoice(
+                index=0,
+                message=AssistantMessage(role="assistant", content="Test"),
+                finish_reason="stop",
+            )
+        ],
+    )
+    client.chat.complete_async = AsyncMock(return_value=chat_completion_response)
     return client
 
 
 @pytest.fixture
 def mock_mistral_ai_client_completion_stream() -> Mistral:
     client = MagicMock(spec=Mistral)
-    client.chat = AsyncMock()
-    chat_completion_response = MagicMock()
-    choices = [
-        MagicMock(finish_reason="stop", delta=MagicMock(role="assistant", content="Test")),
-        MagicMock(finish_reason="stop", delta=MagicMock(role="assistant", content="Test", tool_calls=None)),
-    ]
-    chat_completion_response.data.choices = choices
-    chat_completion_response_empty = MagicMock()
-    chat_completion_response_empty.choices = []
-    generator_mock = MagicMock()
-    generator_mock.__aiter__.return_value = [chat_completion_response_empty, chat_completion_response]
-    client.chat.stream_async.return_value = generator_mock
+    client.chat = MagicMock()
+
+    # Use proper CompletionEvent/CompletionChunk types so isinstance checks pass
+    mock_chunk = CompletionEvent(
+        data=CompletionChunk(
+            id="test_chunk",
+            created=12345,
+            model="test_model_id",
+            choices=[
+                CompletionResponseStreamChoice(
+                    index=0,
+                    delta=DeltaMessage(role="assistant", content="Test"),
+                    finish_reason="stop",
+                )
+            ],
+        )
+    )
+
+    async def mock_stream_async(**kwargs):
+        yield mock_chunk
+
+    client.chat.stream_async = AsyncMock(return_value=mock_stream_async())
     return client
 
 
