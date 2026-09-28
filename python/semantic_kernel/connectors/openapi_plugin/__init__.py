@@ -7,5 +7,11 @@ from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiPars
 from semantic_kernel.connectors.openapi_plugin.operation_selection_predicate_context import (
     OperationSelectionPredicateContext,
 )
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
 
-__all__ = ["OpenAPIFunctionExecutionParameters", "OpenApiParser", "OperationSelectionPredicateContext"]
+__all__ = [
+    "OpenAPIFunctionExecutionParameters",
+    "OpenApiParser",
+    "OperationSelectionPredicateContext",
+    "ServerUrlValidationOptions",
+]

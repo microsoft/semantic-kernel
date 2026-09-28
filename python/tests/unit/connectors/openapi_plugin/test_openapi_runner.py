@@ -8,6 +8,7 @@ import pytest
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenApiRunner
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
 from semantic_kernel.exceptions import FunctionExecutionException
 
 
@@ -294,7 +295,9 @@ def test_get_first_response_media_type_default():
 
 
 async def test_run_operation():
-    runner = OpenApiRunner({})
+    runner = OpenApiRunner(
+        {}, server_url_validation_options=ServerUrlValidationOptions(allowed_base_urls=["http://example.com"])
+    )
     operation = MagicMock()
     arguments = {}
     options = MagicMock()
@@ -323,3 +326,40 @@ async def test_run_operation():
 
     result = await runner.run_operation(operation, arguments, options)
     assert result == "response text"
+
+
+async def test_run_operation_blocks_disallowed_url_before_request():
+    runner = OpenApiRunner({})
+    operation = MagicMock()
+    operation.method = "GET"
+    runner.build_operation_url = MagicMock(return_value="https://127.0.0.1/latest/meta-data/")
+    runner.http_client = AsyncMock()
+    runner.http_client.request = AsyncMock()
+
+    with pytest.raises(FunctionExecutionException, match="loopback"):
+        await runner.run_operation(operation, {}, None)
+
+    operation.build_headers.assert_not_called()
+    runner.http_client.request.assert_not_called()
+
+
+async def test_run_operation_blocks_server_variable_ssrf_before_request():
+    runner = OpenApiRunner({})
+    operation = RestApiOperation(
+        id="getCloudMetadata",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{api_server}/",
+                "variables": {"api_server": {"default": "api.example.com"}},
+            }
+        ],
+        path="latest/meta-data/",
+    )
+    runner.http_client = AsyncMock()
+    runner.http_client.request = AsyncMock()
+
+    with pytest.raises(FunctionExecutionException, match="link-local"):
+        await runner.run_operation(operation, {"api_server": "169.254.169.254"}, None)
+
+    runner.http_client.request.assert_not_called()
