@@ -973,6 +973,37 @@ def test_get_function_from_fqn_wo_plugin(kernel: Kernel, custom_plugin_class):
     assert func
 
 
+def test_get_function_bare_name_single_match(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function(None, "getLightStatus")
+    assert func
+
+
+def test_get_function_bare_name_ambiguous_warns(kernel: Kernel, caplog):
+    import logging
+
+    class PluginA:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "a"
+
+    class PluginB:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "b"
+
+    kernel.add_plugin(PluginA(), "PluginA")
+    kernel.add_plugin(PluginB(), "PluginB")
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.functions.kernel_function_extension"):
+        func = kernel.get_function(None, "check_permissions")
+
+    # Warn-only: resolves to the first-registered match, but logs the ambiguity.
+    assert func is kernel.get_function("PluginA", "check_permissions")
+    assert "ambiguous" in caplog.text
+    assert "PluginA" in caplog.text and "PluginB" in caplog.text
+
+
 # endregion
 # region Services
 
