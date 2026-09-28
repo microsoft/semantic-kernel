@@ -173,10 +173,14 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options=self._get_http_options(),
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
+                http_options=self._get_http_options(),
+            ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
@@ -220,6 +224,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options=self._get_http_options(),
             ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [
@@ -227,7 +232,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                         for candidate in chunk.candidates  # type: ignore
                     ]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
+                http_options=self._get_http_options(),
+            ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [
                         self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
