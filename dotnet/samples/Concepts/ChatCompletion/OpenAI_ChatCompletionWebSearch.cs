@@ -12,8 +12,7 @@ namespace ChatCompletion;
 /// <remarks>
 /// Currently, web search is only supported with the following models:
 /// <list type="bullet">
-/// <item>gpt-4o-search-preview</item>
-/// <item>gpt-4o-mini-search-preview</item>
+/// <item>gpt-5-search-ap</item>
 /// </list>
 /// </remarks>
 public class OpenAI_ChatCompletioWebSearch(ITestOutputHelper output) : BaseTest(output)
@@ -24,7 +23,7 @@ public class OpenAI_ChatCompletioWebSearch(ITestOutputHelper output) : BaseTest(
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
         // Ensure you use a supported model
-        var modelId = "gpt-4o-mini-search-preview";
+        var modelId = "gpt-5-search-api";
         var settings = new OpenAIPromptExecutionSettings
         {
             WebSearchOptions = new ChatWebSearchOptions()

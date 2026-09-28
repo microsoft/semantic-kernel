@@ -12,7 +12,7 @@ public sealed class MessageSourceBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageSourceBuilder"/> class.
     /// </summary>
-    /// <param name="messageType">The meassage type</param>
+    /// <param name="messageType">The message type</param>
     /// <param name="source">The source step builder</param>
     /// <param name="condition">Condition that must be met for the message to be processed</param>
     public MessageSourceBuilder(string messageType, ProcessStepBuilder source, KernelProcessEdgeCondition? condition = null)
