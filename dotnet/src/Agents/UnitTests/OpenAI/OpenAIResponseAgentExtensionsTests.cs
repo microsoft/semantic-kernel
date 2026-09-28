@@ -3,12 +3,12 @@
 using System;
 using System.ClientModel;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 using Xunit;
-
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 public sealed class OpenAIResponseAgentExtensionsTests
@@ -39,7 +39,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactoryStoreTrue()
+    public async Task AsAIAgent_CreatesWorkingThreadFactoryStoreTrue()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -50,17 +50,17 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_CreatesWorkingThreadFactoryStoreFalse()
+    public async Task AsAIAgent_CreatesWorkingThreadFactoryStoreFalse()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -71,17 +71,17 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.GetNewThread();
+        var thread = await result.CreateSessionAsync();
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -93,17 +93,17 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -116,18 +116,18 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesThreadId()
+    public async Task AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -140,10 +140,10 @@ public sealed class OpenAIResponseAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedThreadId);
 
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.String, serializedElement.ValueKind);
@@ -151,7 +151,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithNullJson_CreatesThreadWithEmptyChatHistory()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithNullJson_CreatesThreadWithEmptyChatHistory()
     {
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
@@ -159,18 +159,18 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         var chatHistoryAgentThread = Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
         Assert.Empty(chatHistoryAgentThread.ChatHistory);
     }
 
     [Fact]
-    public void AsAIAgent_ThreadDeserializationFactory_WithChatHistory_CreatesThreadWithChatHistory()
+    public async Task AsAIAgent_ThreadDeserializationFactory_WithChatHistory_CreatesThreadWithChatHistory()
     {
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
@@ -179,12 +179,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
 
         // Act
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Assert
         Assert.NotNull(thread);
-        Assert.IsType<SemanticKernelAIAgentThread>(thread);
-        var threadAdapter = (SemanticKernelAIAgentThread)thread;
+        Assert.IsType<SemanticKernelAIAgentSession>(thread);
+        var threadAdapter = (SemanticKernelAIAgentSession)thread;
         var chatHistoryAgentThread = Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
         Assert.Single(chatHistoryAgentThread.ChatHistory);
         var firstMessage = chatHistoryAgentThread.ChatHistory[0];
@@ -193,7 +193,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     }
 
     [Fact]
-    public void AsAIAgent_ThreadSerializer_SerializesChatHistory()
+    public async Task AsAIAgent_ThreadSerializer_SerializesChatHistory()
     {
         // Arrange
         var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
@@ -202,10 +202,10 @@ public sealed class OpenAIResponseAgentExtensionsTests
         var jsonElement = JsonSerializer.SerializeToElement(expectedChatHistory);
 
         var result = responseAgent.AsAIAgent();
-        var thread = result.DeserializeThread(jsonElement);
+        var thread = await result.DeserializeSessionAsync(jsonElement);
 
         // Act
-        var serializedElement = thread.Serialize();
+        var serializedElement = await result.SerializeSessionAsync(thread);
 
         // Assert
         Assert.Equal(JsonValueKind.Array, serializedElement.ValueKind);
