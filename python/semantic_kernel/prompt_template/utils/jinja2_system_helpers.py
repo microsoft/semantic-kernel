@@ -3,7 +3,7 @@
 import logging
 import re
 from collections.abc import Callable
-from enum import Enum
+from xml.etree.ElementTree import tostring  # nosec B405
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -25,17 +25,8 @@ def _message_to_prompt(context):
 
 
 def _message(item):
-    from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
-
-    start = f"<{CHAT_MESSAGE_CONTENT_TAG}"
-    role = item.role
-    content = item.content
-    if isinstance(role, Enum):
-        role = role.value
-    start += f' role="{role}"'
-    start += ">"
-    end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
-    return f"{start}{content}{end}"
+    message = item.to_element()
+    return tostring(message, encoding="unicode", short_empty_elements=False)
 
 
 # Wrap the _get function to safely handle calls without arguments

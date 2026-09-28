@@ -516,6 +516,7 @@ class InMemoryCollection(
     blocked_filter_attributes: ClassVar[set[str]] = {
         # Object introspection - can lead to class/module access
         "__class__",
+        "__base__",
         "__bases__",
         "__mro__",
         "__subclasses__",

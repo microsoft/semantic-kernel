@@ -41,7 +41,10 @@ def process_context():
         mock_dapr_process = AsyncMock(spec=ProcessInterface)
         mock_actor_proxy_create.return_value = mock_dapr_process
 
-        context = DaprKernelProcessContext(process=process)
+        context = DaprKernelProcessContext(
+            process=process,
+            allowed_module_prefixes=("semantic_kernel.", DummyInnerStepType.__module__),
+        )
 
         yield context, mock_dapr_process
 

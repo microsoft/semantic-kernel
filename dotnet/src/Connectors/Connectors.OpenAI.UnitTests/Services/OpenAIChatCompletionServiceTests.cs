@@ -1662,6 +1662,51 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(string.Empty, assistantMessageContent);
     }
 
+    [Fact]
+    public async Task ItSendsImageContentNotSupportedErrorWhenToolResultIsImageContentAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("call-id", "GetImage", BinaryData.FromString("{}"))];
+
+        var imageBytes = new ReadOnlyMemory<byte>([0x89, 0x50, 0x4E, 0x47]); // PNG magic bytes
+        var imageContent = new ImageContent(imageBytes, "image/png");
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "Show me the image", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("GetImage", "ImagePlugin", "call-id", imageContent)]
+            },
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonElement.Parse(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var toolMessage = messages.First(message => message.GetProperty("role").GetString() == "tool");
+        var toolMessageContent = toolMessage.GetProperty("content").GetString();
+
+        // OpenAI does not support multimodal tool results - expect the standard error message
+        Assert.Equal("Error: This model does not support image content in tool results.", toolMessageContent);
+    }
+
     [Theory]
     [MemberData(nameof(WebSearchOptionsData))]
     public async Task ItCreatesCorrectWebSearchOptionsAsync(object webSearchOptions, string expectedJson)
@@ -1936,6 +1981,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         { "{\"voice\":\"echo\",\"format\":\"opus\"}", "{\"voice\":\"echo\",\"format\":\"opus\"}" },
     };
 
+    public static TheoryData<ChatOutputAudioFormat, string> AudioMimeTypeMappingData => new()
+    {
+        { ChatOutputAudioFormat.Wav, "audio/wav" },
+        { ChatOutputAudioFormat.Aac, "audio/aac" },
+        { ChatOutputAudioFormat.Mp3, "audio/mp3" },
+        { ChatOutputAudioFormat.Opus, "audio/opus" },
+        { ChatOutputAudioFormat.Flac, "audio/flac" },
+        { ChatOutputAudioFormat.Pcm16, "audio/pcm16" },
+    };
+
 #pragma warning disable CS8618, CA1812
     private sealed class MathReasoning
     {
@@ -2144,6 +2199,56 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("This is the audio transcript.", audioContent.Metadata["Transcript"]);
         Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
         // The ExpiresAt value is converted to a DateTime object, so we can't directly compare it to the Unix timestamp
+    }
+
+    [Theory]
+    [MemberData(nameof(AudioMimeTypeMappingData))]
+    public async Task ItMapsAudioOutputFormatToCorrectMimeTypeAsync(ChatOutputAudioFormat format, string expectedMimeType)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var responseJson = """
+        {
+            "model": "gpt-4o",
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "This is the text response.",
+                        "audio": {
+                            "data": "AQIDBA=="
+                        }
+                    },
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 20,
+                "total_tokens": 30
+            }
+        }
+        """;
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        { Content = new StringContent(responseJson) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            Modalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, format)
+        };
+
+        // Act
+        var result = await chatCompletion.GetChatMessageContentAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Items.Count);
+        var audioContent = result.Items[1] as AudioContent;
+        Assert.NotNull(audioContent);
+        Assert.Equal(expectedMimeType, audioContent.MimeType);
     }
 
     [Fact]

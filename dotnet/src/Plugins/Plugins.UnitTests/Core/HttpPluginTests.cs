@@ -44,7 +44,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.GetAsync(this._uriString);
@@ -60,7 +60,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.PostAsync(this._uriString, this._content);
@@ -76,7 +76,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.PutAsync(this._uriString, this._content);
@@ -92,7 +92,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
         var result = await plugin.DeleteAsync(this._uriString);
@@ -100,6 +100,18 @@ public sealed class HttpPluginTests : IDisposable
         // Assert
         Assert.Equal(this._content, result);
         this.VerifyMock(mockHandler, HttpMethod.Delete);
+    }
+
+    [Fact]
+    public async Task ItDeniesAllDomainsWithDefaultConfigAsync()
+    {
+        // Arrange
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client);
+
+        // Act & Assert - default config denies all domains
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(this._uriString));
     }
 
     [Fact]
@@ -119,6 +131,22 @@ public sealed class HttpPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PostAsync(invalidUri, this._content));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PutAsync(invalidUri, this._content));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.DeleteAsync(invalidUri));
+    }
+
+    [Fact]
+    public async Task ItDoesNotFollowRedirectsAsync()
+    {
+        // Arrange - start a local server that always returns a 302 redirect
+        await using var server = new RedirectLoopbackServer("secret", "text/plain", []);
+
+        var plugin = new HttpPlugin()
+        {
+            AllowedDomains = [server.BaseUri.Host]
+        };
+
+        // Act & Assert - the plugin should throw because 302 is a non-success status
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugin.GetAsync(new Uri(server.BaseUri, "start").AbsoluteUri));
+        Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
     }
 
     private Mock<HttpMessageHandler> CreateMock()

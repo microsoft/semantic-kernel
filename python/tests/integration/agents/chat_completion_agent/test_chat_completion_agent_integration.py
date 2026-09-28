@@ -251,7 +251,7 @@ class TestChatCompletionAgentIntegration:
     ):
         """Test function calling streaming."""
         IMAGE_URI = (
-            "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+            "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/python/tests/assets/sample_image.jpg"
         )
         image_content_remote = ImageContent(uri=IMAGE_URI)
 

@@ -50,7 +50,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
     }
 
     /// <inheritdoc />
-    public override string Id => this._innerAgent.Id;
+    protected override string? IdCore => this._innerAgent.Id;
 
     /// <inheritdoc />
     public override string? Name => this._innerAgent.Name;
@@ -59,19 +59,31 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
     public override string? Description => this._innerAgent.Description;
 
     /// <inheritdoc />
-    public override MAAI.AgentThread DeserializeThread(JsonElement serializedThread, JsonSerializerOptions? jsonSerializerOptions = null)
-        => new SemanticKernelAIAgentThread(this._threadDeserializationFactory(serializedThread, jsonSerializerOptions), this._threadSerializer);
+    protected override ValueTask<MAAI.AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default)
+        => new(new SemanticKernelAIAgentSession(this._threadFactory()));
 
     /// <inheritdoc />
-    public override MAAI.AgentThread GetNewThread() => new SemanticKernelAIAgentThread(this._threadFactory(), this._threadSerializer);
-
-    /// <inheritdoc />
-    public override async Task<MAAI.AgentRunResponse> RunAsync(IEnumerable<ChatMessage> messages, MAAI.AgentThread? thread = null, MAAI.AgentRunOptions? options = null, CancellationToken cancellationToken = default)
+    protected override ValueTask<JsonElement> SerializeSessionCoreAsync(MAAI.AgentSession session, JsonSerializerOptions? jsonSerializerOptions = null, CancellationToken cancellationToken = default)
     {
-        thread ??= this.GetNewThread();
-        if (thread is not SemanticKernelAIAgentThread typedThread)
+        if (session is not SemanticKernelAIAgentSession typedSession)
         {
-            throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
+            throw new InvalidOperationException("The provided session is not compatible with the agent. Only sessions created by the agent can be used.");
+        }
+
+        return new(this._threadSerializer(typedSession.InnerThread, jsonSerializerOptions));
+    }
+
+    /// <inheritdoc />
+    protected override ValueTask<MAAI.AgentSession> DeserializeSessionCoreAsync(JsonElement serializedState, JsonSerializerOptions? jsonSerializerOptions = null, CancellationToken cancellationToken = default)
+        => new(new SemanticKernelAIAgentSession(this._threadDeserializationFactory(serializedState, jsonSerializerOptions)));
+
+    /// <inheritdoc />
+    protected override async Task<MAAI.AgentResponse> RunCoreAsync(IEnumerable<ChatMessage> messages, MAAI.AgentSession? session = null, MAAI.AgentRunOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        session ??= await this.CreateSessionCoreAsync(cancellationToken).ConfigureAwait(false);
+        if (session is not SemanticKernelAIAgentSession typedSession)
+        {
+            throw new InvalidOperationException("The provided session is not compatible with the agent. Only sessions created by the agent can be used.");
         }
 
         List<ChatMessage> responseMessages = [];
@@ -98,13 +110,14 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         };
 
         AgentResponseItem<ChatMessageContent>? lastResponseItem = null;
-        ChatMessage? lastResponseMessage = null;
-        await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var responseItem in this._innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedSession.InnerThread, invokeOptions, cancellationToken).ConfigureAwait(false))
         {
             lastResponseItem = responseItem;
         }
 
-        return new MAAI.AgentRunResponse(responseMessages)
+        var lastResponseMessage = lastResponseItem?.Message.ToChatMessage();
+
+        return new MAAI.AgentResponse(responseMessages)
         {
             AgentId = this._innerAgent.Id,
             RawRepresentation = lastResponseItem,
@@ -114,23 +127,23 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<MAAI.AgentRunResponseUpdate> RunStreamingAsync(
+    protected override async IAsyncEnumerable<MAAI.AgentResponseUpdate> RunCoreStreamingAsync(
         IEnumerable<ChatMessage> messages,
-        MAAI.AgentThread? thread = null,
+        MAAI.AgentSession? session = null,
         MAAI.AgentRunOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        thread ??= this.GetNewThread();
-        if (thread is not SemanticKernelAIAgentThread typedThread)
+        session ??= await this.CreateSessionCoreAsync(cancellationToken).ConfigureAwait(false);
+        if (session is not SemanticKernelAIAgentSession typedSession)
         {
-            throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
+            throw new InvalidOperationException("The provided session is not compatible with the agent. Only sessions created by the agent can be used.");
         }
 
-        await foreach (var responseItem in this._innerAgent.InvokeStreamingAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedThread.InnerThread, cancellationToken: cancellationToken).ConfigureAwait(false))
+        await foreach (var responseItem in this._innerAgent.InvokeStreamingAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedSession.InnerThread, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             var update = responseItem.Message.ToChatResponseUpdate();
 
-            yield return new MAAI.AgentRunResponseUpdate
+            yield return new MAAI.AgentResponseUpdate
             {
                 AuthorName = update.AuthorName,
                 AgentId = this._innerAgent.Id,

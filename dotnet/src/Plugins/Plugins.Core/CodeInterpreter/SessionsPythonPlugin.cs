@@ -37,6 +37,10 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="httpClientFactory">The HTTP client factory.</param>
     /// <param name="authTokenProvider">Optional provider for auth token generation.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <remarks>
+    /// The <paramref name="httpClientFactory"/> must create clients with automatic redirects disabled
+    /// to prevent redirects from bypassing <see cref="SessionsPythonSettings.AllowedDomains"/>.
+    /// </remarks>
     public SessionsPythonPlugin(
         SessionsPythonSettings settings,
         IHttpClientFactory httpClientFactory,
@@ -271,11 +275,11 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Deny requests unless the endpoint host is explicitly allowed.
+        if (this._settings.AllowedDomains?.Contains(uri.Host, StringComparer.OrdinalIgnoreCase) != true)
         {
-            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+            throw new InvalidOperationException(
+                $"Sending requests to host '{uri.Host}' is not allowed. Add the host to {nameof(SessionsPythonSettings.AllowedDomains)}.");
         }
 
         using var request = new HttpRequestMessage(method, uri)
@@ -308,18 +312,18 @@ public sealed partial class SessionsPythonPlugin
                 "File upload requires 'AllowedUploadDirectories' to be configured.");
         }
 
-        var canonicalPath = Path.GetFullPath(localFilePath);
+        var canonicalPath = PathUtilities.GetSafeFullPath(localFilePath);
 
         foreach (var allowedDir in this._settings.AllowedUploadDirectories)
         {
-            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(allowedDir);
             // Ensure we match the directory correctly by appending separator
             var separator = Path.DirectorySeparatorChar.ToString();
-            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, PathUtilities.PathComparison)
                 ? canonicalAllowedDir
                 : canonicalAllowedDir + separator;
 
-            if (canonicalPath.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            if (canonicalPath.StartsWith(allowedDirWithSeparator, PathUtilities.PathComparison))
             {
                 return canonicalPath;
             }
@@ -340,29 +344,31 @@ public sealed partial class SessionsPythonPlugin
         // If no restrictions configured, allow all paths (permissive by default for downloads)
         if (this._settings.AllowedDownloadDirectories is null || !this._settings.AllowedDownloadDirectories.Any())
         {
-            return Path.GetFullPath(localFilePath);
+            return PathUtilities.GetSafeFullPath(localFilePath);
         }
 
-        // Get the directory of the target file path
-        var targetDirectory = Path.GetDirectoryName(localFilePath);
+        var canonicalFilePath = PathUtilities.GetSafeFullPath(localFilePath);
+
+        // Get the directory of the resolved target file path.
+        var targetDirectory = Path.GetDirectoryName(canonicalFilePath);
         if (string.IsNullOrEmpty(targetDirectory))
         {
             targetDirectory = ".";
         }
 
-        var canonicalTargetDir = Path.GetFullPath(targetDirectory);
-        var canonicalFilePath = Path.GetFullPath(localFilePath);
+        var canonicalTargetDir = PathUtilities.GetSafeFullPath(targetDirectory);
 
         foreach (var allowedDir in this._settings.AllowedDownloadDirectories)
         {
-            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(allowedDir);
             // Ensure we match the directory correctly by appending separator
             var separator = Path.DirectorySeparatorChar.ToString();
-            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, PathUtilities.PathComparison)
                 ? canonicalAllowedDir
                 : canonicalAllowedDir + separator;
 
-            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, PathUtilities.PathComparison)
+                || (canonicalTargetDir + separator).Equals(allowedDirWithSeparator, PathUtilities.PathComparison))
             {
                 return canonicalFilePath;
             }
