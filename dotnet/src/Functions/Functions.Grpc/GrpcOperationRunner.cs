@@ -22,16 +22,53 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc;
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
-internal sealed class GrpcOperationRunner(HttpClient httpClient)
+internal sealed class GrpcOperationRunner
 {
     /// <summary>Serialization options that use a camel casing naming policy.</summary>
     private static readonly JsonSerializerOptions s_camelCaseOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     /// <summary>Deserialization options that use case-insensitive property names.</summary>
     private static readonly JsonSerializerOptions s_propertyCaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
+
+    private static readonly IReadOnlyList<string> s_defaultAllowedSchemes = ["https"];
+
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
-    private readonly HttpClient _httpClient = httpClient;
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Developer-provided address override for the gRPC channel.
+    /// </summary>
+    private readonly Uri? _addressOverride;
+
+    /// <summary>
+    /// Allowed gRPC server base addresses for SSRF protection.
+    /// </summary>
+    private readonly IReadOnlyList<Uri>? _allowedAddresses;
+
+    /// <summary>
+    /// Allowed URI schemes for gRPC server addresses.
+    /// </summary>
+    private readonly IReadOnlyList<string> _allowedSchemes;
+
+    /// <summary>
+    /// Creates an instance of a <see cref="GrpcOperationRunner"/> class.
+    /// </summary>
+    /// <param name="httpClient">The HttpClient to use for sending gRPC requests.</param>
+    /// <param name="addressOverride">Optional developer-provided address override.</param>
+    /// <param name="allowedAddresses">Optional allowed base addresses for SSRF protection.</param>
+    /// <param name="allowedSchemes">Optional allowed URI schemes. Defaults to https only.</param>
+    internal GrpcOperationRunner(
+        HttpClient httpClient,
+        Uri? addressOverride = null,
+        IReadOnlyList<Uri>? allowedAddresses = null,
+        IReadOnlyList<string>? allowedSchemes = null)
+    {
+        this._httpClient = httpClient;
+        this._addressOverride = addressOverride;
+        this._allowedAddresses = allowedAddresses;
+        this._allowedSchemes = allowedSchemes is { Count: > 0 } ? allowedSchemes : s_defaultAllowedSchemes;
+    }
 
     /// <summary>
     /// Runs a gRPC operation.
@@ -47,7 +84,7 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
 
         var stringArgument = CastToStringArguments(arguments, operation);
 
-        var address = this.GetAddress(operation, stringArgument);
+        var address = this.GetAddress(operation);
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
@@ -118,11 +155,16 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
     /// Returns address of a channel that provides connection to a gRPC server.
     /// </summary>
     /// <param name="operation">The gRPC operation.</param>
-    /// <param name="arguments">The gRPC operation arguments.</param>
     /// <returns>The channel address.</returns>
-    private string GetAddress(GrpcOperation operation, Dictionary<string, string> arguments)
+    private string GetAddress(GrpcOperation operation)
     {
-        if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
+        string? address;
+
+        if (this._addressOverride is not null)
+        {
+            address = this._addressOverride.AbsoluteUri;
+        }
+        else
         {
             address = operation.Address;
         }
@@ -130,6 +172,48 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
         if (string.IsNullOrEmpty(address))
         {
             throw new KernelException($"No address provided for the '{operation.Name}' gRPC operation.");
+        }
+
+        if (!Uri.TryCreate(address, UriKind.Absolute, out var addressUri))
+        {
+            throw new KernelException($"The address '{address}' for the '{operation.Name}' gRPC operation is not a valid absolute URI.");
+        }
+
+        // Validate scheme
+        if (!this._allowedSchemes.Contains(addressUri.Scheme, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new KernelException($"The URI scheme '{addressUri.Scheme}' is not allowed for the '{operation.Name}' gRPC operation. Allowed schemes: {string.Join(", ", this._allowedSchemes)}.");
+        }
+
+        // Validate against allowed addresses
+        if (this._allowedAddresses is { Count: > 0 })
+        {
+            bool isAllowed = false;
+            foreach (var allowedAddress in this._allowedAddresses)
+            {
+                string allowedUri = allowedAddress.AbsoluteUri;
+
+                if (addressUri.AbsoluteUri.StartsWith(allowedUri, StringComparison.OrdinalIgnoreCase))
+                {
+                    // If the allowed URI already ends at a boundary (e.g., trailing '/'),
+                    // or the full URIs match exactly, no further check is needed.
+                    // Otherwise, ensure the next character is a path boundary to prevent
+                    // prefix bypasses (e.g., allowed "https://host/grpc" should not match "https://host/grpcevil").
+                    int prefixLength = allowedUri.Length;
+                    if (prefixLength >= addressUri.AbsoluteUri.Length ||
+                        allowedUri[prefixLength - 1] is '/' ||
+                        addressUri.AbsoluteUri[prefixLength] is '/' or '?' or '#')
+                    {
+                        isAllowed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isAllowed)
+            {
+                throw new KernelException($"The address '{address}' is not allowed for the '{operation.Name}' gRPC operation. The address must match one of the allowed base addresses.");
+            }
         }
 
         return address!;

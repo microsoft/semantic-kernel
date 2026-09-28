@@ -2,8 +2,8 @@
 
 using Azure;
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.Redis;
+using CommunityToolkit.VectorData.AzureAISearch;
+using CommunityToolkit.VectorData.Redis;
 using StackExchange.Redis;
 
 namespace GettingStartedWithVectorStores;

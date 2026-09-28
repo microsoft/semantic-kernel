@@ -154,6 +154,20 @@ class QueryBuilder:
             self.append(string, suffix=sep)
         self.append(strings[-1], suffix=suffix)
 
+    @staticmethod
+    def escape_identifier(identifier: str) -> str:
+        """Escape and bracket-quote a SQL Server identifier.
+
+        Escapes `]` to `]]` and wraps in square brackets, matching
+        the SQL Server standard for delimited identifiers.
+        """
+        return f"[{identifier.replace(']', ']]')}]"
+
+    @staticmethod
+    def format_table_name(schema: str, table_name: str) -> str:
+        """Return an escaped [schema].[table] string."""
+        return f"{QueryBuilder.escape_identifier(schema)}.{QueryBuilder.escape_identifier(table_name)}"
+
     def append_table_name(
         self, schema: str, table_name: str, prefix: str = "", suffix: str | None = None, newline: bool = False
     ) -> None:
@@ -169,7 +183,10 @@ class QueryBuilder:
             suffix: Optional suffix to add after the table name.
             newline: Whether to add a newline after the table name or suffix.
         """
-        self.append(f"{prefix} [{schema}].[{table_name}] {suffix or ''}", suffix="\n" if newline else "")
+        self.append(
+            f"{prefix} {self.format_table_name(schema, table_name)} {suffix or ''}",
+            suffix="\n" if newline else "",
+        )
 
     def remove_last(self, number_of_chars: int):
         """Remove the last number_of_chars from the StringBuilder."""
@@ -631,14 +648,14 @@ class SqlServerCollection(
                         raise VectorStoreOperationException(
                             f"Field '{node.attr}' not in data model (storage property names are used)."
                         )
-                    return f"[{node.attr}]"
+                    return QueryBuilder.escape_identifier(node.attr)
                 case ast.Name():
                     # Only allow names that are in the data model
                     if node.id not in self.definition.storage_names:
                         raise VectorStoreOperationException(
                             f"Field '{node.id}' not in data model (storage property names are used)."
                         )
-                    return f"[{node.id}]"
+                    return QueryBuilder.escape_identifier(node.id)
                 case ast.Constant():
                     value = node.value
                     if isinstance(value, (str, int, float, bool, bytes)) or value is None:
@@ -860,32 +877,34 @@ def _build_create_table_query(
     """Build the CREATE TABLE query based on the data model."""
     command = SqlCommand()
     if if_not_exists:
-        command.query.append_table_name(
-            schema, table, prefix="IF OBJECT_ID(N'", suffix="', N'U') IS NULL", newline=True
-        )
+        # OBJECT_ID takes a string literal — escape ' → '' in addition to identifier escaping
+        table_ref = QueryBuilder.format_table_name(schema, table).replace("'", "''")
+        command.query.append(f"IF OBJECT_ID(N'{table_ref}', N'U') IS NULL", suffix="\n")
     with command.query.in_logical_group():
         command.query.append_table_name(schema, table, prefix="CREATE TABLE", newline=True)
         with command.query.in_parenthesis(suffix=";"):
             # add the key field
             command.query.append(
-                f'"{key_field.storage_name or key_field.name}" '
+                f"{QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} "
                 f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
             )
             # add the data fields
-            [
-                command.query.append(f'"{field.storage_name or field.name}" {_python_type_to_sql(field.type_)} NULL,\n')
-                for field in data_fields
-            ]
+            for field in data_fields:
+                command.query.append(
+                    f"{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
+                    f" {_python_type_to_sql(field.type_)} NULL,\n"
+                )
             # add the vector fields
             for field in vector_fields:
                 if field.index_kind not in INDEX_KIND_MAP:
                     raise VectorStoreOperationException(
                         f"Index kind '{field.index_kind}' is not supported for field '{field.name}'"
                     )
-                command.query.append(f'"{field.storage_name or field.name}" VECTOR({field.dimensions}) NULL,\n')
+                escaped_name = QueryBuilder.escape_identifier(field.storage_name or field.name)
+                command.query.append(f"{escaped_name} VECTOR({field.dimensions}) NULL,\n")
             # set the primary key
             with command.query.in_parenthesis("PRIMARY KEY", "\n"):
-                command.query.append(key_field.name)
+                command.query.append(QueryBuilder.escape_identifier(key_field.storage_name or key_field.name))
     return command
 
 
@@ -954,9 +973,11 @@ def _add_field_names(
     """
     fields = chain([key_field], data_fields, vector_fields or [])
     if table_identifier:
-        strings = [f"{table_identifier}.{field.storage_name or field.name}" for field in fields]
+        strings = [
+            f"{table_identifier}.{QueryBuilder.escape_identifier(field.storage_name or field.name)}" for field in fields
+        ]
     else:
-        strings = [field.storage_name or field.name for field in fields]
+        strings = [QueryBuilder.escape_identifier(field.storage_name or field.name) for field in fields]
     command.query.append_list(strings)
 
 
@@ -997,17 +1018,17 @@ def _build_merge_query(
         _add_field_names(command, key_field, data_fields, vector_fields)
     # add the ON clause
     with command.query.in_parenthesis("ON", "\n"):
-        command.query.append(
-            f"t.{key_field.storage_name or key_field.name} = s.{key_field.storage_name or key_field.name}"
-        )
+        escaped_key = QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)
+        command.query.append(f"t.{escaped_key} = s.{escaped_key}")
     # Set the Matched clause
     command.query.append("WHEN MATCHED THEN\n")
     command.query.append("UPDATE SET ")
+    update_parts = []
+    for field in chain(data_fields, vector_fields):
+        escaped = QueryBuilder.escape_identifier(field.storage_name or field.name)
+        update_parts.append(f"t.{escaped} = s.{escaped}")
     command.query.append_list(
-        [
-            f"t.{field.storage_name or field.name} = s.{field.storage_name or field.name}"
-            for field in chain(data_fields, vector_fields)
-        ],
+        update_parts,
         suffix="\n",
     )
     # Set the Not Matched clause
@@ -1018,7 +1039,8 @@ def _build_merge_query(
     with command.query.in_parenthesis("VALUES", " \n"):
         _add_field_names(command, key_field, data_fields, vector_fields, table_identifier="s")
     # add the closing parenthesis
-    command.query.append(f"OUTPUT inserted.{key_field.name} INTO @UpsertedKeys (KeyColumn);\n")
+    escaped_key_out = QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)
+    command.query.append(f"OUTPUT inserted.{escaped_key_out} INTO @UpsertedKeys (KeyColumn);\n")
     command.query.append("SELECT KeyColumn FROM @UpsertedKeys;\n")
     return command
 
@@ -1041,7 +1063,7 @@ def _build_select_query(
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
     if keys:
-        command.query.append(f"WHERE {key_field.storage_name or key_field.name} IN\n")
+        command.query.append(f"WHERE {QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} IN\n")
         with command.query.in_parenthesis():
             # add the keys
             command.query.append_list(["?"] * len(keys))
@@ -1061,7 +1083,7 @@ def _build_delete_query(
     # start the DELETE statement
     command.query.append_table_name(schema, table)
     # add the WHERE clause
-    command.query.append(f"WHERE [{key_field.storage_name or key_field.name}] IN")
+    command.query.append(f"WHERE {QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} IN")
     with command.query.in_parenthesis():
         # add the keys
         command.query.append_list(["?"] * len(keys))
@@ -1109,7 +1131,7 @@ def _build_search_query(
     asc = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
 
     command.query.append(
-        f", VECTOR_DISTANCE('{distance_function}', {vector_field.storage_name or vector_field.name}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
+        f", VECTOR_DISTANCE('{distance_function}', {QueryBuilder.escape_identifier(vector_field.storage_name or vector_field.name)}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
     )
     command.add_parameter(_cast_value(vector))
     # add the FROM clause
