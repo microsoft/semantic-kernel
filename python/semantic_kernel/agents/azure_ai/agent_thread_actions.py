@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import inspect
 import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
@@ -64,6 +65,7 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
+from semantic_kernel.agents.azure_ai.mcp_tool_approval import MCPToolApprovalRequest
 from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
@@ -280,16 +282,12 @@ class AgentThreadActions:
                         yield False, generate_mcp_call_content(agent_name=agent.name, mcp_tool_calls=mcp_tool_calls)
 
                         # Create tool approvals for MCP calls
-                        tool_approvals = []
-                        for mcp_call in mcp_tool_calls:
-                            tool_approvals.append(
-                                ToolApproval(
-                                    tool_call_id=mcp_call.id,
-                                    # TODO(evmattso): we don't support manual tool calling yet
-                                    # so we always approve
-                                    approve=True,
-                                )
-                            )
+                        tool_approvals = await cls._build_mcp_tool_approvals(
+                            agent=agent,
+                            thread_id=thread_id,
+                            run_id=run.id,
+                            mcp_tool_calls=mcp_tool_calls,
+                        )
 
                         await agent.client.agents.runs.submit_tool_outputs(
                             run_id=run.id,
@@ -757,17 +755,12 @@ class AgentThreadActions:
                                     output_messages.append(content)
 
                             # Create tool approvals for MCP calls
-                            tool_approvals = []
-                            for mcp_call in mcp_tool_calls:
-                                tool_approvals.append(
-                                    ToolApproval(
-                                        tool_call_id=mcp_call.id,
-                                        approve=True,
-                                        # Note: headers would need to be provided by the MCP tool configuration
-                                        # This is a simplified implementation
-                                        headers={},
-                                    )
-                                )
+                            tool_approvals = await cls._build_mcp_tool_approvals(
+                                agent=agent,
+                                thread_id=thread_id,
+                                run_id=run.id,
+                                mcp_tool_calls=mcp_tool_calls,
+                            )
 
                             handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()  # type: ignore
                             await agent.client.agents.runs.submit_tool_outputs_stream(
@@ -1176,6 +1169,71 @@ class AgentThreadActions:
                 for function_call in fccs
             ],
         )
+
+    @classmethod
+    async def _build_mcp_tool_approvals(
+        cls: type[_T],
+        agent: "AzureAIAgent",
+        thread_id: str,
+        run_id: str,
+        mcp_tool_calls: list[RequiredMcpToolCall],
+    ) -> list[ToolApproval]:
+        """Approve or deny the MCP tool calls the Azure AI Foundry Agent Service is waiting on.
+
+        Each pending call is passed to the agent's `mcp_tool_approval_callback`. When no callback is
+        configured the call is denied, so that a compromised or untrusted MCP server cannot run tools
+        without the developer explicitly opting in.
+        """
+        approvals: list[ToolApproval] = []
+        for mcp_call in mcp_tool_calls:
+            approved = await cls._resolve_mcp_tool_approval(
+                agent,
+                MCPToolApprovalRequest(
+                    agent_name=agent.name,
+                    thread_id=thread_id,
+                    run_id=run_id,
+                    tool_call_id=mcp_call.id,
+                    server_label=mcp_call.server_label,
+                    function_name=mcp_call.name,
+                    arguments=mcp_call.arguments,
+                ),
+            )
+            logger.debug(
+                f"MCP tool call `{mcp_call.name}` from server `{mcp_call.server_label}` was "
+                f"{'approved' if approved else 'denied'} for agent `{agent.name}` and thread `{thread_id}`"
+            )
+            approvals.append(ToolApproval(tool_call_id=mcp_call.id, approve=approved, headers={}))
+
+        return approvals
+
+    @classmethod
+    async def _resolve_mcp_tool_approval(cls: type[_T], agent: "AzureAIAgent", request: MCPToolApprovalRequest) -> bool:
+        """Resolve the approval decision for a single MCP tool call.
+
+        The agent's callback may be synchronous or asynchronous and returns True to approve the call.
+        When no callback is configured, or when the callback fails, the call is denied so that an
+        untrusted MCP server cannot execute tools without the developer opting in.
+        """
+        if agent.mcp_tool_approval_callback is None:
+            logger.warning(
+                f"MCP tool call `{request.function_name}` from server `{request.server_label}` was denied because "
+                "no `mcp_tool_approval_callback` was configured on the agent. Provide a callback to approve or "
+                "deny MCP tool calls."
+            )
+            return False
+
+        try:
+            result = agent.mcp_tool_approval_callback(request)
+            if inspect.isawaitable(result):
+                result = await result
+        except Exception:
+            logger.exception(
+                f"MCP tool approval callback raised an error for tool call `{request.function_name}` from server "
+                f"`{request.server_label}`. Denying the call.",
+            )
+            return False
+
+        return result is True
 
     @classmethod
     def _format_tool_outputs(

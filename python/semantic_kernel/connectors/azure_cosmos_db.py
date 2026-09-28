@@ -2,6 +2,7 @@
 
 import ast
 import asyncio
+import re
 import sys
 from collections.abc import Sequence
 from importlib import metadata
@@ -788,14 +789,36 @@ class CosmosNoSqlCollection(
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
 
-        if where_clauses := self._build_filter(options.filter):  # type: ignore
+        # Translate the filter into a Cosmos SQL clause plus bound parameters. Filter string
+        # constants are bound as query parameters (@filter_pN) instead of concatenated, preventing
+        # SQL injection. _build_filter returns None, a single (clause, params) tuple, or a list of
+        # them; parameter names are renumbered into one global sequence so they stay unique when
+        # multiple filters are AND-combined.
+        parsed_filter = self._build_filter(options.filter)
+        where_clauses = ""
+        if parsed_filter:
+            clause_tuples = parsed_filter if isinstance(parsed_filter, list) else [parsed_filter]
+            rendered_clauses: list[str] = []
+            filter_param_count = 0
+            for clause, clause_parameters in clause_tuples:
+                rename: dict[str, str] = {}
+                for parameter in clause_parameters:
+                    new_name = f"@filter_p{filter_param_count}"
+                    filter_param_count += 1
+                    rename[parameter["name"]] = new_name
+                    params.append({"name": new_name, "value": parameter["value"]})
+                if rename:
+
+                    def _substitute(match: "re.Match[str]", mapping: dict[str, str] = rename) -> str:
+                        return mapping[match.group(0)]
+
+                    clause = re.sub(r"@filter_p\d+", _substitute, clause)
+                rendered_clauses.append(clause)
             where_clauses = (
-                f"WHERE {where_clauses} "
-                if isinstance(where_clauses, str)
-                else f"WHERE ({' AND '.join(where_clauses)}) "
+                f"WHERE {rendered_clauses[0]} "
+                if len(rendered_clauses) == 1
+                else f"WHERE ({' AND '.join(rendered_clauses)}) "
             )
-        else:
-            where_clauses = ""  # Empty string instead of None
         vector_field_name = vector_field.storage_name or vector_field.name
         select_clause = self._build_select_clause(options.include_vectors)
         params.append({"name": "@vector", "value": vector})
@@ -849,86 +872,102 @@ class CosmosNoSqlCollection(
         return ", ".join(f"c.{field}" for field in included_fields)
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> Any:
-        match node:
-            case ast.Compare():
-                if len(node.ops) > 1:
-                    # Chain comparisons (e.g., a < b < c) become AND-ed comparisons
-                    values = []
-                    for idx in range(len(node.ops)):
-                        if idx == 0:
-                            values.append(
-                                ast.Compare(
-                                    left=node.left,
-                                    ops=[node.ops[idx]],
-                                    comparators=[node.comparators[idx]],
+    def _lambda_parser(self, node: ast.AST) -> tuple[str, list[dict[str, Any]]]:  # type: ignore[override]
+        # The base contract returns just the filter string; Cosmos extends the return type to a
+        # (clause, parameters) tuple so filter string constants can be bound as query parameters
+        # (@filter_pN) rather than concatenated into the SQL text. This prevents SQL injection:
+        # Cosmos DB uses backslash escape sequences (\'), so escaping by doubling apostrophes ('')
+        # is both unsafe and functionally incorrect. The parameters list is local to this call, so
+        # no shared state is used and it is safe to call concurrently from multiple tasks/threads.
+        # This mirrors the composite-return pattern used by the SQL Server and Oracle connectors,
+        # letting Cosmos reuse the base ``_build_filter`` for AST parsing/visiting.
+        parameters: list[dict[str, Any]] = []
+
+        def parse(node: ast.AST) -> str:
+            match node:
+                case ast.Compare():
+                    if len(node.ops) > 1:
+                        # Chain comparisons (e.g., a < b < c) become AND-ed comparisons
+                        values = []
+                        for idx in range(len(node.ops)):
+                            if idx == 0:
+                                values.append(
+                                    ast.Compare(
+                                        left=node.left,
+                                        ops=[node.ops[idx]],
+                                        comparators=[node.comparators[idx]],
+                                    )
                                 )
-                            )
-                        else:
-                            values.append(
-                                ast.Compare(
-                                    left=node.comparators[idx - 1],
-                                    ops=[node.ops[idx]],
-                                    comparators=[node.comparators[idx]],
+                            else:
+                                values.append(
+                                    ast.Compare(
+                                        left=node.comparators[idx - 1],
+                                        ops=[node.ops[idx]],
+                                        comparators=[node.comparators[idx]],
+                                    )
                                 )
-                            )
-                    return "(" + " AND ".join([self._lambda_parser(v) for v in values]) + ")"
-                left = self._lambda_parser(node.left)
-                right = self._lambda_parser(node.comparators[0])
-                op = node.ops[0]
-                match op:
-                    case ast.In():
-                        # Cosmos DB: ARRAY_CONTAINS(right, left)
-                        return f"ARRAY_CONTAINS({right}, {left})"
-                    case ast.NotIn():
-                        return f"NOT ARRAY_CONTAINS({right}, {left})"
-                    case ast.Eq():
-                        return f"{left} = {right}"
-                    case ast.NotEq():
-                        return f"{left} != {right}"
-                    case ast.Gt():
-                        return f"{left} > {right}"
-                    case ast.GtE():
-                        return f"{left} >= {right}"
-                    case ast.Lt():
-                        return f"{left} < {right}"
-                    case ast.LtE():
-                        return f"{left} <= {right}"
-                raise NotImplementedError(f"Unsupported operator: {type(op)}")
-            case ast.BoolOp():
-                op_str = "AND" if isinstance(node.op, ast.And) else "OR"
-                return "(" + f" {op_str} ".join([self._lambda_parser(v) for v in node.values]) + ")"
-            case ast.UnaryOp():
-                match node.op:
-                    case ast.Not():
-                        return f"NOT ({self._lambda_parser(node.operand)})"
-                    case ast.UAdd():
-                        return f"+{self._lambda_parser(node.operand)}"
-                    case ast.USub():
-                        return f"-{self._lambda_parser(node.operand)}"
-                    case ast.Invert():
-                        raise NotImplementedError("Invert operation is not supported.")
-                raise NotImplementedError(f"Unsupported unary operator: {type(node.op)}")
-            case ast.Attribute():
-                # Cosmos DB: c.field_name
-                if node.attr not in self.definition.storage_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.attr}' not in data model (storage property names are used)."
-                    )
-                return f"c.{node.attr}"
-            case ast.Name():
-                # Could be a variable or constant; not supported
-                raise NotImplementedError("Constants or variables are not supported, use a value or attribute.")
-            case ast.Constant():
-                # Quote strings, leave numbers as is
-                if isinstance(node.value, str):
-                    return "'" + node.value.replace("'", "''") + "'"
-                if isinstance(node.value, (float, int)):
-                    return str(node.value)
-                if node.value is None:
-                    return "null"
-                raise NotImplementedError(f"Unsupported constant type: {type(node.value)}")
-        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+                        return "(" + " AND ".join([parse(v) for v in values]) + ")"
+                    left = parse(node.left)
+                    right = parse(node.comparators[0])
+                    op = node.ops[0]
+                    match op:
+                        case ast.In():
+                            # Cosmos DB: ARRAY_CONTAINS(right, left)
+                            return f"ARRAY_CONTAINS({right}, {left})"
+                        case ast.NotIn():
+                            return f"NOT ARRAY_CONTAINS({right}, {left})"
+                        case ast.Eq():
+                            return f"{left} = {right}"
+                        case ast.NotEq():
+                            return f"{left} != {right}"
+                        case ast.Gt():
+                            return f"{left} > {right}"
+                        case ast.GtE():
+                            return f"{left} >= {right}"
+                        case ast.Lt():
+                            return f"{left} < {right}"
+                        case ast.LtE():
+                            return f"{left} <= {right}"
+                    raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                case ast.BoolOp():
+                    op_str = "AND" if isinstance(node.op, ast.And) else "OR"
+                    return "(" + f" {op_str} ".join([parse(v) for v in node.values]) + ")"
+                case ast.UnaryOp():
+                    match node.op:
+                        case ast.Not():
+                            return f"NOT ({parse(node.operand)})"
+                        case ast.UAdd():
+                            return f"+{parse(node.operand)}"
+                        case ast.USub():
+                            return f"-{parse(node.operand)}"
+                        case ast.Invert():
+                            raise NotImplementedError("Invert operation is not supported.")
+                    raise NotImplementedError(f"Unsupported unary operator: {type(node.op)}")
+                case ast.Attribute():
+                    # Cosmos DB: c.field_name
+                    if node.attr not in self.definition.storage_names:
+                        raise VectorStoreOperationException(
+                            f"Field '{node.attr}' not in data model (storage property names are used)."
+                        )
+                    return f"c.{node.attr}"
+                case ast.Name():
+                    # Could be a variable or constant; not supported
+                    raise NotImplementedError("Constants or variables are not supported, use a value or attribute.")
+                case ast.Constant():
+                    # Bind strings as query parameters to avoid SQL injection. Numbers and null
+                    # cannot carry injection, so they are inlined.
+                    if isinstance(node.value, str):
+                        name = f"@filter_p{len(parameters)}"
+                        parameters.append({"name": name, "value": node.value})
+                        return name
+                    if isinstance(node.value, (float, int)):
+                        return str(node.value)
+                    if node.value is None:
+                        return "null"
+                    raise NotImplementedError(f"Unsupported constant type: {type(node.value)}")
+            raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+
+        return parse(node), parameters
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
