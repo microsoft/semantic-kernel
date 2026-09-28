@@ -14,19 +14,19 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.4.6" />
     <PackageVersion Include="MessagePack" Version="3.1.7" /> <!-- Transitive dependency of Aspire pinned to newer version due to vulnerability in 2.5.192 -->
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.100.7" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.100.8" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.100.7" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.100.7" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.100.9" />
-    <PackageVersion Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.3" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.101.1" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.101" />
+    <PackageVersion Include="AWS.Bedrock.MEAI" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.7" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.100.7" />
     <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.1.0" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.9.0-beta.1" />
-    <PackageVersion Include="Azure.AI.Projects" Version="2.0.0-beta.2" />
+    <PackageVersion Include="Azure.AI.Projects" Version="2.0.1" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.7.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.8.3" />
     <PackageVersion Include="Community.OData.Linq" Version="2.1.0" />
     <PackageVersion Include="Dapr.Actors" Version="1.16.1" />
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.16.1" />
@@ -57,7 +57,7 @@
     <PackageVersion Include="Microsoft.Agents.CopilotStudio.Client" Version="1.1.107-beta" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.30" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
@@ -65,7 +65,7 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.SDK" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.6.0" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.6" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
@@ -142,7 +142,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.2" />
@@ -173,8 +173,8 @@
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
     <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />
     <PackageVersion Include="Microsoft.Graph.Core" Version="3.2.6" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.31" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.31" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
     <PackageVersion Include="protobuf-net" Version="3.2.56" />
@@ -187,8 +187,8 @@
     <PackageVersion Include="Testcontainers.MongoDB" Version="4.14.0" />
     <!-- VectorData Dependencies -->
     <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
-    <PackageVersion Include="CommunityToolkit.VectorData.CosmosMongoDB" Version="1.0.0" />
-    <PackageVersion Include="CommunityToolkit.VectorData.CosmosNoSql" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.AzureDocumentDB" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.AzureCosmosDB" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.1" />
     <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0" />

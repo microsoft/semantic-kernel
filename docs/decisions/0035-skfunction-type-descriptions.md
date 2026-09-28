@@ -151,7 +151,7 @@ public sealed record FunctionView(
 | Type                      | Pros                                                         | Cons                                                       |
 | ------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
 | JsonSchema.Net.JsonSchema | Popular and has frequent updates, built on top of System.Net | Takes a dependency on OSS in SK core                       |
-| NJsonShema.JsonSchema     | Very popular, frequent updates, long term project            | Built on top of Json.Net (Newtonsoft)                      |
+| NJsonSchema.JsonSchema    | Very popular, frequent updates, long term project            | Built on top of Json.Net (Newtonsoft)                      |
 | JsonDocument              | Native C# type, fast and flexible                            | Not a Json Schema, but a Json DOM container for the schema |
 | String                    | Native C# type                                               | Not a Json Schema or Json DOM, very poor type hinting      |
 
