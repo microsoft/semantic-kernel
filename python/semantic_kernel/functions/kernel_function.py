@@ -392,11 +392,11 @@ class KernelFunction(KernelBaseModel):
         """
         copied_function: KernelFunction = copy(self)
         # Keep metadata isolated across copies to avoid shared mutable state.
-        new_plugin_name = plugin_name if plugin_name is not None else self.metadata.plugin_name
-        copied_function.metadata = self.metadata.model_copy(
-            update={"plugin_name": new_plugin_name},
-            deep=True,
-        )
+        copied_function.metadata = self.metadata.model_copy(deep=True)
+        if plugin_name is not None:
+            # Assign normally (rather than via model_copy(update=...)) so that
+            # validate_assignment=True runs and rejects an invalid plugin name.
+            copied_function.metadata.plugin_name = plugin_name
         return copied_function
 
     def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:

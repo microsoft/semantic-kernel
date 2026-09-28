@@ -75,6 +75,27 @@ class TestFunctionCopyOptimization:
         assert copy.metadata is not original_metadata
         mock_deepcopy.assert_not_called()
 
+    def test_function_copy_rejects_invalid_plugin_name(self, sample_function):
+        """Test that function_copy still validates the plugin name on assignment.
+
+        model_copy(update=...) silently skips validation, so this guards against
+        that regression by asserting an invalid plugin name is rejected.
+        """
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            sample_function.function_copy("bad-name")
+
+        # Original metadata must remain untouched by the failed copy attempt.
+        assert sample_function.metadata.plugin_name == "test_plugin"
+
+    def test_function_copy_rejects_empty_plugin_name(self, sample_function):
+        """Test that an empty string plugin name is rejected, not silently accepted."""
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            sample_function.function_copy("")
+
     def test_function_copy_multiple_calls_same_plugin_are_isolated(self, sample_function):
         """Test that multiple copies with same plugin keep independent metadata."""
         copy1 = sample_function.function_copy()
