@@ -3,7 +3,9 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Xunit;
 
@@ -77,13 +79,78 @@ public sealed class WebFileDownloadPluginTests : IDisposable
     }
 
     [Fact]
-    public void ValidatePluginProperties()
+    public async Task DownloadToFileDoesNotFollowRedirectsAsync()
+    {
+        // Arrange - start a local server that returns a 302 redirect
+        await using var server = new RedirectLoopbackServer("secret.png", "image/png", [0x89, 0x50, 0x4E, 0x47]);
+
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var filePath = Path.Combine(folderPath, "file.png");
+        Directory.CreateDirectory(folderPath);
+
+        var webFileDownload = new WebFileDownloadPlugin()
+        {
+            AllowedDomains = [server.BaseUri.Host],
+            AllowedFolders = [folderPath]
+        };
+
+        try
+        {
+            // Act & Assert - the plugin should throw because 302 is a non-success status
+            await Assert.ThrowsAsync<HttpOperationException>(() => webFileDownload.DownloadToFileAsync(new Uri(server.BaseUri, "start"), filePath));
+            Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
+            Assert.False(Path.Exists(filePath));
+        }
+        finally
+        {
+            if (Path.Exists(folderPath))
+            {
+                Directory.Delete(folderPath, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DownloadToFileDeniesAllWithDefaultConfigAsync()
     {
         // Arrange
+        this._messageHandlerStub.AddImageResponse(File.ReadAllBytes(SKLogoPng));
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
         var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var filePath = Path.Combine(Path.GetTempPath(), "sk_logo.png");
+        var filePath = Path.Combine(folderPath, "sk_logo.png");
+        Directory.CreateDirectory(folderPath);
 
-        // Act
+        var webFileDownload = new WebFileDownloadPlugin();
+
+        try
+        {
+            // Act & Assert - default config denies all domains
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(uri, filePath));
+        }
+        finally
+        {
+            if (Path.Exists(folderPath))
+            {
+                Directory.Delete(folderPath, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ValidatePluginProperties()
+    {
+        // Arrange & Act - verify secure defaults
+        var defaultPlugin = new WebFileDownloadPlugin();
+
+        // Assert - defaults are deny-all
+        Assert.Empty(defaultPlugin.AllowedDomains!);
+        Assert.Empty(defaultPlugin.AllowedFolders!);
+        Assert.True(defaultPlugin.DisableFileOverwrite);
+        Assert.Equal(10 * 1024 * 1024, defaultPlugin.MaximumDownloadSize);
+
+        // Arrange & Act - verify explicit configuration
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
         var webFileDownload = new WebFileDownloadPlugin()
         {
             AllowedDomains = ["raw.githubusercontent.com"],
@@ -92,7 +159,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
             DisableFileOverwrite = true
         };
 
-        // Act & Assert
+        // Assert
         Assert.Equal(["raw.githubusercontent.com"], webFileDownload.AllowedDomains);
         Assert.Equal([folderPath], webFileDownload.AllowedFolders);
         Assert.Equal(100, webFileDownload.MaximumDownloadSize);
@@ -123,8 +190,71 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(invalidUri, validFilePath));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, invalidFilePath));
         await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "\\\\UNC\\server\\folder\\myfile.txt"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "//UNC/server/folder/myfile.txt"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "//?/C:/Windows/win.ini"));
         await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, ""));
-        await Assert.ThrowsAsync<ArgumentException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
+        // Relative paths are now canonicalized to absolute paths via Path.GetFullPath,
+        // so they are caught by the AllowedFolders check rather than the "fully qualified" check.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(validUri, "myfile.txt"));
+    }
+
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\myfile.txt")]
+    [InlineData("//UNC/server/folder/myfile.txt")]
+    [InlineData("/\\UNC\\server\\folder\\myfile.txt")]
+    [InlineData("\\/UNC/server/folder/myfile.txt")]
+    public async Task DownloadToFileRejectsUncOrExtendedPathsAsync(string filePath)
+    {
+        // Arrange
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var webFileDownload = new WebFileDownloadPlugin()
+        {
+            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedFolders = [folderPath]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => webFileDownload.DownloadToFileAsync(uri, filePath));
+    }
+
+    [Fact]
+    public async Task DownloadToFileUsesCaseSensitiveAllowListComparisonOnLinuxAsync()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
+
+        // Arrange
+        this._messageHandlerStub.AddImageResponse(File.ReadAllBytes(SKLogoPng));
+        var uri = new Uri("https://raw.githubusercontent.com/microsoft/semantic-kernel/refs/heads/main/docs/images/sk_logo.png");
+        var tempDir = Path.Combine(Path.GetTempPath(), $"WebFileDownloadPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "Allowed");
+        var disallowedDir = Path.Combine(tempDir, "allowed");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(disallowedDir);
+
+        try
+        {
+            var webFileDownload = new WebFileDownloadPlugin()
+            {
+                AllowedDomains = ["raw.githubusercontent.com"],
+                AllowedFolders = [allowedDir]
+            };
+
+            var disallowedFile = Path.Combine(disallowedDir, "download.txt");
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => webFileDownload.DownloadToFileAsync(uri, disallowedFile));
+        }
+        finally
+        {
+            if (Path.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
     }
 
     /// <inheritdoc/>

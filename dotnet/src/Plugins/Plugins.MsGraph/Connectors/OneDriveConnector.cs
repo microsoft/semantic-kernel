@@ -114,7 +114,7 @@ public class OneDriveConnector : ICloudDriveConnector
     }
 
     /// <inheritdoc/>
-    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous",
+    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "organization",
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));

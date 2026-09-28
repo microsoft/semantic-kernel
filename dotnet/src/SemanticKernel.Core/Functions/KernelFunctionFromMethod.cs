@@ -720,7 +720,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                     return value;
                 }
 
-                if (converter is not null && value is not JsonElement or JsonDocument or JsonNode)
+                if (converter is not null && value is not (JsonElement or JsonDocument or JsonNode))
                 {
                     try
                     {

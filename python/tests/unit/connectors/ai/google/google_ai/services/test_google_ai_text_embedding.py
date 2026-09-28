@@ -57,13 +57,27 @@ def test_google_ai_text_embedding_init_with_empty_model_id(google_ai_unit_test_e
 def test_google_ai_text_embedding_init_with_empty_api_key(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding with an empty api_key"""
     with pytest.raises(ServiceInitializationError, match="The API key is required when use_vertexai is False."):
-        GoogleAITextEmbedding(use_vertexai=True, env_file_path="fake_env_file_path.env")
+        GoogleAITextEmbedding(env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_API_KEY"]], indirect=True)
+def test_google_ai_text_embedding_init_with_use_vertexai_no_api_key(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAITextEmbedding succeeds with use_vertexai=True and no api_key"""
+    embedding = GoogleAITextEmbedding(use_vertexai=True)
+    assert embedding.service_settings.use_vertexai is True
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_PROJECT_ID"]], indirect=True)
 def test_google_ai_text_embedding_init_with_use_vertexai_missing_project_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding with use_vertexai true but missing project ID"""
     with pytest.raises(ServiceInitializationError, match="Project ID must be provided when use_vertexai is True."):
+        GoogleAITextEmbedding(use_vertexai=True, env_file_path="fake_env_file_path.env")
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_CLOUD_REGION"]], indirect=True)
+def test_google_ai_text_embedding_init_with_use_vertexai_missing_region(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAITextEmbedding with use_vertexai true but missing region"""
+    with pytest.raises(ServiceInitializationError, match="Region must be provided when use_vertexai is True."):
         GoogleAITextEmbedding(use_vertexai=True, env_file_path="fake_env_file_path.env")
 
 

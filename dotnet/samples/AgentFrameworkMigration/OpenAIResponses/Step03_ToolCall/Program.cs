@@ -5,6 +5,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -28,7 +29,7 @@ async Task SKAgentAsync()
 {
     var builder = Kernel.CreateBuilder().AddOpenAIChatClient(model, apiKey);
 
-    OpenAIResponseAgent agent = new(new OpenAIClient(apiKey).GetResponsesClient(model)) { StoreEnabled = true };
+    OpenAIResponseAgent agent = new(new OpenAIClient(apiKey).GetResponsesClient(), model) { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
     agent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("KernelPluginName", [KernelFunctionFactory.CreateFromMethod(GetWeather)]));
@@ -48,7 +49,7 @@ async Task SKAgent_As_AFAgentAsync()
 {
     var builder = Kernel.CreateBuilder().AddOpenAIChatClient(model, apiKey);
 
-    OpenAIResponseAgent skAgent = new(new OpenAIClient(apiKey).GetResponsesClient(model)) { StoreEnabled = true };
+    OpenAIResponseAgent skAgent = new(new OpenAIClient(apiKey).GetResponsesClient(), model) { StoreEnabled = true };
 
     // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
     skAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("KernelPluginName", [KernelFunctionFactory.CreateFromMethod(GetWeather)]));
@@ -63,7 +64,8 @@ async Task SKAgent_As_AFAgentAsync()
 
 async Task AFAgentAsync()
 {
-    var agent = new OpenAIClient(apiKey).GetResponsesClient(model).CreateAIAgent(
+    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsAIAgent(
+        model: model,
         instructions: "You are a helpful assistant",
         tools: [AIFunctionFactory.Create(GetWeather)]);
 
