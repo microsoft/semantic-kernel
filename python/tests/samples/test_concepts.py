@@ -325,9 +325,10 @@ concepts = [
         step1_openai_assistant,
         [],
         id="step1_openai_assistant",
-        marks=pytest.mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        # The Assistants API has been retired, so this sample can no longer run against a live service.
+        # Remove this skip once the sample is migrated to the replacement API.
+        # https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/migrate#migrate-classic-agents-to-new-agents
+        marks=pytest.mark.skip(reason="The Assistants API has been retired."),
     ),
     param(
         ollama_chat_completion,

@@ -1,0 +1,116 @@
+name: Get GitHub automation token
+description: Creates a GitHub App installation token with a temporary PAT fallback
+
+inputs:
+  mode:
+    description: Authentication mode (app, app-with-fallback, or pat)
+    required: false
+    default: app-with-fallback
+  azure-client-id:
+    description: Client ID of the Azure workload identity
+    required: false
+  azure-tenant-id:
+    description: Azure tenant ID
+    required: false
+  azure-subscription-id:
+    description: Azure subscription containing the Key Vault
+    required: false
+  key-vault-name:
+    description: Azure Key Vault name
+    required: false
+  key-name:
+    description: Key Vault key used to sign the GitHub App JWT
+    required: false
+  github-app-client-id:
+    description: GitHub App client ID
+    required: false
+  github-app-installation-id:
+    description: GitHub App installation ID
+    required: false
+  repository:
+    description: Repository to include in the installation token
+    required: false
+  permission-profile:
+    description: Permission profile (issues, pull-requests, or devflow)
+    required: true
+  fallback-token:
+    description: PAT used temporarily when app authentication is unavailable
+    required: false
+
+outputs:
+  token:
+    description: GitHub App installation token or fallback PAT
+    value: ${{ steps.select-token.outputs.token }}
+  source:
+    description: Selected authentication source
+    value: ${{ steps.select-token.outputs.source }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate authentication mode
+      shell: bash
+      env:
+        AUTH_MODE: ${{ inputs.mode || 'app-with-fallback' }}
+      run: |
+        if [[ "$AUTH_MODE" != "app" && "$AUTH_MODE" != "app-with-fallback" && "$AUTH_MODE" != "pat" ]]; then
+          echo "::error::Unsupported GitHub authentication mode."
+          exit 1
+        fi
+
+    - name: Sign in to Azure
+      id: azure-login
+      if: ${{ (inputs.mode || 'app-with-fallback') != 'pat' }}
+      continue-on-error: true
+      uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+      with:
+        client-id: ${{ inputs.azure-client-id }}
+        tenant-id: ${{ inputs.azure-tenant-id }}
+        subscription-id: ${{ inputs.azure-subscription-id }}
+
+    - name: Create GitHub App installation token
+      id: app-token
+      if: ${{ (inputs.mode || 'app-with-fallback') != 'pat' && steps.azure-login.outcome == 'success' }}
+      continue-on-error: true
+      shell: bash
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscription-id }}
+        KEY_VAULT_NAME: ${{ inputs.key-vault-name }}
+        KEY_NAME: ${{ inputs.key-name }}
+        GITHUB_APP_CLIENT_ID: ${{ inputs.github-app-client-id }}
+        GITHUB_APP_INSTALLATION_ID: ${{ inputs.github-app-installation-id }}
+        TARGET_REPOSITORY: ${{ inputs.repository }}
+        PERMISSION_PROFILE: ${{ inputs.permission-profile }}
+      run: |
+        token="$(node "$GITHUB_ACTION_PATH/create-token.js")"
+        echo "::add-mask::$token"
+        echo "token=$token" >> "$GITHUB_OUTPUT"
+
+    - name: Select authentication token
+      id: select-token
+      shell: bash
+      env:
+        AUTH_MODE: ${{ inputs.mode || 'app-with-fallback' }}
+        APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        FALLBACK_TOKEN: ${{ inputs.fallback-token }}
+      run: |
+        if [[ "$AUTH_MODE" != "pat" && -n "$APP_TOKEN" ]]; then
+          token="$APP_TOKEN"
+          source="app"
+          echo "::notice::GitHub authentication source: app"
+        elif [[ "$AUTH_MODE" == "app-with-fallback" && -n "$FALLBACK_TOKEN" ]]; then
+          token="$FALLBACK_TOKEN"
+          source="pat-fallback"
+          echo "::warning::GitHub authentication source: PAT fallback"
+        elif [[ "$AUTH_MODE" == "pat" && -n "$FALLBACK_TOKEN" ]]; then
+          token="$FALLBACK_TOKEN"
+          source="pat-forced"
+          echo "::warning::GitHub authentication source: PAT (forced rollout mode)"
+        else
+          echo "::error::GitHub App authentication is unavailable and no fallback PAT was provided."
+          exit 1
+        fi
+
+        echo "::add-mask::$token"
+        echo "token=$token" >> "$GITHUB_OUTPUT"
+        echo "source=$source" >> "$GITHUB_OUTPUT"
