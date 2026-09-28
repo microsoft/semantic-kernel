@@ -196,6 +196,22 @@ def test_direct_mutating_method_call_remains_blocked(collection):
         collection._parse_and_validate_filter("lambda x: x.clear() or True")
 
 
+@mark.parametrize(
+    "attr",
+    [
+        "__base__",
+        "__bases__",
+        "__class__",
+        "__mro__",
+        "__subclasses__",
+        "__globals__",
+    ],
+)
+def test_blocked_dunder_attributes_rejected(collection, attr):
+    with raises(VectorStoreOperationException, match=f"Access to attribute '{attr}' is not allowed"):
+        collection._parse_and_validate_filter(f"lambda x: x.{attr}")
+
+
 async def test_valid_lambda_filter_with_get_method(collection):
     record1 = {"id": "1", "vector": [1, 2, 3, 4, 5]}
     record2 = {"id": "2", "vector": [5, 4, 3, 2, 1]}
