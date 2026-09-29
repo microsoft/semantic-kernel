@@ -30,7 +30,7 @@ additional Semantic Kernel extra.
 | --- | --- | --- | --- |
 | `anthropic` | Anthropic AI | `semantic_kernel.connectors.ai.anthropic` | `anthropic ~= 0.32` |
 | `aws` | Amazon Bedrock | `semantic_kernel.connectors.ai.bedrock` | `boto3 >= 1.36.4,<1.43.0` |
-| `azure` | Azure AI Inference, Azure AI Search, Azure Cosmos DB | `semantic_kernel.connectors.ai.azure_ai_inference`, `semantic_kernel.connectors.azure_ai_search`, `semantic_kernel.connectors.azure_cosmos_db` | `azure-ai-inference >= 1.0.0b6`; `azure-search-documents >= 11.6.0b4,<13.0.0`; `azure-cosmos ~= 4.7` |
+| `azure` | Azure AI Inference, Azure AI Search, Azure Cosmos DB | `semantic_kernel.connectors.ai.azure_ai_inference`, `semantic_kernel.connectors.azure_ai_search`, `semantic_kernel.connectors.azure_cosmos_db` | `azure-ai-inference >= 1.0.0b6`; `azure-core-tracing-opentelemetry >= 1.0.0b11`; `azure-search-documents >= 11.6.0b4,<13.0.0`; `azure-cosmos ~= 4.7` |
 | `chroma` | Chroma vector store | `semantic_kernel.connectors.chroma` | `chromadb >= 0.5,<1.6` |
 | `faiss` | FAISS vector store | `semantic_kernel.connectors.faiss` | `faiss-cpu >= 1.10.0` |
 | `google` | Google AI / Vertex AI | `semantic_kernel.connectors.ai.google` | `google-cloud-aiplatform >= 1.114,<1.134`; `google-genai >= 1.51,<2.21` |
@@ -44,7 +44,7 @@ additional Semantic Kernel extra.
 | `pinecone` | Pinecone vector store | `semantic_kernel.connectors.pinecone` | macOS/Linux: `pinecone[asyncio, grpc] ~= 7.0`; Windows: `~= 7.3` |
 | `postgres` | PostgreSQL vector store | `semantic_kernel.connectors.postgres` | `psycopg[binary,pool] ~= 3.2` |
 | `qdrant` | Qdrant vector store | `semantic_kernel.connectors.qdrant` | `qdrant-client ~= 1.9` |
-| `redis` | Redis vector store | `semantic_kernel.connectors.redis` | `redis[hiredis] >= 6,<8`; `redisvl ~= 0.4` |
+| `redis` | Redis vector store | `semantic_kernel.connectors.redis` | `redis[hiredis] >= 6,<8`; `types-redis ~= 4.6.0.20240425`; `redisvl ~= 0.4` |
 | `sql` | SQL Server vector store | `semantic_kernel.connectors.sql_server` | `pyodbc >= 5.2` |
 | `usearch` | USearch vector store | `semantic_kernel.connectors.memory_stores.usearch` | `usearch >= 2.16,<2.25`; `pyarrow >= 12.0,<26.0` |
 | `weaviate` | Weaviate vector store | `semantic_kernel.connectors.weaviate` | `weaviate-client >= 4.17.0,<5.0` |
