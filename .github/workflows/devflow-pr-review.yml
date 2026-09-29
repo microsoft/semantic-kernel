@@ -68,6 +68,9 @@ jobs:
   team_check:
     needs: prepare_pr
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     environment: github-app-auth
     outputs:
       is_team_member: ${{ steps.check.outputs.is_team_member }}
