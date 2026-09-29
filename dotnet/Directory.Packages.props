@@ -195,7 +195,7 @@
     <PackageVersion Include="CommunityToolkit.VectorData.Redis" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.Weaviate" Version="1.0.0" />
     <!-- Symbols -->
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.303" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
