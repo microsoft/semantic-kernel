@@ -31,7 +31,7 @@ inputs:
     description: Repository to include in the installation token
     required: false
   permission-profile:
-    description: Permission profile (issues, pull-requests, or devflow)
+    description: Permission profile (issues, pull-requests, devflow, or team-check)
     required: true
   fallback-token:
     description: PAT used temporarily when app authentication is unavailable
