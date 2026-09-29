@@ -90,8 +90,18 @@ class KernelJsonSchemaBuilder:
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
                 field_description = getattr(field_info, "description", None)
-                if field_description is None and isinstance(getattr(field_info, "metadata", None), dict):
-                    field_description = field_info.metadata.get("description")
+                if field_description is None:
+                    metadata = getattr(field_info, "metadata", None)
+                    if isinstance(metadata, dict):
+                        field_description = metadata.get("description")
+                    elif isinstance(metadata, (list, tuple)):
+                        for item in metadata:
+                            if isinstance(item, str):
+                                field_description = item
+                                break
+                            if isinstance(item, dict) and isinstance(item.get("description"), str):
+                                field_description = item["description"]
+                                break
             if not cls._is_optional(field_type):
                 required.append(field_name)
             properties[field_name] = cls.build(field_type, field_description, structured_output)
