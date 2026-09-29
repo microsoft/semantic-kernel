@@ -81,6 +81,10 @@ class PydanticModelWithConstrainedField(KernelBaseModel):
     top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
 
 
+class PydanticModelWithAnnotatedDescription(KernelBaseModel):
+    name: Annotated[str, "display name"]
+
+
 class NonPydanticStep:
     explanation: str
     output: str
@@ -165,6 +169,13 @@ def test_build_model_schema_uses_pydantic_description_with_constraints():
     schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithConstrainedField)
 
     assert schema["properties"]["top_p"] == {"type": "number", "description": "nucleus sampling"}
+    json.dumps(schema)
+
+
+def test_build_model_schema_uses_annotated_metadata_description():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithAnnotatedDescription)
+
+    assert schema["properties"]["name"] == {"type": "string", "description": "display name"}
     json.dumps(schema)
 
 
