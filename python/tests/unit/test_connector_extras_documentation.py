@@ -22,4 +22,7 @@ def test_connector_dependency_doc_lists_every_optional_extra():
     doc = CONNECTOR_DOC.read_text(encoding="utf-8")
     documented = set(re.findall(r"\| `([a-z][a-z0-9_]*)` \|", doc))
 
-    assert extras <= documented, f"Undocumented optional extras: {sorted(extras - documented)}"
+    missing = sorted(extras - documented)
+    stale = sorted(documented - extras)
+
+    assert extras == documented, f"Missing optional extras: {missing}; stale optional extras: {stale}"
