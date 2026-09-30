@@ -109,6 +109,28 @@ describe('GitHub App token creation', () => {
     });
   });
 
+  it('limits team-check tokens to member and pull-request reads', async () => {
+    let request;
+    await createInstallationToken(
+      { ...CONFIG, permissionProfile: 'team-check' },
+      {
+        execute: () => '+/8=\n',
+        fetch: async (_url, options) => {
+          request = options;
+          return {
+            ok: true,
+            json: async () => ({ token: 'installation-token' }),
+          };
+        },
+      },
+    );
+
+    assert.deepEqual(JSON.parse(request.body).permissions, {
+      members: 'read',
+      pull_requests: 'read',
+    });
+  });
+
   it('rejects unknown permission profiles before signing', async () => {
     let signed = false;
 
@@ -122,7 +144,7 @@ describe('GitHub App token creation', () => {
           },
         },
       ),
-      /PERMISSION_PROFILE must be issues, pull-requests, or devflow/,
+      /PERMISSION_PROFILE must be issues, pull-requests, devflow, or team-check/,
     );
     assert.equal(signed, false);
   });
@@ -140,7 +162,7 @@ describe('GitHub App token creation', () => {
           },
         },
       ),
-      /PERMISSION_PROFILE must be issues, pull-requests, or devflow/,
+      /PERMISSION_PROFILE must be issues, pull-requests, devflow, or team-check/,
     );
     assert.equal(signed, false);
   });
