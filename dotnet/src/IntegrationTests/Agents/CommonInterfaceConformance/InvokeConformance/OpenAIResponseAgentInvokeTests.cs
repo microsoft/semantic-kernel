@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// Temporarily disabled until the OpenAI API key and credits are restored.
+#if false
 using System.ClientModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -30,3 +32,4 @@ public class OpenAIResponseAgentInvokeTests() : InvokeTests(() => new OpenAIResp
         return base.InvokeWithPluginNotifiesForAllMessagesAsync();
     }
 }
+#endif

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// Temporarily disabled until the OpenAI API key and credits are restored.
+#if false
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,3 +23,4 @@ public class OpenAIResponseAgentThreadTests() : AgentThreadTests(() => new OpenA
         return Task.CompletedTask;
     }
 }
+#endif

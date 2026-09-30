@@ -17,6 +17,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
+    private const string SkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatClient _chatClient;
@@ -30,7 +32,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeRequiredFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -61,7 +63,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -96,7 +98,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -140,7 +142,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Equal("GetCurrentDate", functionCall.Name.Split('_')[1]);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -172,7 +174,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -211,7 +213,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -253,7 +255,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -297,7 +299,7 @@ public sealed class OpenAIChatClientRequiredFunctionChoiceBehaviorTests : BaseIn
         Assert.Equal("GetCurrentDate", functionCall.Name.Split('_')[1]);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange

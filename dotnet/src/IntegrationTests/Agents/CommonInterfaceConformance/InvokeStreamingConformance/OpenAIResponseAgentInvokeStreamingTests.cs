@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// Temporarily disabled until the OpenAI API key and credits are restored.
+#if false
 using System.ClientModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -25,3 +27,4 @@ public class OpenAIResponseAgentInvokeStreamingTests() : InvokeStreamingTests(()
         return Assert.ThrowsAsync<ClientResultException>(() => base.InvokeStreamingAsyncWithoutMessageCreatesThreadAsync());
     }
 }
+#endif
