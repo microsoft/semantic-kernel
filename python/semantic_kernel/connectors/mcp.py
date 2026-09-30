@@ -26,6 +26,7 @@ from mcp.shared.session import RequestResponder
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -1054,7 +1055,7 @@ def create_mcp_server_from_kernel(
 
     By default, functions are exposed as Tools using their bare function names. If names collide,
     the first function is exposed and subsequent functions are skipped with a warning.
-    Set `use_plugin_names=True` to expose names as `<plugin_name>-<function_name>` instead.
+    Set `use_plugin_names=True` to expose names as `<registered_plugin_name>-<function_name>` instead.
     The same function is used for each tool's metadata and invocation.
     Tool names over MCP's recommended 128 characters are exposed with a warning.
 
@@ -1069,7 +1070,7 @@ def create_mcp_server_from_kernel(
         lifespan: The lifespan of the server.
         excluded_functions: The list of function names to exclude from the server.
             if None, no functions will be excluded.
-        use_plugin_names: Whether to prefix tool names with their plugin name, separated by a hyphen.
+        use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
             Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.
 
@@ -1095,26 +1096,29 @@ def create_mcp_server_from_kernel(
 
     # Map each public tool name to the exact function used for both listing and calls.
     functions_to_expose: dict[str, KernelFunction] = {}
-    for metadata in kernel.get_full_list_of_function_metadata():
-        if metadata.name in (excluded_functions or []):
-            continue
+    registered_names: dict[str, str] = {}
+    for plugin_name, plugin in kernel.plugins.items():
+        for function in plugin:
+            if function.name in (excluded_functions or []):
+                continue
 
-        tool_name = metadata.fully_qualified_name if use_plugin_names else metadata.name
+            registered_name = f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function.name}"
+            tool_name = registered_name if use_plugin_names else function.name
 
-        # Keep the first function if multiple plugins expose the same bare name.
-        if tool_name in functions_to_expose:
-            logger.warning(
-                "Skipping function '%s' because MCP tool name '%s' is already registered by '%s'.",
-                metadata.fully_qualified_name,
-                tool_name,
-                functions_to_expose[tool_name].fully_qualified_name,
-            )
-            continue
+            if tool_name in functions_to_expose:
+                logger.warning(
+                    "Skipping function '%s' because MCP tool name '%s' is already registered by '%s'.",
+                    registered_name,
+                    tool_name,
+                    registered_names[tool_name],
+                )
+                continue
 
-        if len(tool_name) > 128:
-            logger.warning("MCP tool name '%s' exceeds the recommended 128 characters.", tool_name)
+            if len(tool_name) > 128:
+                logger.warning("MCP tool name '%s' exceeds the recommended 128 characters.", tool_name)
 
-        functions_to_expose[tool_name] = kernel.get_function(metadata.plugin_name, metadata.name)
+            functions_to_expose[tool_name] = function
+            registered_names[tool_name] = registered_name
 
     if functions_to_expose:
 

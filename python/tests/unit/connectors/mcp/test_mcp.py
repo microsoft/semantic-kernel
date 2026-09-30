@@ -2,13 +2,13 @@
 
 import logging
 import re
-from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool, types
 from mcp.shared.memory import create_connected_server_and_client_session
 
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.mcp import (
     MCPSsePlugin,
     MCPStdioPlugin,
@@ -18,10 +18,7 @@ from semantic_kernel.connectors.mcp import (
     create_mcp_server_from_kernel,
 )
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
-from semantic_kernel.functions import KernelFunction, kernel_function
-
-if TYPE_CHECKING:
-    from semantic_kernel import Kernel
+from semantic_kernel.functions import KernelFunction, KernelPlugin, kernel_function
 
 
 @pytest.fixture
@@ -636,8 +633,69 @@ async def test_mcp_server_duplicate_names(kernel, caplog, use_plugin_names, reve
 
 
 @pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("reverse_registration", [False, True])
+async def test_mcp_server_uses_registered_plugin_alias(caplog, use_plugin_names, reverse_registration):
+    calls = []
+
+    @kernel_function(name="echo", description="First schema")
+    def first(message: str) -> str:
+        calls.append("first")
+        return message
+
+    @kernel_function(name="echo", description="Second schema")
+    def second(count: int) -> str:
+        calls.append("second")
+        return str(count)
+
+    registrations = [
+        ("first_alias", first, "message", "hello", "first"),
+        ("second_alias", second, "count", 2, "second"),
+    ]
+    if reverse_registration:
+        registrations.reverse()
+    kernel = Kernel(
+        plugins={alias: KernelPlugin(name="actual", functions=[function]) for alias, function, *_ in registrations}
+    )
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        server = kernel.as_mcp_server(use_plugin_names=use_plugin_names)
+
+    if use_plugin_names:
+        assert not caplog.records
+    else:
+        assert [record.getMessage() for record in caplog.records] == [
+            (
+                f"Skipping function '{registrations[1][0]}-echo' because MCP tool name 'echo' "
+                f"is already registered by '{registrations[0][0]}-echo'."
+            )
+        ]
+
+    retained = registrations if use_plugin_names else registrations[:1]
+    expected_names = [f"{alias}-echo" if use_plugin_names else "echo" for alias, *_ in retained]
+    async with create_connected_server_and_client_session(server) as client:
+        tools = (await client.list_tools()).tools
+        assert [tool.name for tool in tools] == expected_names
+        for tool, (_, function, parameter, value, marker) in zip(tools, retained):
+            assert tool.description == function.__kernel_function_description__
+            assert tool.inputSchema["required"] == [parameter]
+            assert set(tool.inputSchema["properties"]) == {parameter}
+            result = await client.call_tool(tool.name, {parameter: value})
+            assert not result.isError
+            assert result.content == [types.TextContent(type="text", text=str(value))]
+            assert calls[-1] == marker
+
+        unexposed_names = ["actual-echo", "echo"] if use_plugin_names else ["actual-echo", "first_alias-echo"]
+        for name in unexposed_names:
+            result = await client.call_tool(name, {})
+            assert result.isError
+            assert "Unknown tool" in result.content[0].text
+
+    assert calls == [registration[-1] for registration in retained]
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
 @pytest.mark.parametrize("excluded_functions", ["secret", ["secret"]])
-async def test_mcp_server_exclusions_use_bare_names(kernel, use_plugin_names, excluded_functions):
+@pytest.mark.parametrize("use_registered_alias", [False, True])
+async def test_mcp_server_exclusions_use_bare_names(use_plugin_names, excluded_functions, use_registered_alias):
     calls = []
 
     @kernel_function
@@ -649,9 +707,12 @@ async def test_mcp_server_exclusions_use_bare_names(kernel, use_plugin_names, ex
         calls.append("secret")
         return "secret"
 
-    kernel.add_function("First", public)
-    kernel.add_function("First", secret)
-    kernel.add_function("Second", secret)
+    kernel = Kernel(
+        plugins={
+            "First": KernelPlugin(name="actual" if use_registered_alias else "First", functions=[public, secret]),
+            "Second": KernelPlugin(name="actual" if use_registered_alias else "Second", functions=[secret]),
+        }
+    )
     server = create_mcp_server_from_kernel(
         kernel, use_plugin_names=use_plugin_names, excluded_functions=excluded_functions
     )
@@ -660,7 +721,7 @@ async def test_mcp_server_exclusions_use_bare_names(kernel, use_plugin_names, ex
         tools = (await client.list_tools()).tools
         public_name = "First-public" if use_plugin_names else "public"
         assert [tool.name for tool in tools] == [public_name]
-        for name in ("secret", "First-secret", "Second-secret"):
+        for name in ("secret", "First-secret", "Second-secret", "actual-secret"):
             result = await client.call_tool(name, {})
             assert result.isError
         result = await client.call_tool(public_name, {})
@@ -703,7 +764,9 @@ async def test_mcp_server_tool_name_length(kernel, caplog, tool_name_length, use
         assert not result.isError
 
 
-async def test_mcp_server_retains_advertised_function(kernel):
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("use_registered_alias", [False, True])
+async def test_mcp_server_retains_advertised_function(use_plugin_names, use_registered_alias):
     @kernel_function(name="echo")
     def original(message: str) -> str:
         return f"original: {message}"
@@ -712,13 +775,42 @@ async def test_mcp_server_retains_advertised_function(kernel):
     def replacement(other: int) -> str:
         pytest.fail("The replacement was not advertised.")
 
-    kernel.add_function("Demo", original)
-    server = kernel.as_mcp_server()
-    kernel.add_function("Demo", replacement)
+    kernel = Kernel(
+        plugins={"Demo": KernelPlugin(name="actual" if use_registered_alias else "Demo", functions=[original])}
+    )
+    server = kernel.as_mcp_server(use_plugin_names=use_plugin_names)
+    kernel.plugins["Demo"] = KernelPlugin(name="actual" if use_registered_alias else "Demo", functions=[replacement])
 
     async with create_connected_server_and_client_session(server) as client:
         tool = (await client.list_tools()).tools[0]
+        expected_name = "Demo-echo" if use_plugin_names else "echo"
+        assert tool.name == expected_name
         assert tool.inputSchema["required"] == ["message"]
-        result = await client.call_tool("echo", {"message": "hello"})
+        result = await client.call_tool(expected_name, {"message": "hello"})
         assert not result.isError
         assert result.content == [types.TextContent(type="text", text="original: hello")]
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize(
+    "alias,plugin_name,exceeds_limit",
+    [("p", "a" * 124, False), ("a" * 123, "actual", False), ("a" * 124, "actual", True)],
+)
+async def test_mcp_server_tool_name_length_uses_registered_alias(
+    caplog, use_plugin_names, alias, plugin_name, exceeds_limit
+):
+    @kernel_function
+    def echo() -> str:
+        return "hello"
+
+    kernel = Kernel(plugins={alias: KernelPlugin(name=plugin_name, functions=[echo])})
+    expected_name = f"{alias}-echo" if use_plugin_names else "echo"
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        server = kernel.as_mcp_server(use_plugin_names=use_plugin_names)
+    assert ("exceeds the recommended 128 characters" in caplog.text) == (use_plugin_names and exceeds_limit)
+
+    async with create_connected_server_and_client_session(server) as client:
+        assert [tool.name for tool in (await client.list_tools()).tools] == [expected_name]
+        result = await client.call_tool(expected_name, {})
+        assert not result.isError
+        assert result.content == [types.TextContent(type="text", text="hello")]

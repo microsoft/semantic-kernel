@@ -105,7 +105,9 @@ To expose both functions, enable plugin-qualified names:
 server = kernel.as_mcp_server(use_plugin_names=True)
 ```
 
-For example, the sample's tools become `echo-echo_function` and `prompt-prompt`.
+The prefix is the name under which the plugin is registered with the kernel, even if the
+plugin object has a different name. For example, the sample's tools become
+`echo-echo_function` and `prompt-prompt`.
 The option is also available on `create_mcp_server_from_kernel`,
 `create_mcp_server_from_functions`, and `Agent.as_mcp_server`.
 Tool names longer than MCP's recommended 128 characters are exposed with a warning.

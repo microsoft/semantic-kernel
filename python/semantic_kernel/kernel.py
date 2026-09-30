@@ -595,7 +595,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         By default, functions are exposed as Tools using bare function names.
         Duplicate names retain the first function and produce a warning.
-        Set `use_plugin_names=True` to expose `<plugin_name>-<function_name>` tool names.
+        Set `use_plugin_names=True` to expose `<registered_plugin_name>-<function_name>` tool names.
         The `excluded_functions` argument always uses bare function names.
         Tool names over MCP's recommended 128 characters are exposed with a warning.
 
@@ -608,7 +608,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             lifespan: The lifespan of the server.
             excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
-            use_plugin_names: Whether to prefix tool names with their plugin name, separated by a hyphen.
+            use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
                 Defaults to False.
             kwargs: Any extra arguments to pass to the server creation.
 
