@@ -984,10 +984,11 @@ def create_mcp_server_from_functions(
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a function(s) or plugin(s).
 
-    This function automatically creates a MCP server from single or multiple functions or plugins,
-    all functions are added under the plugin_name that can be set by using the `plugin_name` argument.
-    It further uses the provided arguments to
-    configure the server and expose functions as tools, see the mcp documentation for more details.
+    This function automatically creates a MCP server from single or multiple functions or plugins.
+    Individual functions and objects that are not KernelPlugin instances are registered under `plugin_name`.
+    Existing KernelPlugin instances retain their names, regardless of `plugin_name`, as in Kernel.add_plugin.
+    It uses the provided arguments to configure the server and expose functions as tools,
+    see the mcp documentation for more details.
 
     Args:
         functions: The function(s) or plugin(s) instance to use.
@@ -998,7 +999,8 @@ def create_mcp_server_from_functions(
         version: The version of the server.
         instructions: The instructions to use for the server.
         lifespan: The lifespan of the server.
-        plugin_name: The name of the plugin to use.
+        plugin_name: The plugin name for individual functions and objects that are not KernelPlugin instances.
+            Ignored for existing KernelPlugin instances, which retain their names.
         use_plugin_names: Whether to prefix tool names with their plugin name, separated by a hyphen.
             Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.

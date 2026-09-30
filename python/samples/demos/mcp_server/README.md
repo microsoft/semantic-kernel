@@ -110,6 +110,11 @@ plugin object has a different name. For example, the sample's tools become
 `echo-echo_function` and `prompt-prompt`.
 The option is also available on `create_mcp_server_from_kernel`,
 `create_mcp_server_from_functions`, and `Agent.as_mcp_server`.
+In `create_mcp_server_from_functions`, `plugin_name` applies to individual functions and
+objects that are not `KernelPlugin` instances. Existing `KernelPlugin` instances keep their
+names even when `plugin_name` is supplied, matching `Kernel.add_plugin`.
+For example, a plugin named `Real` exposes `Real-echo` with `use_plugin_names=True`,
+even if the factory is called with `plugin_name="Alias"`.
 Tool names longer than MCP's recommended 128 characters are exposed with a warning.
 Clients may impose stricter name-length limits.
 Enabling the option changes public tool names, so existing callers must use the new names.

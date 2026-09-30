@@ -730,13 +730,21 @@ async def test_mcp_server_exclusions_use_bare_names(use_plugin_names, excluded_f
 
 
 @pytest.mark.parametrize("use_plugin_names", [False, True])
-async def test_mcp_server_from_functions_naming(use_plugin_names):
+@pytest.mark.parametrize("input_type", ["function", "object"])
+async def test_mcp_server_from_functions_naming(use_plugin_names, input_type):
     @kernel_function
     def echo(message: str) -> str:
         return message
 
+    class EchoPlugin:
+        @kernel_function
+        def echo(self, message: str) -> str:
+            return message
+
     server = create_mcp_server_from_functions(
-        KernelFunction.from_method(echo), plugin_name="Demo", use_plugin_names=use_plugin_names
+        KernelFunction.from_method(echo) if input_type == "function" else EchoPlugin(),
+        plugin_name="Demo",
+        use_plugin_names=use_plugin_names,
     )
     async with create_connected_server_and_client_session(server) as client:
         name = "Demo-echo" if use_plugin_names else "echo"
@@ -744,6 +752,84 @@ async def test_mcp_server_from_functions_naming(use_plugin_names):
         result = await client.call_tool(name, {"message": "hello"})
         assert not result.isError
         assert result.content == [types.TextContent(type="text", text="hello")]
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("plugin_name", [None, "Alias"])
+async def test_mcp_server_from_functions_retains_existing_plugin_name(use_plugin_names, plugin_name):
+    @kernel_function
+    def echo(message: str) -> str:
+        return message
+
+    plugin = KernelPlugin(name="Real", functions=[echo])
+    original_function = plugin["echo"]
+    server = create_mcp_server_from_functions(
+        plugin, use_plugin_names=use_plugin_names, **({"plugin_name": plugin_name} if plugin_name else {})
+    )
+
+    assert plugin.name == "Real"
+    assert plugin["echo"] is original_function
+    assert original_function.plugin_name == "Real"
+    async with create_connected_server_and_client_session(server) as client:
+        name = "Real-echo" if use_plugin_names else "echo"
+        assert [tool.name for tool in (await client.list_tools()).tools] == [name]
+        result = await client.call_tool(name, {"message": "hello"})
+        assert not result.isError
+        assert result.content == [types.TextContent(type="text", text="hello")]
+        for unexposed_name in ("Alias-echo", "mcp-echo"):
+            result = await client.call_tool(unexposed_name, {"message": "hello"})
+            assert result.isError
+            assert "Unknown tool" in result.content[0].text
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("reverse_registration", [False, True])
+async def test_mcp_server_from_functions_preserves_plugin_namespaces(caplog, use_plugin_names, reverse_registration):
+    calls = []
+
+    @kernel_function(name="echo", description="First schema")
+    def first(message: str) -> str:
+        calls.append("first")
+        return message
+
+    @kernel_function(name="echo", description="Second schema")
+    def second(count: int) -> str:
+        calls.append("second")
+        return str(count)
+
+    registrations = [
+        (KernelPlugin(name="First", functions=[first]), "message", "hello", "first"),
+        (KernelPlugin(name="Second", functions=[second]), "count", 2, "second"),
+    ]
+    if reverse_registration:
+        registrations.reverse()
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        server = create_mcp_server_from_functions(
+            [plugin for plugin, *_ in registrations], plugin_name="Alias", use_plugin_names=use_plugin_names
+        )
+
+    if use_plugin_names:
+        assert not caplog.records
+    else:
+        assert "Skipping function" in caplog.text
+        assert "First-echo" in caplog.text
+        assert "Second-echo" in caplog.text
+
+    retained = registrations if use_plugin_names else registrations[:1]
+    async with create_connected_server_and_client_session(server) as client:
+        tools = (await client.list_tools()).tools
+        assert [tool.name for tool in tools] == [
+            f"{plugin.name}-echo" if use_plugin_names else "echo" for plugin, *_ in retained
+        ]
+        for tool, (plugin, parameter, value, marker) in zip(tools, retained):
+            assert tool.description == plugin["echo"].description
+            assert tool.inputSchema["required"] == [parameter]
+            assert set(tool.inputSchema["properties"]) == {parameter}
+            result = await client.call_tool(tool.name, {parameter: value})
+            assert not result.isError
+            assert result.content == [types.TextContent(type="text", text=str(value))]
+            assert calls[-1] == marker
+    assert calls == [registration[-1] for registration in retained]
 
 
 @pytest.mark.parametrize("tool_name_length", [128, 129])
