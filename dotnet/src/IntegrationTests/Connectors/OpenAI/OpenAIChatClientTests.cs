@@ -64,7 +64,7 @@ public sealed class OpenAIChatClientTests : BaseIntegrationTest
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public async Task OpenAIHttpRetryPolicyTestAsync()
     {
         // Arrange
