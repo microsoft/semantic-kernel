@@ -26,5 +26,6 @@
   <Folder Name="/test/" />
   <Folder Name="/test/VectorData/">
     <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
+    <Project Path="test/VectorData/Milvus.UnitTests/Milvus.UnitTests.csproj" />
   </Folder>
 </Solution>
