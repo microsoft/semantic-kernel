@@ -26,6 +26,8 @@ namespace SemanticKernel.IntegrationTests.Agents;
 
 public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
 {
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -37,8 +39,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/>.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true, true)]
-    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", true, true, Skip = TempOAIKeySkipReason)]
+    [InlineData("What is the capital of France?", "Paris", true, false, Skip = TempOAIKeySkipReason)]
     [InlineData("What is the capital of France?", "Paris", false, true)]
     [InlineData("What is the capital of France?", "Paris", false, false)]
     public async Task OpenAIResponseAgentInvokeAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
@@ -57,8 +59,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using a thread.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true, true)]
-    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", true, true, Skip = TempOAIKeySkipReason)]
+    [InlineData("What is the capital of France?", "Paris", true, false, Skip = TempOAIKeySkipReason)]
     [InlineData("What is the capital of France?", "Paris", false, true)]
     [InlineData("What is the capital of France?", "Paris", false, false)]
     public async Task OpenAIResponseAgentInvokeWithThreadAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
@@ -106,8 +108,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using a function calling.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true)]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true, Skip = TempOAIKeySkipReason)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false, Skip = TempOAIKeySkipReason)]
     [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, true)]
     [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, false)]
     public async Task OpenAIResponseAgentInvokeWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
@@ -156,8 +158,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> using streaming.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the capital of France?", "Paris", true, true)]
-    [InlineData("What is the capital of France?", "Paris", true, false)]
+    [InlineData("What is the capital of France?", "Paris", true, true, Skip = TempOAIKeySkipReason)]
+    [InlineData("What is the capital of France?", "Paris", true, false, Skip = TempOAIKeySkipReason)]
     [InlineData("What is the capital of France?", "Paris", false, true)]
     [InlineData("What is the capital of France?", "Paris", false, false)]
     public async Task OpenAIResponseAgentInvokeStreamingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
@@ -176,8 +178,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData(true, false)]
-    [InlineData(true, false)]
+    [InlineData(true, false, Skip = TempOAIKeySkipReason)]
+    [InlineData(true, false, Skip = TempOAIKeySkipReason)]
     [InlineData(false, true)]
     [InlineData(false, false)]
     public async Task OpenAIResponseAgentInvokeStreamingWithThreadAsync(bool isOpenAI, bool storeEnabled)
@@ -224,8 +226,8 @@ public sealed class OpenAIResponseAgentTests(ITestOutputHelper output)
     /// Integration test for <see cref="OpenAIResponseAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true)]
-    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, true, Skip = TempOAIKeySkipReason)]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", true, false, Skip = TempOAIKeySkipReason)]
     [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, true)]
     [InlineData("What is the special soup and how much does it cost?", "Clam Chowder", false, false)]
     public async Task OpenAIResponseAgentInvokeStreamingWithFunctionCallingAsync(string input, string expectedAnswerContains, bool isOpenAI, bool storeEnabled)
