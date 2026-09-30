@@ -83,12 +83,32 @@ In both cases, `uv` will ensure that `semantic-kernel` is installed with the `mc
 
 The *sk_mcp_server* sample creates two functions:
 
-- `echo-echo_function`: A simple function that echoes back the input.
-- `prompt-prompt`: a function that uses a Semantic Kernel prompt to generate a response.
+- `echo_function`: A simple function that echoes back the input.
+- `prompt`: a function that uses a Semantic Kernel prompt to generate a response.
 
 The *agent_mcp_server* sample creates a simple agent that uses the Azure OpenAI service to generate a response.
 It exposes a single function:
 
-- `mcp-host`: A function that uses the Azure OpenAI service to generate a response.
+- `Host`: A function that uses the Azure OpenAI service to generate a response.
 
 Once the server is created, you get a `mcp.server.lowlevel.Server` object, which you can then extend to add further functionality, like resources or prompts. 
+
+## Tool names
+
+By default, tools use bare function names. When functions in different plugins have the same
+name, the server exposes the first function and logs a warning for each skipped duplicate.
+Discovery and invocation use the same retained function.
+
+To expose both functions, enable plugin-qualified names:
+
+```python
+server = kernel.as_mcp_server(use_plugin_names=True)
+```
+
+For example, the sample's tools become `echo-echo_function` and `prompt-prompt`.
+The option is also available on `create_mcp_server_from_kernel`,
+`create_mcp_server_from_functions`, and `Agent.as_mcp_server`.
+Tool names longer than MCP's recommended 128 characters are exposed with a warning.
+Clients may impose stricter name-length limits.
+Enabling the option changes public tool names, so existing callers must use the new names.
+The `excluded_functions` option continues to use bare function names in either mode.

@@ -7,9 +7,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool, types
+from mcp.shared.memory import create_connected_server_and_client_session
 
-from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPStreamableHttpPlugin, MCPWebsocketPlugin
+from semantic_kernel.connectors.mcp import (
+    MCPSsePlugin,
+    MCPStdioPlugin,
+    MCPStreamableHttpPlugin,
+    MCPWebsocketPlugin,
+    create_mcp_server_from_functions,
+    create_mcp_server_from_kernel,
+)
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
+from semantic_kernel.functions import KernelFunction, kernel_function
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
@@ -524,9 +533,6 @@ async def test_mcp_prompt_does_not_replace_registered_tool_name(caplog):
 
 async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
     """Test that excluded functions are rejected at call time, not just hidden from listing."""
-    from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
-    from semantic_kernel.functions.kernel_function_decorator import kernel_function
-
     side_effect_called = False
 
     @kernel_function(name="public_echo")
@@ -571,3 +577,148 @@ async def test_excluded_function_cannot_be_called(kernel: "Kernel"):
         f"Expected 'Unknown tool' error, got: {result.root.content}"
     )
     assert not side_effect_called, "Excluded function's side effect should not have fired"
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("reverse_registration", [False, True])
+async def test_mcp_server_duplicate_names(kernel, caplog, use_plugin_names, reverse_registration):
+    calls = []
+
+    @kernel_function(name="process_document", description="First schema")
+    def first(first_id: str) -> str:
+        calls.append("first")
+        return first_id
+
+    @kernel_function(name="process_document", description="Second schema")
+    def second(second_id: int) -> str:
+        calls.append("second")
+        return str(second_id)
+
+    registrations = [
+        ("First", first, "first_id", "one", "first"),
+        ("Second", second, "second_id", 2, "second"),
+    ]
+    if reverse_registration:
+        registrations.reverse()
+    for plugin_name, function, *_ in registrations:
+        kernel.add_function(plugin_name, function)
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        server = kernel.as_mcp_server(**({"use_plugin_names": True} if use_plugin_names else {}))
+
+    if use_plugin_names:
+        assert not caplog.records
+    else:
+        assert "Skipping function" in caplog.text
+        assert "First-process_document" in caplog.text
+        assert "Second-process_document" in caplog.text
+
+    retained = registrations if use_plugin_names else registrations[:1]
+    async with create_connected_server_and_client_session(server) as client:
+        tools = (await client.list_tools()).tools
+        assert len(tools) == len(retained)
+        for tool, (plugin_name, function, parameter, value, marker) in zip(tools, retained):
+            expected_name = f"{plugin_name}-process_document" if use_plugin_names else "process_document"
+            assert tool.name == expected_name
+            assert tool.description == function.__kernel_function_description__
+            assert tool.inputSchema["required"] == [parameter]
+            assert set(tool.inputSchema["properties"]) == {parameter}
+            result = await client.call_tool(tool.name, {parameter: value})
+            assert not result.isError
+            assert result.content == [types.TextContent(type="text", text=str(value))]
+            assert calls[-1] == marker
+
+        unexposed_name = "process_document" if use_plugin_names else "First-process_document"
+        result = await client.call_tool(unexposed_name, {})
+        assert result.isError
+        assert "Unknown tool" in result.content[0].text
+    assert calls == [registration[-1] for registration in retained]
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+@pytest.mark.parametrize("excluded_functions", ["secret", ["secret"]])
+async def test_mcp_server_exclusions_use_bare_names(kernel, use_plugin_names, excluded_functions):
+    calls = []
+
+    @kernel_function
+    def public() -> str:
+        return "public"
+
+    @kernel_function
+    def secret() -> str:
+        calls.append("secret")
+        return "secret"
+
+    kernel.add_function("First", public)
+    kernel.add_function("First", secret)
+    kernel.add_function("Second", secret)
+    server = create_mcp_server_from_kernel(
+        kernel, use_plugin_names=use_plugin_names, excluded_functions=excluded_functions
+    )
+
+    async with create_connected_server_and_client_session(server) as client:
+        tools = (await client.list_tools()).tools
+        public_name = "First-public" if use_plugin_names else "public"
+        assert [tool.name for tool in tools] == [public_name]
+        for name in ("secret", "First-secret", "Second-secret"):
+            result = await client.call_tool(name, {})
+            assert result.isError
+        result = await client.call_tool(public_name, {})
+        assert not result.isError
+    assert not calls
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+async def test_mcp_server_from_functions_naming(use_plugin_names):
+    @kernel_function
+    def echo(message: str) -> str:
+        return message
+
+    server = create_mcp_server_from_functions(
+        KernelFunction.from_method(echo), plugin_name="Demo", use_plugin_names=use_plugin_names
+    )
+    async with create_connected_server_and_client_session(server) as client:
+        name = "Demo-echo" if use_plugin_names else "echo"
+        assert [tool.name for tool in (await client.list_tools()).tools] == [name]
+        result = await client.call_tool(name, {"message": "hello"})
+        assert not result.isError
+        assert result.content == [types.TextContent(type="text", text="hello")]
+
+
+@pytest.mark.parametrize("tool_name_length", [128, 129])
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+async def test_mcp_server_tool_name_length(kernel, caplog, tool_name_length, use_plugin_names):
+    @kernel_function(name="f" * (tool_name_length - (2 if use_plugin_names else 0)))
+    def echo() -> str:
+        return "hello"
+
+    kernel.add_function("p", echo)
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.connectors.mcp"):
+        server = kernel.as_mcp_server(use_plugin_names=use_plugin_names)
+    assert ("exceeds the recommended 128 characters" in caplog.text) == (tool_name_length > 128)
+    async with create_connected_server_and_client_session(server) as client:
+        tool = (await client.list_tools()).tools[0]
+        assert len(tool.name) == tool_name_length
+        result = await client.call_tool(tool.name, {})
+        assert not result.isError
+
+
+async def test_mcp_server_retains_advertised_function(kernel):
+    @kernel_function(name="echo")
+    def original(message: str) -> str:
+        return f"original: {message}"
+
+    @kernel_function(name="echo")
+    def replacement(other: int) -> str:
+        pytest.fail("The replacement was not advertised.")
+
+    kernel.add_function("Demo", original)
+    server = kernel.as_mcp_server()
+    kernel.add_function("Demo", replacement)
+
+    async with create_connected_server_and_client_session(server) as client:
+        tool = (await client.list_tools()).tools[0]
+        assert tool.inputSchema["required"] == ["message"]
+        result = await client.call_tool("echo", {"message": "hello"})
+        assert not result.isError
+        assert result.content == [types.TextContent(type="text", text="original: hello")]
