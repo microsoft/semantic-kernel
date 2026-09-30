@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
-    private const string SkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
 
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
@@ -28,7 +28,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         this._kernel.AutoFunctionInvocationFilters.Add(this._autoFunctionInvocationFilter);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorNotToInvokeKernelFunctionAsync()
     {
         // Arrange
@@ -54,7 +54,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionAsync()
     {
         // Arrange
@@ -89,7 +89,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorNotToInvokeKernelFunctionForStreamingAsync()
     {
         // Arrange
@@ -115,7 +115,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorNotToInvokeKernelFunctionForStreamingAsync()
     {
         // Arrange

@@ -20,9 +20,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 {
-    private const string SkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
     {
         // Arrange
@@ -44,7 +44,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Contains("I don't know", stringBuilder.ToString());
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ChatCompletionShouldUseChatHistoryAndReturnMetadataAsync()
     {
         // Arrange
@@ -88,7 +88,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Equal("Stop", finishReason);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task TextGenerationShouldUseChatSystemPromptAsync()
     {
         // Arrange
@@ -110,7 +110,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Contains("I don't know", stringBuilder.ToString());
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task TextGenerationShouldReturnMetadataAsync()
     {
         // Arrange
@@ -151,7 +151,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Equal("Stop", finishReason);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task RepeatedChatHistoryAddStreamingMessageWorksAsExpectedAsync()
     {
         // Arrange

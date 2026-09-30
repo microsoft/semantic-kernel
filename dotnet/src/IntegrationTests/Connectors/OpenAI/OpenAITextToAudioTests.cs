@@ -11,7 +11,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAITextToAudioTests
 {
-    private const string SkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
 
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -20,7 +20,7 @@ public sealed class OpenAITextToAudioTests
         .AddUserSecrets<OpenAITextToAudioTests>()
         .Build();
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task OpenAITextToAudioTestAsync()
     {
         // Arrange

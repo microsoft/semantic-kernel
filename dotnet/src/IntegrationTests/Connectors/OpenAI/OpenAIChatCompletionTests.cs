@@ -25,9 +25,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 {
-    private const string SkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItCanUseOpenAiChatForTextGenerationAsync()
     {
         // Arrange
@@ -46,7 +46,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItCanUseOpenAiChatClientAndContentsAsync()
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -80,7 +80,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("Uranus", chatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task OpenAIStreamingTestAsync()
     {
         // Arrange
@@ -102,7 +102,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItCanUseOpenAiStreamingChatClientAndContentsAsync()
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
@@ -183,7 +183,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Equal(HttpStatusCode.Unauthorized, exception.StatusCode);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task OpenAIShouldReturnMetadataAsync()
     {
         // Arrange
@@ -233,7 +233,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("<result>John</result>", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ChatSystemPromptIsNotIgnoredAsync()
     {
         // Arrange
@@ -248,7 +248,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("I don't know", result.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SemanticKernelVersionHeaderIsSentAsync()
     {
         // Arrange
@@ -267,7 +267,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     }
 
     //[Theory(Skip = "This test is for manual verification.")]
-    [Theory(Skip = SkipReason)]
+    [Theory(Skip = TempOAIKeySkipReason)]
     [InlineData(null, null)]
     [InlineData(false, null)]
     [InlineData(true, 2)]
