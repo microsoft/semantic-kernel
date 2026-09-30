@@ -192,6 +192,26 @@ public class DocumentPluginTests
         await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "//UNC/server/folder/file.docx"));
     }
 
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\myfile.docx")]
+    [InlineData("//UNC/server/folder/myfile.docx")]
+    [InlineData("/\\UNC\\server\\folder\\myfile.docx")]
+    [InlineData("\\/UNC/server/folder/myfile.docx")]
+    public async Task ItRejectsUncOrExtendedPathsAsync(string path)
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => target.ReadTextAsync(path));
+        await Assert.ThrowsAsync<ArgumentException>(() => target.AppendTextAsync("text", path));
+    }
+
     [Fact]
     public async Task ItDeniesDisallowedFoldersAsync()
     {
