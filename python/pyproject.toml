@@ -33,6 +33,8 @@ dependencies = [
     "defusedxml ~= 0.7",
     # azure identity
     "azure-identity >= 1.13",
+    # cryptography 50.0.2 has no Python 3.10-compatible distributions.
+    "cryptography!=50.0.2; python_version < '3.11'",
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
