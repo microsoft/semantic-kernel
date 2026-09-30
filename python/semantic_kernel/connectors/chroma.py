@@ -15,8 +15,8 @@ from chromadb.config import Settings
 try:  # chromadb >= 1.0 raises NotFoundError for a missing collection
     from chromadb.errors import NotFoundError as _ChromaNotFoundError
 
-    COLLECTION_NOT_FOUND: tuple[type[Exception], ...] = (ValueError, _ChromaNotFoundError)
-except ImportError:  # chromadb < 1.0 raised ValueError
+    COLLECTION_NOT_FOUND: tuple[type[Exception], ...] = (_ChromaNotFoundError,)
+except ImportError:  # chromadb < 1.0 had no NotFoundError and raised ValueError
     COLLECTION_NOT_FOUND = (ValueError,)
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase

@@ -9,6 +9,14 @@ from chromadb.api.models.Collection import Collection
 from semantic_kernel.connectors.chroma import ChromaCollection, ChromaStore
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
+try:  # mirrors the connector, resolved here so these tests do not depend on it
+    from chromadb.errors import NotFoundError as _ChromaNotFoundError
+
+    COLLECTION_NOT_FOUND_IS_VALUE_ERROR = False
+except ImportError:  # chromadb < 1.0
+    _ChromaNotFoundError = ValueError
+    COLLECTION_NOT_FOUND_IS_VALUE_ERROR = True
+
 
 def _not_found() -> Exception:
     """The error Chroma raises for a missing collection, on whichever version is installed.
@@ -16,11 +24,7 @@ def _not_found() -> Exception:
     Resolved here rather than imported from the connector, so these tests run unchanged
     against the code before and after the fix.
     """
-    try:
-        from chromadb.errors import NotFoundError  # chromadb >= 1.0
-    except ImportError:  # chromadb < 1.0 raised ValueError
-        return ValueError("Collection test_collection does not exist.")
-    return NotFoundError("Collection test_collection does not exist.")
+    return _ChromaNotFoundError("Collection test_collection does not exist.")
 
 
 @pytest.fixture
@@ -161,6 +165,30 @@ async def test_ensure_collection_deleted_tolerates_an_absent_collection(chroma_c
 
 async def test_ensure_collection_deleted_still_raises_on_a_real_failure(chroma_collection, mock_client):
     mock_client.delete_collection.side_effect = ConnectionError("connection refused")
+
+    with pytest.raises(VectorStoreOperationException):
+        await chroma_collection.ensure_collection_deleted()
+
+
+@pytest.mark.skipif(
+    COLLECTION_NOT_FOUND_IS_VALUE_ERROR,
+    reason="on chromadb < 1.0 a ValueError IS the missing-collection signal",
+)
+async def test_collection_exists_raises_on_an_unrelated_value_error(chroma_collection, mock_client):
+    """Where Chroma has a dedicated NotFoundError, a ValueError is not 'absent'."""
+    mock_client.get_collection.side_effect = ValueError("some other problem")
+
+    with pytest.raises(ValueError):
+        await chroma_collection.collection_exists()
+
+
+@pytest.mark.skipif(
+    COLLECTION_NOT_FOUND_IS_VALUE_ERROR,
+    reason="on chromadb < 1.0 a ValueError IS the missing-collection signal",
+)
+async def test_ensure_collection_deleted_does_not_swallow_an_unrelated_value_error(chroma_collection, mock_client):
+    """The more dangerous half: a swallowed ValueError here would silently skip a delete."""
+    mock_client.delete_collection.side_effect = ValueError("some other problem")
 
     with pytest.raises(VectorStoreOperationException):
         await chroma_collection.ensure_collection_deleted()
