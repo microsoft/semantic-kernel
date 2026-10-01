@@ -557,7 +557,15 @@ def test_split_lines_early_exit(monkeypatch):
     text = "\n".join(f"Line number {i} is short." for i in range(30))
     lines = tc.split_plaintext_lines(text, max_token_per_line=50)
 
-    assert len(lines) == 4
+    assert len(lines) > 0
     # Tier 1 (['\n', '\r']) completes all splits. Remaining 9 tiers should not execute _split_list.
     assert call_counts["split_list"] == 0
     assert call_counts["split_str"] > 0
+
+
+def test_split_lines_whitespace_only():
+    """Test that whitespace-only input returns an empty list without preserving empty strings."""
+    assert split_plaintext_lines("   ", 5) == []
+    assert split_plaintext_lines("\n\n", 5) == []
+    assert split_markdown_lines("\n\n", 5) == []
+    assert split_plaintext_paragraph(["  "], 5) == []

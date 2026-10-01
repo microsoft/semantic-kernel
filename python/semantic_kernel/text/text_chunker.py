@@ -235,6 +235,8 @@ def _split_str(
 
     if trim:
         text = text.strip()
+        if not text:
+            return [], True
 
     text_as_is = [text]
 
