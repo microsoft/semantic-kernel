@@ -216,7 +216,7 @@ def _split_str_lines(
                 token_counter=token_counter,
             )
         if was_split:
-            break  # pragma: no cover
+            break
 
     return lines
 
@@ -231,15 +231,17 @@ def _split_str(
     """Split text into lines."""
     input_was_split = False
     if not text:
-        return [], input_was_split  # pragma: no cover
+        return [], True
 
     if trim:
         text = text.strip()
+        if not text:
+            return [], True
 
     text_as_is = [text]
 
     if token_counter(text) <= max_tokens:
-        return text_as_is, input_was_split
+        return text_as_is, True
 
     half = len(text) // 2
 
@@ -264,6 +266,7 @@ def _split_str(
 
     if 0 < cutpoint < len(text):
         lines = []
+        all_resolved = True
         for text_part in [text[:cutpoint], text[cutpoint:]]:
             split, has_split = _split_str(
                 text=text_part,
@@ -273,7 +276,8 @@ def _split_str(
                 token_counter=token_counter,
             )
             lines.extend(split)
-            input_was_split = input_was_split or has_split
+            all_resolved = all_resolved and has_split
+        input_was_split = all_resolved
     else:
         return text_as_is, input_was_split
 
@@ -289,10 +293,10 @@ def _split_list(
 ) -> tuple[list[str], bool]:
     """Split list of string into lines."""
     if not text:
-        return [], False  # pragma: no cover
+        return [], True
 
     lines = []
-    input_was_split = False
+    all_resolved = True
     for line in text:
         split_str, was_split = _split_str(
             text=line,
@@ -302,6 +306,6 @@ def _split_list(
             token_counter=token_counter,
         )
         lines.extend(split_str)
-        input_was_split = input_was_split or was_split
+        all_resolved = all_resolved and was_split
 
-    return lines, input_was_split
+    return lines, all_resolved
