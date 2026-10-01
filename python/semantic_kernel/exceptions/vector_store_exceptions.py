@@ -77,7 +77,6 @@ __all__ = [
     "VectorStoreMixinException",
     "VectorStoreModelDeserializationException",
     "VectorStoreModelException",
-    "VectorStoreModelException",
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
     "VectorStoreOperationException",
