@@ -89,7 +89,10 @@ class ChatHistoryAgentThread(AgentThread):
             or "thread_id" not in new_message.metadata
             or new_message.metadata["thread_id"] != self._id
         ):
-            self._chat_history.add_message(new_message)
+            if isinstance(self._chat_history, ChatHistoryReducer):
+                await self._chat_history.add_message_async(new_message)
+            else:
+                self._chat_history.add_message(new_message)
 
     async def get_messages(self) -> AsyncIterable[ChatMessageContent]:
         """Retrieve the current chat history.
