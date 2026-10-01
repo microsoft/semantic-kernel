@@ -14,6 +14,8 @@ describe('Label pull request workflow', () => {
     assert.doesNotMatch(workflow, /^\s+environment: github-app-auth$/m);
     assert.match(workflow, /^\s+pull-requests: write$/m);
     assert.doesNotMatch(workflow, /github-app-token/);
+    assert.doesNotMatch(workflow, /\$\{\{\s*(?:vars|secrets)\./);
+    assert.doesNotMatch(workflow, /GH_APP_|GH_ACTIONS_PR_WRITE/);
     assert.match(workflow, /repo-token: \$\{\{ github\.token \}\}/);
   });
 });
