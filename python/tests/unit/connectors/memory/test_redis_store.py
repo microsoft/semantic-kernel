@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
+from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import ResponseError
 
 from semantic_kernel.connectors.redis import (
     RedisCollectionTypes,
@@ -281,9 +283,22 @@ async def test_collection_exists(collection_hash, mock_collection_exists):
 
 
 async def test_collection_exists_false(collection_hash, mock_collection_exists):
-    mock_collection_exists.side_effect = Exception
+    # ResponseError is what redis-py raises when FT.INFO reports an unknown index. The previous
+    # bare Exception did not represent that, and matched a timeout just as readily.
+    mock_collection_exists.side_effect = ResponseError("Unknown Index name")
     exists = await collection_hash.collection_exists()
     assert not exists
+
+
+async def test_collection_exists_propagates_connection_errors(collection_hash, mock_collection_exists):
+    """A cluster that cannot be reached is not an absent index.
+
+    ensure_collection_deleted() drops the index only when collection_exists() says it is there, so
+    reporting a connection failure as "not there" made the delete a silent no-op.
+    """
+    mock_collection_exists.side_effect = RedisConnectionError("connection refused")
+    with raises(RedisConnectionError):
+        await collection_hash.collection_exists()
 
 
 async def test_ensure_collection_deleted(collection_hash, mock_ensure_collection_deleted):

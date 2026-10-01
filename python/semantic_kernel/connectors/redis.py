@@ -17,6 +17,7 @@ from redis.asyncio.client import Redis
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+from redis.exceptions import ResponseError
 from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
@@ -287,7 +288,13 @@ class RedisCollection(
         try:
             await self.redis_database.ft(self.collection_name).info()
             return True
-        except Exception:
+        except ResponseError:
+            # Redis answers FT.INFO for an unknown index with an error reply, which redis-py
+            # surfaces as ResponseError. ConnectionError, TimeoutError and AuthenticationError are
+            # siblings of ResponseError rather than subclasses, so they now propagate instead of
+            # being reported as "the index is not there". ensure_collection_deleted() gates the
+            # drop on this answer, so a swallowed timeout made it return successfully having
+            # deleted nothing.
             return False
 
     @override
