@@ -85,10 +85,29 @@ class CodeTokenizer:
                     skip_next_char = True
                     continue
 
+                # A space inside a quoted value ends the value only when the
+                # following character is not a valid value continuation.
+                # Valid continuations: alphanumeric, quote, $, _, -
+                if current_char == Symbols.SPACE and next_char not in (
+                    Symbols.SGL_QUOTE,
+                    Symbols.DBL_QUOTE,
+                    Symbols.VAR_PREFIX,
+                ) and not next_char.isalnum() and next_char not in ("_", "-"):
+                    # Space ends the quoted value
+                    blocks.append(ValBlock(content="".join(current_token_content)))
+                    current_token_content.clear()
+                    current_token_type = None
+                    space_separator_found = True
+                    continue
+
                 current_token_content.append(current_char)
 
-                # When we reach the end of the value, we add the block
-                if current_char == text_value_delimiter:
+                # When we reach the end of the value, we add the block.
+                # The closing delimiter must not be followed by alphanumeric chars
+                # (which would mean the delimiter is inside the quoted value).
+                if current_char == text_value_delimiter and (
+                    index + 2 >= len(text) or not text[index + 2].isalnum()
+                ):
                     blocks.append(ValBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                     current_token_type = None
