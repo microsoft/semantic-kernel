@@ -162,6 +162,11 @@ class FunctionCallContent(KernelContent):
         try:
             return isinstance(json.loads(value or ""), Mapping)
         except json.JSONDecodeError:
+            pass
+        try:
+            # Same single quote preprocessing as parse_arguments.
+            return isinstance(json.loads(re.sub(r"(?<!\\)'", '"', value or "").replace("\\'", "'")), Mapping)
+        except json.JSONDecodeError:
             return False
 
     def parse_arguments(self) -> Mapping[str, Any] | None:

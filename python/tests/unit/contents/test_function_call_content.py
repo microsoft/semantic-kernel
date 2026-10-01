@@ -236,3 +236,11 @@ def test_fc_dump_json(function_call: FunctionCallContent):
         dumped
         == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","function_name":"Function","plugin_name":"Test","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )
+
+
+def test_add_trailing_empty_placeholder_after_single_quoted_object():
+    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="{'input': 'world'}")
+    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments="{}")
+    result = fc1 + fc2
+    assert result.arguments == "{'input': 'world'}"
+    assert result.parse_arguments() == {"input": "world"}
