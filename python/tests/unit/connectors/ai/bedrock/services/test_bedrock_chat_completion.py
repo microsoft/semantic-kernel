@@ -368,4 +368,64 @@ async def test_bedrock_streaming_chat_completion_invalid_event(
                 pass
 
 
+async def test_bedrock_chat_completion_skips_reasoning_content(chat_history: ChatHistory) -> None:
+    """Test that reasoning content blocks in the response are skipped."""
+    response = {
+        "output": {
+            "message": {
+                "role": "assistant",
+                "content": [
+                    {"reasoningContent": {"reasoningText": {"text": "", "signature": "sig"}}},
+                    {"text": "Hi!"},
+                ],
+            }
+        },
+        "stopReason": "end_turn",
+        "usage": {"inputTokens": 10, "outputTokens": 5, "totalTokens": 15},
+    }
+    with patch.object(MockBedrockRuntimeClient, "converse", return_value=response):
+        bedrock_chat_completion = BedrockChatCompletion(
+            model_id="us.anthropic.claude-opus-5-5",
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+        )
+
+        result = await bedrock_chat_completion.get_chat_message_content(
+            chat_history=chat_history, settings=BedrockChatPromptExecutionSettings()
+        )
+
+        assert len(result.items) == 1
+        assert isinstance(result.items[0], TextContent)
+        assert result.content == "Hi!"
+
+
+async def test_bedrock_streaming_chat_completion_skips_reasoning_delta(chat_history: ChatHistory) -> None:
+    """Test that reasoning content deltas in the stream are skipped."""
+    events = [
+        {"messageStart": {"role": "assistant"}},
+        {"contentBlockDelta": {"contentBlockIndex": 0, "delta": {"reasoningContent": {"text": ""}}}},
+        {"contentBlockDelta": {"contentBlockIndex": 0, "delta": {"reasoningContent": {"signature": "sig"}}}},
+        {"contentBlockStop": {"contentBlockIndex": 0}},
+        {"contentBlockDelta": {"contentBlockIndex": 1, "delta": {"text": "Hi!"}}},
+        {"contentBlockStop": {"contentBlockIndex": 1}},
+        {"messageStop": {"stopReason": "end_turn"}},
+    ]
+    with patch.object(MockBedrockRuntimeClient, "converse_stream", return_value={"stream": iter(events)}):
+        bedrock_chat_completion = BedrockChatCompletion(
+            model_id="us.anthropic.claude-opus-5-5",
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+        )
+
+        chunks: list[StreamingChatMessageContent] = []
+        async for streaming_messages in bedrock_chat_completion.get_streaming_chat_message_contents(
+            chat_history=chat_history, settings=BedrockChatPromptExecutionSettings()
+        ):
+            chunks.extend(streaming_messages)
+        response = reduce(lambda p, r: p + r, chunks)
+
+        assert response.content == "Hi!"
+        assert response.finish_reason == FinishReason.STOP
+
+
 # endregion
