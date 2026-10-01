@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from functools import reduce
+
 import pytest
 
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -72,6 +74,30 @@ def test_add_empty():
     fc3 = fc1 + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == """{"input2": "world2"}"""
+
+
+@pytest.mark.parametrize(
+    "deltas",
+    [
+        ['{"query":"x","filters":', "{}", "}"],
+        ['{"a":[', "{}", ",", "{}", "]}"],
+        ['{"a": {"b":', "{}", "}}"],
+    ],
+)
+def test_add_streamed_empty_object_delta_is_kept(deltas: list[str]):
+    fcs = [
+        FunctionCallContent(id="test1" if i == 0 else None, index=0, name="Test-Function", arguments=d)
+        for i, d in enumerate(deltas)
+    ]
+    result = reduce(lambda a, b: a + b, fcs)
+    assert result.arguments == "".join(deltas)
+    assert result.parse_arguments() is not None
+
+
+def test_add_trailing_empty_placeholder_after_complete_object():
+    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments="{}")
+    assert (fc1 + fc2).arguments == """{"input2": "world2"}"""
 
 
 def test_add_none(function_call: FunctionCallContent):
@@ -210,3 +236,11 @@ def test_fc_dump_json(function_call: FunctionCallContent):
         dumped
         == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","function_name":"Function","plugin_name":"Test","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )
+
+
+def test_add_trailing_empty_placeholder_after_single_quoted_object():
+    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="{'input': 'world'}")
+    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments="{}")
+    result = fc1 + fc2
+    assert result.arguments == "{'input': 'world'}"
+    assert result.parse_arguments() == {"input": "world"}
