@@ -151,6 +151,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                 if isinstance(meta, str):
                     ret["description"] = meta
                 elif isinstance(meta, dict):
+                    meta = meta.copy()
                     # only override from the metadata if it is not already set
                     if "description" not in ret and (description := meta.pop("description", None)):
                         ret["description"] = description
