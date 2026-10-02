@@ -12,6 +12,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             "A cute tuxedo cat driving a race car.",
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai",
         ),
         pytest.param(

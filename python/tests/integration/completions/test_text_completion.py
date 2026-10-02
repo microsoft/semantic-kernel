@@ -49,6 +49,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_text_completion",
         ),
         pytest.param(
