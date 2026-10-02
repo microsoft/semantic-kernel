@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -217,6 +217,29 @@ public sealed class GoogleAIGeminiChatCompletionServiceTests : IDisposable
     /// Sample PDF data URI for testing.
     /// </summary>
     private const string PdfBase64Data = "JVBERi0xLjQKMSAwIG9iago8PC9UeXBlIC9DYXRhbG9nCi9QYWdlcyAyIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagozIDAgb2JqCjw8L1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA1OTUgODQyXQovQ29udGVudHMgNSAwIFIKL1Jlc291cmNlcyA8PC9Qcm9jU2V0IFsvUERGIC9UZXh0XQovRm9udCA8PC9GMSA0IDAgUj4+Cj4+Cj4+CmVuZG9iago0IDAgb2JqCjw8L1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9OYW1lIC9GMQovQmFzZUZvbnQgL0hlbHZldGljYQovRW5jb2RpbmcgL01hY1JvbWFuRW5jb2RpbmcKPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDUzCj4+CnN0cmVhbQpCVAovRjEgMjAgVGYKMjIwIDQwMCBUZAooRHVtbXkgUERGKSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZgowMDAwMDAwMDA5IDAwMDAwIG4KMDAwMDAwMDA2MyAwMDAwMCBuCjAwMDAwMDAxMjQgMDAwMDAgbgowMDAwMDAwMjc3IDAwMDAwIG4KMDAwMDAwMDM5MiAwMDAwMCBuCnRyYWlsZXIKPDwvU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgo0OTUKJSVFT0YK";
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncUsesModelIdFromExecutionSettingsAsync()
+    {
+        // Arrange
+        string constructorModel = "fake-model-constructor";
+        string overriddenModel = "fake-model-overridden";
+        var sut = new GoogleAIGeminiChatCompletionService(constructorModel, "key", httpClient: this._httpClient);
+
+        var executionSettings = new GeminiPromptExecutionSettings { ModelId = overriddenModel };
+
+        // Act
+        var result = await sut.GetChatMessageContentsAsync(new ChatHistory { new ChatMessageContent(AuthorRole.User, "hello") }, executionSettings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        Assert.Equal(overriddenModel, result[0].ModelId);
+
+        // Verify the request URI uses the overridden model
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.Contains($"/models/{overriddenModel}:generateContent", this._messageHandlerStub.RequestUri.AbsoluteUri);
+    }
 
     public void Dispose()
     {
