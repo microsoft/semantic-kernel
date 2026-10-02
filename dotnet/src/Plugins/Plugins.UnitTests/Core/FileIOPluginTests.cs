@@ -263,7 +263,17 @@ public class FileIOPluginTests
         try
         {
             restrictedDir.SetAccessControl(restrictedSecurity);
-            Assert.Throws<UnauthorizedAccessException>(() => PathUtilities.GetSafeFullPath(inaccessiblePath));
+            try
+            {
+                PathUtilities.GetSafeFullPath(inaccessiblePath);
+
+                // Skip if this environment does not enforce the deny rule (e.g. elevated processes).
+                return;
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
             var plugin = new FileIOPlugin() { AllowedFolders = [allowedDir] };
             var missingPath = Path.Combine(outsideDir, "missing.txt");
 
