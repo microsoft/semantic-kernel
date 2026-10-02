@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic import AsyncAnthropic
-from anthropic.types import Message
+from anthropic.types import Message, MessageDeltaUsage, RawMessageDeltaEvent, RawMessageStartEvent, TextBlock, Usage
+from anthropic.types.raw_message_delta_event import Delta
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
@@ -18,6 +19,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent, FunctionCallContent, TextContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -547,3 +549,110 @@ def test_chat_completion_reset_settings(
 
     assert settings.tools is None
     assert settings.tool_choice is None
+
+
+@pytest.mark.parametrize(
+    "stop_reason,expected_finish_reason",
+    [
+        pytest.param("end_turn", FinishReason.STOP, id="end_turn"),
+        pytest.param("max_tokens", FinishReason.LENGTH, id="max_tokens"),
+        pytest.param("tool_use", FinishReason.TOOL_CALLS, id="tool_use"),
+        pytest.param("stop_sequence", FinishReason.STOP, id="stop_sequence"),
+        pytest.param("refusal", None, id="unknown_stop_reason_returns_none"),
+    ],
+)
+async def test_finish_reason_from_stop_reason(
+    kernel: Kernel,
+    mock_settings: AnthropicChatPromptExecutionSettings,
+    stop_reason: str,
+    expected_finish_reason: FinishReason | None,
+):
+    response = Message(
+        id="test_message_id",
+        content=[TextBlock(text="test", type="text")],
+        model="test_model_id",
+        role="assistant",
+        stop_reason=stop_reason,
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=10, output_tokens=10),
+    )
+    client = MagicMock(spec=AsyncAnthropic)
+    messages_mock = MagicMock()
+    messages_mock.create = AsyncMock(return_value=response)
+    client.messages = messages_mock
+
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_user_message")
+
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+    )
+    contents: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
+        chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=KernelArguments()
+    )
+
+    assert contents[0].finish_reason is expected_finish_reason
+
+
+@pytest.mark.parametrize(
+    "stop_reason,expected_finish_reason",
+    [
+        pytest.param("stop_sequence", FinishReason.STOP, id="stop_sequence"),
+        pytest.param("refusal", None, id="unknown_stop_reason_returns_none"),
+    ],
+)
+async def test_finish_reason_from_stop_reason_stream(
+    kernel: Kernel,
+    mock_settings: AnthropicChatPromptExecutionSettings,
+    stop_reason: str,
+    expected_finish_reason: FinishReason | None,
+):
+    stream_events = [
+        RawMessageStartEvent(
+            message=Message(
+                id="test_message_id",
+                content=[],
+                model="test_model_id",
+                role="assistant",
+                stop_reason=None,
+                stop_sequence=None,
+                type="message",
+                usage=Usage(input_tokens=10, output_tokens=2),
+            ),
+            type="message_start",
+        ),
+        RawMessageDeltaEvent(
+            delta=Delta(stop_reason=stop_reason, stop_sequence=None),
+            type="message_delta",
+            usage=MessageDeltaUsage(output_tokens=10),
+        ),
+    ]
+
+    async def async_generator():
+        for event in stream_events:
+            yield event
+
+    stream_mock = AsyncMock()
+    stream_mock.__aenter__.return_value = async_generator()
+
+    client = MagicMock(spec=AsyncAnthropic)
+    messages_mock = MagicMock()
+    messages_mock.stream.return_value = stream_mock
+    client.messages = messages_mock
+
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_user_message")
+
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+    )
+
+    last_content: StreamingChatMessageContent | None = None
+    async for content in chat_completion_base.get_streaming_chat_message_contents(
+        chat_history, mock_settings, kernel=kernel, arguments=KernelArguments()
+    ):
+        last_content = content[0]
+
+    assert last_content is not None
+    assert last_content.finish_reason is expected_finish_reason
