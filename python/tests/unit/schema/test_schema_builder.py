@@ -2,7 +2,7 @@
 
 import json
 from enum import Enum
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any, Optional, Union, get_args
 from unittest.mock import Mock
 
 import pytest
@@ -455,3 +455,113 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class InnerForward(KernelBaseModel):
+    value: int
+    label: str
+
+
+class HolderForwardList(KernelBaseModel):
+    items: list["InnerForward"] = []
+
+
+class HolderDirectList(KernelBaseModel):
+    items: list[InnerForward] = []
+
+
+class HolderForwardDict(KernelBaseModel):
+    mapping: dict[str, "InnerForward"] = {}
+
+
+class HolderForwardOptional(KernelBaseModel):
+    maybe: Optional["InnerForward"] = None
+
+
+def test_build_list_with_string_forward_reference_matches_direct_reference():
+    """`list["Inner"]` and `list[Inner]` must produce the same schema."""
+    forward = KernelJsonSchemaBuilder.build(HolderForwardList)
+    direct = KernelJsonSchemaBuilder.build(HolderDirectList)
+
+    assert forward == direct
+    assert forward["properties"]["items"]["items"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_dict_with_string_forward_reference():
+    schema = KernelJsonSchemaBuilder.build(HolderForwardDict)
+
+    assert schema["properties"]["mapping"]["additionalProperties"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_build_optional_with_string_forward_reference_still_works():
+    """`Optional["Inner"]` already resolved via `get_type_hints`; make sure it still does."""
+    schema = KernelJsonSchemaBuilder.build(HolderForwardOptional)
+
+    assert schema["properties"]["maybe"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
+def test_unresolvable_forward_reference_falls_back_instead_of_raising():
+    """An annotation naming something that doesn't exist must not break schema building."""
+
+    class HolderUnknown(KernelBaseModel):
+        items: list["DoesNotExistAnywhere"] = []  # noqa: F821
+
+    schema = KernelJsonSchemaBuilder.build(HolderUnknown)
+
+    assert schema["properties"]["items"]["type"] == "array"
+    assert schema["properties"]["items"]["items"] == {"type": "object"}
+
+
+def test_non_type_expression_forward_reference_is_not_evaluated():
+    """A nested string that isn't a type expression must not be evaluated.
+
+    `list["Inner"]` stores the string verbatim, so whatever it contains reaches the resolver.
+    Only the grammar of a type expression is evaluated; a call is left alone and the annotation
+    comes back unchanged for the existing fallback to handle.
+    """
+    executed = []
+
+    def _canary():
+        executed.append(True)
+        return int
+
+    annotation = list["_canary()"]  # noqa: F821
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(annotation, {"_canary": _canary})
+
+    assert executed == []
+    assert resolved is annotation
+
+
+def test_type_expression_forward_reference_is_still_resolved():
+    """The guard must not block the case the resolver exists for."""
+    annotation = list["InnerForward"]  # noqa: F821
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(annotation, {"InnerForward": InnerForward})
+
+    assert get_args(resolved) == (InnerForward,)
+
+
+@pytest.mark.parametrize(
+    ("reference", "is_type_expression"),
+    [
+        ("InnerForward", True),
+        ("dict[str, InnerForward]", True),
+        ("InnerForward | None", True),
+        ("tuple[int, str]", True),
+        ("__import__('os').getcwd()", False),
+        ("_canary()", False),
+        ("(lambda: 1)()", False),
+        ("[x for x in ().__class__.__base__.__subclasses__()]", False),
+    ],
+)
+def test_is_type_expression(reference: str, is_type_expression: bool):
+    """The guard admits type expressions and rejects anything that can call out."""
+    assert KernelJsonSchemaBuilder._is_type_expression(reference) is is_type_expression
