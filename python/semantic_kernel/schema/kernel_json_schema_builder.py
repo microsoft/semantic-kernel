@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Any, Union, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -86,6 +86,11 @@ class KernelJsonSchemaBuilder:
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            if field_type is ClassVar or get_origin(field_type) is ClassVar:
+                # ClassVar annotations are class-level constants: pydantic
+                # excludes them from model fields and serialized instances,
+                # so they must not become (required) schema properties.
+                continue
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
