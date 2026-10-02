@@ -124,6 +124,8 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
         if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
             underlying_type = _get_underlying_type(annotation)
+            if underlying_type is None:
+                underlying_type = annotation
         else:
             underlying_type = annotation
         parsed_annotation["type_object"] = underlying_type
