@@ -31,6 +31,7 @@ public sealed class FileIOPlugin
     /// Defaults to an empty collection (no folders allowed). Must be explicitly populated
     /// with trusted directory paths before any file operations will succeed.
     /// Paths are canonicalized before validation to prevent directory traversal.
+    /// Requested file paths that cannot be safely resolved are denied.
     /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
@@ -135,13 +136,21 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        // Deny before GetSafeFullPath probes the filesystem so nothing about the path is observable.
+        // Avoid probing the filesystem when no folders are allowed.
         if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
             return false;
         }
 
-        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+        try
+        {
+            canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            // Caller-path resolution failures must not disclose filesystem details.
+            return false;
+        }
 
         var canonicalDir = Path.GetDirectoryName(canonicalPath);
         if (string.IsNullOrEmpty(canonicalDir))
@@ -161,7 +170,6 @@ public sealed class FileIOPlugin
             if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
                 || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
-                // Only inspect file attributes after authorization so they cannot be probed for disallowed paths.
                 if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
                 {
                     // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
