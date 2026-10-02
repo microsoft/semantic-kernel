@@ -1,13 +1,38 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+import socket
+from unittest.mock import AsyncMock, patch
 
 import pytest
+from yarl import URL
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+
+
+def dns_response(*addresses: str):
+    return [
+        (
+            socket.AF_INET6 if ":" in address else socket.AF_INET,
+            socket.SOCK_STREAM,
+            socket.IPPROTO_TCP,
+            "",
+            (address, 0),
+        )
+        for address in addresses
+    ]
+
+
+@pytest.fixture(autouse=True)
+def mock_dns():
+    with patch(
+        "asyncio.BaseEventLoop.getaddrinfo",
+        new_callable=AsyncMock,
+        return_value=dns_response("93.184.216.34"),
+    ) as resolver:
+        yield resolver
 
 
 async def test_it_can_be_instantiated():
@@ -423,3 +448,200 @@ async def test_allow_all_domains_with_allowed_domains_allows_redirects():
     """Test that redirects are allowed when both allow_all_domains and allowed_domains are set."""
     plugin = HttpPlugin(allowed_domains={"example.com"}, allow_all_domains=True)
     assert plugin._is_uri_allowed("https://any-domain.com/path") is True
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+@pytest.mark.parametrize(
+    "address",
+    [
+        "169.254.169.254",
+        "127.0.0.1",
+        "10.0.0.1",
+        "172.16.0.1",
+        "192.168.0.1",
+        "100.64.0.1",
+        "0.0.0.0",
+        "224.0.0.1",
+        "198.18.0.1",
+        "192.0.2.1",
+        "::1",
+        "fe80::1",
+        "fc00::1",
+        "ff02::1",
+        "::ffff:169.254.169.254",
+    ],
+)
+async def test_allowed_hostname_resolving_to_non_public_address_is_blocked(method, address, mock_dns):
+    mock_dns.return_value = dns_response(address)
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="host resolves to"),
+    ):
+        await getattr(plugin, method)("http://example.com/metadata/v1/id")
+
+    session.assert_not_called()
+    mock_dns.assert_awaited_once_with("example.com", None, type=socket.SOCK_STREAM)
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+@pytest.mark.parametrize("address", ["169.254.169.254", "::1", "::ffff:127.0.0.1"])
+async def test_allowed_literal_non_public_address_is_blocked_without_dns(method, address, mock_dns):
+    url_host = f"[{address}]" if ":" in address else address
+    plugin = HttpPlugin(allowed_domains={address})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="host resolves to"),
+    ):
+        await getattr(plugin, method)(f"http://{url_host}/")
+
+    session.assert_not_called()
+    mock_dns.assert_not_awaited()
+
+
+@pytest.mark.parametrize("addresses", [("93.184.216.34", "10.0.0.1"), ("::1", "2606:4700:4700::1111")])
+async def test_mixed_public_and_private_dns_response_is_blocked(addresses, mock_dns):
+    mock_dns.return_value = dns_response(*addresses)
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="host resolves to"),
+    ):
+        await plugin.get("https://example.com/")
+
+    session.assert_not_called()
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+@pytest.mark.parametrize("failure", ["error", "empty"])
+async def test_dns_failure_blocks_all_methods(method, failure, mock_dns):
+    if failure == "error":
+        mock_dns.side_effect = socket.gaierror()
+    else:
+        mock_dns.return_value = []
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="DNS resolution"),
+    ):
+        await getattr(plugin, method)("https://example.com/")
+
+    session.assert_not_called()
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+async def test_public_dns_addresses_are_allowed(method, mock_dns):
+    mock_dns.return_value = dns_response("93.184.216.34", "2606:4700:4700::1111")
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with patch(f"aiohttp.ClientSession.{method}") as request:
+        request.return_value.__aenter__.return_value.text.return_value = "public response"
+        assert await getattr(plugin, method)("http://example.com/") == "public response"
+
+    request.assert_called_once_with(URL("http://example.com/"), **request.call_args.kwargs)
+    assert request.call_args.kwargs["allow_redirects"] is False
+    mock_dns.assert_awaited_once()
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+async def test_idna_hostname_resolving_to_loopback_is_blocked(method, mock_dns):
+    def resolve(host, *args, **kwargs):
+        addresses = {"fass.test": "93.184.216.34", "xn--fa-hia.test": "127.0.0.1"}
+        return dns_response(addresses[host.encode("idna").decode("ascii")])
+
+    mock_dns.side_effect = resolve
+    plugin = HttpPlugin(allowed_domains={"fa\u00df.test"})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="loopback"),
+    ):
+        session.return_value.__aenter__.return_value = session.return_value
+        await getattr(plugin, method)("http://fa\u00df.test/")
+
+    session.assert_not_called()
+    mock_dns.assert_awaited_once_with("xn--fa-hia.test", None, type=socket.SOCK_STREAM)
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+@pytest.mark.parametrize("host", ["fa\u00df.test", "xn--fa-hia.test"])
+async def test_idna_hostname_is_identical_for_validation_and_request(method, host, mock_dns):
+    plugin = HttpPlugin(allowed_domains={host})
+
+    with patch(f"aiohttp.ClientSession.{method}") as request:
+        request.return_value.__aenter__.return_value.text.return_value = "public response"
+        assert await getattr(plugin, method)(f"https://{host}/path") == "public response"
+
+    mock_dns.assert_awaited_once_with("xn--fa-hia.test", None, type=socket.SOCK_STREAM)
+    request.assert_called_once_with(URL("https://xn--fa-hia.test/path"), **request.call_args.kwargs)
+    assert request.call_args.kwargs["allow_redirects"] is False
+
+
+async def test_idna_normalization_does_not_bypass_domain_allowlist(mock_dns):
+    plugin = HttpPlugin(allowed_domains={"fass.test"})
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="Sending requests"),
+    ):
+        await plugin.get("https://fa\u00df.test/")
+
+    session.assert_not_called()
+    mock_dns.assert_not_awaited()
+
+
+@pytest.mark.parametrize("address", ["1.1.1.1", "2606:4700:4700::1111"])
+async def test_public_literal_address_is_allowed_without_dns(address, mock_dns):
+    url_host = f"[{address}]" if ":" in address else address
+    plugin = HttpPlugin(allowed_domains={address})
+
+    with patch("aiohttp.ClientSession.get") as request:
+        request.return_value.__aenter__.return_value.text.return_value = "public response"
+        assert await plugin.get(f"https://{url_host}/") == "public response"
+
+    mock_dns.assert_not_awaited()
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+@pytest.mark.parametrize("host", ["example.com", "127.0.0.1"])
+@pytest.mark.parametrize("unrestricted", [False, True])
+async def test_private_network_access_requires_explicit_opt_in(method, host, unrestricted, mock_dns):
+    plugin = HttpPlugin(
+        allowed_domains={host},
+        allow_all_domains=unrestricted,
+        allow_private_network_access=not unrestricted,
+    )
+
+    with patch(f"aiohttp.ClientSession.{method}") as request:
+        request.return_value.__aenter__.return_value.text.return_value = "internal response"
+        assert await getattr(plugin, method)(f"http://{host}/") == "internal response"
+
+    assert request.call_args.kwargs["allow_redirects"] is unrestricted
+    mock_dns.assert_not_awaited()
+
+
+@pytest.mark.parametrize("url", ["http://notallowed.com/", "http://example.com:8080/", "file://example.com/"])
+async def test_private_network_opt_in_preserves_domain_port_and_scheme_restrictions(url, mock_dns):
+    plugin = HttpPlugin(allowed_domains={"example.com"}, allow_private_network_access=True)
+
+    with (
+        patch("aiohttp.ClientSession") as session,
+        pytest.raises(FunctionExecutionException, match="Sending requests"),
+    ):
+        await plugin.get(url)
+
+    session.assert_not_called()
+    mock_dns.assert_not_awaited()
+
+
+async def test_denied_domain_is_not_resolved(mock_dns):
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with pytest.raises(FunctionExecutionException, match="Sending requests"):
+        await plugin.get("http://notallowed.com/")
+
+    mock_dns.assert_not_awaited()

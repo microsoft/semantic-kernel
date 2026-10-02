@@ -52,17 +52,17 @@ public class ServerUrlValidatorTests
     // IPv4-mapped IPv6 of a private address
     [InlineData("::ffff:127.0.0.1", "loopback")]
     [InlineData("::ffff:169.254.169.254", "link-local")]
-    public void ItShouldClassifyNonPublicAddresses(string address, string expectedCategory)
+    public async Task ItShouldRejectNonPublicAddressesAsync(string address, string expectedCategory)
     {
         // Arrange
-        var ip = IPAddress.Parse(address);
+        var url = new UriBuilder(Uri.UriSchemeHttps, address).Uri;
 
         // Act
-        var blocked = ServerUrlValidator.TryCategorizeNonPublicAddress(ip, out var category);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null));
 
         // Assert
-        Assert.True(blocked, $"Expected {address} to be classified as non-public.");
-        Assert.Equal(expectedCategory, category);
+        Assert.Contains($"host resolves to a {expectedCategory} address", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -78,16 +78,13 @@ public class ServerUrlValidatorTests
     [InlineData("100.128.0.1")]      // just outside CGNAT
     // Public IPv6
     [InlineData("2606:4700:4700::1111")]   // Cloudflare DNS
-    public void ItShouldNotBlockPublicAddresses(string address)
+    public async Task ItShouldNotBlockPublicAddressesAsync(string address)
     {
         // Arrange
-        var ip = IPAddress.Parse(address);
+        var url = new UriBuilder(Uri.UriSchemeHttps, address).Uri;
 
-        // Act
-        var blocked = ServerUrlValidator.TryCategorizeNonPublicAddress(ip, out _);
-
-        // Assert
-        Assert.False(blocked, $"Expected {address} to be treated as public.");
+        // Act & Assert
+        await ServerUrlValidator.ValidateAsync(url, options: null);
     }
 
     [Fact]
@@ -133,6 +130,20 @@ public class ServerUrlValidatorTests
 
         // Should not throw.
         await ServerUrlValidator.ValidateAsync(url, options);
+    }
+
+    [Fact]
+    public async Task ItShouldPreserveExplicitHostnameAllowlistDnsBypassAsync()
+    {
+        var url = new Uri("http://trusted.example.com/v1/orders");
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("http://trusted.example.com/v1")]
+        };
+        Task<IPAddress[]> UnexpectedResolver(string host, CancellationToken token) =>
+            throw new InvalidOperationException("An explicitly trusted URL should not be resolved.");
+
+        await ServerUrlValidator.ValidateAsync(url, options, dnsResolver: UnexpectedResolver);
     }
 
     [Fact]
@@ -228,5 +239,39 @@ public class ServerUrlValidatorTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
         Assert.Contains("no addresses", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateDnsCancellationAsync()
+    {
+        using var source = new CancellationTokenSource();
+        source.Cancel();
+        var url = new Uri("https://api.example.com/");
+        Task<IPAddress[]> ResolveAsync(string host, CancellationToken token)
+        {
+            Assert.Equal(source.Token, token);
+            return Task.FromCanceled<IPAddress[]>(token);
+        }
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            ServerUrlValidator.ValidateAsync(url, options: null, cancellationToken: source.Token, dnsResolver: ResolveAsync));
+    }
+
+    [Theory]
+    [InlineData("https://fa\u00df.test/", "xn--fa-hia.test")]
+    [InlineData("https://b\u00fccher.test/", "xn--bcher-kva.test")]
+    [InlineData("https://\uFF25\uFF38\uFF21\uFF2D\uFF30\uFF2C\uFF25.com/", "example.com")]
+    public async Task ItShouldResolveTheSameAsciiHostAsHttpClientAsync(string url, string expectedHost)
+    {
+        string? resolvedHost = null;
+        Task<IPAddress[]> ResolveAsync(string host, CancellationToken _)
+        {
+            resolvedHost = host;
+            return Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") });
+        }
+
+        await ServerUrlValidator.ValidateAsync(new Uri(url), options: null, dnsResolver: ResolveAsync);
+
+        Assert.Equal(expectedHost, resolvedHost);
     }
 }

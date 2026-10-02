@@ -26,6 +26,10 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <para>
 /// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
 /// </para>
+/// <para>
+/// Allowed hosts are resolved before each request and non-public addresses are rejected unless
+/// <see cref="AllowPrivateNetworkAccess"/> is explicitly enabled. DNS failures are rejected.
+/// </para>
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
@@ -65,6 +69,16 @@ public sealed class HttpPlugin
         get => this._allowedDomains;
         set => this._allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Gets or sets whether allowed domains may resolve to private, loopback, link-local,
+    /// or other non-public addresses. Defaults to <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// Enable only for trusted internal endpoints. Domain restrictions still apply and
+    /// the default HTTP client still rejects redirects.
+    /// </remarks>
+    public bool AllowPrivateNetworkAccess { get; set; }
 
     /// <summary>
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
@@ -145,6 +159,13 @@ public sealed class HttpPlugin
         if (!this.IsUriAllowed(uri))
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+        }
+
+        if (!this.AllowPrivateNetworkAccess)
+        {
+            await PublicNetworkAddressValidator.ValidateAsync(
+                uri, cancellationToken,
+                configurationHint: $"To allow trusted internal endpoints, set {nameof(this.AllowPrivateNetworkAccess)} = true.").ConfigureAwait(false);
         }
 
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };

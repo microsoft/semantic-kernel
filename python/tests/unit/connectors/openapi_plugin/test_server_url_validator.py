@@ -104,6 +104,15 @@ async def test_validate_server_url_allows_explicit_base_url_for_private_http_add
     await validate_server_url("http://192.168.1.100/v1/orders", options)
 
 
+async def test_validate_server_url_preserves_explicit_hostname_allowlist_dns_bypass():
+    options = ServerUrlValidationOptions(allowed_base_urls=["http://trusted.example.com/v1"])
+
+    async def unexpected_resolver(host: str):
+        raise AssertionError("An explicitly trusted URL should not be resolved.")
+
+    await validate_server_url("http://trusted.example.com/v1/orders", options, dns_resolver=unexpected_resolver)
+
+
 async def test_validate_server_url_rejects_when_allowed_base_urls_do_not_match():
     options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/v1"])
 

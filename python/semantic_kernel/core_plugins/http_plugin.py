@@ -5,10 +5,12 @@ from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
 import aiohttp
+from yarl import URL
 
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.public_network_address_validator import ensure_public_host
 
 
 class HttpPlugin(KernelBaseModel):
@@ -38,13 +40,26 @@ class HttpPlugin(KernelBaseModel):
         - Only standard ports (80, 443) are permitted by default. Set ``allowed_ports``
           to permit additional ports. Port validation is skipped when
           ``allow_all_domains`` is True.
+        - Allowed hosts are normalized using aiohttp's IDNA rules before DNS validation,
+          and the same normalized URL is used for the request. Non-public addresses and
+          DNS failures are blocked unless ``allow_private_network_access`` is True.
+          ``allow_all_domains=True`` also bypasses this check.
+        - This pre-request check does not pin the connection's IP address and does not
+          protect against DNS changing between validation and connection.
     """
 
     allowed_domains: set[str] | None = None
     """Set of allowed domains to send requests to."""
 
     allow_all_domains: bool = False
-    """When True, requests to any domain are allowed. Must be explicitly set."""
+    """Allow any domain, port, and network address, with redirects. Must be explicitly set."""
+
+    allow_private_network_access: bool = False
+    """Permit non-public addresses for allowed domains. Enable only for trusted internal endpoints.
+
+    Domain and port restrictions still apply, and redirects remain disabled unless
+    ``allow_all_domains`` is True.
+    """
 
     allowed_ports: set[int] | None = None
     """Set of ports permitted for outbound requests. Defaults to ``{80, 443}`` when not set.
@@ -112,26 +127,39 @@ class HttpPlugin(KernelBaseModel):
         # Default: deny all
         return False
 
-    def _validate_url(self, url: str) -> None:
-        """Validate the URL before sending a request.
+    async def _validate_url(self, url: str) -> URL:
+        """Validate and normalize the URL before sending a request.
 
         Always checks that the URL is non-empty, uses an allowed scheme, and has a
         syntactically valid port. When ``allow_all_domains`` is False, additionally
-        enforces the port and domain allow-lists.
+        enforces the port and domain allow-lists. Non-public addresses and DNS failures
+        are rejected unless private-network access or unrestricted access is enabled.
 
         Args:
             url: The URL to validate.
 
+        Returns:
+            The normalized URL to use for the request.
+
         Raises:
             FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
                 has a malformed port, or (unless ``allow_all_domains`` is True) targets
-                a port or domain that is not allowed.
+                a port or domain that is not allowed, or resolves to a prohibited address.
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
 
         if not self._is_uri_allowed(url):
             raise FunctionExecutionException("Sending requests to the provided location is not allowed.")
+
+        request_url = URL(url)
+        if not self.allow_all_domains and not self.allow_private_network_access:
+            await ensure_public_host(
+                urlparse(str(request_url)),
+                configuration_hint="To allow trusted internal endpoints, set allow_private_network_access=True.",
+            )
+
+        return request_url
 
     @kernel_function(description="Makes a GET request to a url", name="getAsync")
     async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
@@ -143,11 +171,11 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        self._validate_url(url)
+        request_url = await self._validate_url(url)
 
         async with (
             aiohttp.ClientSession() as session,
-            session.get(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+            session.get(request_url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()
 
@@ -165,14 +193,14 @@ class HttpPlugin(KernelBaseModel):
         returns:
             The response body as a string.
         """
-        self._validate_url(url)
+        request_url = await self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
             session.post(
-                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+                request_url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
             ) as response,
         ):
             return await response.text()
@@ -192,14 +220,14 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        self._validate_url(url)
+        request_url = await self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
         async with (
             aiohttp.ClientSession() as session,
             session.put(
-                url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
+                request_url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
             ) as response,
         ):
             return await response.text()
@@ -214,10 +242,10 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        self._validate_url(url)
+        request_url = await self._validate_url(url)
 
         async with (
             aiohttp.ClientSession() as session,
-            session.delete(url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
+            session.delete(request_url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()

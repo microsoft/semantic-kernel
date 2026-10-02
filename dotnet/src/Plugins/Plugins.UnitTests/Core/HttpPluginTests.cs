@@ -16,7 +16,7 @@ namespace SemanticKernel.Plugins.UnitTests.Core;
 public sealed class HttpPluginTests : IDisposable
 {
     private readonly string _content = "hello world";
-    private readonly string _uriString = "http://www.example.com";
+    private readonly string _uriString = "http://1.1.1.1";
 
     private readonly HttpResponseMessage _response = new()
     {
@@ -44,7 +44,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
 
         // Act
         var result = await plugin.GetAsync(this._uriString);
@@ -60,7 +60,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
 
         // Act
         var result = await plugin.PostAsync(this._uriString, this._content);
@@ -76,7 +76,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
 
         // Act
         var result = await plugin.PutAsync(this._uriString, this._content);
@@ -92,7 +92,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
 
         // Act
         var result = await plugin.DeleteAsync(this._uriString);
@@ -141,13 +141,138 @@ public sealed class HttpPluginTests : IDisposable
 
         var plugin = new HttpPlugin()
         {
-            AllowedDomains = [server.BaseUri.Host]
+            AllowedDomains = [server.BaseUri.Host],
+            AllowPrivateNetworkAccess = true
         };
 
         // Act & Assert - the plugin should throw because 302 is a non-success status
         await Assert.ThrowsAsync<HttpOperationException>(() => plugin.GetAsync(new Uri(server.BaseUri, "start").AbsoluteUri));
         Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
     }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    public async Task ItBlocksNonPublicAddressesBeforeSendingAsync(string method)
+    {
+        string[] addresses =
+        [
+            "169.254.169.254", "127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.0.1",
+            "100.64.0.1", "0.0.0.0", "224.0.0.1", "198.18.0.1", "192.0.2.1",
+            "::1", "fe80::1", "fc00::1", "ff02::1", "::ffff:169.254.169.254"
+        ];
+
+        foreach (var address in addresses)
+        {
+            var mockHandler = this.CreateMock();
+            using var client = new HttpClient(mockHandler.Object);
+            var host = address.Contains(':') ? $"[{address}]" : address;
+            var uri = new Uri($"http://{host}/");
+            var plugin = new HttpPlugin(client) { AllowedDomains = [uri.Host] };
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => SendAsync(plugin, method, uri.AbsoluteUri));
+
+            Assert.Contains("host resolves to", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("AllowPrivateNetworkAccess", exception.Message, StringComparison.Ordinal);
+            VerifyNoRequest(mockHandler);
+        }
+    }
+
+    [Theory]
+    [InlineData("1.1.1.1")]
+    [InlineData("[2606:4700:4700::1111]")]
+    public async Task ItAllowsPublicLiteralAddressesAsync(string address)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var uri = new Uri($"http://{address}/");
+        var plugin = new HttpPlugin(client) { AllowedDomains = [uri.Host] };
+
+        Assert.Equal(this._content, await plugin.GetAsync(uri.AbsoluteUri));
+    }
+
+    [Theory]
+    [InlineData("GET", "127.0.0.1")]
+    [InlineData("POST", "127.0.0.1")]
+    [InlineData("PUT", "127.0.0.1")]
+    [InlineData("DELETE", "127.0.0.1")]
+    [InlineData("GET", "unresolved.example.invalid")]
+    [InlineData("POST", "unresolved.example.invalid")]
+    [InlineData("PUT", "unresolved.example.invalid")]
+    [InlineData("DELETE", "unresolved.example.invalid")]
+    public async Task ItAllowsExplicitPrivateNetworkAccessAsync(string method, string host)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client)
+        {
+            AllowedDomains = [host],
+            AllowPrivateNetworkAccess = true
+        };
+
+        Assert.Equal(this._content, await SendAsync(plugin, method, $"http://{host}/"));
+    }
+
+    [Fact]
+    public async Task ItStillRestrictsDomainsWithPrivateNetworkAccessEnabledAsync()
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client)
+        {
+            AllowedDomains = ["www.example.com"],
+            AllowPrivateNetworkAccess = true
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync("http://127.0.0.1/"));
+        VerifyNoRequest(mockHandler);
+    }
+
+    [Fact]
+    public async Task ItRejectsDisallowedDomainBeforeSendingAsync()
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync("http://notallowed.example.invalid/"));
+        Assert.Equal("Sending requests to the provided location is not allowed.", exception.Message);
+        VerifyNoRequest(mockHandler);
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    public async Task ItBlocksAllowedLocalhostUsingDefaultDnsResolverAsync(string method)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["localhost"] };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(plugin, method, "http://localhost/"));
+
+        Assert.Contains("loopback", exception.Message, StringComparison.Ordinal);
+        VerifyNoRequest(mockHandler);
+    }
+
+    private static Task<string> SendAsync(HttpPlugin plugin, string method, string uri) =>
+        method switch
+        {
+            "GET" => plugin.GetAsync(uri),
+            "POST" => plugin.PostAsync(uri, "body"),
+            "PUT" => plugin.PutAsync(uri, "body"),
+            "DELETE" => plugin.DeleteAsync(uri),
+            _ => throw new ArgumentOutOfRangeException(nameof(method))
+        };
+
+    private static void VerifyNoRequest(Mock<HttpMessageHandler> mockHandler) =>
+        mockHandler.Protected().Verify(
+            "SendAsync", Times.Never(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
 
     private Mock<HttpMessageHandler> CreateMock()
     {
