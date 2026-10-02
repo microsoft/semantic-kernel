@@ -1,0 +1,37 @@
+{
+  "query": "What is the Semantic Kernel?",
+  "results": [
+    {
+      "title": "Semantic Kernel",
+      "url": "https://aiwiki.ai/wiki/semantic_kernel",
+      "description": "",
+      "snippet": "[1][9] As of June 2026 the project has over 27,900 stars on GitHub and is licensed under the MIT License.[1] Semantic Kernel serves as middleware between enterprise application logic and AI model capabilities.[2] It is used internally by Microsoft to help power products such as Microsoft 365 Copilot and is adopted by ...",
+      "published_at": "2026-03-21T02:14:29Z",
+      "acquired_at": "2026-08-25T22:15:08Z"
+    },
+    {
+      "title": "Microsoft’s Semantic Kernel",
+      "url": "https://jacar.es/en/microsoft-semantic-kernel",
+      "description": "",
+      "snippet": "Conclusion Sources Semantic Kernel is the open-source kit with which Microsoft drops an AI model inside your C#, Python or Java application and lets it call your own code. The central piece, the kernel, acts as the middleman: it receives the model’s request, runs the right function and returns the result. In this ...",
+      "published_at": "2026-07-16T23:12:58Z",
+      "acquired_at": "2026-07-24T18:34:33Z"
+    },
+    {
+      "title": "Semantic Kernel",
+      "url": "https://geeksforgeeks.org/artificial-intelligence/semantic-kernel",
+      "description": "",
+      "snippet": "Machine Learning Deep Learning ML-Projects Robotics Semantic Kernel Last Updated : 22 Aug, 2025 Semantic Kernel (SK) is an open-source, lightweight SDK developed by Microsoft that acts as a powerful orchestration layer to build, deploy and manage intelligent AI applications and agents by integrating large language ...",
+      "published_at": "2025-08-22T11:56:00Z",
+      "acquired_at": "2026-08-18T23:44:15Z"
+    },
+    {
+      "title": "Semantic Kernel",
+      "url": "https://grokipedia.com/page/Semantic_Kernel",
+      "description": "",
+      "snippet": "Fact-checked by Grok 4 months ago Semantic Kernel Semantic Kernel is Microsoft’s open-source orchestration engine and software development kit (SDK) for integrating AI capabilities—such as prompts, embeddings, and vector search—along with large language models (LLMs) into applications, enabling the building of AI ...",
+      "published_at": "2026-03-27T14:27:17Z",
+      "acquired_at": "2026-08-22T11:55:12Z"
+    }
+  ]
+}
