@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -146,7 +147,7 @@ public sealed class FileIOPlugin
         {
             canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or SecurityException)
         {
             // Caller-path resolution failures must not disclose filesystem details.
             return false;
