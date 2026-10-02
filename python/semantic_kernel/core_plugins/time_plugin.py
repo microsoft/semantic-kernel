@@ -226,9 +226,13 @@ class TimePlugin(KernelBaseModel):
         """Get the current time zone offset.
 
         Example:
-            {{time.timeZoneOffset}} => -08:00
+            {{time.timeZoneOffset}} => -0800
         """
         now = datetime.datetime.now()
+        if now.tzinfo is None:
+            # astimezone() attaches the local timezone to a naive datetime;
+            # on a naive datetime strftime("%z") returns an empty string.
+            now = now.astimezone()
         return now.strftime("%z")
 
     @kernel_function(description="Get the current time zone name", name="timeZoneName")
@@ -239,4 +243,6 @@ class TimePlugin(KernelBaseModel):
             {{time.timeZoneName}} => PST
         """
         now = datetime.datetime.now()
+        if now.tzinfo is None:
+            now = now.astimezone()
         return now.strftime("%Z")
