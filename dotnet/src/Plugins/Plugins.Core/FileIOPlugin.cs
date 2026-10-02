@@ -135,18 +135,13 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
-
-        if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
-        {
-            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {canonicalPath}");
-        }
-
+        // Deny before GetSafeFullPath probes the filesystem so nothing about the path is observable.
         if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
             return false;
         }
+
+        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
 
         var canonicalDir = Path.GetDirectoryName(canonicalPath);
         if (string.IsNullOrEmpty(canonicalDir))
@@ -166,6 +161,13 @@ public sealed class FileIOPlugin
             if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
                 || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
+                // Only inspect file attributes after authorization so they cannot be probed for disallowed paths.
+                if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
+                {
+                    // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
+                    throw new UnauthorizedAccessException("File is read-only.");
+                }
+
                 return true;
             }
         }

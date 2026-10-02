@@ -112,6 +112,76 @@ public class FileIOPluginTests
     }
 
     [Fact]
+    public async Task ItDoesNotRevealReadOnlyOrExistenceOfDisallowedFilesAsync()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"FileIOPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+
+        var readOnlyFile = Path.Combine(outsideDir, "readonly.txt");
+        var missingFile = Path.Combine(outsideDir, "missing.txt");
+        await File.WriteAllTextAsync(readOnlyFile, "secret");
+        File.SetAttributes(readOnlyFile, FileAttributes.ReadOnly);
+
+        try
+        {
+            foreach (var plugin in new[]
+            {
+                new FileIOPlugin(),
+                new FileIOPlugin() { AllowedFolders = [allowedDir], DisableFileOverwrite = false }
+            })
+            {
+                // Act
+                var readOnlyReadEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(readOnlyFile));
+                var missingReadEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(missingFile));
+                var readOnlyWriteEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(readOnlyFile, "changed"));
+                var missingWriteEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(missingFile, "changed"));
+
+                // Assert - responses for existing read-only and missing files must be indistinguishable
+                Assert.Equal(missingReadEx.Message, readOnlyReadEx.Message);
+                Assert.Equal(missingWriteEx.Message, readOnlyWriteEx.Message);
+                Assert.DoesNotContain(outsideDir, readOnlyReadEx.Message, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(outsideDir, readOnlyWriteEx.Message, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        finally
+        {
+            File.SetAttributes(readOnlyFile, FileAttributes.Normal);
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItDoesNotIncludePathInReadOnlyExceptionAsync()
+    {
+        // Arrange
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
+        };
+        var path = Path.GetTempFileName();
+        File.SetAttributes(path, FileAttributes.ReadOnly);
+
+        try
+        {
+            // Act
+            var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => plugin.WriteAsync(path, "hello world"));
+
+            // Assert
+            Assert.DoesNotContain(Path.GetFileName(path), ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            File.SetAttributes(path, FileAttributes.Normal);
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public async Task ItCannotWriteToDisallowedFoldersAsync()
     {
         // Arrange
