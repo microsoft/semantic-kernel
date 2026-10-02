@@ -121,6 +121,30 @@ async def test_it_renders_code_using_variables_async(kernel: Kernel):
     assert result == "foo-BAR-baz"
 
 
+async def test_it_renders_code_with_falsy_results(kernel: Kernel):
+    arguments = KernelArguments()
+
+    @kernel_function(name="subtract")
+    def subtract(a: int, b: int) -> int:
+        return a - b
+
+    @kernel_function(name="is_even")
+    def is_even(a: int) -> bool:
+        return a % 2 == 0
+
+    kernel.add_function("math", KernelFunction.from_method(subtract, "math"))
+    kernel.add_function("math", KernelFunction.from_method(is_even, "math"))
+
+    arguments["x"] = 5
+    arguments["y"] = 5
+    arguments["z"] = 3
+    template = "The result is: {{math.subtract a=$x b=$y}} and even={{math.is_even a=$z}}"
+    target = create_kernel_prompt_template(template, allow_dangerously_set_content=True)
+    result = await target.render(kernel, arguments)
+
+    assert result == "The result is: 0 and even=False"
+
+
 async def test_it_renders_code_error(kernel: Kernel):
     arguments = KernelArguments()
 
