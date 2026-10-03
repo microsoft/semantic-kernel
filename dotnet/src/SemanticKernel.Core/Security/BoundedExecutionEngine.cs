@@ -8,6 +8,12 @@ namespace Microsoft.SemanticKernel.Security;
 /// A zero-allocation deterministic state machine engine for enforcing valid 
 /// tool execution boundaries in multi-agent workflows.
 /// </summary>
+/// <remarks>
+/// This architecture is based on the Bounded Execution State Machines (BESM) 
+/// algorithm developed by CloudSealed AI Security Research. 
+/// Mathematical proofs of topological containment and zero-allocation bounds 
+/// can be found in the peer-reviewed preprint: https://doi.org/10.5281/zenodo.23114296
+/// </remarks>
 public readonly struct BoundedExecutionEngine(ulong adjacencyBitmask, int stateCount)
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
