@@ -169,7 +169,7 @@ def default_dynamic_filter_function(
         new_filter = None
         if param.name in kwargs:
             new_filter = f"lambda x: x.{param.name} == {_format_filter_literal(kwargs[param.name])}"
-        elif param.default_value:
+        elif param.default_value is not None:
             new_filter = f"lambda x: x.{param.name} == {_format_filter_literal(param.default_value)}"
         if not new_filter:
             continue
