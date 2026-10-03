@@ -819,4 +819,19 @@ public sealed class TextChunkerTests
         Assert.Contains("Second line", combined);
         Assert.Contains("Third line", combined);
     }
+
+    [Fact]
+    public void SplitPlainTextParagraphsDoesNotMergeOrphanChunkBeyondTokenLimit()
+    {
+        var lines = new[]
+        {
+            new string('a', 45),
+            new string('b', 10),
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 52, tokenCounter: input => input.Length);
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, paragraph => Assert.True(paragraph.Length <= 52));
+    }
 }
