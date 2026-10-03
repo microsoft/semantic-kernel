@@ -9,8 +9,10 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -19,6 +21,24 @@ logger: logging.Logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+
+def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
+    """Create an Anthropic image content block from an ImageContent object."""
+    data = image_content.data_string
+    mime_type = image_content.mime_type or "image/jpeg"
+    if not data:
+        raise ServiceInvalidRequestError(
+            "ImageContent without data or data_uri while formatting message for Anthropic."
+        )
+    return {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": mime_type,
+            "data": data,
+        },
+    }
 
 
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
@@ -30,9 +50,30 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     Returns:
         The formatted user message.
     """
+    if not message.items or (len(message.items) == 1 and isinstance(message.items[0], TextContent)):
+        return {
+            "role": "user",
+            "content": message.content,
+        }
+
+    contents: list[dict[str, Any]] = []
+    for item in message.items:
+        if isinstance(item, TextContent):
+            if item.text:
+                contents.append({
+                    "type": "text",
+                    "text": item.text,
+                })
+        elif isinstance(item, ImageContent):
+            contents.append(_create_image_content(item))
+        else:
+            logger.warning(
+                f"Unsupported item type in User message while formatting chat history for Anthropic: {type(item)}"
+            )
+
     return {
         "role": "user",
-        "content": message.content,
+        "content": contents,
     }
 
 
