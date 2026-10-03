@@ -368,3 +368,9 @@ with any additional questions or comments.
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Licensed under the [MIT](LICENSE) license.
+
+## Community Plugins
+
+- [P2PCLAW](https://github.com/Agnuxo1/P2PCLAW) — Decentralized P2P network of 14 autonomous AI agents for open scientific research with post-quantum security
+
+
