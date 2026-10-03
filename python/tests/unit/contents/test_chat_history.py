@@ -46,6 +46,34 @@ def test_init_with_messages_only():
     assert chat_history.messages == msgs, "Chat history should contain exactly the provided messages"
 
 
+@pytest.mark.parametrize("call_id", [None, "call_correlation_456"])
+@pytest.mark.parametrize("serializer", [str, ChatHistory.to_prompt])
+def test_xml_roundtrip_preserves_function_call_ids(call_id, serializer):
+    function_call = FunctionCallContent(
+        id="fc_item_123", call_id=call_id, name="weather-get_weather", arguments='{"city":"Seattle"}'
+    )
+    function_result = FunctionResultContent.from_function_call_content_and_result(function_call, "Sunny")
+    history = ChatHistory(
+        messages=[
+            ChatMessageContent(role=AuthorRole.ASSISTANT, items=[function_call]),
+            ChatMessageContent(role=AuthorRole.TOOL, items=[function_result]),
+        ]
+    )
+
+    restored = ChatHistory.from_rendered_prompt(serializer(history))
+
+    assert len(restored.messages) == 2
+    restored_call = restored.messages[0].items[0]
+    restored_result = restored.messages[1].items[0]
+    assert isinstance(restored_call, FunctionCallContent)
+    assert isinstance(restored_result, FunctionResultContent)
+    assert restored_call.id == restored_result.id == "fc_item_123"
+    assert restored_call.call_id == restored_result.call_id == call_id
+    assert restored_call.name == restored_result.name == "weather-get_weather"
+    assert restored_call.arguments == '{"city":"Seattle"}'
+    assert restored_result.result == "Sunny"
+
+
 def test_init_with_messages_and_system_message():
     system_msg = "a test system prompt"
     msgs = [ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}") for i in range(3)]
