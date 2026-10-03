@@ -120,7 +120,7 @@ onnx = [
   "onnxruntime==1.22.1; python_version == '3.10'",
   "onnxruntime>=1.26.0; python_version > '3.10'",
   "onnxruntime-genai==0.9.0; python_version == '3.10'",
-  "onnxruntime-genai==0.14.1; python_version > '3.10'"
+  "onnxruntime-genai==0.15.2; python_version > '3.10'"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
