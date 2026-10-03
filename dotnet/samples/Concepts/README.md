@@ -109,6 +109,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 
 - [AutoFunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/AutoFunctionInvocationFiltering.cs)
 - [FunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/FunctionInvocationFiltering.cs)
+- [ExternalGovernanceCheckpoint](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/ExternalGovernanceCheckpoint.cs)
 - [MaxTokensWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/MaxTokensWithFilters.cs)
 - [PIIDetection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PIIDetection.cs)
 - [PromptRenderFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PromptRenderFiltering.cs)
