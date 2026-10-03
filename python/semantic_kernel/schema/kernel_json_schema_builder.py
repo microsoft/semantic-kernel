@@ -91,9 +91,10 @@ class KernelJsonSchemaBuilder:
                 field_info = model.model_fields[field_name]
                 if isinstance(field_info.metadata, dict):
                     field_description = field_info.metadata.get("description")
-                elif isinstance(field_info.metadata, list) and field_info.metadata:
-                    field_description = field_info.metadata[0]
                 elif hasattr(field_info, "description"):
+                    # Pydantic v2 keeps constraints (Ge, Le, ...) in field_info.metadata,
+                    # which is a list of constraint objects and not a description,
+                    # so the description must come from field_info.description instead.
                     field_description = field_info.description
             if not cls._is_optional(field_type):
                 required.append(field_name)
