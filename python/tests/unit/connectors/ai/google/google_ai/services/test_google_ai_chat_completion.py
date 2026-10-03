@@ -5,7 +5,15 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from google.genai import Client
 from google.genai.models import AsyncModels
-from google.genai.types import Content, GenerateContentConfigDict
+from google.genai.types import (
+    Candidate,
+    Content,
+    FinishReason as GoogleFinishReason,
+    GenerateContentConfigDict,
+    GenerateContentResponse,
+    GenerateContentResponseUsageMetadata,
+    Part,
+)
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -257,6 +265,63 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
 
 
 # endregion chat completion
+
+
+def test_google_ai_chat_completion_filters_thought_text_parts(google_ai_unit_test_env) -> None:
+    google_ai_chat_completion = GoogleAIChatCompletion()
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="model", parts=[])
+    candidate.finish_reason = GoogleFinishReason.STOP
+
+    thinking_part = Part.from_text(text="internal reasoning")
+    thinking_part.thought = True  # type: ignore[attr-defined]
+    answer_part = Part.from_text(text="final answer")
+
+    candidate.content.parts.extend([thinking_part, answer_part])
+
+    response = GenerateContentResponse()
+    response.candidates = [candidate]
+    response.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0,
+        cached_content_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    message = google_ai_chat_completion._create_chat_message_content(response, candidate)
+
+    assert message.content == "final answer"
+    assert len(message.items) == 1
+
+
+def test_google_ai_streaming_chat_completion_filters_thought_text_parts(google_ai_unit_test_env) -> None:
+    google_ai_chat_completion = GoogleAIChatCompletion()
+
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(role="model", parts=[])
+    candidate.finish_reason = GoogleFinishReason.STOP
+
+    thinking_part = Part.from_text(text="internal reasoning")
+    thinking_part.thought = True  # type: ignore[attr-defined]
+    answer_part = Part.from_text(text="streamed answer")
+    candidate.content.parts.extend([thinking_part, answer_part])
+
+    response = GenerateContentResponse()
+    response.candidates = [candidate]
+    response.usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=0,
+        cached_content_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    message = google_ai_chat_completion._create_streaming_chat_message_content(response, candidate)
+
+    assert message.content == "streamed answer"
+    assert len(message.items) == 1
 
 
 # region streaming chat completion
