@@ -340,6 +340,23 @@ def test_format_user_message_image_only():
     assert formatted["content"][0]["source"]["data"] == dummy_b64
 
 
+def test_format_user_message_raw_bytes():
+    raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data=raw_png, mime_type="image/png"),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+    import base64
+    assert formatted["content"][0]["source"]["data"] == base64.b64encode(raw_png).decode("utf-8")
+
+
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import base64
 import json
 import logging
 from collections.abc import Callable, Mapping
@@ -25,12 +26,23 @@ if TYPE_CHECKING:
 
 def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
     """Create an Anthropic image content block from an ImageContent object."""
-    data = image_content.data_string
     mime_type = image_content.mime_type or "image/jpeg"
+    if image_content.data is not None and isinstance(image_content.data, (bytes, bytearray)):
+        data = base64.b64encode(image_content.data).decode("utf-8")
+    elif image_content.data_string:
+        data = image_content.data_string
+    elif image_content.data is not None:
+        data = str(image_content.data)
+    else:
+        raise ServiceInvalidRequestError(
+            "ImageContent without data or data_uri while formatting message for Anthropic."
+        )
+
     if not data:
         raise ServiceInvalidRequestError(
             "ImageContent without data or data_uri while formatting message for Anthropic."
         )
+
     return {
         "type": "image",
         "source": {
