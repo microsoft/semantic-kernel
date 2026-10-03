@@ -40,7 +40,7 @@ dependencies = [
     "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
@@ -51,7 +51,7 @@ dependencies = [
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
     "scipy>=1.15.1",
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
     # Protobuf
     # explicit typing extensions
@@ -144,7 +144,7 @@ redis = [
     "redisvl ~= 0.4"
 ]
 realtime = [
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
 ]
 sql = [
