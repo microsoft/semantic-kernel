@@ -152,9 +152,11 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     ret["description"] = meta
                 elif isinstance(meta, dict):
                     # only override from the metadata if it is not already set
-                    if "description" not in ret and (description := meta.pop("description", None)):
+                    # note: do not mutate the metadata dict itself, it is user-provided
+                    # and can be shared between multiple functions/parameters
+                    if "description" not in ret and (description := meta.get("description", None)):
                         ret["description"] = description
-                    ret.update(meta)
+                    ret.update({key: value for key, value in meta.items() if key != "description"})
                 else:
                     logger.debug(f"Unknown metadata type: {meta}")
         if hasattr(param, "__origin__"):
