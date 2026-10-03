@@ -16,8 +16,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent, FunctionCallContent, TextContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.connectors.ai.anthropic.services.utils import _format_user_message
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -291,6 +293,68 @@ def test_prompt_execution_settings_class(anthropic_unit_test_env):
     anthropic_chat_completion = AnthropicChatCompletion()
     prompt_execution_settings = anthropic_chat_completion.get_prompt_execution_settings_class()
     assert prompt_execution_settings == AnthropicChatPromptExecutionSettings
+
+
+def test_format_user_message_text_only():
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello Anthropic")
+    formatted = _format_user_message(message)
+    assert formatted == {"role": "user", "content": "Hello Anthropic"}
+
+
+def test_format_user_message_with_image():
+    dummy_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            TextContent(text="Describe this image"),
+            ImageContent(data_uri=f"data:image/png;base64,{dummy_b64}"),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 2
+    assert formatted["content"][0] == {"type": "text", "text": "Describe this image"}
+    assert formatted["content"][1] == {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": dummy_b64,
+        },
+    }
+
+
+def test_format_user_message_image_only():
+    dummy_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data_uri=f"data:image/png;base64,{dummy_b64}"),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+    assert formatted["content"][0]["source"]["data"] == dummy_b64
+
+
+def test_format_user_message_raw_bytes():
+    raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data=raw_png, mime_type="image/png"),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+    import base64
+    assert formatted["content"][0]["source"]["data"] == base64.b64encode(raw_png).decode("utf-8")
 
 
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
