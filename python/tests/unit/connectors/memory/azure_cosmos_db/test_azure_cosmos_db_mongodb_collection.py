@@ -84,10 +84,10 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     )
 
     # Act
-    await collection.ensure_collection_exists(customArg="customValue")
+    await collection.ensure_collection_exists(customArg="customValue", m=16, efConstruction=64)
 
     # Assert
-    mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue")
+    mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue", m=16, efConstruction=64)
     mock_database.command.assert_awaited()
     command_args = mock_database.command.call_args.kwargs["command"]
 
@@ -98,9 +98,11 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     # Check the vector field index creation
     assert command_args["indexes"][1]["name"] == "vector_"
     assert command_args["indexes"][1]["key"] == {"vector": "cosmosSearch"}
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "COS"
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] is not None
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "vector-hnsw"
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] == "COS"
     assert command_args["indexes"][1]["cosmosSearchOptions"]["dimensions"] == 5
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["m"] == 16
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["efConstruction"] == 64
 
 
 async def test_context_manager_calls_aconnect_and_close_when_managed(mock_model) -> None:
