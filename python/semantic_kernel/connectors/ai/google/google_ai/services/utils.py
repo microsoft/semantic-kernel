@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
     sanitize_schema_for_google_ai,
+    validate_gemini_plugin_name,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -148,6 +149,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 
 def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
     """Convert the kernel function metadata to function calling format."""
+    validate_gemini_plugin_name(metadata.plugin_name)
     parameters: dict[str, Any] | None = None
     if metadata.parameters:
         properties = {}
