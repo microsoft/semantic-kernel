@@ -8,7 +8,7 @@ The following samples are beneficial if you are just getting started with Semant
 
 - [Chat Completion](../../concepts/chat_completion/)
 - [Auto Function Calling](../../concepts/auto_function_calling/)
-- [Structured Output](../../concepts/structured_output/)
+- [Structured Output](../../concepts/structured_outputs/)
 - [Getting Started with Agents](../../getting_started_with_agents/)
 - [More advanced agent samples](../../concepts/agents/)
 
