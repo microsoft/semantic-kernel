@@ -31,7 +31,6 @@ class ContentFilterResult:
         """Creates a ContentFilterResult from the inner error results.
 
         Args:
-            key (str): The key to get the inner error result from.
             inner_error_results (Dict[str, Any]): The inner error results.
 
         Returns:

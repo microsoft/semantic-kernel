@@ -600,7 +600,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         Tool names over MCP's recommended 128 characters are exposed with a warning.
 
         Args:
-            kernel: The kernel instance to use.
             prompts: A list of prompt templates to expose as prompts.
             server_name: The name of the server.
             version: The version of the server.
