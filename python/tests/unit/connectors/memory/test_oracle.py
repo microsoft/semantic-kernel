@@ -15,6 +15,7 @@ from semantic_kernel.connectors.oracle import OracleCollection, OracleStore
 from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
+    VectorSearchOptions,
     VectorStoreCollectionDefinition,
     VectorStoreField,
     vectorstoremodel,
@@ -419,3 +420,42 @@ async def test_search(oracle_store, mock_connection_pool):
     assert len(results) == 1
     assert results[0].record.id == 1
     assert results[0].record.vector == [0.1, 0.2, 0.3]
+
+
+@vectorstoremodel
+@dataclass
+class FilterModel:
+    id: Annotated[int, VectorStoreField("key")]
+    color: Annotated[str, VectorStoreField("data", is_indexed=True)]
+    size: Annotated[int, VectorStoreField("data", is_indexed=True)]
+    vector: Annotated[
+        list[float] | None,
+        VectorStoreField("vector", type="float", dimensions=3, distance_function=DistanceFunction.COSINE_DISTANCE),
+    ] = None
+
+
+@pytest.mark.asyncio
+async def test_search_multiple_filters_are_combined_with_and(oracle_store):
+    collection = oracle_store.get_collection(
+        model=FilterModel, record_type=FilterModel, collection_name="MY_COLLECTION"
+    )
+    options = VectorSearchOptions(
+        vector_property_name="vector",
+        filter=["lambda x: x.color == 'red'", "lambda x: x.size > 5 or x.size < 2"],
+    )
+    sql, binds, _ = await collection._inner_search_vector(options, None, [0.1, 0.2, 0.3])
+
+    assert 'WHERE ("color" = :bind_val1) AND (("size" > :bind_val2 OR "size" < :bind_val3))' in sql
+    assert binds[1:] == ["red", 5, 2]
+
+
+@pytest.mark.asyncio
+async def test_search_single_filter_is_unchanged(oracle_store):
+    collection = oracle_store.get_collection(
+        model=FilterModel, record_type=FilterModel, collection_name="MY_COLLECTION"
+    )
+    options = VectorSearchOptions(vector_property_name="vector", filter="lambda x: x.color == 'red'")
+    sql, binds, _ = await collection._inner_search_vector(options, None, [0.1, 0.2, 0.3])
+
+    assert 'WHERE "color" = :bind_val1' in sql
+    assert binds[1:] == ["red"]
