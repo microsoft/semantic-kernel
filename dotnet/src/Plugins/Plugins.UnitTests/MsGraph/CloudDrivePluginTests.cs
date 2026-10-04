@@ -361,6 +361,50 @@ public class CloudDrivePluginTests
             await target.UploadFileAsync("//server/share/file.txt", "/remote.txt"));
     }
 
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\file.txt")]
+    [InlineData("//UNC/server/folder/file.txt")]
+    [InlineData("/\\UNC\\server\\folder\\file.txt")]
+    [InlineData("\\/UNC/server/folder/file.txt")]
+    [InlineData("\\\\?\\UNC\\server\\folder\\file.txt")]
+    [InlineData("\\\\.\\UNC\\server\\folder\\file.txt")]
+    public async Task ItRejectsUncOrExtendedPathsOnUploadAsync(string path)
+    {
+        // Arrange
+        Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+        CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
+
+        // Act & Assert — rejected before the connector is invoked
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await target.UploadFileAsync(path, "/remote.txt"));
+    }
+
+    [Theory]
+    [InlineData("/\\server\\share")]
+    [InlineData("\\/server/share")]
+    public async Task ItDeniesEnvVarExpansionToMixedSeparatorUncPathAsync(string envVarValue)
+    {
+        // Arrange — env var that expands to a mixed-separator UNC path should be rejected
+        var envVarName = "SK_TEST_MIXUNC_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, envVarValue);
+            var maliciousPath = $"%{envVarName}%{Path.DirectorySeparatorChar}secret.txt";
+
+            Mock<ICloudDriveConnector> connectorMock = new(MockBehavior.Strict);
+            CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [Path.GetTempPath()], AllowedUploadDestinationPaths = ["/"] };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+                await target.UploadFileAsync(maliciousPath, "/remote.txt"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
     [Fact]
     public async Task ItDeniesEnvVarExpansionToForwardSlashUncPathAsync()
     {

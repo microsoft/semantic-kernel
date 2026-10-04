@@ -18,6 +18,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatClient _chatClient;
@@ -31,7 +33,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         this._chatClient = this._kernel.GetRequiredService<IChatClient>();
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -62,7 +64,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -97,7 +99,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -141,7 +143,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Equal("GetCurrentDate", functionCall.Name.Split('_')[1]);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -183,7 +185,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -223,7 +225,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -265,7 +267,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -309,7 +311,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Equal("GetCurrentDate", functionCall.Name.Split('_')[1]);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -351,7 +353,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionsAutomaticallyConcurrentlyAsync()
     {
         // Arrange
@@ -390,7 +392,7 @@ public sealed class OpenAIChatClientAutoFunctionChoiceBehaviorTests : BaseIntegr
         Assert.True(requestIndexLog.All((item) => item == 0)); // Assert that all functions called by the AI model were executed within the same initial request.
     }
 
-    [Theory]
+    [Theory(Skip = TempOAIKeySkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task SpecifiedInCodeInstructsAIModelToCallFunctionInParallelOrSequentiallyAsync(bool callInParallel)
