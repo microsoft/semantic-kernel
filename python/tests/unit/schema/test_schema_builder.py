@@ -469,3 +469,34 @@ def test_build_model_schema_with_field_constraints_keeps_description():
     schema = KernelJsonSchemaBuilder.build_model_schema(ConstrainedParams)
     assert schema["properties"]["top_p"]["description"] == "nucleus sampling"
     json.dumps(schema)  # the schema must be JSON serializable
+
+
+@pytest.mark.parametrize("metadata", ["Annotated description", {"description": "Annotated description"}])
+@pytest.mark.parametrize("container", [list, tuple])
+def test_build_model_schema_with_annotated_description(metadata, container):
+    class Params(KernelBaseModel):
+        value: Annotated[float, Field(ge=0), metadata]
+
+    field = Params.model_fields["value"]
+    field.metadata = container(field.metadata)
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert schema["properties"]["value"]["description"] == "Annotated description"
+    json.dumps(schema)
+
+
+def test_build_model_schema_explicit_description_overrides_metadata():
+    class Params(KernelBaseModel):
+        value: Annotated[float, "Fallback description", Field(ge=0, description="Explicit description")]
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert schema["properties"]["value"]["description"] == "Explicit description"
+    json.dumps(schema)
+
+
+def test_build_model_schema_ignores_non_description_metadata():
+    class Params(KernelBaseModel):
+        value: Annotated[float, Field(ge=0), {"description": 123}]
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert "description" not in schema["properties"]["value"]
+    json.dumps(schema)
