@@ -502,3 +502,14 @@ async def test_helpers_chat_history_messages_prefers_argument_over_chat_history_
     rendered = await target.render(kernel, KernelArguments(chat_history=wrong, other=right))
     assert "RIGHT" in rendered
     assert "WRONG" not in rendered
+
+
+async def test_helpers_chat_history_messages_without_argument_uses_chat_history_variable(kernel: Kernel):
+    template = """{{messages}}"""
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert (
+        rendered.strip() == """<chat_history><message role="user"><text>User message</text></message></chat_history>"""
+    )
