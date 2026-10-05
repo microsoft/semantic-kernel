@@ -633,9 +633,7 @@ class InMemoryCollection(
         updated_keys = []
         for record in records:
             record = AttributeDict(record)
-            key_field_name = (
-                self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
-            )
+            key_field_name = self._key_field_name if self._key_field_name in record else self._key_field_storage_name
             key = record[key_field_name]
             self.inner_storage[key] = record
             updated_keys.append(key)

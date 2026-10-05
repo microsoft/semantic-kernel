@@ -62,6 +62,21 @@ async def test_upsert_with_key_storage_name(definition, dataclass_vector_data_mo
         assert await collection.get("second", include_vectors=True) == records[1]
 
 
+@mark.parametrize("batch", [False, True])
+async def test_upsert_when_storage_name_matches_logical_field(definition, record_type, batch):
+    definition.key_field.storage_name = "content"
+    collection = InMemoryCollection(collection_name="test", record_type=record_type, definition=definition)
+    record = record_type(id="first", content="unrelated", vector=[1.0, 0.0, 0.0, 0.0, 0.0])
+
+    keys = await collection.upsert([record] if batch else record)
+    assert keys == (["first"] if batch else "first")
+    assert "first" in collection.inner_storage
+    assert "unrelated" not in collection.inner_storage
+
+    await collection.delete("first")
+    assert collection.inner_storage == {}
+
+
 async def test_get(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
