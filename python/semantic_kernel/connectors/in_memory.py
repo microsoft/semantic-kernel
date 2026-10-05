@@ -6,7 +6,7 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field  # 2026-10-05
 from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
 from typing_extensions import override
 
@@ -79,6 +79,16 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
             del self[name]
         except KeyError:
             raise AttributeError(name)
+
+
+# 2026-10-05: 携带默认 Pydantic 输出的实际键名, 字段和值保持原样.
+class _InMemoryRecord(dict[str, Any]):
+    """携带已知键字段名称的序列化记录."""
+
+    def __init__(self, record: dict[str, Any], key_field_name: str):
+        """保存序列化字段和对应的键名称."""
+        super().__init__(record)
+        self.key_field_name = key_field_name
 
 
 class ReadOnlyAttributeDict(Mapping[TAKey, TAValue], Generic[TAKey, TAValue]):
@@ -632,8 +642,15 @@ class InMemoryCollection(
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
         for record in records:
+            # 2026-10-05: 按实际序列化格式选择键, 避免两种方向的字段名碰撞.
+            key_field_name = (
+                record.key_field_name if isinstance(record, _InMemoryRecord) else self._key_field_storage_name
+            )
             record = AttributeDict(record)
-            key_field_name = self._key_field_name if self._key_field_name in record else self._key_field_storage_name
+            if key_field_name not in record:
+                key_field_name = (
+                    self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
+                )
             key = record[key_field_name]
             self.inner_storage[key] = record
             updated_keys.append(key)
@@ -643,6 +660,22 @@ class InMemoryCollection(
         return records
 
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
+        # 2026-10-05: 此边界仅处理字典序列化结果, 成功的自定义 serialize 会绕过它.
+        if (
+            issubclass(self.record_type, BaseModel)
+            and not self.definition.to_dict
+            and self.record_type.model_dump is BaseModel.model_dump
+            and not self.record_type.__pydantic_decorators__.model_serializers
+        ):
+            key_field_name = self._key_field_name
+            # 2026-10-05: 仅在当前 Pydantic 支持且启用别名输出时采用已解析的序列化别名.
+            if (
+                "serialize_by_alias" in ConfigDict.__annotations__
+                and self.record_type.model_config.get("serialize_by_alias")
+                and (key_field := self.record_type.model_fields.get(key_field_name))
+            ):
+                key_field_name = key_field.serialization_alias or key_field_name
+            return [_InMemoryRecord(record, key_field_name) for record in records]
         return records
 
     @override
