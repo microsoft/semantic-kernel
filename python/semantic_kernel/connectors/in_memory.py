@@ -6,7 +6,7 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
-from pydantic import BaseModel, ConfigDict, Field  # 2026-10-05
+from pydantic import BaseModel, ConfigDict, Field
 from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
 from typing_extensions import override
 
@@ -27,7 +27,7 @@ from semantic_kernel.data.vector import (
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrList, OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import empty_generator
 
@@ -81,12 +81,11 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
             raise AttributeError(name)
 
 
-# 2026-10-05: 携带默认 Pydantic 输出的实际键名, 字段和值保持原样.
 class _InMemoryRecord(dict[str, Any]):
-    """携带已知键字段名称的序列化记录."""
+    """A serialized record with the name of its key field."""
 
     def __init__(self, record: dict[str, Any], key_field_name: str):
-        """保存序列化字段和对应的键名称."""
+        """Keep the dumped fields and the name of their key field."""
         super().__init__(record)
         self.key_field_name = key_field_name
 
@@ -642,7 +641,6 @@ class InMemoryCollection(
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
         for record in records:
-            # 2026-10-05: 按实际序列化格式选择键, 避免两种方向的字段名碰撞.
             key_field_name = (
                 record.key_field_name if isinstance(record, _InMemoryRecord) else self._key_field_storage_name
             )
@@ -659,23 +657,26 @@ class InMemoryCollection(
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         return records
 
-    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-        # 2026-10-05: 此边界仅处理字典序列化结果, 成功的自定义 serialize 会绕过它.
-        if (
-            issubclass(self.record_type, BaseModel)
-            and not self.definition.to_dict
-            and self.record_type.model_dump is BaseModel.model_dump
-            and not self.record_type.__pydantic_decorators__.model_serializers
-        ):
-            key_field_name = self._key_field_name
-            # 2026-10-05: 仅在当前 Pydantic 支持且启用别名输出时采用已解析的序列化别名.
-            if (
-                "serialize_by_alias" in ConfigDict.__annotations__
-                and self.record_type.model_config.get("serialize_by_alias")
-                and (key_field := self.record_type.model_fields.get(key_field_name))
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrList[dict[str, Any]]:
+        """Keep track of key names before records lose their model type."""
+        serialized = super()._serialize_data_model_to_dict(record, **kwargs)
+        key_field_name = self._key_field_name
+        if not self.definition.to_dict:
+            if not isinstance(record, BaseModel):
+                key_field_name = self._key_field_storage_name
+            elif (
+                type(record).model_dump is BaseModel.model_dump
+                and not type(record).__pydantic_decorators__.model_serializers
+                and "serialize_by_alias" in ConfigDict.__annotations__
+                and type(record).model_config.get("serialize_by_alias")
+                and (key_field := type(record).model_fields.get(key_field_name))
             ):
                 key_field_name = key_field.serialization_alias or key_field_name
-            return [_InMemoryRecord(record, key_field_name) for record in records]
+        if isinstance(serialized, list):
+            return [_InMemoryRecord(item, key_field_name) for item in serialized]
+        return _InMemoryRecord(serialized, key_field_name)
+
+    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         return records
 
     @override
