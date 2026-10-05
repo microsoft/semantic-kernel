@@ -30,6 +30,10 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// Allowed hosts are resolved before each request and non-public addresses are rejected unless
 /// <see cref="AllowPrivateNetworkAccess"/> is explicitly enabled. DNS failures are rejected.
 /// </para>
+/// <para>
+/// This pre-request check does not pin the connection's IP address and does not
+/// protect against DNS changing between validation and connection.
+/// </para>
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
