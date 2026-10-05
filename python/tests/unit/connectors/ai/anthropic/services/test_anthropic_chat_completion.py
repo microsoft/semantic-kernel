@@ -373,6 +373,37 @@ def test_format_user_message_image_url_only():
     assert formatted["content"][0]["source"]["url"] == url
 
 
+def test_format_user_message_raw_bytes_default_mime_type():
+    raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+    # When mime_type is omitted, BinaryContent defaults to text/plain
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data=raw_png),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+
+
+def test_format_user_message_jpeg_inferred_mime_type():
+    raw_jpeg = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00"
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data=raw_jpeg),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["media_type"] == "image/jpeg"
+
+
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)

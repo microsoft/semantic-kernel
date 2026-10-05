@@ -24,6 +24,28 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+ANTHROPIC_SUPPORTED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+
+
+def _infer_image_mime_type(raw_bytes: bytes | bytearray | None, mime_type: str | None) -> str:
+    """Infer or validate a supported image MIME type for Anthropic vision."""
+    if mime_type and mime_type in ANTHROPIC_SUPPORTED_IMAGE_TYPES:
+        return mime_type
+    if raw_bytes:
+        prefix = bytes(raw_bytes[:16])
+        if prefix.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if prefix.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if prefix.startswith((b"GIF87a", b"GIF89a")):
+            return "image/gif"
+        if prefix.startswith(b"RIFF") and b"WEBP" in prefix:
+            return "image/webp"
+    if mime_type and mime_type.startswith("image/"):
+        return mime_type
+    return "image/jpeg"
+
+
 def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
     """Create an Anthropic image content block from an ImageContent object."""
     if image_content.uri:
@@ -37,9 +59,11 @@ def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
                 },
             }
 
-    mime_type = image_content.mime_type or "image/jpeg"
-    if image_content.data is not None and isinstance(image_content.data, (bytes, bytearray)):
-        data = base64.b64encode(image_content.data).decode("utf-8")
+    raw_bytes = image_content.data if isinstance(image_content.data, (bytes, bytearray)) else None
+    mime_type = _infer_image_mime_type(raw_bytes, image_content.mime_type)
+
+    if raw_bytes is not None:
+        data = base64.b64encode(raw_bytes).decode("utf-8")
     elif image_content.data_string:
         data = image_content.data_string
     elif image_content.data is not None:
