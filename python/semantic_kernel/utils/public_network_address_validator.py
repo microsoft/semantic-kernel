@@ -30,8 +30,12 @@ async def ensure_public_host(
     parsed_url: ParseResult,
     dns_resolver: DnsResolver | None = None,
     configuration_hint: str = "",
-) -> None:
-    """Reject non-public destinations before a request, without pinning the connection's DNS lookup."""
+) -> list[ipaddress.IPv4Address | ipaddress.IPv6Address]:
+    """Reject non-public destinations and return vetted DNS addresses in resolver order.
+
+    The caller is responsible for binding the returned addresses to the connection.
+    Literal IP hosts are validated but return an empty list because there is no DNS lookup to pin.
+    """
     host = parsed_url.hostname
     if host is None:
         raise FunctionExecutionException(f"The request URI '{parsed_url.geturl()}' does not contain a valid host.")
@@ -42,7 +46,7 @@ async def ensure_public_host(
         addresses = await _resolve_host(host, dns_resolver)
     else:
         _ensure_public_address(parsed_url.geturl(), ip_address, configuration_hint)
-        return
+        return []
 
     if not addresses:
         raise FunctionExecutionException(
@@ -52,6 +56,7 @@ async def ensure_public_host(
 
     for address in addresses:
         _ensure_public_address(parsed_url.geturl(), address, configuration_hint)
+    return addresses
 
 
 async def _resolve_host(

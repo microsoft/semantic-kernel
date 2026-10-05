@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import socket
 
 import pytest
@@ -198,3 +199,45 @@ async def test_validate_server_url_blocks_empty_dns_response():
 
     with pytest.raises(FunctionExecutionException, match="returned no addresses"):
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
+
+
+@pytest.mark.parametrize(
+    "addresses",
+    [
+        ["93.184.216.34", "198.41.0.4"],
+        ["2606:4700:4700::1111", "93.184.216.34", "2606:4700:4700::1001"],
+    ],
+)
+async def test_validate_server_url_returns_validated_addresses_for_pinning(addresses):
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return addresses
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address(address) for address in addresses
+    ]
+
+
+async def test_validate_server_url_returns_validated_ipv6_address_for_pinning():
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return ["2606:2800:220:1:248:1893:25c8:1946"]
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address("2606:2800:220:1:248:1893:25c8:1946")
+    ]
+
+
+@pytest.mark.parametrize("host", ["93.184.216.34", "[2606:4700:4700::1111]"])
+async def test_validate_server_url_returns_no_addresses_for_literal_ip_host(host):
+    assert await validate_server_url(f"https://{host}/api") == []
+
+
+async def test_validate_server_url_returns_no_addresses_for_allowed_base_url():
+    options = ServerUrlValidationOptions(allowed_base_urls=["http://api.example.com"])
+    assert await validate_server_url("http://api.example.com/api", options) == []
+
+
+async def test_validate_server_url_returns_no_addresses_when_private_access_is_allowed():
+    options = ServerUrlValidationOptions(allow_private_network_access=True)
+    assert await validate_server_url("https://internal.example/api", options) == []
