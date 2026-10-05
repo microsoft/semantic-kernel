@@ -3,6 +3,8 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -109,6 +111,191 @@ public class FileIOPluginTests
         // Act & Assert - default config denies all paths
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.ReadAsync(path));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.WriteAsync(path, "hello world"));
+    }
+
+    [Fact]
+    public async Task ItDoesNotRevealReadOnlyOrExistenceOfDisallowedFilesAsync()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"FileIOPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+
+        var readOnlyFile = Path.Combine(outsideDir, "readonly.txt");
+        var missingFile = Path.Combine(outsideDir, "missing.txt");
+        await File.WriteAllTextAsync(readOnlyFile, "secret");
+        File.SetAttributes(readOnlyFile, FileAttributes.ReadOnly);
+
+        try
+        {
+            foreach (var plugin in new[]
+            {
+                new FileIOPlugin(),
+                new FileIOPlugin() { AllowedFolders = [allowedDir], DisableFileOverwrite = false }
+            })
+            {
+                // Act
+                var readOnlyReadEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(readOnlyFile));
+                var missingReadEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(missingFile));
+                var readOnlyWriteEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(readOnlyFile, "changed"));
+                var missingWriteEx = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(missingFile, "changed"));
+
+                // Assert - responses for existing read-only and missing files must be indistinguishable
+                Assert.Equal(missingReadEx.Message, readOnlyReadEx.Message);
+                Assert.Equal(missingWriteEx.Message, readOnlyWriteEx.Message);
+                Assert.DoesNotContain(outsideDir, readOnlyReadEx.Message, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(outsideDir, readOnlyWriteEx.Message, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        finally
+        {
+            File.SetAttributes(readOnlyFile, FileAttributes.Normal);
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItDoesNotIncludePathInReadOnlyExceptionAsync()
+    {
+        // Arrange
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()],
+            DisableFileOverwrite = false
+        };
+        var path = Path.GetTempFileName();
+        File.SetAttributes(path, FileAttributes.ReadOnly);
+
+        try
+        {
+            // Act
+            var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => plugin.WriteAsync(path, "hello world"));
+
+            // Assert
+            Assert.DoesNotContain(Path.GetFileName(path), ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            File.SetAttributes(path, FileAttributes.Normal);
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesUnresolvablePathsWithoutHidingConfigurationErrorsAsync()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"FileIOPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+        var linkPath = Path.Combine(outsideDir, "loop");
+
+        try
+        {
+            try
+            {
+                Directory.CreateSymbolicLink(linkPath, linkPath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Skip if this environment does not permit symbolic link creation.
+                return;
+            }
+
+            var resolutionError = Assert.Throws<InvalidOperationException>(() => PathUtilities.GetSafeFullPath(linkPath));
+            var plugin = new FileIOPlugin() { AllowedFolders = [allowedDir] };
+            var missingPath = Path.Combine(outsideDir, "missing.txt");
+            var unresolvablePath = Path.Combine(linkPath, "file.txt");
+
+            var expectedReadError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(missingPath));
+            var expectedWriteError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(missingPath, "changed"));
+            var readError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(unresolvablePath));
+            var writeError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(unresolvablePath, "changed"));
+
+            Assert.Equal(expectedReadError.Message, readError.Message);
+            Assert.Equal(expectedWriteError.Message, writeError.Message);
+
+            plugin.AllowedFolders = [linkPath];
+            var regularPath = Path.Combine(allowedDir, "missing.txt");
+            var configurationReadError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(regularPath));
+            var configurationWriteError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(regularPath, "changed"));
+            Assert.Equal(resolutionError.Message, configurationReadError.Message);
+            Assert.Equal(resolutionError.Message, configurationWriteError.Message);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItDeniesInaccessiblePathsWithoutHidingConfigurationErrorsAsync()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var tempDir = Path.Combine(Path.GetTempPath(), $"FileIOPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+        var restrictedDir = Directory.CreateDirectory(Path.Combine(outsideDir, "restricted"));
+        var restrictedRoot = Directory.CreateDirectory(Path.Combine(restrictedDir.FullName, "nested"));
+        var inaccessiblePath = Path.Combine(restrictedRoot.FullName, "file.txt");
+        await File.WriteAllTextAsync(inaccessiblePath, "secret");
+
+        var restrictedSecurity = restrictedDir.GetAccessControl(AccessControlSections.Access);
+        using var identity = WindowsIdentity.GetCurrent();
+        Assert.NotNull(identity.User);
+        var denyRule = new FileSystemAccessRule(
+            identity.User,
+            FileSystemRights.Read,
+            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+            PropagationFlags.None,
+            AccessControlType.Deny);
+        restrictedSecurity.AddAccessRule(denyRule);
+
+        try
+        {
+            restrictedDir.SetAccessControl(restrictedSecurity);
+            try
+            {
+                PathUtilities.GetSafeFullPath(inaccessiblePath);
+
+                // Skip if this environment does not enforce the deny rule (e.g. elevated processes).
+                return;
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+            var plugin = new FileIOPlugin() { AllowedFolders = [allowedDir] };
+            var missingPath = Path.Combine(outsideDir, "missing.txt");
+
+            var expectedReadError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(missingPath));
+            var expectedWriteError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(missingPath, "changed"));
+            var readError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.ReadAsync(inaccessiblePath));
+            var writeError = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.WriteAsync(inaccessiblePath, "changed"));
+
+            Assert.Equal(expectedReadError.Message, readError.Message);
+            Assert.Equal(expectedWriteError.Message, writeError.Message);
+
+            plugin.AllowedFolders = [restrictedRoot.FullName];
+            var regularPath = Path.Combine(allowedDir, "missing.txt");
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => plugin.ReadAsync(regularPath));
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => plugin.WriteAsync(regularPath, "changed"));
+        }
+        finally
+        {
+            restrictedSecurity.RemoveAccessRule(denyRule);
+            restrictedDir.SetAccessControl(restrictedSecurity);
+            TryDeleteDirectory(tempDir);
+        }
     }
 
     [Fact]
