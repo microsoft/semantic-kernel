@@ -37,8 +37,13 @@ from semantic_kernel.exceptions import FunctionExecutionException
         ("::1", "loopback"),
         ("::", "unspecified"),
         ("fe80::1", "link-local"),
+        ("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "link-local"),
+        ("fec0::", "site-local"),
+        ("fec0::1", "site-local"),
+        ("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local"),
         ("fc00::1", "private (IPv6 ULA)"),
         ("fd00::1", "private (IPv6 ULA)"),
+        ("ff00::", "multicast"),
         ("ff02::1", "multicast"),
         ("2001:db8::1", "reserved"),
         ("::ffff:127.0.0.1", "loopback"),
@@ -84,6 +89,12 @@ async def test_validate_server_url_rejects_literal_loopback_ipv6():
         await validate_server_url("https://[::1]/")
 
 
+@pytest.mark.parametrize("address", ["fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"])
+async def test_validate_server_url_rejects_literal_site_local_ipv6(address):
+    with pytest.raises(FunctionExecutionException, match="site-local"):
+        await validate_server_url(f"https://[{address}]/")
+
+
 async def test_validate_server_url_rejects_http_scheme_by_default():
     with pytest.raises(FunctionExecutionException, match="scheme"):
         await validate_server_url("http://api.example.com/")
@@ -120,18 +131,28 @@ async def test_validate_server_url_rejects_when_allowed_base_urls_do_not_match()
         await validate_server_url("https://api.example.com/v2/orders", options)
 
 
-async def test_validate_server_url_allows_private_network_access_after_scheme_gate():
+@pytest.mark.parametrize("url", ["https://10.0.0.5/", "https://[fec0::1]/"])
+async def test_validate_server_url_allows_private_network_access_after_scheme_gate(url):
     options = ServerUrlValidationOptions(allow_private_network_access=True)
 
-    await validate_server_url("https://10.0.0.5/", options)
+    await validate_server_url(url, options)
 
 
-async def test_validate_server_url_blocks_hostname_resolving_to_link_local():
+@pytest.mark.parametrize(
+    ("address", "expected_category"),
+    [
+        ("169.254.169.254", "link-local"),
+        ("fec0::", "site-local"),
+        ("fec0::1", "site-local"),
+        ("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local"),
+    ],
+)
+async def test_validate_server_url_blocks_hostname_resolving_to_non_public_address(address, expected_category):
     async def fake_resolver(host: str):
         assert host == "evil.example.com"
-        return ["169.254.169.254"]
+        return [address]
 
-    with pytest.raises(FunctionExecutionException, match="link-local"):
+    with pytest.raises(FunctionExecutionException, match=expected_category):
         await validate_server_url("https://evil.example.com/latest/meta-data/", dns_resolver=fake_resolver)
 
 

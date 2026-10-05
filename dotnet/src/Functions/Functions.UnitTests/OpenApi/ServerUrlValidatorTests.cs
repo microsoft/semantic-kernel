@@ -45,8 +45,13 @@ public class ServerUrlValidatorTests
     [InlineData("::1", "loopback")]
     [InlineData("::", "unspecified")]
     [InlineData("fe80::1", "link-local")]
+    [InlineData("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "link-local")]
+    [InlineData("fec0::", "site-local")]
+    [InlineData("fec0::1", "site-local")]
+    [InlineData("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local")]
     [InlineData("fc00::1", "private (IPv6 ULA)")]
     [InlineData("fd00::1", "private (IPv6 ULA)")]
+    [InlineData("ff00::", "multicast")]
     [InlineData("ff02::1", "multicast")]
     [InlineData("2001:db8::1", "reserved")]
     // IPv4-mapped IPv6 of a private address
@@ -154,27 +159,30 @@ public class ServerUrlValidatorTests
         await ServerUrlValidator.ValidateAsync(url, options: null);
     }
 
-    [Fact]
-    public async Task ItShouldBypassPrivateGateWhenAllowPrivateNetworkAccessTrueAsync()
+    [Theory]
+    [InlineData("https://10.0.0.5/")]
+    [InlineData("https://[fec0::1]/")]
+    public async Task ItShouldBypassPrivateGateWhenAllowPrivateNetworkAccessTrueAsync(string url)
     {
-        var url = new Uri("https://10.0.0.5/");
         var options = new RestApiOperationServerUrlValidationOptions { AllowPrivateNetworkAccess = true };
 
-        await ServerUrlValidator.ValidateAsync(url, options);
+        await ServerUrlValidator.ValidateAsync(new Uri(url), options);
     }
 
-    [Fact]
-    public async Task ItShouldBlockHostnameResolvingToPrivateIpAsync()
+    [Theory]
+    [InlineData("169.254.169.254", "link-local")]
+    [InlineData("fec0::", "site-local")]
+    [InlineData("fec0::1", "site-local")]
+    [InlineData("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local")]
+    public async Task ItShouldBlockHostnameResolvingToPrivateIpAsync(string address, string expectedCategory)
     {
-        // Simulates an attacker-controlled hostname (e.g., evil.com) resolving to the
-        // cloud metadata address — the most realistic SSRF vector.
         var url = new Uri("https://evil.example.com/latest/meta-data/");
         Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
-            Task.FromResult(new[] { IPAddress.Parse("169.254.169.254") });
+            Task.FromResult(new[] { IPAddress.Parse(address) });
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver));
-        Assert.Contains("link-local", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedCategory, ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

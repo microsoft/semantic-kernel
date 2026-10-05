@@ -161,7 +161,8 @@ public sealed class HttpPluginTests : IDisposable
         [
             "169.254.169.254", "127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.0.1",
             "100.64.0.1", "0.0.0.0", "224.0.0.1", "198.18.0.1", "192.0.2.1",
-            "::1", "fe80::1", "fc00::1", "ff02::1", "::ffff:169.254.169.254"
+            "::1", "fe80::1", "fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+            "fc00::1", "ff02::1", "::ffff:169.254.169.254"
         ];
 
         foreach (var address in addresses)
@@ -199,6 +200,10 @@ public sealed class HttpPluginTests : IDisposable
     [InlineData("POST", "127.0.0.1")]
     [InlineData("PUT", "127.0.0.1")]
     [InlineData("DELETE", "127.0.0.1")]
+    [InlineData("GET", "[fec0::1]")]
+    [InlineData("POST", "[fec0::1]")]
+    [InlineData("PUT", "[fec0::1]")]
+    [InlineData("DELETE", "[fec0::1]")]
     [InlineData("GET", "unresolved.example.invalid")]
     [InlineData("POST", "unresolved.example.invalid")]
     [InlineData("PUT", "unresolved.example.invalid")]

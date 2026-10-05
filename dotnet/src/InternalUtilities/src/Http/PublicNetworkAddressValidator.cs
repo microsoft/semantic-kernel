@@ -250,6 +250,13 @@ internal static class PublicNetworkAddressValidator
             return true;
         }
 
+        // fec0::/10 - deprecated site-local.
+        if (bytes[0] == 0xfe && (bytes[1] & 0xC0) == 0xC0)
+        {
+            category = "site-local";
+            return true;
+        }
+
         // fc00::/7 - unique local (private).
         if ((bytes[0] & 0xfe) == 0xfc)
         {

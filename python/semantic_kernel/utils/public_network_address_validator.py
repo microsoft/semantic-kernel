@@ -138,6 +138,8 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
         return True, "unspecified"
     if address.is_link_local:
         return True, "link-local"
+    if address.is_site_local:
+        return True, "site-local"
     if address in ipaddress.ip_network("fc00::/7"):
         return True, "private (IPv6 ULA)"
     if address.is_multicast:

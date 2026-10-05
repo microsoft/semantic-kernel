@@ -466,6 +466,9 @@ async def test_allow_all_domains_with_allowed_domains_allows_redirects():
         "192.0.2.1",
         "::1",
         "fe80::1",
+        "fec0::",
+        "fec0::1",
+        "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
         "fc00::1",
         "ff02::1",
         "::ffff:169.254.169.254",
@@ -486,7 +489,10 @@ async def test_allowed_hostname_resolving_to_non_public_address_is_blocked(metho
 
 
 @pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
-@pytest.mark.parametrize("address", ["169.254.169.254", "::1", "::ffff:127.0.0.1"])
+@pytest.mark.parametrize(
+    "address",
+    ["169.254.169.254", "::1", "::ffff:127.0.0.1", "fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"],
+)
 async def test_allowed_literal_non_public_address_is_blocked_without_dns(method, address, mock_dns):
     url_host = f"[{address}]" if ":" in address else address
     plugin = HttpPlugin(allowed_domains={address})
@@ -501,7 +507,10 @@ async def test_allowed_literal_non_public_address_is_blocked_without_dns(method,
     mock_dns.assert_not_awaited()
 
 
-@pytest.mark.parametrize("addresses", [("93.184.216.34", "10.0.0.1"), ("::1", "2606:4700:4700::1111")])
+@pytest.mark.parametrize(
+    "addresses",
+    [("93.184.216.34", "10.0.0.1"), ("::1", "2606:4700:4700::1111"), ("93.184.216.34", "fec0::1")],
+)
 async def test_mixed_public_and_private_dns_response_is_blocked(addresses, mock_dns):
     mock_dns.return_value = dns_response(*addresses)
     plugin = HttpPlugin(allowed_domains={"example.com"})
@@ -607,9 +616,10 @@ async def test_public_literal_address_is_allowed_without_dns(address, mock_dns):
 
 
 @pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
-@pytest.mark.parametrize("host", ["example.com", "127.0.0.1"])
+@pytest.mark.parametrize("host", ["example.com", "127.0.0.1", "fec0::1"])
 @pytest.mark.parametrize("unrestricted", [False, True])
 async def test_private_network_access_requires_explicit_opt_in(method, host, unrestricted, mock_dns):
+    url_host = f"[{host}]" if ":" in host else host
     plugin = HttpPlugin(
         allowed_domains={host},
         allow_all_domains=unrestricted,
@@ -618,7 +628,7 @@ async def test_private_network_access_requires_explicit_opt_in(method, host, unr
 
     with patch(f"aiohttp.ClientSession.{method}") as request:
         request.return_value.__aenter__.return_value.text.return_value = "internal response"
-        assert await getattr(plugin, method)(f"http://{host}/") == "internal response"
+        assert await getattr(plugin, method)(f"http://{url_host}/") == "internal response"
 
     assert request.call_args.kwargs["allow_redirects"] is unrestricted
     mock_dns.assert_not_awaited()
