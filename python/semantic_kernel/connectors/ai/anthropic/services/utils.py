@@ -26,6 +26,17 @@ if TYPE_CHECKING:
 
 def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
     """Create an Anthropic image content block from an ImageContent object."""
+    if image_content.uri:
+        uri_str = str(image_content.uri)
+        if uri_str.startswith(("http://", "https://")):
+            return {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": uri_str,
+                },
+            }
+
     mime_type = image_content.mime_type or "image/jpeg"
     if image_content.data is not None and isinstance(image_content.data, (bytes, bytearray)):
         data = base64.b64encode(image_content.data).decode("utf-8")
@@ -35,12 +46,12 @@ def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
         data = str(image_content.data)
     else:
         raise ServiceInvalidRequestError(
-            "ImageContent without data or data_uri while formatting message for Anthropic."
+            "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
         )
 
     if not data:
         raise ServiceInvalidRequestError(
-            "ImageContent without data or data_uri while formatting message for Anthropic."
+            "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
         )
 
     return {

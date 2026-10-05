@@ -357,6 +357,22 @@ def test_format_user_message_raw_bytes():
     assert formatted["content"][0]["source"]["data"] == base64.b64encode(raw_png).decode("utf-8")
 
 
+def test_format_user_message_image_url_only():
+    url = "https://example.com/sample_image.png"
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(uri=url),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["type"] == "url"
+    assert formatted["content"][0]["source"]["url"] == url
+
+
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)
