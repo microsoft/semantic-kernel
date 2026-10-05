@@ -633,8 +633,12 @@ class InMemoryCollection(
         updated_keys = []
         for record in records:
             record = AttributeDict(record)
-            self.inner_storage[record[self._key_field_name]] = record
-            updated_keys.append(record[self._key_field_name])
+            key_field_name = (
+                self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
+            )
+            key = record[key_field_name]
+            self.inner_storage[key] = record
+            updated_keys.append(key)
         return updated_keys
 
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:

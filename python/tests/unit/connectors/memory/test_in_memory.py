@@ -35,6 +35,33 @@ async def test_upsert(collection):
     assert collection.inner_storage == {"testid": record}
 
 
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("model_kind", ["dict", "dataclass", "pydantic"])
+async def test_upsert_with_key_storage_name(definition, dataclass_vector_data_model, record_type, batch, model_kind):
+    definition.key_field.storage_name = "stored_id"
+    model_type = {"dict": dict, "dataclass": dataclass_vector_data_model, "pydantic": record_type}[model_kind]
+    collection = InMemoryCollection(collection_name="test", record_type=model_type, definition=definition)
+    records = [
+        model_type(id="first", content="first content", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        model_type(id="second", content="second content", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert await collection.get("first", include_vectors=True) == records[0]
+    if batch:
+        assert await collection.get(["first", "second"], include_vectors=True) == records
+
+    results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], include_vectors=True)
+    found = [result.record async for result in results.results]
+    assert found == (records if batch else records[:1])
+
+    await collection.delete("first")
+    assert await collection.get("first") is None
+    if batch:
+        assert await collection.get("second", include_vectors=True) == records[1]
+
+
 async def test_get(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
