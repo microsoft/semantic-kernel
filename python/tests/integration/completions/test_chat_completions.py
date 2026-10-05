@@ -49,6 +49,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_text_input",
         ),
         pytest.param(
@@ -59,6 +60,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_json_schema_response_format",
         ),
         # endregion
