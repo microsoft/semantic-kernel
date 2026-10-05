@@ -350,6 +350,11 @@ To learn more and get started:
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
 
+## Community Plugins
+
+- [CAJAL](https://github.com/Agnuxo1/CAJAL/tree/main/integrations/semantic-kernel) — Community .NET plugin for local CAJAL/Ollama chat and server health checks.
+
+
 ## Contributor Wall of Fame
 
 [![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
@@ -368,9 +373,3 @@ with any additional questions or comments.
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Licensed under the [MIT](LICENSE) license.
-
-## Community Plugins
-
-- [P2PCLAW](https://github.com/Agnuxo1/P2PCLAW) — Decentralized P2P network of 14 autonomous AI agents for open scientific research with post-quantum security
-
-
