@@ -7,10 +7,10 @@ import pytest
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
-    try_categorize_non_public_address,
     validate_server_url,
 )
 from semantic_kernel.exceptions import FunctionExecutionException
+from semantic_kernel.utils.public_network_address_validator import try_categorize_non_public_address
 
 
 @pytest.mark.parametrize(

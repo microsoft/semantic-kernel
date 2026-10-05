@@ -8,11 +8,7 @@ from pydantic import Field
 
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.public_network_address_validator import DnsResolver as DnsResolver
-from semantic_kernel.utils.public_network_address_validator import ensure_public_host
-from semantic_kernel.utils.public_network_address_validator import (
-    try_categorize_non_public_address as try_categorize_non_public_address,
-)
+from semantic_kernel.utils.public_network_address_validator import DnsResolver, ensure_public_host
 
 DEFAULT_ALLOWED_SCHEME = "https"
 
