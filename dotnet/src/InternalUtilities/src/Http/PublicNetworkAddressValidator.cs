@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Http;
 /// Resolves and rejects non-public request destinations before an HTTP request is sent.
 /// This check does not pin the validated addresses to the subsequent HTTP connection.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class PublicNetworkAddressValidator
 {
     /// <summary>
