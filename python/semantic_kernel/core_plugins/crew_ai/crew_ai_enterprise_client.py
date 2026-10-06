@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import re
 from typing import Any
 
 import aiohttp
@@ -89,6 +90,9 @@ class CrewAIEnterpriseClient:
         Returns:
             CrewAIStatusResponse: The status response of the task.
         """
+        if not task_id or re.fullmatch(r"[A-Za-z0-9_-]+", task_id) is None:
+            raise ValueError("Task ID must contain only ASCII letters, digits, underscores, or hyphens.")
+
         async with (
             self.session.get(f"{self.endpoint}/status/{task_id}", headers=self.request_header) as response,  # type: ignore
         ):
