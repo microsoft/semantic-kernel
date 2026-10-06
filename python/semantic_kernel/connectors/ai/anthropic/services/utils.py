@@ -41,9 +41,16 @@ def _infer_image_mime_type(raw_bytes: bytes | bytearray | None, mime_type: str |
             return "image/gif"
         if prefix.startswith(b"RIFF") and b"WEBP" in prefix:
             return "image/webp"
-    if mime_type and mime_type.startswith("image/"):
+    if mime_type and mime_type in ANTHROPIC_SUPPORTED_IMAGE_TYPES:
         return mime_type
-    return "image/jpeg"
+
+    if mime_type == "text/plain" or not mime_type:
+        return "image/jpeg"
+
+    raise ServiceInvalidRequestError(
+        f"Unsupported image format: '{mime_type}'. Anthropic Claude vision only supports "
+        f"{', '.join(sorted(ANTHROPIC_SUPPORTED_IMAGE_TYPES))}."
+    )
 
 
 def _create_image_content(image_content: ImageContent) -> dict[str, Any]:

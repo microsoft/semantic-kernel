@@ -404,6 +404,28 @@ def test_format_user_message_jpeg_inferred_mime_type():
     assert formatted["content"][0]["source"]["media_type"] == "image/jpeg"
 
 
+def test_format_user_message_unsupported_svg_image_raises():
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data=b"<svg></svg>", mime_type="image/svg+xml"),
+        ],
+    )
+    with pytest.raises(ServiceInvalidRequestError, match="Unsupported image format: 'image/svg\\+xml'"):
+        _format_user_message(message)
+
+
+def test_format_user_message_unsupported_bmp_data_uri_raises():
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(data_uri="data:image/bmp;base64,Qk0="),
+        ],
+    )
+    with pytest.raises(ServiceInvalidRequestError, match="Unsupported image format: 'image/bmp'"):
+        _format_user_message(message)
+
+
 async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_client_completion: MagicMock):
     chat_history = MagicMock()
     settings = OpenAIChatPromptExecutionSettings(temperature=0.2)
