@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import logging
 from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
@@ -9,6 +10,8 @@ import aiohttp
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class HttpPlugin(KernelBaseModel):
@@ -29,7 +32,8 @@ class HttpPlugin(KernelBaseModel):
 
     Security:
         - By default, all requests are blocked unless ``allowed_domains`` is provided
-          or ``allow_all_domains`` is set to True.
+          or ``allow_all_domains`` is set to True. A warning is logged when neither
+          option is configured.
         - When ``allowed_domains`` is set and ``allow_all_domains`` is False, HTTP
           redirects are disabled to prevent redirect-based domain bypass (SSRF).
         - When ``allow_all_domains`` is True, redirects are allowed regardless of
@@ -56,6 +60,16 @@ class HttpPlugin(KernelBaseModel):
     _ALLOWED_SCHEMES: ClassVar[frozenset[str]] = frozenset({"http", "https"})
     _DEFAULT_SCHEME_PORTS: ClassVar[dict[str, int]] = {"http": 80, "https": 443}
     _DEFAULT_ALLOWED_PORTS: ClassVar[frozenset[int]] = frozenset({80, 443})
+
+    def model_post_init(self, __context: Any) -> None:
+        """Warn when the default configuration blocks all requests."""
+        super().model_post_init(__context)
+        if self.allowed_domains is None and not self.allow_all_domains:
+            logger.warning(
+                "HttpPlugin was created without `allowed_domains` and with `allow_all_domains=False`; "
+                "all HTTP requests will be blocked. Set `allowed_domains` or `allow_all_domains=True` "
+                "to enable requests."
+            )
 
     @property
     def _allow_redirects(self) -> bool:
