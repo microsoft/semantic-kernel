@@ -43,6 +43,8 @@ async def test_get_status_preserves_valid_task_id(crew_ai_client, task_id):
     "task_id",
     [
         None,
+        123,
+        [],
         "",
         " ",
         "task.id",

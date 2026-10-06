@@ -90,7 +90,7 @@ class CrewAIEnterpriseClient:
         Returns:
             CrewAIStatusResponse: The status response of the task.
         """
-        if not task_id or re.fullmatch(r"[A-Za-z0-9_-]+", task_id) is None:
+        if not isinstance(task_id, str) or re.fullmatch(r"[A-Za-z0-9_-]+", task_id) is None:
             raise ValueError("Task ID must contain only ASCII letters, digits, underscores, or hyphens.")
 
         async with (
