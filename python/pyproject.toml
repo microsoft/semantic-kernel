@@ -40,7 +40,7 @@ dependencies = [
     "openai >= 2.0.0",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
@@ -51,7 +51,7 @@ dependencies = [
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
     "scipy>=1.15.1",
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
     # Protobuf
     # explicit typing extensions
@@ -88,7 +88,7 @@ faiss = [
 ]
 google = [
     "google-cloud-aiplatform>=1.114,<1.134",
-    "google-genai >= 1.51,< 2.21"
+    "google-genai >= 1.51,< 2.23"
 ]
 hugging_face = [
     "transformers[torch] >= 5.5.0,< 6.0",
@@ -103,7 +103,7 @@ milvus = [
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai >= 1.2,< 2.7.3"
+    "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.17",
@@ -120,7 +120,7 @@ onnx = [
   "onnxruntime==1.22.1; python_version == '3.10'",
   "onnxruntime>=1.26.0; python_version > '3.10'",
   "onnxruntime-genai==0.9.0; python_version == '3.10'",
-  "onnxruntime-genai==0.14.1; python_version > '3.10'"
+  "onnxruntime-genai==0.15.2; python_version > '3.10'"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
@@ -144,7 +144,7 @@ redis = [
     "redisvl ~= 0.4"
 ]
 realtime = [
-    "websockets >= 13, < 16",
+    "websockets >= 13, < 17",
     "aiortc>=1.9.0",
 ]
 sql = [
