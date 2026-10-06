@@ -113,3 +113,11 @@ async def test_chroma_collection_search(chroma_collection, mock_client, include_
     async for res in results.results:
         assert res.record["id"] == "1"
         assert res.score == 0.1
+
+
+def test_chroma_collection_build_filter_in_list(chroma_collection):
+    assert chroma_collection._build_filter("lambda x: x.content in ['a', 'b']") == {"content": {"$in": ["a", "b"]}}
+
+
+def test_chroma_collection_build_filter_not_in_list(chroma_collection):
+    assert chroma_collection._build_filter("lambda x: x.content not in ['a', 'b']") == {"content": {"$nin": ["a", "b"]}}

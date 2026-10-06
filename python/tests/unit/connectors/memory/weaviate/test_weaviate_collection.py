@@ -427,3 +427,20 @@ async def test_weaviate_collection_deserialize_data(
         await collection.get(key=data.id)
 
         mock_inner_get.assert_called_once_with([data.id], include_vectors=False, options=None)
+
+
+def test_weaviate_collection_build_filter_in_list(clear_weaviate_env, record_type, definition) -> None:
+    """A list literal on the right side of `in` is translated to a contains_any filter."""
+    collection = WeaviateCollection(
+        record_type=record_type,
+        definition=definition,
+        collection_name="TestCollection",
+        async_client=AsyncMock(spec=WeaviateAsyncClient),
+        env_file_path="fake_env_file_path.env",
+    )
+
+    result = collection._build_filter("lambda x: x.content in ['a', 'b']")
+
+    assert result.target == "content"
+    assert result.value == ["a", "b"]
+    assert result.operator.name == "CONTAINS_ANY"

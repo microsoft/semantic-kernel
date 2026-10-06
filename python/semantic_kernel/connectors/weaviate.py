@@ -477,6 +477,8 @@ class WeaviateCollection(
                 if isinstance(value, (int, float, bool)) or value is None:
                     return value
                 raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
+            case ast.List():
+                return [self._lambda_parser(elt) for elt in node.elts]  # type: ignore
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     async def _inner_vectorized_search(

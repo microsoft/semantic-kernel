@@ -362,7 +362,7 @@ class ChromaCollection(
         return result["distance"]
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> dict[str, Any] | str | int | float | bool | None:  # type: ignore
+    def _lambda_parser(self, node: ast.AST) -> dict[str, Any] | list[Any] | str | int | float | bool | None:  # type: ignore
         # Comparison operations
         match node:
             case ast.Compare():
@@ -430,6 +430,8 @@ class ChromaCollection(
                 if isinstance(value, (int, float, bool)) or value is None:
                     return value
                 raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
+            case ast.List():
+                return [self._lambda_parser(elt) for elt in node.elts]
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
 

@@ -508,6 +508,8 @@ class MongoDBAtlasCollection(
                 return node.id
             case ast.Constant():
                 return node.value
+            case ast.List():
+                return [self._lambda_parser(elt) for elt in node.elts]
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
