@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import socket
 from unittest.mock import AsyncMock, patch
 
@@ -278,16 +279,35 @@ async def test_allowed_domains_exact_subdomain_match():
 # Security regression tests
 
 
-async def test_default_constructor_denies_all():
-    """Test that default HttpPlugin() denies all requests (issue 115285)."""
-    plugin = HttpPlugin()
+def test_default_constructor_denies_all_and_logs_warning(caplog):
+    """Test that default HttpPlugin() denies all requests and logs a warning."""
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.core_plugins.http_plugin"):
+        plugin = HttpPlugin()
+
     assert plugin._is_uri_allowed("https://example.com/path") is False
     assert plugin._is_uri_allowed("https://any-domain.com/path") is False
+    assert "without `allowed_domains`" in caplog.text
+    assert "all HTTP requests will be blocked" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "plugin_kwargs",
+    [
+        {"allowed_domains": {"example.com"}},
+        {"allow_all_domains": True},
+    ],
+)
+def test_explicit_domain_configuration_does_not_log_default_warning(caplog, plugin_kwargs):
+    """Test that explicit domain configurations do not log the default warning."""
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.core_plugins.http_plugin"):
+        HttpPlugin(**plugin_kwargs)
+
+    assert "without `allowed_domains`" not in caplog.text
 
 
 @pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
 async def test_default_constructor_blocks_requests(method):
-    """Test that default HttpPlugin() blocks all HTTP methods (issue 115285)."""
+    """Test that default HttpPlugin() blocks all HTTP methods."""
     plugin = HttpPlugin()
     with pytest.raises(FunctionExecutionException, match="Sending requests to the provided location is not allowed"):
         if method in ["post", "put"]:
