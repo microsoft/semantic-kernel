@@ -478,7 +478,16 @@ class WeaviateCollection(
                     return value
                 raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
             case ast.List():
-                return [self._lambda_parser(elt) for elt in node.elts]  # type: ignore
+                # Elements go into a typed value list, not a SQL string, so string literals are kept as written.
+                items: list[Any] = []
+                for elt in node.elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        items.append(elt.value)
+                    elif isinstance(elt, ast.Constant) and isinstance(elt.value, bytes):
+                        items.append(elt.value.decode("utf-8"))
+                    else:
+                        items.append(self._lambda_parser(elt))
+                return items
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     async def _inner_vectorized_search(

@@ -121,3 +121,9 @@ def test_chroma_collection_build_filter_in_list(chroma_collection):
 
 def test_chroma_collection_build_filter_not_in_list(chroma_collection):
     assert chroma_collection._build_filter("lambda x: x.content not in ['a', 'b']") == {"content": {"$nin": ["a", "b"]}}
+
+
+def test_chroma_collection_build_filter_in_list_keeps_apostrophes(chroma_collection):
+    assert chroma_collection._build_filter("lambda x: x.content in [\"O'Reilly\", 'b']") == {
+        "content": {"$in": ["O'Reilly", "b"]}
+    }

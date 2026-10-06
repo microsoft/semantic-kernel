@@ -444,3 +444,22 @@ def test_weaviate_collection_build_filter_in_list(clear_weaviate_env, record_typ
     assert result.target == "content"
     assert result.value == ["a", "b"]
     assert result.operator.name == "CONTAINS_ANY"
+
+
+def test_weaviate_collection_build_filter_in_list_keeps_apostrophes(
+    clear_weaviate_env, record_type, definition
+) -> None:
+    """String values in a list literal reach contains_any as written, without doubled apostrophes."""
+    collection = WeaviateCollection(
+        record_type=record_type,
+        definition=definition,
+        collection_name="TestCollection",
+        async_client=AsyncMock(spec=WeaviateAsyncClient),
+        env_file_path="fake_env_file_path.env",
+    )
+
+    result = collection._build_filter("lambda x: x.content in [\"O'Reilly\", 'b']")
+
+    assert result.target == "content"
+    assert result.value == ["O'Reilly", "b"]
+    assert result.operator.name == "CONTAINS_ANY"
