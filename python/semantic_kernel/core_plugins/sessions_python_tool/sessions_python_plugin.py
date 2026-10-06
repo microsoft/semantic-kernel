@@ -7,6 +7,7 @@ import re
 from collections.abc import Awaitable, Callable
 from io import BytesIO
 from typing import Annotated, Any
+from urllib.parse import quote
 
 from azure.core.credentials import TokenCredential
 from httpx import AsyncClient, HTTPStatusError
@@ -424,7 +425,8 @@ class SessionsPythonTool(KernelBaseModel):
         """Download a file from the session pool.
 
         Args:
-            remote_file_name: The name of the file to download, relative to `/mnt/data`.
+            remote_file_name: The unescaped name of the file to download, relative to `/mnt/data`.
+                Must not contain `.` or `..` path segments.
             local_file_path: The path to save the downloaded file to. Should include the extension.
                 If not provided, the file is returned as a BytesIO object.
 
@@ -432,8 +434,12 @@ class SessionsPythonTool(KernelBaseModel):
             BytesIO | None: The file content as BytesIO if no local_file_path provided, otherwise None.
 
         Raises:
-            FunctionExecutionException: If local_file_path is not in allowed directories.
+            FunctionExecutionException: If remote_file_name contains `.` or `..` path segments,
+                or local_file_path is not in allowed directories.
         """
+        if any(segment in (".", "..") for segment in remote_file_name.split("/")):
+            raise FunctionExecutionException("The remote file name must not contain '.' or '..' path segments.")
+
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update({
             "Authorization": f"Bearer {auth_token}",
@@ -442,7 +448,7 @@ class SessionsPythonTool(KernelBaseModel):
 
         url = self._build_url_with_version(
             base_url=str(self.pool_management_endpoint),
-            endpoint=f"files/content/{remote_file_name}",
+            endpoint=f"files/content/{quote(remote_file_name, safe='/')}",
             params={"identifier": self.settings.session_id},
         )
 
