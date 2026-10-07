@@ -160,10 +160,26 @@ def test_split_text_paragraph_evenly():
         "This is only a test.",
         "We repeat, this is only a test. A unit test.",
         "A small note. And another. And once again.",
-        f"Seriously, this is the end. We're finished. All set. Bye.{NEWLINE}Done.",
+        "Seriously, this is the end. We're finished. All set. Bye.",
+        "Done.",
     ]
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
+
+
+def test_split_text_paragraph_evenly_respects_max_tokens():
+    """Test split_paragraph() does not merge the last paragraph past max_tokens"""
+    text = [
+        "This is a test of the emergency broadcast system. This is only a test.",
+        "We repeat, this is only a test. A unit test.",
+        "A small note. And another. And once again. Seriously, this is the end. " + "We're finished. All set. Bye.",
+        "Done.",
+    ]
+
+    max_token_per_line = 15
+
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert all(len(paragraph) // 4 <= max_token_per_line for paragraph in split)
 
 
 def test_split_text_paragraph_evenly_2():
@@ -187,7 +203,8 @@ def test_split_text_paragraph_evenly_2():
         "The sun set over the horizon peacefully, the beautiful star.",
         f"Cats love boxes.{NEWLINE}That is something. Incredible news that is.",
         f"What a beautiful day to be alive.{NEWLINE}Seriously, this is the end.",
-        f"We're finished once of for all. All set. Ok.{NEWLINE}Done.{NEWLINE}" + f"Or is it?{NEWLINE}Surprise!",
+        f"We're finished once of for all. All set. Ok.{NEWLINE}Done.{NEWLINE}" + "Or is it?",
+        "Surprise!",
     ]
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
@@ -247,7 +264,8 @@ def test_split_paragraph_semicolon():
         "This is only a test",
         "We repeat; this is only a test; A unit test",
         "A small note; And another; And once again;",
-        f"Seriously, this is the end; We're finished; All set; Bye.{NEWLINE}Done.",
+        "Seriously, this is the end; We're finished; All set; Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
@@ -267,7 +285,8 @@ def test_split_paragraph_colon():
         "This is only a test",
         "We repeat: this is only a test: A unit test",
         "A small note: And another: And once again:",
-        f"Seriously, this is the end: We're finished: All set: Bye.{NEWLINE}Done.",
+        "Seriously, this is the end: We're finished: All set: Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
@@ -388,7 +407,8 @@ def test_split_md_on_dot():
         "This\n is only a test",
         "We repeat. this is only a test. A unit test",
         "A small note. And another. And once again.",
-        f"Seriously, this is the end. We're finished. All set. Bye.{NEWLINE}Done.",
+        "Seriously, this is the end. We're finished. All set. Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(text, max_token_per_line)
@@ -408,7 +428,8 @@ def test_split_md_on_colon():
         "This is only a test",
         "We repeat: this is only a test: A unit test",
         "A small note: And another: And once again:",
-        f"Seriously, this is the end: We're finished: All set: Bye.{NEWLINE}Done.",
+        "Seriously, this is the end: We're finished: All set: Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(text, max_token_per_line)
@@ -428,7 +449,8 @@ def test_split_md_on_punctuation():
         "This\n is only a test",
         "We repeat? this is only a test! A unit test",
         "A small note? And another! And once again?",
-        f"Seriously, this is the end! We're finished! All set! Bye.{NEWLINE}Done.",
+        "Seriously, this is the end! We're finished! All set! Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(text, max_token_per_line)
@@ -448,7 +470,8 @@ def test_split_md_on_semicolon():
         "This is only a test",
         "We repeat; this is only a test; A unit test",
         "A small note; And another; And once again;",
-        f"Seriously, this is the end; We're finished; All set; Bye.{NEWLINE}Done.",
+        "Seriously, this is the end; We're finished; All set; Bye.",
+        "Done.",
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(text, max_token_per_line)
