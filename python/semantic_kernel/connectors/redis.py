@@ -3,6 +3,7 @@
 import ast
 import asyncio
 import contextlib
+import inspect
 import json
 import logging
 import sys
@@ -17,6 +18,7 @@ from redis.asyncio.client import Redis
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+from redisvl.index import AsyncSearchIndex
 from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
 from redisvl.query.query import BaseQuery, VectorQuery
@@ -164,6 +166,36 @@ def _definition_to_redis_fields(
         elif collection_type == RedisCollectionTypes.JSON:
             fields.append(_field_to_redis_field_json(field.storage_name or field.name, field))  # type: ignore
     return fields
+
+
+async def _process_search_results(
+    results: Any,
+    query: BaseQuery,
+    collection_name: str,
+    redis_database: Redis,
+    collection_type: RedisCollectionTypes,
+) -> Any:
+    """Process RedisVL results across its old and current APIs."""
+    parameters = list(inspect.signature(process_results).parameters.values())
+    if len(parameters) < 3:
+        raise VectorSearchExecutionException(
+            "Unsupported redisvl process_results() signature."
+        )
+
+    third_parameter = parameters[2].name
+    if third_parameter == "storage_type":
+        return process_results(results, query, STORAGE_TYPE_MAP[collection_type])
+
+    if third_parameter == "schema":
+        index = await AsyncSearchIndex.from_existing(
+            name=collection_name,
+            redis_client=redis_database,
+        )
+        return process_results(results, query, index.schema)
+
+    raise VectorSearchExecutionException(
+        f"Unsupported redisvl process_results() parameter: {third_parameter}."
+    )
 
 
 @release_candidate
@@ -321,7 +353,20 @@ class RedisCollection(
         results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
-        processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
+        try:
+            processed = await _process_search_results(
+                results,
+                query,
+                self.collection_name,
+                self.redis_database,
+                self.collection_type,
+            )
+        except VectorSearchExecutionException:
+            raise
+        except Exception as exc:
+            raise VectorSearchExecutionException(
+                f"An error occurred during the search: {exc}"
+            ) from exc
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(desync_list(processed)),
             total_count=results.total,
@@ -616,8 +661,15 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
                     case FieldTypes.KEY:
                         rec[field.name] = self._unget_redis_key(rec[field.name])
                     case "vector":
-                        dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
-                        rec[field.name] = buffer_to_array(rec[field.name], dtype)
+                        # When include_vectors=False (the default for search), the vector
+                        # field is not returned by Redis and will be absent from `rec`.
+                        # Guard against KeyError before attempting to decode the buffer.
+                        storage_name = field.storage_name or field.name
+                        if storage_name in rec:
+                            dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
+                            rec[field.name] = buffer_to_array(rec[storage_name], dtype)
+                        else:
+                            rec[field.name] = None
             results.append(rec)
         return results
 
