@@ -6868,7 +6868,7 @@ requires-dist = [
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.7" },
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.17" },
     { name = "pyodbc", marker = "extra == 'sql'", specifier = ">=5.2" },
-    { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
+    { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.10" },
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = ">=6,<8" },
     { name = "redisvl", marker = "extra == 'redis'", specifier = "~=0.4" },
     { name = "scipy", specifier = ">=1.15.1" },
