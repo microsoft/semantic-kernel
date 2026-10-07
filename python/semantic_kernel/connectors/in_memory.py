@@ -629,12 +629,18 @@ class InMemoryCollection(
         return [self.inner_storage[key] for key in keys if key in self.inner_storage]
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
+        async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
+        key_storage_name = self._key_field_storage_name
+        key_name = self._key_field_name
         for record in records:
             record = AttributeDict(record)
-            self.inner_storage[record[self._key_field_name]] = record
-            updated_keys.append(record[self._key_field_name])
+            # Serialized records index the key by its storage name (e.g. dict and
+            # dataclass records), while some record types (e.g. Pydantic models)
+            # serialize with the Python field name, so fall back to that.
+            key = record[key_storage_name] if key_storage_name in record else record[key_name]
+            self.inner_storage[key] = record
+            updated_keys.append(key)
         return updated_keys
 
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
