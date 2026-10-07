@@ -189,3 +189,197 @@ def test_no_operationid_raises_error():
             openapi_document_path=no_op_path,
             execution_settings=None,
         )
+
+
+def test_parse_blocks_external_http_refs_by_default():
+    """Verify that external HTTP $ref resolution is not enabled by default."""
+    from unittest.mock import MagicMock, patch
+
+    from prance.util.resolver import RESOLVE_HTTP, RESOLVE_INTERNAL
+
+    with patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.ResolvingParser") as mock_parser_cls:
+        mock_parser_cls.return_value = MagicMock(specification={"openapi": "3.0.0"})
+        parser = OpenApiParser()
+        parser.parse("dummy_path.yaml")
+
+        mock_parser_cls.assert_called_once()
+        call_kwargs = mock_parser_cls.call_args
+        resolve_types = call_kwargs.kwargs.get("resolve_types") or call_kwargs[1].get("resolve_types")
+        assert resolve_types == RESOLVE_INTERNAL, (
+            f"Expected only RESOLVE_INTERNAL ({RESOLVE_INTERNAL}), got {resolve_types}"
+        )
+        assert not (resolve_types & RESOLVE_HTTP), "RESOLVE_HTTP should not be set by default"
+
+
+def test_parse_resolves_internal_refs_by_default(tmp_path):
+    """Verify that internal $ref references are still resolved by default."""
+    openapi_spec = tmp_path / "spec_with_internal_ref.yaml"
+    openapi_spec.write_text(
+        """
+openapi: 3.0.0
+info:
+  title: Internal Ref Test
+  version: 1.0.0
+servers:
+  - url: http://example.com
+paths:
+  /test:
+    get:
+      operationId: testOp
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestSchema"
+components:
+  schemas:
+    TestSchema:
+      type: object
+      properties:
+        name:
+          type: string
+""",
+        encoding="utf-8",
+    )
+
+    parser = OpenApiParser()
+    result = parser.parse(str(openapi_spec))
+
+    # Internal $ref should be resolved
+    response_schema = result["paths"]["/test"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert "$ref" not in response_schema, "Internal $ref should be resolved"
+    assert response_schema["type"] == "object"
+    assert "name" in response_schema["properties"]
+
+
+def test_parse_blocks_file_refs_by_default():
+    """Verify that local file $ref resolution is not enabled by default."""
+    from unittest.mock import MagicMock, patch
+
+    from prance.util.resolver import RESOLVE_FILES, RESOLVE_INTERNAL
+
+    with patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.ResolvingParser") as mock_parser_cls:
+        mock_parser_cls.return_value = MagicMock(specification={"openapi": "3.0.0"})
+        parser = OpenApiParser()
+        parser.parse("dummy_path.yaml")
+
+        call_kwargs = mock_parser_cls.call_args
+        resolve_types = call_kwargs.kwargs.get("resolve_types") or call_kwargs[1].get("resolve_types")
+        assert resolve_types == RESOLVE_INTERNAL, (
+            f"Expected only RESOLVE_INTERNAL ({RESOLVE_INTERNAL}), got {resolve_types}"
+        )
+        assert not (resolve_types & RESOLVE_FILES), "RESOLVE_FILES should not be set by default"
+
+
+def test_parse_enables_file_refs_when_requested():
+    """Verify that local file $ref resolution is enabled when explicitly requested."""
+    from unittest.mock import MagicMock, patch
+
+    from prance.util.resolver import RESOLVE_FILES, RESOLVE_INTERNAL
+
+    with patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.ResolvingParser") as mock_parser_cls:
+        mock_parser_cls.return_value = MagicMock(specification={"openapi": "3.0.0"})
+        parser = OpenApiParser()
+        parser.parse("dummy_path.yaml", enable_file_ref_resolution=True)
+
+        call_kwargs = mock_parser_cls.call_args
+        resolve_types = call_kwargs.kwargs.get("resolve_types") or call_kwargs[1].get("resolve_types")
+        assert resolve_types == (RESOLVE_INTERNAL | RESOLVE_FILES), (
+            f"Expected RESOLVE_INTERNAL | RESOLVE_FILES, got {resolve_types}"
+        )
+
+
+def test_parse_enables_http_refs_when_requested():
+    """Verify that HTTP $ref resolution is enabled when explicitly requested."""
+    from unittest.mock import MagicMock, patch
+
+    from prance.util.resolver import RESOLVE_HTTP, RESOLVE_INTERNAL
+
+    with patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.ResolvingParser") as mock_parser_cls:
+        mock_parser_cls.return_value = MagicMock(specification={"openapi": "3.0.0"})
+        parser = OpenApiParser()
+        parser.parse("dummy_path.yaml", enable_http_ref_resolution=True)
+
+        call_kwargs = mock_parser_cls.call_args
+        resolve_types = call_kwargs.kwargs.get("resolve_types") or call_kwargs[1].get("resolve_types")
+        assert resolve_types == (RESOLVE_INTERNAL | RESOLVE_HTTP), (
+            f"Expected RESOLVE_INTERNAL | RESOLVE_HTTP, got {resolve_types}"
+        )
+
+
+def test_parse_enables_both_file_and_http_refs_when_requested():
+    """Verify both file and HTTP $ref resolution work together."""
+    from unittest.mock import MagicMock, patch
+
+    from prance.util.resolver import RESOLVE_FILES, RESOLVE_HTTP, RESOLVE_INTERNAL
+
+    with patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.ResolvingParser") as mock_parser_cls:
+        mock_parser_cls.return_value = MagicMock(specification={"openapi": "3.0.0"})
+        parser = OpenApiParser()
+        parser.parse("dummy_path.yaml", enable_file_ref_resolution=True, enable_http_ref_resolution=True)
+
+        call_kwargs = mock_parser_cls.call_args
+        resolve_types = call_kwargs.kwargs.get("resolve_types") or call_kwargs[1].get("resolve_types")
+        assert resolve_types == (RESOLVE_INTERNAL | RESOLVE_FILES | RESOLVE_HTTP), (
+            f"Expected RESOLVE_INTERNAL | RESOLVE_FILES | RESOLVE_HTTP, got {resolve_types}"
+        )
+
+
+def test_create_functions_propagates_enable_http_ref_resolution():
+    """Verify enable_http_ref_resolution=True is propagated from settings to parser."""
+    from unittest.mock import patch
+
+    from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+        OpenAPIFunctionExecutionParameters,
+    )
+
+    minimal_spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test", "version": "1.0.0"},
+        "paths": {},
+    }
+
+    settings = OpenAPIFunctionExecutionParameters(enable_http_ref_resolution=True)
+
+    with patch.object(OpenApiParser, "parse", return_value=minimal_spec) as mock_parse:
+        create_functions_from_openapi(
+            plugin_name="testPlugin",
+            openapi_document_path="dummy.yaml",
+            execution_settings=settings,
+        )
+        mock_parse.assert_called_once_with(
+            "dummy.yaml",
+            enable_file_ref_resolution=False,
+            enable_http_ref_resolution=True,
+        )
+
+
+def test_create_functions_propagates_enable_file_ref_resolution():
+    """Verify enable_file_ref_resolution=True is propagated from settings to parser."""
+    from unittest.mock import patch
+
+    from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+        OpenAPIFunctionExecutionParameters,
+    )
+
+    minimal_spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test", "version": "1.0.0"},
+        "paths": {},
+    }
+
+    settings = OpenAPIFunctionExecutionParameters(enable_file_ref_resolution=True)
+
+    with patch.object(OpenApiParser, "parse", return_value=minimal_spec) as mock_parse:
+        create_functions_from_openapi(
+            plugin_name="testPlugin",
+            openapi_document_path="dummy.yaml",
+            execution_settings=settings,
+        )
+        mock_parse.assert_called_once_with(
+            "dummy.yaml",
+            enable_file_ref_resolution=True,
+            enable_http_ref_resolution=False,
+        )

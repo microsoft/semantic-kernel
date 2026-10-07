@@ -347,6 +347,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     raise FunctionExecutionException(
                         f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                     )
+            elif function_behavior is None:
+                logger.debug(
+                    "invoke_function_call called without function_behavior. "
+                    "No allowlist validation will be performed for function '%s'. "
+                    "Pass a FunctionChoiceBehavior with filters to enable validation.",
+                    function_call.name,
+                )
             function_to_call = self.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
@@ -577,6 +584,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
         excluded_functions: OptionalOneOrMany[str] = None,
+        *,
+        use_plugin_names: bool = False,
         **kwargs: Any,
     ) -> "Server":
         """Create a MCP server from this kernel.
@@ -584,9 +593,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-        By default, all functions are exposed as Tools, you can control this by
-        using use the `excluded_functions` argument.
-        These need to be set to the function name, without the plugin_name.
+        By default, functions are exposed as Tools using bare function names.
+        Duplicate names retain the first function and produce a warning.
+        Set `use_plugin_names=True` to expose `<registered_plugin_name>-<function_name>` tool names.
+        The `excluded_functions` argument always uses bare function names.
+        Tool names over MCP's recommended 128 characters are exposed with a warning.
 
         Args:
             kernel: The kernel instance to use.
@@ -597,6 +608,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             lifespan: The lifespan of the server.
             excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
+            use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
+                Defaults to False.
             kwargs: Any extra arguments to pass to the server creation.
 
         Returns:
@@ -614,5 +627,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             instructions=instructions,
             lifespan=lifespan,
             excluded_functions=excluded_functions,
+            use_plugin_names=use_plugin_names,
             **kwargs,
         )
