@@ -76,7 +76,6 @@ __all__ = [
     "AzureTextToImage",
     "ConnectionStringAuthentication",
     "DataSourceFieldsMapping",
-    "DataSourceFieldsMapping",
     "ExtraBody",
     "InputAudioTranscription",
     "ListenEvents",
