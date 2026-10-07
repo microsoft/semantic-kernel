@@ -10,7 +10,7 @@ import pytest
 from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool, types
 
 from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPStreamableHttpPlugin, MCPWebsocketPlugin
-from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
+from semantic_kernel.exceptions import FunctionExecutionException, KernelPluginInvalidConfigurationError
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
@@ -273,6 +273,43 @@ async def test_streamable_http_initialization_failure_unblocks_connect(mock_sess
 
     with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to initialize session"):
         await asyncio.wait_for(plugin.connect(), timeout=1)
+
+
+@pytest.mark.parametrize("failed_loader", ["load_tools", "load_prompts"])
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_loader_failure_closes_contexts_and_allows_reconnect(mock_session, mock_client, failed_loader):
+    transport = MagicMock()
+    transport.__aenter__.return_value = (MagicMock(), MagicMock(), MagicMock())
+    mock_client.return_value = transport
+    session_context = mock_session.return_value
+
+    async def exit_after_yield(*args):
+        await asyncio.sleep(0)
+        return False
+
+    session_context.__aexit__.side_effect = exit_after_yield
+    plugin = MCPStreamableHttpPlugin(
+        name="test",
+        url="http://localhost:8080/mcp",
+        load_tools=failed_loader == "load_tools",
+        load_prompts=failed_loader == "load_prompts",
+    )
+    setattr(plugin, failed_loader, AsyncMock(side_effect=RuntimeError("load failed")))
+
+    with pytest.raises(FunctionExecutionException, match="Failed to enter context manager"):
+        await asyncio.wait_for(plugin.connect(), timeout=1)
+
+    session_context.__aexit__.assert_awaited_once()
+    transport.__aexit__.assert_awaited_once()
+    assert plugin.session is None
+
+    setattr(plugin, failed_loader, AsyncMock())
+    await asyncio.wait_for(plugin.connect(), timeout=1)
+    assert plugin.session is session_context.__aenter__.return_value
+    await asyncio.wait_for(plugin.close(), timeout=1)
+    assert session_context.__aexit__.await_count == 2
+    assert transport.__aexit__.await_count == 2
 
 
 @patch("semantic_kernel.connectors.mcp.stdio_client")

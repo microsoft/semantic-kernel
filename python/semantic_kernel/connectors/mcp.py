@@ -7,7 +7,7 @@ import re
 import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Sequence
-from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager, suppress
 from datetime import timedelta
 from functools import partial
 from itertools import chain
@@ -301,12 +301,12 @@ class MCPPluginBase:
             await ready_event.wait()
             if self._current_task.done():
                 await self._current_task
-        except KernelPluginInvalidConfigurationError:
-            ready_event.clear()
-            raise
         except Exception as ex:
             ready_event.clear()
-            await self.close()
+            with suppress(Exception):
+                await self.close()
+            if isinstance(ex, KernelPluginInvalidConfigurationError):
+                raise
             raise FunctionExecutionException("Failed to enter context manager.") from ex
 
     async def close(self) -> None:
@@ -315,11 +315,13 @@ class MCPPluginBase:
             # Signal the stop event, which asks the _inner_connect
             # method to close the session with the exit stack
             self._stop_event.set()
-        if self._current_task:
-            # After, the signal, we wait for it to close the exit stack.
-            await self._current_task
+        try:
+            if self._current_task:
+                # After the signal, wait for the task to close the exit stack.
+                await self._current_task
+        finally:
             self._current_task = None
-        self.session = None
+            self.session = None
 
     async def _inner_connect(self, ready_event: asyncio.Event) -> None:
         try:
@@ -327,7 +329,6 @@ class MCPPluginBase:
                 try:
                     transport = await self._exit_stack.enter_async_context(self.get_mcp_client())
                 except Exception as ex:
-                    await self._exit_stack.aclose()
                     raise KernelPluginInvalidConfigurationError(
                         "Failed to connect to the MCP server. Please check your configuration."
                     ) from ex
@@ -345,14 +346,12 @@ class MCPPluginBase:
                         )
                     )
                 except Exception as ex:
-                    await self._exit_stack.aclose()
                     raise KernelPluginInvalidConfigurationError(
                         "Failed to create a session. Please check your configuration."
                     ) from ex
                 try:
                     await session.initialize()
                 except Exception as ex:
-                    await self._exit_stack.aclose()
                     raise KernelPluginInvalidConfigurationError(
                         "Failed to initialize session. Please check your configuration."
                     ) from ex
@@ -374,7 +373,12 @@ class MCPPluginBase:
                 except Exception:
                     logger.warning("Failed to set log level to %s", logger.level)
         except Exception:
-            ready_event.set()
+            try:
+                await self._exit_stack.aclose()
+            except Exception:
+                logger.exception("Error closing exit stack after failed connect")
+            finally:
+                ready_event.set()
             raise
         # Setting up is complete, will now signal the main loop that we are ready
         ready_event.set()
