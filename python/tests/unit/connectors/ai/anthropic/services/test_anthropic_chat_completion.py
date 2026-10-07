@@ -373,6 +373,50 @@ def test_format_user_message_image_url_only():
     assert formatted["content"][0]["source"]["url"] == url
 
 
+def test_format_user_message_dual_source_prefers_inline_bytes():
+    # ImageContent documents that its URI may refer to different content than
+    # its data, so inline bytes must win over the remote URL.
+    raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(
+                uri="https://example.com/remote.png",
+                data=raw_png,
+                mime_type="image/png",
+            ),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["type"] == "base64"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+    import base64
+    assert formatted["content"][0]["source"]["data"] == base64.b64encode(raw_png).decode("utf-8")
+
+
+def test_format_user_message_dual_source_prefers_data_uri():
+    dummy_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    message = ChatMessageContent(
+        role=AuthorRole.USER,
+        items=[
+            ImageContent(
+                uri="https://example.com/remote.png",
+                data_uri=f"data:image/png;base64,{dummy_b64}",
+            ),
+        ],
+    )
+    formatted = _format_user_message(message)
+    assert formatted["role"] == "user"
+    assert len(formatted["content"]) == 1
+    assert formatted["content"][0]["type"] == "image"
+    assert formatted["content"][0]["source"]["type"] == "base64"
+    assert formatted["content"][0]["source"]["media_type"] == "image/png"
+    assert formatted["content"][0]["source"]["data"] == dummy_b64
+
+
 def test_format_user_message_raw_bytes_default_mime_type():
     raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
     # When mime_type is omitted, BinaryContent defaults to text/plain

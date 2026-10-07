@@ -53,19 +53,17 @@ def _infer_image_mime_type(raw_bytes: bytes | bytearray | None, mime_type: str |
     )
 
 
-def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
-    """Create an Anthropic image content block from an ImageContent object."""
-    if image_content.uri:
-        uri_str = str(image_content.uri)
-        if uri_str.startswith(("http://", "https://")):
-            return {
-                "type": "image",
-                "source": {
-                    "type": "url",
-                    "url": uri_str,
-                },
-            }
+def _has_inline_image_data(image_content: ImageContent) -> bool:
+    """Check whether the ImageContent carries inline image data (not just a remote reference)."""
+    data = image_content.data
+    if isinstance(data, (bytes, bytearray)):
+        # BinaryContent defaults data to b"" when only a URI is given.
+        return len(data) > 0
+    return bool(image_content.data_string) or data is not None
 
+
+def _create_base64_image_content(image_content: ImageContent) -> dict[str, Any]:
+    """Create an Anthropic base64 image content block from inline image data."""
     raw_bytes = image_content.data if isinstance(image_content.data, (bytes, bytearray)) else None
     mime_type = _infer_image_mime_type(raw_bytes, image_content.mime_type)
 
@@ -93,6 +91,33 @@ def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
             "data": data,
         },
     }
+
+
+def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
+    """Create an Anthropic image content block from an ImageContent object.
+
+    Inline image data takes precedence over a remote URL: per ImageContent's
+    contract, its URI may refer to different content than its data, so sending
+    the URL when bytes are available can send the wrong image (or fail for
+    URLs requiring authentication).
+    """
+    if _has_inline_image_data(image_content):
+        return _create_base64_image_content(image_content)
+
+    if image_content.uri:
+        uri_str = str(image_content.uri)
+        if uri_str.startswith(("http://", "https://")):
+            return {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": uri_str,
+                },
+            }
+
+    raise ServiceInvalidRequestError(
+        "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
+    )
 
 
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
