@@ -16,6 +16,10 @@ const PERMISSION_PROFILES = Object.freeze({
     issues: 'write',
     pull_requests: 'write',
   }),
+  'team-check': Object.freeze({
+    members: 'read',
+    pull_requests: 'read',
+  }),
 });
 
 function base64Url(value) {
@@ -71,7 +75,7 @@ async function createInstallationToken(config, dependencies = {}) {
     throw new Error('TARGET_REPOSITORY must use the owner/repository format.');
   }
   if (!Object.hasOwn(PERMISSION_PROFILES, config.permissionProfile)) {
-    throw new Error('PERMISSION_PROFILE must be issues, pull-requests, or devflow.');
+    throw new Error('PERMISSION_PROFILE must be issues, pull-requests, devflow, or team-check.');
   }
   const permissions = PERMISSION_PROFILES[config.permissionProfile];
 

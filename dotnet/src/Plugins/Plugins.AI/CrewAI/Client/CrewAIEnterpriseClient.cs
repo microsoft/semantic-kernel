@@ -3,6 +3,7 @@
 using System;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
@@ -125,6 +126,15 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     {
         try
         {
+            Verify.NotNullOrWhiteSpace(taskId, nameof(taskId));
+
+            if (!Regex.IsMatch(taskId, @"\A[A-Za-z0-9_-]+\z"))
+            {
+                throw new ArgumentException(
+                    "Task ID must contain only ASCII letters, digits, underscores, or hyphens.",
+                    nameof(taskId));
+            }
+
             using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
             using var requestMessage = HttpRequest.CreateGetRequest($"/status/{taskId}");
             using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
