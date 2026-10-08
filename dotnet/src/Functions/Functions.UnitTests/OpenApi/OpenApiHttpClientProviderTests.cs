@@ -329,6 +329,9 @@ public sealed class OpenApiHttpClientProviderTests
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
+                // On Linux, a cancelled probe can still connect later and be mistaken for the HTTP client.
+                socket.Dispose();
+                connections.Remove(socket);
                 return;
             }
         }
