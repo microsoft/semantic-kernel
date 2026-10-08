@@ -128,3 +128,25 @@ def test_named_args():
     assert blocks[1].content == '"direct"'
     assert blocks[2].content == "arg1=$arg1"
     assert blocks[3].content == 'arg2="arg2"'
+
+
+def test_named_args_with_spaces_in_quoted_value():
+    """Regression test for issue #14460: spaces inside quoted named-arg values should not split tokens."""
+    blocks = CodeTokenizer.tokenize("func key='hello world'")
+    assert len(blocks) == 2
+    assert blocks[0].content == "func"
+    assert blocks[0].type == BlockTypes.FUNCTION_ID
+    assert blocks[1].content == "key='hello world'"
+    assert blocks[1].type == BlockTypes.NAMED_ARG
+
+    blocks = CodeTokenizer.tokenize('func key="hello world"')
+    assert len(blocks) == 2
+    assert blocks[0].content == "func"
+    assert blocks[1].content == 'key="hello world"'
+    assert blocks[1].type == BlockTypes.NAMED_ARG
+
+    blocks = CodeTokenizer.tokenize("plugin.func greeting='hello world' name='john doe'")
+    assert len(blocks) == 3
+    assert blocks[0].content == "plugin.func"
+    assert blocks[1].content == "greeting='hello world'"
+    assert blocks[2].content == "name='john doe'"
