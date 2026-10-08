@@ -1,19 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+#endif
 using System.Net.Http;
 #if NET
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
+#else
 using Microsoft.SemanticKernel.Http;
+#endif
 
 #pragma warning disable CA2000 // Ownership is transferred to the shared handler or NetworkStream.
 
