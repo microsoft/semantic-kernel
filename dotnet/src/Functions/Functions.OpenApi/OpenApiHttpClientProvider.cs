@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
 
-#pragma warning disable CA2000 // Ownership is transferred to HttpClient or NetworkStream.
+#pragma warning disable CA2000 // Ownership is transferred to the shared handler or NetworkStream.
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -27,14 +27,12 @@ internal static class OpenApiHttpClientProvider
 #endif
 
     /// <summary>
-    /// Creates a non-redirecting client. On .NET, each client owns an isolated connection
-    /// pool so a connection opened by an explicitly trusted policy cannot be reused by a
-    /// stricter plugin.
+    /// Creates a non-redirecting client backed by a shared handler with separate pinned and unchecked connection pools.
     /// </summary>
     public static HttpClient CreateHttpClient()
     {
 #if NET
-        return new HttpClient(new ValidatedAddressHandler());
+        return new HttpClient(ValidatedAddressHandler.Instance, disposeHandler: false);
 #else
         return HttpClientProvider.GetNonRedirectingHttpClient();
 #endif
@@ -46,10 +44,13 @@ internal static class OpenApiHttpClientProvider
     /// </summary>
     private sealed class ValidatedAddressHandler : HttpMessageHandler
     {
+        // Plugins have no disposal contract; keep pool ownership at assembly scope rather than allocating pools per plugin.
+        public static ValidatedAddressHandler Instance { get; } = new();
+
         private readonly HttpMessageInvoker _pinnedClient;
         private readonly HttpMessageInvoker _unpinnedClient;
 
-        public ValidatedAddressHandler()
+        private ValidatedAddressHandler()
         {
             // Share cookies, not sockets, to preserve sessions between document loading and operations.
             var cookies = new CookieContainer();

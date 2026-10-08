@@ -151,6 +151,67 @@ public sealed class OpenApiHttpClientProviderTests
         Assert.Same(client, OpenApiKernelPluginFactory.GetHttpClient(client));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldReuseTheSharedPoolAfterDisposingAClientAsync(bool pinAddress)
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var address = pinAddress ? IPAddress.Parse("127.0.0.2") : IPAddress.Loopback;
+        var listener = new TcpListener(address, 0);
+        listener.Start();
+
+        try
+        {
+            var endpoint = Assert.IsType<IPEndPoint>(listener.LocalEndpoint);
+            var serverTask = ServeTwoRequestsOnOneConnectionAsync(listener, cancellationTokenSource.Token);
+            var uri = new Uri($"http://localhost:{endpoint.Port}/resource");
+
+            // Disposing a lightweight client must not close the shared pool's connection.
+            for (int i = 0; i < 2; i++)
+            {
+                using var client = OpenApiHttpClientProvider.CreateHttpClient();
+                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                if (pinAddress)
+                {
+                    request.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, [address]);
+                }
+
+                using var response = await client.SendAsync(request, cancellationTokenSource.Token);
+                response.EnsureSuccessStatusCode();
+            }
+
+            await serverTask;
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            listener.Stop();
+        }
+    }
+
+    private static async Task ServeTwoRequestsOnOneConnectionAsync(TcpListener listener, CancellationToken cancellationToken)
+    {
+        using var client = await listener.AcceptTcpClientAsync(cancellationToken);
+        await using var stream = client.GetStream();
+        using var reader = new StreamReader(stream, Encoding.ASCII, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
+
+        for (int i = 0; i < 2; i++)
+        {
+            Assert.Equal("GET /resource HTTP/1.1", await reader.ReadLineAsync(cancellationToken));
+            string? header;
+            do
+            {
+                header = await reader.ReadLineAsync(cancellationToken);
+            }
+            while (!string.IsNullOrEmpty(header));
+
+            var connectionHeader = i == 0 ? "keep-alive" : "close";
+            var response = $"HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: {connectionHeader}\r\n\r\n";
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(response), cancellationToken);
+        }
+    }
+
     private static async Task<(string? RequestLine, string? HostHeader)> ServeOneRequestAsync(
         TcpListener listener,
         CancellationToken cancellationToken,
