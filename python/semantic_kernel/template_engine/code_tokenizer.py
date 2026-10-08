@@ -70,7 +70,7 @@ class CodeTokenizer:
                 current_token_content.append(current_char)
                 continue
 
-            # While reading values between quotes
+            # While reading values between quotes (positional value or named-arg value)
             if current_token_type in (BlockTypes.VALUE, BlockTypes.NAMED_ARG):
                 # If the current char is escaping the next special char we:
                 #  - skip the current char (escape char)
@@ -85,30 +85,14 @@ class CodeTokenizer:
                     skip_next_char = True
                     continue
 
-                # A space inside a quoted value ends the value only when the
-                # following character is not a valid value continuation.
-                # Valid continuations: alphanumeric, quote, $, _, -
-                if current_char == Symbols.SPACE and next_char not in (
-                    Symbols.SGL_QUOTE,
-                    Symbols.DBL_QUOTE,
-                    Symbols.VAR_PREFIX,
-                ) and not next_char.isalnum() and next_char not in ("_", "-"):
-                    # Space ends the quoted value
-                    blocks.append(ValBlock(content="".join(current_token_content)))
-                    current_token_content.clear()
-                    current_token_type = None
-                    space_separator_found = True
-                    continue
-
                 current_token_content.append(current_char)
 
-                # When we reach the end of the value, we add the block.
-                # The closing delimiter must not be followed by alphanumeric chars
-                # (which would mean the delimiter is inside the quoted value).
-                if current_char == text_value_delimiter and (
-                    index + 2 >= len(text) or not text[index + 2].isalnum()
-                ):
-                    blocks.append(ValBlock(content="".join(current_token_content)))
+                # When we reach the end of the value, we add the block
+                if current_char == text_value_delimiter:
+                    if current_token_type == BlockTypes.NAMED_ARG:
+                        blocks.append(NamedArgBlock(content="".join(current_token_content)))
+                    else:
+                        blocks.append(ValBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                     current_token_type = None
                     space_separator_found = False
@@ -155,6 +139,16 @@ class CodeTokenizer:
                 else:
                     # A function id starts here
                     current_token_type = BlockTypes.FUNCTION_ID
+            elif (
+                current_token_type == BlockTypes.FUNCTION_ID
+                and current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE)
+                and Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content
+            ):
+                # We just appended the opening quote of a named-arg value (e.g. key='value').
+                # Switch to NAMED_ARG quoted-value mode so spaces inside the value
+                # are not treated as token separators.
+                current_token_type = BlockTypes.NAMED_ARG
+                text_value_delimiter = current_char
 
         # end of main for loop
 
@@ -163,6 +157,8 @@ class CodeTokenizer:
 
         if current_token_type == BlockTypes.VALUE:
             blocks.append(ValBlock(content="".join(current_token_content)))
+        elif current_token_type == BlockTypes.NAMED_ARG:
+            blocks.append(NamedArgBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.VARIABLE:
             blocks.append(VarBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.FUNCTION_ID:
