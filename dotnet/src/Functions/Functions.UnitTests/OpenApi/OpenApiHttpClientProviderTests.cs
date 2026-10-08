@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -56,6 +57,129 @@ public sealed class OpenApiHttpClientProviderTests
         {
             listener.Stop();
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldHandleAStalledValidatedAddressAsync(bool cancelRequest)
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var stalledListener = new TcpListener(IPAddress.Parse("127.0.0.3"), 0);
+        TcpListener? reachableListener = null;
+        var backlogConnections = new List<Socket>();
+        stalledListener.Start(1);
+
+        try
+        {
+            var endpoint = Assert.IsType<IPEndPoint>(stalledListener.LocalEndpoint);
+            reachableListener = new TcpListener(IPAddress.Parse("127.0.0.2"), endpoint.Port);
+            reachableListener.Start();
+
+            // A full listen backlog stalls new connection attempts instead of immediately refusing them.
+            await FillListenBacklogAsync(stalledListener, backlogConnections, cancellationTokenSource.Token);
+            using var client = OpenApiHttpClientProvider.CreateHttpClient();
+            client.Timeout = TimeSpan.FromMilliseconds(1500);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{endpoint.Port}/resource");
+            request.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, [IPAddress.Parse("127.0.0.3"), IPAddress.Parse("127.0.0.2")]);
+
+            if (cancelRequest)
+            {
+                using var requestCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token);
+                requestCancellationSource.CancelAfter(TimeSpan.FromMilliseconds(100));
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.SendAsync(request, requestCancellationSource.Token));
+                Assert.False(reachableListener.Pending());
+            }
+            else
+            {
+                var serverTask = ServeOneRequestAsync(reachableListener, cancellationTokenSource.Token);
+                using var response = await client.SendAsync(request, cancellationTokenSource.Token);
+                response.EnsureSuccessStatusCode();
+                var (requestLine, hostHeader) = await serverTask;
+
+                Assert.Equal("GET /resource HTTP/1.1", requestLine);
+                Assert.Equal($"Host: localhost:{endpoint.Port}", hostHeader);
+                await DrainListenBacklogAsync(stalledListener, backlogConnections, cancellationTokenSource.Token);
+                Assert.False(stalledListener.Pending());
+            }
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            stalledListener.Stop();
+            reachableListener?.Stop();
+            foreach (var socket in backlogConnections)
+            {
+                socket.Dispose();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldKeepAnEarlierValidatedAddressAttemptAliveAsync()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var listener = new TcpListener(IPAddress.Parse("127.0.0.3"), 0);
+        var backlogConnections = new List<Socket>();
+        Task<(string? RequestLine, string? HostHeader)>? serverTask = null;
+        listener.Start(1);
+
+        try
+        {
+            var endpoint = Assert.IsType<IPEndPoint>(listener.LocalEndpoint);
+            await FillListenBacklogAsync(listener, backlogConnections, cancellationTokenSource.Token);
+            serverTask = ServeAfterReleasingBacklogAsync(listener, backlogConnections, cancellationTokenSource.Token);
+            using var client = OpenApiHttpClientProvider.CreateHttpClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{endpoint.Port}/resource");
+            request.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, [endpoint.Address, IPAddress.Parse("127.0.0.2")]);
+
+            using var response = await client.SendAsync(request, cancellationTokenSource.Token);
+            response.EnsureSuccessStatusCode();
+            var (requestLine, hostHeader) = await serverTask;
+
+            Assert.Equal("GET /resource HTTP/1.1", requestLine);
+            Assert.Equal($"Host: localhost:{endpoint.Port}", hostHeader);
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            listener.Stop();
+            foreach (var socket in backlogConnections)
+            {
+                socket.Dispose();
+            }
+            if (serverTask is not null)
+            {
+                try
+                {
+                    await serverTask;
+                }
+                catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
+                {
+                }
+                catch (SocketException) when (cancellationTokenSource.IsCancellationRequested)
+                {
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateFailureWhenAllValidatedAddressesFailAsync()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.2"), 0));
+        var endpoint = Assert.IsType<IPEndPoint>(socket.LocalEndPoint);
+        using var client = OpenApiHttpClientProvider.CreateHttpClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{endpoint.Port}/resource");
+        request.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, [endpoint.Address, IPAddress.Parse("127.0.0.3")]);
+
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, cancellationTokenSource.Token));
+
+        Assert.IsType<SocketException>(exception.InnerException);
     }
 
     [Fact]
@@ -188,6 +312,47 @@ public sealed class OpenApiHttpClientProviderTests
             cancellationTokenSource.Cancel();
             listener.Stop();
         }
+    }
+
+    private static async Task FillListenBacklogAsync(TcpListener listener, List<Socket> connections, CancellationToken cancellationToken)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            connections.Add(socket);
+            using var attemptCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            attemptCancellationSource.CancelAfter(TimeSpan.FromMilliseconds(500));
+
+            try
+            {
+                await socket.ConnectAsync(listener.LocalEndpoint, attemptCancellationSource.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+        }
+
+        Assert.Fail("The loopback listener's backlog did not fill.");
+    }
+
+    private static async Task DrainListenBacklogAsync(TcpListener listener, List<Socket> connections, CancellationToken cancellationToken)
+    {
+        foreach (var socket in connections)
+        {
+            if (socket.Connected)
+            {
+                using var connection = await listener.AcceptTcpClientAsync(cancellationToken);
+            }
+        }
+    }
+
+    private static async Task<(string? RequestLine, string? HostHeader)> ServeAfterReleasingBacklogAsync(TcpListener listener, List<Socket> connections, CancellationToken cancellationToken)
+    {
+        // Release this route late to verify that starting another attempt does not cancel it.
+        await Task.Delay(TimeSpan.FromMilliseconds(1250), cancellationToken);
+        await DrainListenBacklogAsync(listener, connections, cancellationToken);
+        return await ServeOneRequestAsync(listener, cancellationToken);
     }
 
     private static async Task ServeTwoRequestsOnOneConnectionAsync(TcpListener listener, CancellationToken cancellationToken)
