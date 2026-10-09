@@ -2,7 +2,7 @@
 
 import json
 from enum import Enum
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -455,3 +455,47 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class LiteralModel(KernelBaseModel):
+    level: Literal["low", "high"]
+    maybe: Literal["a", "b"] | None = None
+
+
+@pytest.mark.parametrize(
+    ("literal_type", "expected"),
+    [
+        (Literal["fast", "slow"], {"type": "string", "enum": ["fast", "slow"]}),
+        (Literal[1, 2], {"type": "integer", "enum": [1, 2]}),
+        (Literal[True], {"type": "boolean", "enum": [True]}),
+        (Literal["a", 1], {"type": ["integer", "string"], "enum": ["a", 1]}),
+        (Optional[Literal["fast", "slow"]], {"type": ["string", "null"], "enum": ["fast", "slow", None]}),  # noqa: UP045
+        (Literal["fast", "slow"] | None, {"type": ["string", "null"], "enum": ["fast", "slow", None]}),
+        (Optional[Literal["a", None]], {"type": ["string", "null"], "enum": ["a", None]}),  # noqa: UP045
+        (list[Literal["a", "b"]], {"type": "array", "items": {"type": "string", "enum": ["a", "b"]}}),
+    ],
+)
+def test_build_literal(literal_type, expected):
+    assert KernelJsonSchemaBuilder.build(literal_type) == expected
+
+
+def test_build_literal_with_description():
+    schema = KernelJsonSchemaBuilder.build(Literal["fast", "slow"], "speed mode")
+    assert schema == {"type": "string", "enum": ["fast", "slow"], "description": "speed mode"}
+
+
+def test_build_literal_enum_member():
+    schema = KernelJsonSchemaBuilder.build(Literal[EnumTest.OPTION_A])
+    assert schema == {"type": "string", "enum": ["OptionA"]}
+
+
+def test_build_model_with_literal_fields():
+    schema = KernelJsonSchemaBuilder.build(LiteralModel)
+    assert schema == {
+        "type": "object",
+        "properties": {
+            "level": {"type": "string", "enum": ["low", "high"]},
+            "maybe": {"type": ["string", "null"], "enum": ["a", "b", None]},
+        },
+        "required": ["level"],
+    }
