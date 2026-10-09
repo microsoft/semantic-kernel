@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import os
 import tempfile
 from collections.abc import Callable
@@ -296,6 +297,28 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
             request_index=0,
             function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
+
+
+async def test_invoke_function_call_does_not_log_argument_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    class TestPlugin:
+        @kernel_function
+        def echo(self, value: str) -> str:
+            return "ok"
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+
+    with caplog.at_level(logging.INFO, logger="semantic_kernel.kernel"):
+        await kernel.invoke_function_call(
+            function_call=FunctionCallContent(name="test-echo", arguments={"value": secret}),
+            chat_history=ChatHistory(),
+            function_behavior=FunctionChoiceBehavior.Auto(),
+        )
+
+    messages = [record.getMessage() for record in caplog.records if record.name == "semantic_kernel.kernel"]
+    assert secret not in "\n".join(messages)
+    assert "Calling test-echo function." in messages
 
 
 class LightsPlugin:
