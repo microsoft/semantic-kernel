@@ -154,9 +154,9 @@ class VolatileMemoryStore(MemoryStoreBase):
         results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
 
         if not with_embeddings:
-            # create copy of results without embeddings
+            # create copies of results without embeddings
+            results = [deepcopy(result) for result in results]
             for result in results:
-                result = deepcopy(result)
                 result._embedding = None
         return results
 
@@ -280,9 +280,9 @@ class VolatileMemoryStore(MemoryStoreBase):
         top_results = filtered_results[:limit]
 
         if not with_embeddings:
-            # create copy of results without embeddings
+            # create copies of results without embeddings
+            top_results = [deepcopy(result) for result in top_results]
             for result in top_results:
-                result = deepcopy(result)
                 result[0]._embedding = None
         return top_results
 
