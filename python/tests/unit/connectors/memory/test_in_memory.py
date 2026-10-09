@@ -2,6 +2,7 @@
 
 import ast
 
+from pydantic import ConfigDict, Field, model_serializer
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
@@ -33,6 +34,209 @@ async def test_upsert(collection):
     key = await collection.upsert(record)
     assert key == "testid"
     assert collection.inner_storage == {"testid": record}
+
+
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("model_kind", ["dict", "dataclass", "pydantic"])
+async def test_upsert_with_key_storage_name(definition, dataclass_vector_data_model, record_type, batch, model_kind):
+    definition.key_field.storage_name = "stored_id"
+    model_type = {"dict": dict, "dataclass": dataclass_vector_data_model, "pydantic": record_type}[model_kind]
+    collection = InMemoryCollection(collection_name="test", record_type=model_type, definition=definition)
+    records = [
+        model_type(id="first", content="first content", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        model_type(id="second", content="second content", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert await collection.get("first", include_vectors=True) == records[0]
+    if batch:
+        assert await collection.get(["first", "second"], include_vectors=True) == records
+
+    results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], include_vectors=True)
+    found = [result.record async for result in results.results]
+    assert found == (records if batch else records[:1])
+
+    await collection.delete("first")
+    assert await collection.get("first") is None
+    if batch:
+        assert await collection.get("second", include_vectors=True) == records[1]
+
+
+@mark.parametrize("batch", [False, True])
+async def test_upsert_when_storage_name_matches_logical_field(definition, record_type, batch):
+    definition.key_field.storage_name = "content"
+    collection = InMemoryCollection(collection_name="test", record_type=record_type, definition=definition)
+    record = record_type(id="first", content="unrelated", vector=[1.0, 0.0, 0.0, 0.0, 0.0])
+
+    keys = await collection.upsert([record] if batch else record)
+    assert keys == (["first"] if batch else "first")
+    assert "first" in collection.inner_storage
+    assert "unrelated" not in collection.inner_storage
+
+    await collection.delete("first")
+    assert collection.inner_storage == {}
+
+
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("serializer", ["default", "serialize_none", "model_serialize_none"])
+async def test_upsert_when_key_storage_name_matches_another_logical_field(definition, record_type, batch, serializer):
+    definition.key_field.storage_name = "content"
+    if serializer == "serialize_none":
+        definition.serialize = lambda record, **kwargs: None
+    elif serializer == "model_serialize_none":
+
+        class CustomRecord(record_type):
+            def serialize(self, **kwargs):
+                return None
+
+        record_type = CustomRecord
+    collection = InMemoryCollection(collection_name="test", record_type=record_type, definition=definition)
+    records = [
+        record_type(id="first", content="unrelated first", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        record_type(id="second", content="unrelated second", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert set(collection.inner_storage) == ({"first", "second"} if batch else {"first"})
+    assert collection.inner_storage["first"] == records[0].model_dump()
+
+    await collection.delete(["first", "second"] if batch else "first")
+    assert collection.inner_storage == {}
+
+
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("model_kind", ["dict", "dataclass"])
+async def test_upsert_when_another_storage_name_matches_key(definition, dataclass_vector_data_model, batch, model_kind):
+    definition.key_field.storage_name = "stored_id"
+    definition.fields[1].storage_name = "id"
+    model_type = dict if model_kind == "dict" else dataclass_vector_data_model
+    collection = InMemoryCollection(collection_name="test", record_type=model_type, definition=definition)
+    records = [
+        model_type(id="first", content="unrelated first", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        model_type(id="second", content="unrelated second", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert await collection.get("first", include_vectors=True) == records[0]
+    if batch:
+        assert await collection.get(["first", "second"], include_vectors=True) == records
+
+    await collection.delete(["first", "second"] if batch else "first")
+    assert collection.inner_storage == {}
+
+
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("serializer", ["to_dict", "serialize", "model_serialize", "model_dump", "model_serializer"])
+async def test_upsert_with_pydantic_custom_storage_serialization(definition, record_type, batch, serializer):
+    definition.key_field.storage_name = "stored_id"
+    content_name = "id" if serializer in {"serialize", "model_serialize"} else "stored_content"
+    definition.fields[1].storage_name = content_name
+    if serializer == "model_serialize":
+
+        class CustomRecord(record_type):
+            def serialize(self, **kwargs):
+                return {"stored_id": self.id, content_name: self.content, "vector": self.vector}
+
+        model_type = CustomRecord
+    elif serializer == "model_dump":
+
+        class CustomDumpRecord(record_type):
+            def model_dump(self, **kwargs):
+                return {"stored_id": self.id, content_name: self.content, "vector": self.vector}
+
+        model_type = CustomDumpRecord
+    elif serializer == "model_serializer":
+
+        class CustomSerializedRecord(record_type):
+            @model_serializer
+            def serialize_model(self):
+                return {"stored_id": self.id, content_name: self.content, "vector": self.vector}
+
+        model_type = CustomSerializedRecord
+    else:
+        model_type = record_type
+        setattr(
+            definition,
+            serializer,
+            lambda record, **kwargs: {"stored_id": record.id, content_name: record.content, "vector": record.vector},
+        )
+    collection = InMemoryCollection(collection_name="test", record_type=model_type, definition=definition)
+    records = [
+        model_type(id="first", content="unrelated first", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        model_type(id="second", content="unrelated second", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert set(collection.inner_storage) == ({"first", "second"} if batch else {"first"})
+
+    await collection.delete(["first", "second"] if batch else "first")
+    assert collection.inner_storage == {}
+
+
+@mark.parametrize("batch", [False, True])
+async def test_upsert_with_pydantic_serialization_aliases(definition, record_type, batch):
+    definition.key_field.storage_name = "stored_id"
+    definition.fields[1].storage_name = "id"
+
+    class AliasedRecord(record_type):
+        model_config = ConfigDict(serialize_by_alias=True)
+        id: str = Field(serialization_alias="stored_id")
+        content: str = Field(serialization_alias="id")
+
+    collection = InMemoryCollection(collection_name="test", record_type=AliasedRecord, definition=definition)
+    records = [
+        AliasedRecord(id="first", content="unrelated first", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        AliasedRecord(id="second", content="unrelated second", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert set(collection.inner_storage) == ({"first", "second"} if batch else {"first"})
+
+    await collection.delete(["first", "second"] if batch else "first")
+    assert collection.inner_storage == {}
+
+
+@mark.parametrize("batch", [False, True])
+@mark.parametrize("serializer", ["model_dump", "model_serializer", "to_dict"])
+async def test_upsert_with_custom_logical_serialization(definition, record_type, batch, serializer):
+    definition.key_field.storage_name = "content"
+    definition.fields[1].storage_name = "id"
+    if serializer == "model_dump":
+
+        class CustomRecord(record_type):
+            def model_dump(self, **kwargs):
+                return super().model_dump(**kwargs)
+
+        model_type = CustomRecord
+    elif serializer == "model_serializer":
+
+        class CustomRecord(record_type):
+            @model_serializer(mode="wrap")
+            def serialize_model(self, handler):
+                return handler(self)
+
+        model_type = CustomRecord
+    else:
+        model_type = record_type
+        definition.to_dict = lambda record, **kwargs: record.model_dump()
+
+    collection = InMemoryCollection(collection_name="test", record_type=model_type, definition=definition)
+    records = [
+        model_type(id="first", content="unrelated first", vector=[1.0, 0.0, 0.0, 0.0, 0.0]),
+        model_type(id="second", content="unrelated second", vector=[0.0, 1.0, 0.0, 0.0, 0.0]),
+    ]
+
+    keys = await collection.upsert(records if batch else records[0])
+    assert keys == (["first", "second"] if batch else "first")
+    assert set(collection.inner_storage) == ({"first", "second"} if batch else {"first"})
+
+    await collection.delete(["first", "second"] if batch else "first")
+    assert collection.inner_storage == {}
 
 
 async def test_get(collection):
