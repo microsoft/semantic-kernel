@@ -213,13 +213,14 @@ class VolatileMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float]: The record and the relevance score.
         """
-        return self.get_nearest_matches(
+        results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
             min_relevance_score=min_relevance_score,
             with_embeddings=with_embedding,
         )
+        return results[0]
 
     async def get_nearest_matches(
         self,
