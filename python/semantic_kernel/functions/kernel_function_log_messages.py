@@ -20,8 +20,8 @@ class KernelFunctionLogMessages:
 
     @staticmethod
     def log_function_arguments(logger: Logger, arguments: KernelArguments):
-        """Log message when a kernel function is invoked."""
-        logger.debug("Function arguments: %s", arguments)
+        """Log the number of arguments provided to a kernel function."""
+        logger.debug("Function arguments provided: %d.", len(arguments))
 
     @staticmethod
     def log_function_invoked_success(logger: Logger, kernel_function_name: str):
