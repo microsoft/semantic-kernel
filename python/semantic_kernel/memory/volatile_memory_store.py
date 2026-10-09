@@ -251,6 +251,9 @@ class VolatileMemoryStore(MemoryStoreBase):
         # Get all the records in the collection
         memory_records = list(self._store[collection_name].values())
 
+        if not memory_records:
+            return []
+
         # Convert the collection of embeddings into a numpy array (stacked)
         embeddings = array([x._embedding for x in memory_records], dtype=float)
         embeddings = embeddings.reshape(embeddings.shape[0], -1)
