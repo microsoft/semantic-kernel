@@ -5,7 +5,7 @@ import logging
 import operator
 import sys
 from abc import abstractmethod
-from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UAdd, USub, UnaryOp, copy_location, expr, parse
+from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UnaryOp, USub, copy_location, expr, parse
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -715,7 +715,7 @@ class GetFilteredRecordOptions:
 
 
 class _FoldUnaryNumericConstants(NodeTransformer):
-    """Fold ``-5`` / ``+5`` AST nodes into numeric constants before filter parsers run.
+    """Fold negative numeric literals into constants before filter parsers run.
 
     Python parses negative literals as ``UnaryOp(USub, Constant(n))``. Most vector-store
     ``_lambda_parser`` implementations reject unary ``+/-`` wholesale, so filters such as
@@ -724,13 +724,14 @@ class _FoldUnaryNumericConstants(NodeTransformer):
     """
 
     def visit_UnaryOp(self, node: UnaryOp) -> AST:
-        """Fold unary +/- of an int/float constant; leave other unary ops alone."""
+        """Fold unary minus of an int/float constant; leave other unary ops alone."""
         self.generic_visit(node)
-        if isinstance(node.operand, Constant) and isinstance(node.operand.value, (int, float)):
-            if isinstance(node.op, USub):
-                return copy_location(Constant(-node.operand.value), node)
-            if isinstance(node.op, UAdd):
-                return copy_location(Constant(+node.operand.value), node)
+        if (
+            isinstance(node.op, USub)
+            and isinstance(node.operand, Constant)
+            and type(node.operand.value) in (int, float)
+        ):
+            return copy_location(Constant(-node.operand.value), node)
         return node
 
 
@@ -2011,7 +2012,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
-            # Fold -5 / +5 into constants so connector parsers see a numeric Constant (#14571).
+            # Fold negative literals so connector parsers see a numeric Constant (#14571).
             tree = folder.visit(tree)
             visitor.visit(tree)
         created_filters = visitor.output_filters
