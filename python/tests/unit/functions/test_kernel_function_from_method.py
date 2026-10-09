@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
+import types
 from collections.abc import AsyncGenerator, Iterable
+from dataclasses import dataclass
 from typing import Annotated, Any
 from unittest.mock import Mock
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
@@ -566,3 +570,150 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+@pytest.fixture
+def stub_agent_framework(monkeypatch):
+    """Stub the optional `agent_framework` dependency so as_agent_framework_tool can be exercised."""
+
+    class AIFunction:
+        def __init__(self, *, name, description, input_model, func):
+            self.name = name
+            self.description = description
+            self.input_model = input_model
+            self.func = func
+
+    module = types.ModuleType("agent_framework")
+    module.AIFunction = AIFunction
+    monkeypatch.setitem(sys.modules, "agent_framework", module)
+
+
+def test_as_agent_framework_tool_keeps_defaults_and_required(stub_agent_framework):
+    @kernel_function(name="search", description="search things")
+    def search(
+        query: Annotated[str, "search query"],
+        top_k: Annotated[int, "number of results"] = 5,
+        include_meta: Annotated[bool, "include metadata"] = False,
+        offset: Annotated[int, "results to skip"] = 0,
+        label: Annotated[str, "label"] = "",
+        y=3,  # unannotated parameter with a default: type_object is inspect.Parameter.empty
+    ) -> str:
+        return f"{query}:{top_k}:{include_meta}:{offset}:{label}:{y}"
+
+    func = KernelFunction.from_method(search, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    # Only the parameter without a default should be required.
+    assert schema.get("required") == ["query"]
+    # Falsy defaults (0, False, "") must survive, not be dropped as if they were None.
+    assert schema["properties"]["top_k"]["default"] == 5
+    assert schema["properties"]["include_meta"]["default"] is False
+    assert schema["properties"]["offset"]["default"] == 0
+    assert schema["properties"]["label"]["default"] == ""
+    # An unannotated parameter with a default must not crash tool creation (its
+    # type_object is inspect.Parameter.empty, which pydantic cannot build a schema
+    # from) and must fall back to being optional with its default preserved.
+    assert schema["properties"]["y"]["default"] == 3
+    assert "y" not in schema.get("required", [])
+
+
+def test_as_agent_framework_tool_none_defaults_accept_none(stub_agent_framework):
+    @kernel_function(name="configure", description="configure things")
+    def configure(
+        q: Annotated[str, "required query"],
+        tag: Annotated[str | None, "tag"] = None,
+        n: Annotated[int | None, "n"] = None,
+    ) -> str:
+        return f"{q}:{tag}:{n}"
+
+    func = KernelFunction.from_method(configure, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    # Only the parameter without any default is required; a None default still
+    # makes a parameter optional, it must not be conflated with "no default".
+    assert schema.get("required") == ["q"]
+    assert schema["properties"]["tag"]["default"] is None
+    assert schema["properties"]["n"]["default"] is None
+
+    # The model must accept both an omitted value and an explicit None for the
+    # None-defaulted parameters.
+    instance = tool.input_model(q="x")
+    assert instance.tag is None
+    assert instance.n is None
+
+    instance_explicit = tool.input_model(q="x", tag=None, n=None)
+    assert instance_explicit.tag is None
+    assert instance_explicit.n is None
+
+
+@dataclass
+class _CustomType:
+    id: str = ""
+
+
+def test_as_agent_framework_tool_none_default_generic_and_model_types(stub_agent_framework):
+    """A None-defaulted `list[str]` or dataclass parameter has a real
+    `type_object`, unlike a plain string, so the annotation can be built from it
+    directly (`param.type_object | None`) instead of the type_ string.
+    """
+
+    @kernel_function(name="configure", description="configure things")
+    def configure(
+        q: Annotated[str, "required query"],
+        b: Annotated[list[str] | None, "b"] = None,
+        c: Annotated[_CustomType | None, "c"] = None,
+    ) -> str:
+        return f"{q}:{b}:{c}"
+
+    func = KernelFunction.from_method(configure, "test")
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    assert schema.get("required") == ["q"]
+    assert schema["properties"]["b"]["default"] is None
+    assert schema["properties"]["c"]["default"] is None
+
+    instance = tool.input_model(q="x")
+    assert instance.b is None
+    assert instance.c is None
+
+    instance_explicit = tool.input_model(q="x", b=["y"], c=_CustomType(id="z"))
+    assert instance_explicit.b == ["y"]
+    assert instance_explicit.c == _CustomType(id="z")
+
+
+def test_as_agent_framework_tool_optional_annotation_without_default_stays_required(stub_agent_framework):
+    """`x: str | None` (no default) still makes `is_required=False` in the decorator's own
+    metadata, because that only checks whether the annotation contains None, not whether the
+    Python signature has a default. Python itself still requires `x`, so the bridge recovers
+    that from the real callable's signature and keeps `x` required, while `y: str | None = None`,
+    which genuinely has a default, stays optional.
+    """
+
+    @kernel_function(name="probe", description="probe things")
+    def probe(x: Annotated[str | None, "x, no default"], y: Annotated[str | None, "y, defaulted"] = None) -> str:
+        return f"{x}:{y}"
+
+    func = KernelFunction.from_method(probe, "test")
+    assert func.parameters[0].is_required is False  # the decorator's own metadata, unchanged
+
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    assert schema.get("required") == ["x"]
+    assert "y" not in (schema.get("required") or [])
+    assert schema["properties"]["y"]["default"] is None
+
+    with pytest.raises(ValidationError):
+        tool.input_model()
+
+    instance = tool.input_model(x="hi")
+    assert instance.x == "hi"
+    assert instance.y is None
+
+    # x is required (no default in the signature), but its annotation still includes
+    # None, so an explicit null must validate rather than be rejected as the wrong type.
+    instance_explicit_none = tool.input_model(x=None)
+    assert instance_explicit_none.x is None
