@@ -253,6 +253,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                         arguments=content["toolUse"]["input"],
                     )
                 )
+            elif "reasoningContent" in content:
+                # Reasoning blocks (sent by newer Claude models when they think) are not surfaced yet.
+                continue
             else:
                 raise ServiceInvalidResponseError(f"Unsupported content type in the response: {content}")
 
@@ -337,19 +340,24 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         The content block delta event contains the completion.
         https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlockDeltaEvent.html
         """
-        items: list[STREAMING_ITEM_TYPES] = [
-            StreamingTextContent(
-                choice_index=0,
-                text=event["contentBlockDelta"]["delta"]["text"],
-                inner_content=event,
+        items: list[STREAMING_ITEM_TYPES] = []
+        if "text" in event["contentBlockDelta"]["delta"]:
+            items.append(
+                StreamingTextContent(
+                    choice_index=0,
+                    text=event["contentBlockDelta"]["delta"]["text"],
+                    inner_content=event,
+                )
             )
-            if "text" in event["contentBlockDelta"]["delta"]
-            else FunctionCallContent(
-                arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
-                inner_content=event,
-                index=event["contentBlockDelta"]["contentBlockIndex"],
+        elif "toolUse" in event["contentBlockDelta"]["delta"]:
+            items.append(
+                FunctionCallContent(
+                    arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
+                    inner_content=event,
+                    index=event["contentBlockDelta"]["contentBlockIndex"],
+                )
             )
-        ]
+        # Other deltas (e.g. reasoningContent from newer Claude models) are not surfaced yet.
 
         return StreamingChatMessageContent(
             ai_model_id=self.ai_model_id,
