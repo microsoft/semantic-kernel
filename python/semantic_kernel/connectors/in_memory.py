@@ -735,9 +735,8 @@ class InMemoryCollection(
             raise VectorStoreOperationException(f"Error evaluating filter: {e}") from e
         filtered_records: dict[TKey, AttributeDict] = {}
         for key, record in self.inner_storage.items():
-            for filter in callable_filters:
-                if self._run_filter(filter, record):
-                    filtered_records[key] = record
+            if all(self._run_filter(filter, record) for filter in callable_filters):
+                filtered_records[key] = record
         return filtered_records
 
     def _parse_and_validate_filter(self, filter_str: str) -> Callable:
