@@ -9,7 +9,8 @@ import logging
 import re
 import sys
 import uuid
-from collections.abc import AsyncIterable, Mapping, Sequence
+from collections.abc import AsyncIterable, Callable, Mapping, Sequence
+from inspect import getsource
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
 # Third-party Libraries
@@ -26,6 +27,7 @@ from semantic_kernel.data.vector import (
     GetFilteredRecordOptions,
     IndexKind,
     KernelSearchResults,
+    LambdaVisitor,
     SearchType,
     VectorSearch,
     VectorSearchOptions,
@@ -45,7 +47,7 @@ from semantic_kernel.exceptions import (
 
 # Semantic Kernel Utilities & Config
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 oracledb.defaults.fetch_lobs = False
@@ -1009,6 +1011,29 @@ class OracleCollection(
         # Append filter binds after vector
         bind_values.extend(filter_binds)
         return query, bind_values, columns
+
+    @override
+    def _build_filter(self, search_filter: OptionalOneOrMany[Callable | str] | None) -> OptionalOneOrMany[Any]:
+        """Build one (sql_expression, bind_values_dict) tuple from one or more filters.
+
+        Multiple filters are combined with AND. All filters share one bind counter, so the generated
+        bind variable names stay unique across the combined WHERE clause.
+        """
+        if not search_filter:
+            return None
+        filters = search_filter if isinstance(search_filter, list) else [search_filter]
+        bind_counter = BindCounter()
+        visitor = LambdaVisitor(lambda node: self._lambda_parser(node, bind_counter))
+        for filter_ in filters:
+            visitor.visit(ast.parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip()))  # type: ignore[arg-type]
+        if not visitor.output_filters:
+            raise VectorStoreOperationException("No filter strings found.")
+        if len(visitor.output_filters) == 1:
+            return visitor.output_filters[0]
+        combined_binds: dict[str, Any] = {}
+        for _, binds in visitor.output_filters:
+            combined_binds.update(binds)
+        return (" AND ".join(f"({sql})" for sql, _ in visitor.output_filters), combined_binds)
 
     @override
     def _lambda_parser(self, node: ast.AST, bind_counter: BindCounter | None = None) -> Any:
