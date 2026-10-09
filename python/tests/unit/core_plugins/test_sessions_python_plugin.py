@@ -426,6 +426,99 @@ async def test_upload_file_fail_with_no_local_path(aca_python_sessions_unit_test
         )
 
 
+@pytest.mark.parametrize(
+    "remote_file_path",
+    [
+        ".",
+        "..",
+        "../uploaded_test.txt",
+        "../../uploaded_test.txt",
+        "./uploaded_test.txt",
+        "nested/./uploaded_test.txt",
+        "nested/../uploaded_test.txt",
+        "nested/..",
+        "/mnt/data/../../uploaded_test.txt",
+    ],
+)
+async def test_upload_file_rejects_dot_segments(remote_file_path, aca_python_sessions_unit_test_env, tmp_path):
+    """upload_file must reject the same dot segments download_file rejects."""
+    test_file = tmp_path / "file.py"
+    test_file.write_text("print('hello, world~')")
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
+        allowed_upload_directories={str(tmp_path)},
+    )
+
+    with pytest.raises(FunctionExecutionException, match="path segments"):
+        await plugin.upload_file(local_file_path=str(test_file), remote_file_path=remote_file_path)
+
+
+@pytest.mark.parametrize(
+    "remote_file_path, expected_remote_file_path",
+    [
+        ("uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
+        ("/mnt/data/input.py", "/mnt/data/input.py"),
+        ("nested/dir/input.py", "/mnt/data/nested/dir/input.py"),
+    ],
+)
+async def test_upload_file_allows_ordinary_remote_paths(
+    remote_file_path, expected_remote_file_path, aca_python_sessions_unit_test_env, tmp_path
+):
+    """Ordinary names, including nested paths, must still upload unchanged."""
+
+    async def async_return(result):
+        return result
+
+    test_file = tmp_path / "file.py"
+    test_file.write_text("print('hello, world~')")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
+    ):
+        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_response = httpx.Response(
+            status_code=200,
+            json={"$id": "1", "value": []},
+            request=mock_request,
+        )
+        mock_post = Mock(side_effect=lambda *args, **kwargs: async_return(mock_response))
+
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [
+                    {
+                        "$id": "2",
+                        "properties": {
+                            "$id": "3",
+                            "filename": expected_remote_file_path,
+                            "size": 456,
+                            "lastModifiedTime": "2024-07-02T19:29:23.4369699Z",
+                        },
+                    },
+                ],
+            },
+            request=mock_get_request,
+        )
+        mock_get = Mock(side_effect=lambda *args, **kwargs: async_return(mock_get_response))
+
+        with patch("httpx.AsyncClient.post", new=mock_post), patch("httpx.AsyncClient.get", new=mock_get):
+            plugin = SessionsPythonTool(
+                auth_callback=lambda: "sample_token",
+                enable_dangerous_file_uploads=True,
+                allowed_upload_directories={str(tmp_path)},
+            )
+
+            result = await plugin.upload_file(local_file_path=str(test_file), remote_file_path=remote_file_path)
+
+    assert result.filename == expected_remote_file_path
+
+
 @patch("httpx.AsyncClient.get")
 async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
     """Test list_files function."""
