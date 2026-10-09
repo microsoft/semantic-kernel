@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import logging
 from collections.abc import AsyncGenerator, Iterable
 from typing import Annotated, Any
 from unittest.mock import Mock
@@ -175,6 +176,25 @@ async def test_invoke_non_async(kernel: Kernel):
     with pytest.raises(NotImplementedError):
         async for _ in native_function.invoke_stream(kernel=kernel, arguments=None):
             pass
+
+
+async def test_invoke_logs_argument_count_without_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    @kernel_function
+    def echo(value: str) -> str:
+        return "ok"
+
+    native_function = KernelFunction.from_method(method=echo, plugin_name="MockPlugin")
+
+    with caplog.at_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function"):
+        await native_function.invoke(kernel=kernel, arguments=KernelArguments(value=secret))
+
+    messages = [
+        record.getMessage() for record in caplog.records if record.name == "semantic_kernel.functions.kernel_function"
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Function arguments provided: 1." in messages
 
 
 async def test_invoke_async(kernel: Kernel):

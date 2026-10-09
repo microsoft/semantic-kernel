@@ -423,7 +423,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info("Calling %s function.", function_call.name)
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
