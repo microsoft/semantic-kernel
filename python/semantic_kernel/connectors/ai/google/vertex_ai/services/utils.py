@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
     sanitize_schema_for_google_ai,
+    validate_gemini_plugin_name,
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
@@ -138,6 +139,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 
 def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> FunctionDeclaration:
     """Convert the kernel function metadata to function calling format."""
+    validate_gemini_plugin_name(metadata.plugin_name)
     properties: dict[str, Any] = {}
     if metadata.parameters:
         for param in metadata.parameters:
