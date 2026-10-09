@@ -122,6 +122,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             if not index.is_trained:
                 raise VectorStoreInitializationException("Index must be trained before using.")
             self.indexes[self.definition.vector_fields[0].name] = index
+            self.indexes_key_map.setdefault(self.definition.vector_fields[0].name, {})
             return
         for vector_field in self.definition.vector_fields:
             if indexes and vector_field.name in indexes:
