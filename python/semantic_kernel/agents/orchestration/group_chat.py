@@ -201,7 +201,6 @@ class GroupChatManager(KernelBaseModel, ABC):
 
         Args:
             chat_history (ChatHistory): The chat history of the group chat.
-            participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
         """
         ...
 
