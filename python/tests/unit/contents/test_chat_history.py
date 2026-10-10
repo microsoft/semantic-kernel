@@ -612,6 +612,24 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     assert chat_history_2.messages[4] == chat_history.messages[4]
 
 
+def test_to_from_file_non_ascii(chat_history: ChatHistory, tmp_path):
+    """Chat histories with non-ASCII content should round-trip on any platform.
+
+    The file is always written and read as UTF-8, so the round-trip does not depend on the
+    locale encoding of the machine (which is not UTF-8 on Windows).
+    """
+    chat_history.add_user_message("你好，今天天气怎么样？")
+    chat_history.add_assistant_message("À Paris, il fait beau ☀️")
+
+    file_path = tmp_path / "chat_history.json"
+    chat_history.store_chat_history_to_file(file_path)
+
+    assert "你好" in file_path.read_text(encoding="utf-8")
+
+    chat_history_2 = ChatHistory.load_chat_history_from_file(file_path)
+    assert chat_history_2.messages == chat_history.messages
+
+
 def test_from_rendered_prompt_preserves_html_p_tag():
     """HTML <p> tags in prompts should be preserved as text, not treated as template tags.
 
