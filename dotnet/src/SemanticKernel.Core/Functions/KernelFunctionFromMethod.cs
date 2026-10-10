@@ -787,6 +787,37 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     [RequiresDynamicCode("Uses reflection to deserialize given value if no source generated metadata provided via JSOs, making it incompatible with AOT scenarios.")]
     private static bool TryToDeserializeValue(object value, Type targetType, JsonSerializerOptions? jsonSerializerOptions, out object? deserializedValue)
     {
+        if (value is string stringValue)
+        {
+            JsonDocumentOptions documentOptions = new()
+            {
+                AllowTrailingCommas = jsonSerializerOptions?.AllowTrailingCommas ?? false,
+                CommentHandling = jsonSerializerOptions?.ReadCommentHandling is JsonCommentHandling.Skip or JsonCommentHandling.Allow
+                    ? JsonCommentHandling.Skip
+                    : JsonCommentHandling.Disallow,
+                MaxDepth = jsonSerializerOptions?.MaxDepth ?? 0,
+            };
+
+            JsonDocument document;
+            try
+            {
+                document = JsonDocument.Parse(stringValue, documentOptions);
+            }
+            catch (JsonException)
+            {
+                // Some connectors pass JSON string arguments without their quotes.
+                document = JsonDocument.Parse(JsonSerializer.Serialize(stringValue), documentOptions);
+            }
+
+            using (document)
+            {
+                // Let JsonException from a custom converter propagate so the caller sees its validation message.
+                deserializedValue = document.RootElement.Deserialize(targetType, jsonSerializerOptions);
+            }
+
+            return true;
+        }
+
         try
         {
             deserializedValue = value switch
@@ -808,10 +839,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         catch (NotSupportedException)
         {
             // There is no compatible JsonConverter for targetType or its serializable members.
-        }
-        catch (JsonException)
-        {
-            // The JSON is invalid.
         }
 
         deserializedValue = null;
