@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,6 +32,7 @@ public sealed class FileIOPlugin
     /// Defaults to an empty collection (no folders allowed). Must be explicitly populated
     /// with trusted directory paths before any file operations will succeed.
     /// Paths are canonicalized before validation to prevent directory traversal.
+    /// Requested file paths that cannot be safely resolved are denied.
     /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
@@ -135,16 +137,19 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
-
-        if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
-        {
-            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {canonicalPath}");
-        }
-
+        // Avoid probing the filesystem when no folders are allowed.
         if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
+            return false;
+        }
+
+        try
+        {
+            canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or SecurityException)
+        {
+            // Caller-path resolution failures must not disclose filesystem details.
             return false;
         }
 
@@ -166,6 +171,12 @@ public sealed class FileIOPlugin
             if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
                 || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
+                if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
+                {
+                    // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
+                    throw new UnauthorizedAccessException("File is read-only.");
+                }
+
                 return true;
             }
         }
