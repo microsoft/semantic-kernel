@@ -23,6 +23,8 @@ pip install --upgrade semantic-kernel[hugging_face]
 pip install --upgrade semantic-kernel[all]
 ```
 
+See the [Python connector dependency map](./CONNECTOR_DEPENDENCIES.md) for connector import paths, install extras, and provider version constraints.
+
 Supported Platforms:
 - Python: 3.10+
 - OS: Windows, macOS, Linux
