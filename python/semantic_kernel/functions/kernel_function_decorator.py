@@ -98,14 +98,14 @@ def _get_non_none_type(args: tuple) -> Any:
 def _get_underlying_type(annotation: Any) -> Any:
     """Get the underlying type of the annotation."""
     if isinstance(annotation, types.UnionType):
-        return _get_non_none_type(annotation.__args__)
+        return _get_non_none_type(annotation.__args__) or annotation
 
     if hasattr(annotation, "__origin__"):
         if annotation.__origin__ is Union:
-            return _get_non_none_type(get_args(annotation))
+            return _get_non_none_type(get_args(annotation)) or annotation
 
         if isinstance(annotation.__origin__, types.UnionType):
-            return _get_non_none_type(annotation.__origin__.__args__)
+            return _get_non_none_type(annotation.__origin__.__args__) or annotation.__origin__
 
         return annotation.__origin__
 
@@ -124,8 +124,6 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
         if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
             underlying_type = _get_underlying_type(annotation)
-            if underlying_type is None:
-                underlying_type = annotation
         else:
             underlying_type = annotation
         parsed_annotation["type_object"] = underlying_type
