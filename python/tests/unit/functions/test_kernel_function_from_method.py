@@ -140,6 +140,28 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
     assert len(native_function.parameters) == 0
 
 
+def test_as_agent_framework_tool_preserves_optional_parameter_default(monkeypatch):
+    class MockAIFunction:
+        def __init__(self, *, input_model: Any, **kwargs: Any):
+            self.input_model = input_model
+
+    monkeypatch.setitem(__import__("sys").modules, "agent_framework", Mock(AIFunction=MockAIFunction))
+
+    @kernel_function()
+    def function(count: int = 5, label: str | None = None) -> int:
+        return count
+
+    native_function = KernelFunction.from_method(method=function, plugin_name="MockPlugin")
+    tool = native_function.as_agent_framework_tool(kernel=Mock())
+    count_field = tool.input_model.model_fields["count"]
+    label_field = tool.input_model.model_fields["label"]
+
+    assert count_field.default == 5
+    assert not count_field.is_required()
+    assert label_field.default is None
+    assert not label_field.is_required()
+
+
 def test_init_method_is_none():
     with pytest.raises(FunctionInitializationError):
         KernelFunction.from_method(method=None, plugin_name="MockPlugin")
