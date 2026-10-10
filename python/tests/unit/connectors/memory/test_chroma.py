@@ -5,8 +5,15 @@ from unittest.mock import MagicMock
 import pytest
 from chromadb.api import ClientAPI
 from chromadb.api.models.Collection import Collection
+from chromadb.errors import NotFoundError
 
 from semantic_kernel.connectors.chroma import ChromaCollection, ChromaStore
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
+
+
+def _not_found() -> Exception:
+    """The error Chroma raises for a missing collection."""
+    return NotFoundError("Collection test_collection does not exist.")
 
 
 @pytest.fixture
@@ -113,3 +120,57 @@ async def test_chroma_collection_search(chroma_collection, mock_client, include_
     async for res in results.results:
         assert res.record["id"] == "1"
         assert res.score == 0.1
+
+
+# -- what a Chroma failure means, and what "not there" means --
+#
+# chromadb 1.x raises errors.NotFoundError for a missing collection, which is not a
+# ValueError (this connector only imports on chromadb 1.x: it needs
+# chromadb.api.collection_configuration). collection_exists caught bare Exception, so every failure
+# read as "absent"; ensure_collection_deleted caught only ValueError, so on a modern
+# chromadb a genuinely absent collection raised instead of being tolerated.
+
+
+async def test_collection_exists_is_false_when_chroma_says_not_found(chroma_collection, mock_client):
+    mock_client.get_collection.side_effect = _not_found()
+
+    assert await chroma_collection.collection_exists() is False
+
+
+async def test_collection_exists_raises_when_the_server_cannot_be_reached(chroma_collection, mock_client):
+    """False means the collection is not there. A refused connection must not say that."""
+    mock_client.get_collection.side_effect = ConnectionError("connection refused")
+
+    with pytest.raises(VectorStoreOperationException) as raised:
+        await chroma_collection.collection_exists()
+    assert isinstance(raised.value.__cause__, ConnectionError)
+
+
+async def test_ensure_collection_deleted_tolerates_an_absent_collection(chroma_collection, mock_client):
+    """Deleting something that is not there is the case this method already meant to allow."""
+    mock_client.delete_collection.side_effect = _not_found()
+
+    await chroma_collection.ensure_collection_deleted()
+
+
+async def test_ensure_collection_deleted_still_raises_on_a_real_failure(chroma_collection, mock_client):
+    mock_client.delete_collection.side_effect = ConnectionError("connection refused")
+
+    with pytest.raises(VectorStoreOperationException):
+        await chroma_collection.ensure_collection_deleted()
+
+
+async def test_collection_exists_raises_on_an_unrelated_value_error(chroma_collection, mock_client):
+    """Where Chroma has a dedicated NotFoundError, a ValueError is not 'absent'."""
+    mock_client.get_collection.side_effect = ValueError("some other problem")
+
+    with pytest.raises(VectorStoreOperationException):
+        await chroma_collection.collection_exists()
+
+
+async def test_ensure_collection_deleted_does_not_swallow_an_unrelated_value_error(chroma_collection, mock_client):
+    """The more dangerous half: a swallowed ValueError here would silently skip a delete."""
+    mock_client.delete_collection.side_effect = ValueError("some other problem")
+
+    with pytest.raises(VectorStoreOperationException):
+        await chroma_collection.ensure_collection_deleted()
