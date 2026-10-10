@@ -20,7 +20,7 @@ jobs:
           (github.event.discussion.category.name == 'General' ||
            github.event.discussion.category.name == 'Ideas' ||
            github.event.discussion.category.name == 'Q&A')
-        uses: octokit/graphql-action@v2.x
+        uses: octokit/graphql-action@f7836e89a7e5bac63911bbe9653c21147b3d9bc3 # v2.3.3
         with:
           query: |
             mutation($labelableId: ID!) {
@@ -48,7 +48,7 @@ jobs:
            contains(github.event.discussion.body, 'Python') ||
            contains(github.event.discussion.title, 'python') ||
            contains(github.event.discussion.title, 'Python'))
-        uses: octokit/graphql-action@v2.x
+        uses: octokit/graphql-action@f7836e89a7e5bac63911bbe9653c21147b3d9bc3 # v2.3.3
         with:
           query: |
             mutation($labelableId: ID!) {
@@ -88,7 +88,7 @@ jobs:
            contains(github.event.discussion.body, 'CSharp') ||
            contains(github.event.discussion.title, 'csharp') ||
            contains(github.event.discussion.title, 'CSharp'))
-        uses: octokit/graphql-action@v2.x
+        uses: octokit/graphql-action@f7836e89a7e5bac63911bbe9653c21147b3d9bc3 # v2.3.3
         with:
           query: |
             mutation($labelableId: ID!) {
