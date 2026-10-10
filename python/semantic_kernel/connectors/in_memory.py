@@ -629,7 +629,7 @@ class InMemoryCollection(
         return [self.inner_storage[key] for key in keys if key in self.inner_storage]
 
     @override
-        async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
+    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
         key_storage_name = self._key_field_storage_name
         key_name = self._key_field_name
