@@ -1,0 +1,25 @@
+[package]
+name = "sk-plan"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Planning capabilities for Semantic Kernel Rust"
+
+[dependencies]
+semantic_kernel = { path = "../semantic_kernel" }
+tokio.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+mockall.workspace = true
