@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import ast
+from dataclasses import dataclass
 
 from pytest import fixture, mark, raises
+from pydantic import BaseModel
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data._shared import default_dynamic_filter_function
-from semantic_kernel.data.vector import DistanceFunction
+from semantic_kernel.data.vector import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 
@@ -292,3 +294,50 @@ async def test_large_sequence_repeat_filter_is_blocked(collection):
 
     with raises(VectorStoreOperationException, match="Sequence repetition in filter expressions exceeds the maximum"):
         collection._get_filtered_records(type("opt", (), {"filter": "lambda x: [0] * 2000000000"})())
+
+
+@fixture
+def storage_name_definition():
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str", storage_name="stored_id"),
+            VectorStoreField("vector", name="vector", type="float", dimensions=2),
+        ]
+    )
+
+
+async def test_upsert_with_key_storage_name_dict(storage_name_definition):
+    collection = InMemoryCollection(collection_name="test", record_type=dict, definition=storage_name_definition)
+    key = await collection.upsert({"id": "first", "vector": [1.0, 0.0]})
+    assert key == "first"
+    result = await collection.get("first")
+    assert result["id"] == "first"
+    await collection.delete("first")
+    assert collection.inner_storage == {}
+
+
+async def test_upsert_with_key_storage_name_dataclass(storage_name_definition):
+    @dataclass
+    class DataRecord:
+        id: str
+        vector: list[float]
+
+    collection = InMemoryCollection(collection_name="test", record_type=DataRecord, definition=storage_name_definition)
+    key = await collection.upsert(DataRecord(id="first", vector=[1.0, 0.0]))
+    assert key == "first"
+    result = await collection.get("first", include_vectors=True)
+    assert result.id == "first"
+
+
+async def test_upsert_with_key_storage_name_pydantic(storage_name_definition):
+    class PydanticRecord(BaseModel):
+        id: str
+        vector: list[float]
+
+    collection = InMemoryCollection(
+        collection_name="test", record_type=PydanticRecord, definition=storage_name_definition
+    )
+    key = await collection.upsert(PydanticRecord(id="first", vector=[1.0, 0.0]))
+    assert key == "first"
+    result = await collection.get("first", include_vectors=True)
+    assert result.id == "first"
