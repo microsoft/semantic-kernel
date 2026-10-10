@@ -449,6 +449,6 @@ Biggest benefit:
 **`ISKFunction` has less code/complexity to handle and expose data and state in the EventArgs.**
 **`ISKFunction` interface doesn't need to change to add new events.**
 
-This implementation allows to get the renderedPrompt in the InvokeAsync without having to manage the context and the prompt in different methods.
+This implementation allows you to get the renderedPrompt in the InvokeAsync without having to manage the context and the prompt in different methods.
 
 The above also applies for any other data that is available in the invocation and can be added as a new EventArgs property.
