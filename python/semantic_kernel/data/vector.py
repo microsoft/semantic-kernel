@@ -729,7 +729,8 @@ class _FoldUnaryNumericConstants(NodeTransformer):
         if (
             isinstance(node.op, USub)
             and isinstance(node.operand, Constant)
-            and type(node.operand.value) in (int, float)
+            and isinstance(node.operand.value, (int, float))
+            and not isinstance(node.operand.value, bool)
         ):
             return copy_location(Constant(-node.operand.value), node)
         return node
