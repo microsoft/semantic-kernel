@@ -532,3 +532,40 @@ def test_split_md_on_newlines():
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
     assert expected == split
+
+
+def test_split_lines_early_exit(monkeypatch):
+    """Test that split_plaintext_lines early-exits and does not scan remaining separators when fully resolved."""
+    import semantic_kernel.text.text_chunker as tc
+
+    call_counts = {"split_str": 0, "split_list": 0}
+    orig_split_str = tc._split_str
+    orig_split_list = tc._split_list
+
+    def counting_split_str(*args, **kwargs):
+        call_counts["split_str"] += 1
+        return orig_split_str(*args, **kwargs)
+
+    def counting_split_list(*args, **kwargs):
+        call_counts["split_list"] += 1
+        return orig_split_list(*args, **kwargs)
+
+    monkeypatch.setattr(tc, "_split_str", counting_split_str)
+    monkeypatch.setattr(tc, "_split_list", counting_split_list)
+
+    # 30 short lines separated by newline. Once split by ['\n', '\r'], each line is <= 50 tokens.
+    text = "\n".join(f"Line number {i} is short." for i in range(30))
+    lines = tc.split_plaintext_lines(text, max_token_per_line=50)
+
+    assert len(lines) > 0
+    # Tier 1 (['\n', '\r']) completes all splits. Remaining 9 tiers should not execute _split_list.
+    assert call_counts["split_list"] == 0
+    assert call_counts["split_str"] > 0
+
+
+def test_split_lines_whitespace_only():
+    """Test that whitespace-only input returns an empty list without preserving empty strings."""
+    assert split_plaintext_lines("   ", 5) == []
+    assert split_plaintext_lines("\n\n", 5) == []
+    assert split_markdown_lines("\n\n", 5) == []
+    assert split_plaintext_paragraph(["  "], 5) == []
