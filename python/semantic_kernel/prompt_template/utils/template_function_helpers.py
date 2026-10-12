@@ -101,7 +101,7 @@ def _create_sync_template_helper_from_function(
             logger.debug("Jinja2 context or Handlebars context without `this`")
 
         logger.debug(
-            "Invoking function %s with %d positional and %d keyword arguments.",
+            "Invoking function %s with positional argument count %d and keyword argument count %d.",
             function.metadata.fully_qualified_name,
             len(actual_args),
             len(kwargs),
@@ -133,7 +133,7 @@ def _create_async_template_helper_from_function(
         arguments.update(base_arguments)
         arguments.update(kwargs)
         logger.debug(
-            "Invoking function %s with %d positional and %d keyword arguments.",
+            "Invoking function %s with positional argument count %d and keyword argument count %d.",
             function.metadata.fully_qualified_name,
             len(args),
             len(kwargs),
