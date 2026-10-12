@@ -2,6 +2,7 @@
 import logging
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
+from importlib import import_module
 from typing import Annotated, Any
 from unittest.mock import Mock, patch
 
@@ -20,6 +21,8 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+kernel_function_module = import_module("semantic_kernel.functions.kernel_function")
 
 
 class CustomType(KernelBaseModel):
@@ -225,12 +228,14 @@ async def test_invoke_failure_omits_exception_value_without_sensitive_diagnostic
     span = Mock()
 
     with (
-        patch(
-            "semantic_kernel.functions.kernel_function.tracer.start_as_current_span",
+        patch.object(
+            kernel_function_module.tracer,
+            "start_as_current_span",
             return_value=nullcontext(span),
         ) as start_span,
-        patch(
-            "semantic_kernel.functions.kernel_function.function_tracer.are_sensitive_events_enabled",
+        patch.object(
+            kernel_function_module.function_tracer,
+            "are_sensitive_events_enabled",
             return_value=False,
         ),
         caplog.at_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function"),
@@ -264,12 +269,14 @@ async def test_invoke_failure_records_exception_with_sensitive_diagnostics(kerne
     span = Mock()
 
     with (
-        patch(
-            "semantic_kernel.functions.kernel_function.tracer.start_as_current_span",
+        patch.object(
+            kernel_function_module.tracer,
+            "start_as_current_span",
             return_value=nullcontext(span),
         ),
-        patch(
-            "semantic_kernel.functions.kernel_function.function_tracer.are_sensitive_events_enabled",
+        patch.object(
+            kernel_function_module.function_tracer,
+            "are_sensitive_events_enabled",
             return_value=True,
         ),
         caplog.at_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function"),
