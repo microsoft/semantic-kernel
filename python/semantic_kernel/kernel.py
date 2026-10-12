@@ -475,7 +475,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.error(
+                "Error invoking function %s. Error type: %s.",
+                context.function.fully_qualified_name,
+                type(exc).__name__,
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value

@@ -30,22 +30,19 @@ class KernelFunctionLogMessages:
 
     @staticmethod
     def log_function_result_value(logger: Logger, function_result: FunctionResult | None):
-        """Log message when a kernel function result is returned."""
+        """Log whether a kernel function returned a result."""
         if not logger.isEnabledFor(logging.DEBUG):
             return
 
         if function_result is not None:
-            try:
-                logger.debug("Function result: %s", function_result)
-            except Exception:
-                logger.error("Function result: Failed to convert result value to string")
+            logger.debug("Function result available.")
         else:
             logger.debug("Function result: None")
 
     @staticmethod
     def log_function_error(logger: Logger, error: Exception):
         """Log message when a kernel function fails."""
-        logger.error("Function failed. Error: %s", error)
+        logger.error("Function failed. Error type: %s.", type(error).__name__)
 
     @staticmethod
     def log_function_completed(logger: Logger, duration: float):

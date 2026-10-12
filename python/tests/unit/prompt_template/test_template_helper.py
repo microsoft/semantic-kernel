@@ -30,7 +30,7 @@ def test_create_helpers(kernel: Kernel):
 
 async def test_template_helpers_do_not_log_argument_values(kernel: Kernel, caplog):
     secret = "SYNTHETIC_SECRET_VALUE"
-    function = KernelFunctionFromMethod(kernel_function(lambda value: "ok", name="test"), plugin_name="test")
+    function = KernelFunctionFromMethod(kernel_function(lambda value: value, name="test"), plugin_name="test")
     sync_jinja_helper = create_template_helper_from_function(
         function, kernel, {}, JINJA2_TEMPLATE_FORMAT_NAME, enable_async=False
     )
@@ -41,17 +41,27 @@ async def test_template_helpers_do_not_log_argument_values(kernel: Kernel, caplo
         function, kernel, {}, HANDLEBARS_TEMPLATE_FORMAT_NAME, enable_async=False
     )
 
-    with caplog.at_level(logging.DEBUG, logger="semantic_kernel.prompt_template.utils.template_function_helpers"):
-        sync_jinja_helper(value=secret)
-        await async_jinja_helper(value=secret)
-        handlebars_helper(secret, secret, value=secret)
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.prompt_template.utils.template_function_helpers")
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function")
+    sync_jinja_helper(value=secret)
+    await async_jinja_helper(value=secret)
+    handlebars_helper(secret, secret, value=secret)
 
+    all_messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name
+        in {
+            "semantic_kernel.prompt_template.utils.template_function_helpers",
+            "semantic_kernel.functions.kernel_function",
+        }
+    ]
     messages = [
         record.getMessage()
         for record in caplog.records
         if record.name == "semantic_kernel.prompt_template.utils.template_function_helpers"
     ]
-    assert secret not in "\n".join(messages)
+    assert secret not in "\n".join(all_messages)
     assert (
         messages.count("Invoking function test-test with positional argument count 0 and keyword argument count 1.")
         == 2
