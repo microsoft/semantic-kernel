@@ -1,46 +1,44 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from dataclasses import dataclass
+from typing import Annotated
 
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
-from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
+from semantic_kernel.connectors.in_memory import InMemoryCollection
+from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 
-# This concept sample shows how to use the OpenAI connector to add memory
-# to applications with a local embedding model running in LM studio: https://lmstudio.ai/
-# Please follow the instructions here: https://lmstudio.ai/docs/local-server to set up LM studio.
-# The default model used in this sample is from nomic.ai due to its compact size.
-
-kernel = Kernel()
-
-service_id = "local-gpt"
-
-openAIClient: AsyncOpenAI = AsyncOpenAI(
-    api_key="fake_key",  # This cannot be an empty string, use a fake key
-    base_url="http://localhost:1234/v1",
-)
-kernel.add_service(
-    OpenAITextEmbedding(
-        service_id=service_id, ai_model_id="Nomic-embed-text-v1.5-Embedding-GGUF", async_client=openAIClient
-    )
-)
-
-memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=kernel.get_service(service_id))
-kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+# This concept sample shows how to use a local embedding model running in LM Studio:
+# https://lmstudio.ai/. Please follow the instructions here to set up the local server:
+# https://lmstudio.ai/docs/local-server. The default model is Nomic Embed Text v1.5.
 
 
-async def populate_memory(memory: SemanticTextMemory, collection_id="generic") -> None:
-    # Add some documents to the semantic memory
-    await memory.save_information(collection=collection_id, id="info1", text="Your budget for 2024 is $100,000")
-    await memory.save_information(collection=collection_id, id="info2", text="Your savings from 2023 are $50,000")
-    await memory.save_information(collection=collection_id, id="info3", text="Your investments are $80,000")
+@vectorstoremodel(collection_name="generic")
+@dataclass
+class MemoryRecord:
+    content: Annotated[str, VectorStoreField("data")]
+    id: Annotated[str, VectorStoreField("key")]
+    embedding: Annotated[list[float] | str | None, VectorStoreField("vector", dimensions=768)] = None
+
+    def __post_init__(self) -> None:
+        if self.embedding is None:
+            # Vector collections generate an embedding from this text during upsert.
+            self.embedding = self.content
 
 
-async def search_memory_examples(memory: SemanticTextMemory, collection_id="generic") -> None:
+async def populate_memory(collection: InMemoryCollection[str, MemoryRecord]) -> None:
+    """Add a few example documents to the in-memory vector collection."""
+    await collection.upsert([
+        MemoryRecord(id="info1", content="Your budget for 2024 is $100,000"),
+        MemoryRecord(id="info2", content="Your savings from 2023 are $50,000"),
+        MemoryRecord(id="info3", content="Your investments are $80,000"),
+    ])
+
+
+async def search_memory_examples(collection: InMemoryCollection[str, MemoryRecord]) -> None:
+    """Search the vector collection with questions embedded by LM Studio."""
     questions = [
         "What is my budget for 2024?",
         "What are my savings from 2023?",
@@ -49,13 +47,32 @@ async def search_memory_examples(memory: SemanticTextMemory, collection_id="gene
 
     for question in questions:
         print(f"Question: {question}")
-        result = await memory.search(collection_id, question)
-        print(f"Answer: {result[0].text}\n")
+        results = await collection.search(values=question, vector_property_name="embedding", top=1)
+        async for result in results.results:
+            print(f"Answer: {result.record.content}\n")
 
 
 async def main() -> None:
-    await populate_memory(memory)
-    await search_memory_examples(memory)
+    openai_client = AsyncOpenAI(
+        api_key="fake_key",  # LM Studio's local server does not require a real key.
+        base_url="http://localhost:1234/v1",
+    )
+    embedder = OpenAITextEmbedding(
+        service_id="local-embedding",
+        ai_model_id="Nomic-embed-text-v1.5-Embedding-GGUF",
+        async_client=openai_client,
+    )
+
+    try:
+        async with InMemoryCollection[str, MemoryRecord](
+            record_type=MemoryRecord,
+            embedding_generator=embedder,
+        ) as collection:
+            await collection.ensure_collection_exists()
+            await populate_memory(collection)
+            await search_memory_examples(collection)
+    finally:
+        await openai_client.close()
 
 
 if __name__ == "__main__":
