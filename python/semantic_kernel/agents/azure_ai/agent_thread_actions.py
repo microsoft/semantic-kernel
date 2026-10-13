@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import inspect
 import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
@@ -64,10 +65,13 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
+from semantic_kernel.agents.azure_ai.mcp_tool_approval import MCPToolApprovalRequest
 from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_type import FunctionChoiceType
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -124,6 +128,7 @@ class AgentThreadActions:
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         polling_options: RunPollingOptions | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the message in the thread.
@@ -139,7 +144,9 @@ class AgentThreadActions:
             additional_messages: The additional messages to add to the thread. Only supports messages with
                 role = User or Assistant.
                 https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
-            tools: The tools.
+            tools: The SDK-level tools (e.g. CodeInterpreter, FileSearch, AzureAISearch). When provided,
+                overrides the tools from the agent definition. Does not affect kernel function availability;
+                use function_choice_behavior for that.
             temperature: The temperature.
             top_p: The top p.
             max_prompt_tokens: The max prompt tokens.
@@ -150,6 +157,9 @@ class AgentThreadActions:
             metadata: The metadata.
             polling_options: The polling options defined at the run-level. These will override the agent-level
                 polling options.
+            function_choice_behavior: Controls which kernel functions are allowed to execute during this run.
+                Use FunctionChoiceBehavior.Auto(filters={"included_functions": [...]}) to restrict to specific
+                functions. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -158,7 +168,11 @@ class AgentThreadActions:
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
-        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+        cls._validate_function_choice_behavior(function_choice_behavior)
+
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -232,7 +246,11 @@ class AgentThreadActions:
 
                         chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
                         _ = await cls._invoke_function_calls(
-                            kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                            kernel=kernel,
+                            fccs=fccs,
+                            chat_history=chat_history,
+                            arguments=arguments,
+                            function_choice_behavior=function_choice_behavior,
                         )
 
                         tool_outputs = cls._format_tool_outputs(fccs, chat_history)
@@ -264,16 +282,12 @@ class AgentThreadActions:
                         yield False, generate_mcp_call_content(agent_name=agent.name, mcp_tool_calls=mcp_tool_calls)
 
                         # Create tool approvals for MCP calls
-                        tool_approvals = []
-                        for mcp_call in mcp_tool_calls:
-                            tool_approvals.append(
-                                ToolApproval(
-                                    tool_call_id=mcp_call.id,
-                                    # TODO(evmattso): we don't support manual tool calling yet
-                                    # so we always approve
-                                    approve=True,
-                                )
-                            )
+                        tool_approvals = await cls._build_mcp_tool_approvals(
+                            agent=agent,
+                            thread_id=thread_id,
+                            run_id=run.id,
+                            mcp_tool_calls=mcp_tool_calls,
+                        )
 
                         await agent.client.agents.runs.submit_tool_outputs(
                             run_id=run.id,
@@ -467,6 +481,7 @@ class AgentThreadActions:
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: TruncationObject | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent stream and yield ChatMessageContent continuously.
@@ -489,10 +504,15 @@ class AgentThreadActions:
                 formed from the streamed chunks.
             parallel_tool_calls: Whether to configure parallel tool calls.
             response_format: The response format.
-            tools: The tools.
+            tools: The SDK-level tools (e.g. CodeInterpreter, FileSearch, AzureAISearch). When provided,
+                overrides the tools from the agent definition. Does not affect kernel function availability;
+                use function_choice_behavior for that.
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            function_choice_behavior: Controls which kernel functions are allowed to execute during this run.
+                Use FunctionChoiceBehavior.Auto(filters={"included_functions": [...]}) to restrict to specific
+                functions. Only Auto is supported; other types will raise an error.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -502,7 +522,11 @@ class AgentThreadActions:
         kernel = kernel or agent.kernel
         arguments = agent._merge_arguments(arguments)
 
-        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+        cls._validate_function_choice_behavior(function_choice_behavior)
+
+        tools = cls._get_tools(
+            agent=agent, kernel=kernel, tools_override=tools, function_choice_behavior=function_choice_behavior
+        )  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -549,6 +573,7 @@ class AgentThreadActions:
             arguments=arguments,
             function_steps=function_steps,
             active_messages=active_messages,
+            function_choice_behavior=function_choice_behavior,
         ):
             if content:
                 yield content
@@ -564,6 +589,7 @@ class AgentThreadActions:
         function_steps: dict[str, FunctionCallContent],
         active_messages: dict[str, RunStep],
         output_messages: "list[ChatMessageContent] | None" = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
         thread_msg_id = None
@@ -671,6 +697,7 @@ class AgentThreadActions:
                             run=run,
                             function_steps=function_steps,
                             arguments=arguments,
+                            function_choice_behavior=function_choice_behavior,
                         )
                         if action_result is None:
                             raise RuntimeError(
@@ -728,17 +755,12 @@ class AgentThreadActions:
                                     output_messages.append(content)
 
                             # Create tool approvals for MCP calls
-                            tool_approvals = []
-                            for mcp_call in mcp_tool_calls:
-                                tool_approvals.append(
-                                    ToolApproval(
-                                        tool_call_id=mcp_call.id,
-                                        approve=True,
-                                        # Note: headers would need to be provided by the MCP tool configuration
-                                        # This is a simplified implementation
-                                        headers={},
-                                    )
-                                )
+                            tool_approvals = await cls._build_mcp_tool_approvals(
+                                agent=agent,
+                                thread_id=thread_id,
+                                run_id=run.id,
+                                mcp_tool_calls=mcp_tool_calls,
+                            )
 
                             handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()  # type: ignore
                             await agent.client.agents.runs.submit_tool_outputs_stream(
@@ -959,12 +981,74 @@ class AgentThreadActions:
         }
         return [tool for tool in new_tools if tool.get("function", {}).get("name") not in existing_names]
 
+    @staticmethod
+    def _validate_function_choice_behavior(
+        function_choice_behavior: FunctionChoiceBehavior | None,
+    ) -> None:
+        """Validate the function choice behavior is compatible with agent invocations."""
+        if function_choice_behavior is None:
+            return
+        if function_choice_behavior.type_ != FunctionChoiceType.AUTO:
+            raise AgentInvokeException(
+                f"FunctionChoiceBehavior with type '{function_choice_behavior.type_}' is not supported for agent "
+                "invocations. Use FunctionChoiceBehavior.Auto(filters=...) to control which kernel functions "
+                "are available."
+            )
+        if not function_choice_behavior.auto_invoke_kernel_functions:
+            raise AgentInvokeException(
+                "FunctionChoiceBehavior.Auto(auto_invoke=False) is not supported for agent invocations. "
+                "The agent run loop manages tool invocation; disabling auto_invoke is not compatible."
+            )
+        valid_filter_keys: set[str] = {
+            "excluded_plugins",
+            "included_plugins",
+            "excluded_functions",
+            "included_functions",
+        }
+        if function_choice_behavior.filters is not None:
+            if not function_choice_behavior.filters:
+                raise AgentInvokeException(
+                    "FunctionChoiceBehavior filters must not be empty. Provide at least one filter key "
+                    f"from {sorted(valid_filter_keys)}, or omit filters entirely to include all "
+                    "kernel functions."
+                )
+            unknown_keys = {str(k) for k in function_choice_behavior.filters} - valid_filter_keys
+            if unknown_keys:
+                raise AgentInvokeException(
+                    f"Unknown filter key(s): {sorted(unknown_keys)}. "
+                    f"Valid filter keys are: {sorted(valid_filter_keys)}."
+                )
+
     @classmethod
-    def _get_tools(cls: type[_T], agent: "AzureAIAgent", kernel: "Kernel") -> list[dict[str, Any] | ToolDefinition]:
-        """Get the tools for the agent."""
-        tools: list[Any] = list(agent.definition.tools)
-        funcs = kernel.get_full_list_of_function_metadata()
-        cls._validate_function_tools_registered(tools, funcs)
+    def _get_tools(
+        cls: type[_T],
+        agent: "AzureAIAgent",
+        kernel: "Kernel",
+        tools_override: list[ToolDefinition] | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+    ) -> list[dict[str, Any] | ToolDefinition]:
+        """Get the tools for the agent.
+
+        Args:
+            agent: The agent instance.
+            kernel: The kernel to use for function metadata.
+            tools_override: When provided, overrides agent.definition.tools (SDK-level tools only).
+            function_choice_behavior: When provided, filters which kernel functions are included.
+        """
+        tools: list[Any] = list(tools_override) if tools_override is not None else list(agent.definition.tools)
+
+        # Always validate against the full kernel function list to catch truly
+        # unregistered functions, regardless of FCB filtering.
+        all_funcs = kernel.get_full_list_of_function_metadata()
+        cls._validate_function_tools_registered(tools, all_funcs)
+
+        # Determine which kernel functions to advertise based on function_choice_behavior
+        if function_choice_behavior is not None and not function_choice_behavior.enable_kernel_functions:
+            funcs: list[KernelFunctionMetadata] = []
+        elif function_choice_behavior is not None and function_choice_behavior.filters:
+            funcs = kernel.get_list_of_function_metadata(function_choice_behavior.filters)
+        else:
+            funcs = all_funcs
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
         deduped_defs = cls._deduplicate_tools(tools, dict_defs)
         tools.extend(deduped_defs)
@@ -1071,6 +1155,7 @@ class AgentThreadActions:
         fccs: list["FunctionCallContent"],
         chat_history: "ChatHistory",
         arguments: KernelArguments,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
     ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
         return await asyncio.gather(
@@ -1079,10 +1164,76 @@ class AgentThreadActions:
                     function_call=function_call,
                     chat_history=chat_history,
                     arguments=arguments,
+                    function_behavior=function_choice_behavior,
                 )
                 for function_call in fccs
             ],
         )
+
+    @classmethod
+    async def _build_mcp_tool_approvals(
+        cls: type[_T],
+        agent: "AzureAIAgent",
+        thread_id: str,
+        run_id: str,
+        mcp_tool_calls: list[RequiredMcpToolCall],
+    ) -> list[ToolApproval]:
+        """Approve or deny the MCP tool calls the Azure AI Foundry Agent Service is waiting on.
+
+        Each pending call is passed to the agent's `mcp_tool_approval_callback`. When no callback is
+        configured the call is denied, so that a compromised or untrusted MCP server cannot run tools
+        without the developer explicitly opting in.
+        """
+        approvals: list[ToolApproval] = []
+        for mcp_call in mcp_tool_calls:
+            approved = await cls._resolve_mcp_tool_approval(
+                agent,
+                MCPToolApprovalRequest(
+                    agent_name=agent.name,
+                    thread_id=thread_id,
+                    run_id=run_id,
+                    tool_call_id=mcp_call.id,
+                    server_label=mcp_call.server_label,
+                    function_name=mcp_call.name,
+                    arguments=mcp_call.arguments,
+                ),
+            )
+            logger.debug(
+                f"MCP tool call `{mcp_call.name}` from server `{mcp_call.server_label}` was "
+                f"{'approved' if approved else 'denied'} for agent `{agent.name}` and thread `{thread_id}`"
+            )
+            approvals.append(ToolApproval(tool_call_id=mcp_call.id, approve=approved, headers={}))
+
+        return approvals
+
+    @classmethod
+    async def _resolve_mcp_tool_approval(cls: type[_T], agent: "AzureAIAgent", request: MCPToolApprovalRequest) -> bool:
+        """Resolve the approval decision for a single MCP tool call.
+
+        The agent's callback may be synchronous or asynchronous and returns True to approve the call.
+        When no callback is configured, or when the callback fails, the call is denied so that an
+        untrusted MCP server cannot execute tools without the developer opting in.
+        """
+        if agent.mcp_tool_approval_callback is None:
+            logger.warning(
+                f"MCP tool call `{request.function_name}` from server `{request.server_label}` was denied because "
+                "no `mcp_tool_approval_callback` was configured on the agent. Provide a callback to approve or "
+                "deny MCP tool calls."
+            )
+            return False
+
+        try:
+            result = agent.mcp_tool_approval_callback(request)
+            if inspect.isawaitable(result):
+                result = await result
+        except Exception:
+            logger.exception(
+                f"MCP tool approval callback raised an error for tool call `{request.function_name}` from server "
+                f"`{request.server_label}`. Denying the call.",
+            )
+            return False
+
+        return result is True
 
     @classmethod
     def _format_tool_outputs(
@@ -1111,6 +1262,7 @@ class AgentThreadActions:
         run: ThreadRun,
         function_steps: dict[str, "FunctionCallContent"],
         arguments: KernelArguments,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
         **kwargs: Any,
     ) -> FunctionActionResult | None:
         """Handle the requires action event for a streaming run."""
@@ -1121,7 +1273,11 @@ class AgentThreadActions:
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
             results = await cls._invoke_function_calls(
-                kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                kernel=kernel,
+                fccs=fccs,
+                chat_history=chat_history,
+                arguments=arguments,
+                function_choice_behavior=function_choice_behavior,
             )
 
             function_result_streaming_content = merge_streaming_function_results(

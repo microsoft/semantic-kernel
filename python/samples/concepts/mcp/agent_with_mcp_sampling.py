@@ -52,6 +52,7 @@ async def main():
             "run",
             "mcp_server_with_sampling.py",
         ],
+        sampling_auto_approve=True,
     ) as plugin:
         agent = ChatCompletionAgent(
             service=OpenAIChatCompletion(),

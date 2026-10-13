@@ -159,6 +159,75 @@ public sealed class GeminiChatClientFunctionCallingTests : IDisposable
         Assert.IsAssignableFrom<IChatClient>(chatClient);
     }
 
+    [Fact]
+    public async Task AutoInvokeDoesNotInvokeFunctionThatWasNotAdvertisedByFunctionChoiceBehaviorAsync()
+    {
+        // Arrange - register two functions in the same kernel but only advertise one of them via the
+        // FunctionChoiceBehavior. The model is then made to request the function that was not advertised.
+        bool unadvertisedFunctionInvoked = false;
+        var plugin = KernelPluginFactory.CreateFromFunctions("TestPlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod(() => "allowed-result", "AllowedFunction"),
+            KernelFunctionFactory.CreateFromMethod(() => { unadvertisedFunctionInvoked = true; return "secret"; }, "UnadvertisedFunction"),
+        });
+        var kernel = new Kernel();
+        kernel.Plugins.Add(plugin);
+
+        var allowedFunction = kernel.Plugins.GetFunction("TestPlugin", "AllowedFunction");
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: [allowedFunction], autoInvoke: true)
+        };
+
+        // The model requests the function that was not advertised, then produces a final text answer.
+        string functionCallResponse = $$"""
+        {
+          "candidates": [
+            {
+              "content": {
+                "parts": [ { "functionCall": { "name": "TestPlugin{{GeminiFunction.NameSeparator}}UnadvertisedFunction", "args": {} } } ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": { "promptTokenCount": 1, "candidatesTokenCount": 1, "totalTokenCount": 2 }
+        }
+        """;
+        string finalTextResponse = """
+        {
+          "candidates": [
+            {
+              "content": { "parts": [ { "text": "done" } ], "role": "model" },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": { "promptTokenCount": 1, "candidatesTokenCount": 1, "totalTokenCount": 2 }
+        }
+        """;
+        using var functionCallHttpResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(functionCallResponse) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(functionCallHttpResponse);
+
+        using var finalTextHttpResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(finalTextResponse) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(finalTextHttpResponse);
+
+        var service = this.CreateChatCompletionService();
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Do something");
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, settings, kernel);
+
+        // Assert - the unadvertised function must never be invoked, even though it exists in the kernel.
+        Assert.False(unadvertisedFunctionInvoked);
+        // The requested tool call was processed and rejected (not silently ignored): both responses were
+        // consumed and the model's final text answer was returned.
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Contains(result, m => m.Content is not null && m.Content.Contains("done", StringComparison.Ordinal));
+    }
+
     private GoogleAIGeminiChatCompletionService CreateChatCompletionService(HttpClient? httpClient = null)
     {
         return new GoogleAIGeminiChatCompletionService(

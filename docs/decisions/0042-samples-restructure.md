@@ -1,5 +1,5 @@
 ---
-# Reestructure of How Sample Code will be Structured In the Repository
+# Restructure of How Sample Code will be Structured In the Repository
 
 status: accepted
 contact: rogerbarreto
@@ -228,7 +228,7 @@ Identified Component Oriented Concepts:
 
 - Planners
 
-  - Handlerbars
+  - Handlebars
 
 - Authentication
 
@@ -358,7 +358,7 @@ Concepts/
 │   ├── Resiliency/
 │   └── Usage/
 ├── Planners/
-│   └── Handlerbars/
+│   └── Handlebars/
 ├── Authentication/
 │   └── Azure AD/
 ├── Function Calling/
@@ -420,7 +420,7 @@ Concepts/
 │   ├── Resiliency/
 │   └── Usage/
 ├── Planners/
-│   └── Handlerbars/
+│   └── Handlebars/
 ├── Authentication/
 │   └── Azure AD/
 ├── Function Calling/
@@ -502,7 +502,7 @@ Concepts/
 ├── DependencyInjection
 ├── HttpClient.Resiliency
 ├── HttpClient.Usage
-├── Planners.Handlerbars
+├── Planners.Handlebars
 ├── Authentication.AzureAD
 ├── FunctionCalling.AutoFunctionCalling
 ├── FunctionCalling.ManualFunctionCalling
@@ -545,7 +545,7 @@ Concepts/
 ├── Logging
 ├── DependencyInjection
 ├── HttpClient
-├── Planners.Handlerbars
+├── Planners.Handlebars
 ├── Authentication.AzureAD
 ├── FunctionCalling
 ├── Filtering
@@ -634,7 +634,7 @@ Concepts/
 
 Pros:
 
-- Beginers will be oriented to the right difficulty level and examples will be more organized by complexity
+- Beginners will be oriented to the right difficulty level and examples will be more organized by complexity
 
 Cons:
 

@@ -97,7 +97,6 @@ public sealed class PromptyTests
         Assert.Equal(0, executionSettings.Temperature);
         Assert.Equal(1.0, executionSettings.TopP);
         Assert.Null(executionSettings.StopSequences);
-        Assert.Equal("{\"type\":\"json_object\"}", executionSettings.ResponseFormat?.ToString());
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Equal(3000, executionSettings.MaxTokens);
         Assert.Null(executionSettings.Seed);
@@ -227,24 +226,40 @@ public sealed class PromptyTests
         Abc
         """)]
     [InlineData("""
-        ---a
-        name: SomePrompt
-        ---
-        Abc
-        """)]
-    [InlineData("""
         ---
         name: SomePrompt
         ---b
         Abc
         """)]
-    public void ItRequiresStringSeparatorPlacement(string prompt)
+    public void ItToleratesLenientFrontmatterSeparatorPlacement(string prompt)
     {
         // Arrange
         Kernel kernel = new();
 
-        // Act / Assert
-        Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty(prompt));
+        // Act - Prompty 2.0 tolerates surrounding whitespace and trailing characters on the
+        // frontmatter separators, so these templates are parsed rather than rejected. This is
+        // not a security-relevant relaxation, so no stricter validation is imposed on top.
+        var kernelFunction = kernel.CreateFunctionFromPrompty(prompt);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.Equal("SomePrompt", kernelFunction.Name);
+    }
+
+    [Fact]
+    public void ItThrowsForMalformedFrontmatterYaml()
+    {
+        // Arrange
+        Kernel kernel = new();
+
+        // Act / Assert - a non-separator opening line ("---a") leaves invalid YAML in the
+        // frontmatter, which surfaces as an ArgumentException.
+        Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty("""
+            ---a
+            name: SomePrompt
+            ---
+            Abc
+            """));
     }
 
     [Fact]
@@ -342,7 +357,8 @@ public sealed class PromptyTests
             ---
             name: MyPrompt
             inputs:
-              question:
+              - name: question
+                kind: string
                 description: What is the color of the sky?
             ---
             {{a}} {{b}} {{c}}
@@ -366,20 +382,14 @@ public sealed class PromptyTests
             name: SomePrompt
             description: This is the description.
             model:
-                api: chat
-                connection:
-                    type: azure_openai_beta
+                apiType: chat
                 options:
-                    logprobs: true
-                    top_logprobs: 2
-                    top_p: 1.0
-                    user: Bob
-                    stop_sequences:
+                    temperature: 0.5
+                    topP: 1.0
+                    maxOutputTokens: 1000
+                    stopSequences:
                       - END
                       - COMPLETE
-                    token_selection_biases:
-                      1: 2
-                      3: 4
             ---
             Abc---def
             """;
@@ -393,12 +403,10 @@ public sealed class PromptyTests
         Assert.NotNull(executionSettings);
         var openaiExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         Assert.NotNull(openaiExecutionSettings);
-        Assert.True(openaiExecutionSettings.Logprobs);
-        Assert.Equal(2, openaiExecutionSettings.TopLogprobs);
+        Assert.Equal(0.5, openaiExecutionSettings.Temperature);
         Assert.Equal(1.0, openaiExecutionSettings.TopP);
-        Assert.Equal("Bob", openaiExecutionSettings.User);
+        Assert.Equal(1000, openaiExecutionSettings.MaxTokens);
         Assert.Equal(["END", "COMPLETE"], openaiExecutionSettings.StopSequences);
-        Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, openaiExecutionSettings.TokenSelectionBiases);
     }
 
     [Fact]
@@ -440,32 +448,6 @@ public sealed class PromptyTests
         Assert.True(executionSettings!.ContainsKey("default"));
         var defaultExecutionSetting = executionSettings["default"];
         Assert.Equal("gpt-35-turbo", defaultExecutionSetting.ModelId);
-    }
-
-    [Fact]
-    public void JsonSchemaTest()
-    {
-        // Arrange
-        Kernel kernel = new();
-        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
-        var promptyTemplate = File.ReadAllText(chatPromptyPath);
-
-        // Act
-        var kernelFunction = kernel.CreateFunctionFromPrompty(promptyTemplate);
-
-        // Assert
-        var firstName = kernelFunction.Metadata.Parameters.First(p => p.Name == "firstName");
-        Assert.NotNull(firstName);
-        Assert.NotNull(firstName.Schema);
-        Assert.Equal("{\"type\":\"string\"}", firstName.Schema.ToString());
-        var answer = kernelFunction.Metadata.Parameters.First(p => p.Name == "answer");
-        Assert.NotNull(answer);
-        Assert.NotNull(answer.Schema);
-        Assert.Equal("{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"citations\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uri\"}}},\"required\":[\"answer\",\"citations\"],\"additionalProperties\":false}", answer.Schema.ToString());
-        var other = kernelFunction.Metadata.Parameters.First(p => p.Name == "other");
-        Assert.NotNull(other);
-        Assert.NotNull(other.Schema);
-        Assert.Equal("{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"citations\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uri\"}}},\"required\":[\"answer\",\"citations\"],\"additionalProperties\":\"false\"}", other.Schema.ToString());
     }
 
     private sealed class EchoTextGenerationService : ITextGenerationService

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using CommunityToolkit.VectorData.InMemory;
 using MCPServer;
 using MCPServer.ProjectResources;
 using MCPServer.Prompts;
@@ -9,7 +10,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Connectors.InMemory;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 

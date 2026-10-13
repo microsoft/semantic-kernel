@@ -170,7 +170,7 @@ await ragStore.UpsertDocumentsAsync(
 var agentThread = new ChatHistoryAgentThread();
 agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 
-// Inovke the agent.
+// Invoke the agent.
 var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
 // Expected response contains the 174M income from the document.
 ```

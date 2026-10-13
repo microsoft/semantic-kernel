@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.Milvus.UnitTests" />
   </ItemGroup>
 
 </Project>

@@ -26,6 +26,7 @@ from mcp.shared.session import RequestResponder
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -246,6 +247,7 @@ class MCPPluginBase:
         kernel: Kernel | None = None,
         request_timeout: int | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
+        sampling_auto_approve: bool = False,
     ) -> None:
         """Initialize the MCP Plugin Base.
 
@@ -259,8 +261,11 @@ class MCPPluginBase:
             request_timeout: The default timeout used for all requests.
             sampling_consent_callback: Optional callback for approving MCP sampling requests.
                 Receives the plugin name and MCP sampling request params. Return
-                False to deny the request. When omitted, sampling requests are
-                auto-approved and a warning is logged.
+                False to deny the request. Takes precedence over sampling_auto_approve.
+            sampling_auto_approve: Whether to auto-approve MCP sampling requests when no
+                sampling_consent_callback is configured. Defaults to False, meaning sampling
+                requests are denied unless a consent callback is provided or this flag is set
+                to True. Set to True only when connecting to a trusted MCP server.
         """
         self.name = name
         self.description = description
@@ -271,8 +276,10 @@ class MCPPluginBase:
         self.kernel = kernel or None
         self.request_timeout = request_timeout
         self.sampling_consent_callback = sampling_consent_callback
+        self.sampling_auto_approve = sampling_auto_approve
         self._sampling_auto_approved_warning_logged = False
         self._mcp_reserved_attribute_names: set[str] | None = None
+        self._mcp_registered_names: dict[str, tuple[str, str]] = {}
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
@@ -383,13 +390,25 @@ class MCPPluginBase:
 
         If a sampling consent callback is configured, it is called before forwarding the request to the configured
         chat completion service. Returning False denies the request. If no callback is configured, requests are
-        auto-approved and a warning is logged.
+        denied unless sampling_auto_approve is set to True, in which case they are auto-approved and a warning is
+        logged.
         """
         if self.sampling_consent_callback is None:
+            if not self.sampling_auto_approve:
+                logger.warning(
+                    "MCP sampling request for plugin '%s' was denied because no sampling consent callback was "
+                    "configured. Provide a sampling_consent_callback or set sampling_auto_approve=True to allow "
+                    "sampling requests.",
+                    self.name,
+                )
+                return types.ErrorData(
+                    code=types.INTERNAL_ERROR,
+                    message="Sampling denied: no consent callback configured.",
+                )
             if not self._sampling_auto_approved_warning_logged:
                 logger.warning(
-                    "MCP sampling request for plugin '%s' was auto-approved because no sampling consent callback "
-                    "was configured.",
+                    "MCP sampling request for plugin '%s' was auto-approved because sampling_auto_approve is "
+                    "enabled and no sampling consent callback was configured.",
                     self.name,
                 )
                 self._sampling_auto_approved_warning_logged = True
@@ -521,6 +540,27 @@ class MCPPluginBase:
         )
         return True
 
+    def _is_mcp_local_name_taken(self, item_type: str, remote_name: str, local_name: str) -> bool:
+        """Check whether a normalized name is already bound to a different MCP tool or prompt.
+
+        Normalization is not injective, so distinct remote names can collapse into the same local
+        name. Tools and prompts share one attribute namespace, so registering a collision would
+        silently rebind an already advertised name to a different remote item.
+        """
+        owner = self._mcp_registered_names.get(local_name)
+        if owner is None or owner == (item_type, remote_name):
+            return False
+        owner_type, owner_name = owner
+        logger.warning(
+            "Skipping MCP %s '%s' because normalized name '%s' is already registered by %s '%s'.",
+            item_type,
+            remote_name,
+            local_name,
+            owner_type,
+            owner_name,
+        )
+        return True
+
     async def load_prompts(self):
         """Load prompts from the MCP server."""
         try:
@@ -529,8 +569,11 @@ class MCPPluginBase:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
             local_name = _normalize_mcp_name(prompt.name)
+            if self._is_mcp_local_name_taken("prompt", prompt.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("prompt", prompt.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("prompt", prompt.name)
             func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
@@ -546,8 +589,11 @@ class MCPPluginBase:
         # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             local_name = _normalize_mcp_name(tool.name)
+            if self._is_mcp_local_name_taken("tool", tool.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("tool", tool.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("tool", tool.name)
             func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)
@@ -620,6 +666,7 @@ class MCPStdioPlugin(MCPPluginBase):
         encoding: str | None = None,
         kernel: Kernel | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
+        sampling_auto_approve: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP stdio plugin.
@@ -643,8 +690,10 @@ class MCPStdioPlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             sampling_consent_callback: Optional callback for approving MCP sampling requests.
                 Receives the plugin name and MCP sampling request params. Return
-                False to deny the request. When omitted, sampling requests are
-                auto-approved and a warning is logged.
+                False to deny the request. Takes precedence over sampling_auto_approve.
+            sampling_auto_approve: Whether to auto-approve MCP sampling requests when no
+                sampling_consent_callback is configured. Defaults to False (requests are denied).
+                Set to True only when connecting to a trusted MCP server.
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
@@ -657,6 +706,7 @@ class MCPStdioPlugin(MCPPluginBase):
             load_prompts=load_prompts,
             request_timeout=request_timeout,
             sampling_consent_callback=sampling_consent_callback,
+            sampling_auto_approve=sampling_auto_approve,
         )
         self.command = command
         self.args = args or []
@@ -696,6 +746,7 @@ class MCPSsePlugin(MCPPluginBase):
         sse_read_timeout: float | None = None,
         kernel: Kernel | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
+        sampling_auto_approve: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP sse plugin.
@@ -720,8 +771,10 @@ class MCPSsePlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             sampling_consent_callback: Optional callback for approving MCP sampling requests.
                 Receives the plugin name and MCP sampling request params. Return
-                False to deny the request. When omitted, sampling requests are
-                auto-approved and a warning is logged.
+                False to deny the request. Takes precedence over sampling_auto_approve.
+            sampling_auto_approve: Whether to auto-approve MCP sampling requests when no
+                sampling_consent_callback is configured. Defaults to False (requests are denied).
+                Set to True only when connecting to a trusted MCP server.
             kwargs: Any extra arguments to pass to the sse client.
 
         """
@@ -734,6 +787,7 @@ class MCPSsePlugin(MCPPluginBase):
             load_prompts=load_prompts,
             request_timeout=request_timeout,
             sampling_consent_callback=sampling_consent_callback,
+            sampling_auto_approve=sampling_auto_approve,
         )
         self.url = url
         self.headers = headers or {}
@@ -776,6 +830,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         terminate_on_close: bool | None = None,
         kernel: Kernel | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
+        sampling_auto_approve: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP streamable http plugin.
@@ -801,8 +856,10 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             sampling_consent_callback: Optional callback for approving MCP sampling requests.
                 Receives the plugin name and MCP sampling request params. Return
-                False to deny the request. When omitted, sampling requests are
-                auto-approved and a warning is logged.
+                False to deny the request. Takes precedence over sampling_auto_approve.
+            sampling_auto_approve: Whether to auto-approve MCP sampling requests when no
+                sampling_consent_callback is configured. Defaults to False (requests are denied).
+                Set to True only when connecting to a trusted MCP server.
             kwargs: Any extra arguments to pass to the sse client.
         """
         super().__init__(
@@ -814,6 +871,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             load_prompts=load_prompts,
             request_timeout=request_timeout,
             sampling_consent_callback=sampling_consent_callback,
+            sampling_auto_approve=sampling_auto_approve,
         )
         self.url = url
         self.headers = headers or {}
@@ -855,6 +913,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
         description: str | None = None,
         kernel: Kernel | None = None,
         sampling_consent_callback: SamplingConsentCallback | None = None,
+        sampling_auto_approve: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP websocket plugin.
@@ -876,8 +935,10 @@ class MCPWebsocketPlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             sampling_consent_callback: Optional callback for approving MCP sampling requests.
                 Receives the plugin name and MCP sampling request params. Return
-                False to deny the request. When omitted, sampling requests are
-                auto-approved and a warning is logged.
+                False to deny the request. Takes precedence over sampling_auto_approve.
+            sampling_auto_approve: Whether to auto-approve MCP sampling requests when no
+                sampling_consent_callback is configured. Defaults to False (requests are denied).
+                Set to True only when connecting to a trusted MCP server.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
@@ -890,6 +951,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
             load_prompts=load_prompts,
             request_timeout=request_timeout,
             sampling_consent_callback=sampling_consent_callback,
+            sampling_auto_approve=sampling_auto_approve,
         )
         self.url = url
         self._client_kwargs = kwargs
@@ -917,14 +979,16 @@ def create_mcp_server_from_functions(
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
     plugin_name: str = "mcp",
+    use_plugin_names: bool = False,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a function(s) or plugin(s).
 
-    This function automatically creates a MCP server from single or multiple functions or plugins,
-    all functions are added under the plugin_name that can be set by using the `plugin_name` argument.
-    It further uses the provided arguments to
-    configure the server and expose functions as tools, see the mcp documentation for more details.
+    This function automatically creates a MCP server from single or multiple functions or plugins.
+    Individual functions and objects that are not KernelPlugin instances are registered under `plugin_name`.
+    Existing KernelPlugin instances retain their names, regardless of `plugin_name`, as in Kernel.add_plugin.
+    It uses the provided arguments to configure the server and expose functions as tools,
+    see the mcp documentation for more details.
 
     Args:
         functions: The function(s) or plugin(s) instance to use.
@@ -935,7 +999,10 @@ def create_mcp_server_from_functions(
         version: The version of the server.
         instructions: The instructions to use for the server.
         lifespan: The lifespan of the server.
-        plugin_name: The name of the plugin to use.
+        plugin_name: The plugin name for individual functions and objects that are not KernelPlugin instances.
+            Ignored for existing KernelPlugin instances, which retain their names.
+        use_plugin_names: Whether to prefix tool names with their plugin name, separated by a hyphen.
+            Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.
 
     Returns:
@@ -965,6 +1032,7 @@ def create_mcp_server_from_functions(
         version=version,
         instructions=instructions,
         lifespan=lifespan,
+        use_plugin_names=use_plugin_names,
         **kwargs,
     )
 
@@ -979,6 +1047,7 @@ def create_mcp_server_from_kernel(
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
     excluded_functions: OptionalOneOrMany[str] = None,
+    use_plugin_names: bool = False,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a kernel instance.
@@ -986,8 +1055,13 @@ def create_mcp_server_from_kernel(
     This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
     configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-    By default, all functions are exposed as Tools, you can control this by using use the `excluded_functions` argument.
-    These need to be set to the function name, without the plugin_name.
+    By default, functions are exposed as Tools using their bare function names. If names collide,
+    the first function is exposed and subsequent functions are skipped with a warning.
+    Set `use_plugin_names=True` to expose names as `<registered_plugin_name>-<function_name>` instead.
+    The same function is used for each tool's metadata and invocation.
+    Tool names over MCP's recommended 128 characters are exposed with a warning.
+
+    Exclude functions using `excluded_functions`, with bare function names regardless of `use_plugin_names`.
 
     Args:
         kernel: The kernel instance to use.
@@ -998,6 +1072,8 @@ def create_mcp_server_from_kernel(
         lifespan: The lifespan of the server.
         excluded_functions: The list of function names to exclude from the server.
             if None, no functions will be excluded.
+        use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
+            Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.
 
     Returns:
@@ -1020,18 +1096,41 @@ def create_mcp_server_from_kernel(
 
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
-    functions_to_expose = [
-        func for func in kernel.get_full_list_of_function_metadata() if func.name not in (excluded_functions or [])
-    ]
+    # Map each public tool name to the exact function used for both listing and calls.
+    functions_to_expose: dict[str, KernelFunction] = {}
+    registered_names: dict[str, str] = {}
+    for plugin_name, plugin in kernel.plugins.items():
+        for function in plugin:
+            if function.name in (excluded_functions or []):
+                continue
 
-    if len(functions_to_expose) > 0:
+            registered_name = f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function.name}"
+            tool_name = registered_name if use_plugin_names else function.name
+
+            if tool_name in functions_to_expose:
+                logger.warning(
+                    "Skipping function '%s' because MCP tool name '%s' is already registered by '%s'.",
+                    registered_name,
+                    tool_name,
+                    registered_names[tool_name],
+                )
+                continue
+
+            if len(tool_name) > 128:
+                logger.warning("MCP tool name '%s' exceeds the recommended 128 characters.", tool_name)
+
+            functions_to_expose[tool_name] = function
+            registered_names[tool_name] = registered_name
+
+    if functions_to_expose:
 
         @server.list_tools()
         async def _list_tools() -> list[types.Tool]:
             """List all tools in the kernel."""
+            # The public name may be plugin-qualified while func.name stays bare.
             tools = [
                 types.Tool(
-                    name=func.name,
+                    name=tool_name,
                     description=func.description,
                     inputSchema={
                         "type": "object",
@@ -1047,7 +1146,7 @@ def create_mcp_server_from_kernel(
                         ],
                     },
                 )
-                for func in functions_to_expose
+                for tool_name, func in functions_to_expose.items()
             ]
             await _log(level="debug", data=f"List of tools: {tools}")
             await asyncio.sleep(0.0)
@@ -1058,8 +1157,15 @@ def create_mcp_server_from_kernel(
             *args: Any,
         ) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
             """Call a tool in the kernel."""
-            await _log(level="debug", data=f"Calling tool with args: {args}")
             function_name, arguments = args[0], args[1]
+            if function_name not in functions_to_expose:
+                raise McpError(
+                    error=types.ErrorData(
+                        code=types.METHOD_NOT_FOUND,
+                        message=f"Unknown tool: {function_name}",
+                    )
+                )
+            await _log(level="debug", data=f"Calling tool: {function_name}")
             result = await _call_kernel_function(function_name, arguments)
             if result:
                 value = result.value
@@ -1163,9 +1269,9 @@ def create_mcp_server_from_kernel(
         await _log(level=level, data=f"Log level set to {level}")
 
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
-        function = kernel.get_function(plugin_name=None, function_name=function_name)
+        function = functions_to_expose[function_name]
+
         arguments["server"] = server
-        print("arguments", arguments)
         return await function.invoke(kernel=kernel, **arguments)
 
     return server

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import os
 import tempfile
 from collections.abc import Callable
@@ -296,6 +297,61 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
             request_index=0,
             function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
+
+
+async def test_invoke_function_call_does_not_log_argument_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    class TestPlugin:
+        @kernel_function
+        def echo(self, value: str) -> str:
+            return value
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+
+    caplog.set_level(logging.INFO, logger="semantic_kernel.kernel")
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function")
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": secret}),
+        chat_history=ChatHistory(),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name in {"semantic_kernel.kernel", "semantic_kernel.functions.kernel_function"}
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Calling test-echo function." in messages
+
+
+async def test_invoke_function_call_does_not_log_exception_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    class TestPlugin:
+        @kernel_function
+        def fail(self, value: str) -> str:
+            raise ValueError(value)
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+
+    caplog.set_level(logging.ERROR, logger="semantic_kernel.kernel")
+    caplog.set_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function")
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-fail", arguments={"value": secret}),
+        chat_history=ChatHistory(),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name in {"semantic_kernel.kernel", "semantic_kernel.functions.kernel_function"}
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Function failed. Error type: ValueError." in messages
+    assert "Error invoking function test-fail. Error type: ValueError." in messages
 
 
 class LightsPlugin:
@@ -971,6 +1027,37 @@ def test_get_function_from_fqn_wo_plugin(kernel: Kernel, custom_plugin_class):
     kernel.add_plugin(custom_plugin_class(), "TestPlugin")
     func = kernel.get_function_from_fully_qualified_function_name("getLightStatus")
     assert func
+
+
+def test_get_function_bare_name_single_match(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function(None, "getLightStatus")
+    assert func
+
+
+def test_get_function_bare_name_ambiguous_warns(kernel: Kernel, caplog):
+    import logging
+
+    class PluginA:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "a"
+
+    class PluginB:
+        @kernel_function(name="check_permissions")
+        def check_permissions(self) -> str:
+            return "b"
+
+    kernel.add_plugin(PluginA(), "PluginA")
+    kernel.add_plugin(PluginB(), "PluginB")
+
+    with caplog.at_level(logging.WARNING, logger="semantic_kernel.functions.kernel_function_extension"):
+        func = kernel.get_function(None, "check_permissions")
+
+    # Warn-only: resolves to the first-registered match, but logs the ambiguity.
+    assert func is kernel.get_function("PluginA", "check_permissions")
+    assert "ambiguous" in caplog.text
+    assert "PluginA" in caplog.text and "PluginB" in caplog.text
 
 
 # endregion

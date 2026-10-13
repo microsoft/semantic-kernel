@@ -5,7 +5,6 @@ using Azure.Identity;
 using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Pinecone;
 using StackExchange.Redis;
 
 namespace Memory;
@@ -25,17 +24,6 @@ namespace Memory;
 /// </remarks>
 public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Shows how to read data from a Pinecone collection that was created and ingested using Langchain.
-    /// </summary>
-    [Fact]
-    public async Task ReadDataFromLangchainPineconeAsync()
-    {
-        var pineconeClient = new PineconeClient(TestConfiguration.Pinecone.ApiKey);
-        var vectorStore = PineconeFactory.CreatePineconeLangchainInteropVectorStore(pineconeClient);
-        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
-    }
-
     /// <summary>
     /// Shows how to read data from a Redis collection that was created and ingested using Langchain.
     /// </summary>
