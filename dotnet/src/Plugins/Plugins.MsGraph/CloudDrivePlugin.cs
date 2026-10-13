@@ -298,8 +298,7 @@ public sealed class CloudDrivePlugin
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -310,14 +309,31 @@ public sealed class CloudDrivePlugin
 
         // Re-check after expansion: an env var could have expanded to a UNC
         // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
-            expanded.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(expanded))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return Path.GetFullPath(expanded);
+        // Re-check after canonicalization: a relative path can still resolve to a UNC path,
+        // for example when the current directory is a UNC share.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return fullPath;
     }
+
+    /// <summary>
+    /// Returns true if the path starts with any combination of two directory separators
+    /// (e.g. <c>\\</c>, <c>//</c>, <c>/\</c>, <c>\/</c>), all of which resolve to UNC or
+    /// extended-length/device paths on Windows.
+    /// </summary>
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed upload directories.
