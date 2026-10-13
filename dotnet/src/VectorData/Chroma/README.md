@@ -1,1 +1,1 @@
-The code for Microsoft.SemanticKernel.Connectors.Chroma can now be found in the [CommunityToolkit/AI repository](https://github.com/CommunityToolkit/AI/tree/main/MEVD/src/Chroma)
+Microsoft.SemanticKernel.Connectors.Chroma and the MemoryStore abstraction has been deprecated.  Please use the new Microsoft.Extensions.VectorData abstractions with the Chroma implementation that can be found in the [CommunityToolkit/AI repository](https://github.com/CommunityToolkit/AI/tree/main/MEVD/src/Chroma)
