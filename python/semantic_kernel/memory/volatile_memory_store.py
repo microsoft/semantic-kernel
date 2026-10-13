@@ -220,6 +220,8 @@ class VolatileMemoryStore(MemoryStoreBase):
             min_relevance_score=min_relevance_score,
             with_embeddings=with_embedding,
         )
+        if len(results) == 0:
+            raise ServiceResourceNotFoundError("No match found")
         return results[0]
 
     async def get_nearest_matches(
