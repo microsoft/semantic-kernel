@@ -154,6 +154,9 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         This includes indexes that need training, or GPU-based indexes, since you would also
         need to build the faiss package for use with GPU's yourself.
 
+        For a new collection, supplied indexes must contain no vectors. Insert records
+        through this collection so the vectors, records, and key mappings stay aligned.
+
         Args:
             index: The index to use, this can be used when there is only one vector field.
             indexes: A dictionary of indexes, the key is the name of the vector field.
