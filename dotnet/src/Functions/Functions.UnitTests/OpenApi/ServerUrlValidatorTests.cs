@@ -148,7 +148,9 @@ public class ServerUrlValidatorTests
         Task<IPAddress[]> UnexpectedResolver(string host, CancellationToken token) =>
             throw new InvalidOperationException("An explicitly trusted URL should not be resolved.");
 
-        await ServerUrlValidator.ValidateAsync(url, options, dnsResolver: UnexpectedResolver);
+        var addresses = await ServerUrlValidator.ValidateAsync(url, options, dnsResolver: UnexpectedResolver);
+
+        Assert.Empty(addresses);
     }
 
     [Fact]
@@ -166,7 +168,9 @@ public class ServerUrlValidatorTests
     {
         var options = new RestApiOperationServerUrlValidationOptions { AllowPrivateNetworkAccess = true };
 
-        await ServerUrlValidator.ValidateAsync(new Uri(url), options);
+        var addresses = await ServerUrlValidator.ValidateAsync(new Uri(url), options);
+
+        Assert.Empty(addresses);
     }
 
     [Theory]
@@ -221,8 +225,9 @@ public class ServerUrlValidatorTests
         Task<IPAddress[]> FakeResolver(string _, CancellationToken _1) =>
             Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") });
 
-        // Should not throw.
-        await ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver);
+        var addresses = await ServerUrlValidator.ValidateAsync(url, options: null, dnsResolver: FakeResolver);
+
+        Assert.Equal([IPAddress.Parse("93.184.216.34")], addresses);
     }
 
     [Fact]
