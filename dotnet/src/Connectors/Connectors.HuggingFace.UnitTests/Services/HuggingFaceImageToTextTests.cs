@@ -134,7 +134,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         await sut.GetTextContentsAsync(this._imageContentInput);
 
         //Assert
-        Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith("https://router.huggingface.co/hf-inference/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
