@@ -189,6 +189,7 @@
     <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.AzureDocumentDB" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.AzureCosmosDB" Version="1.0.0" />
+    <PackageVersion Include="CommunityToolkit.VectorData.Chroma" Version="1.0.1-preview" />
     <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.1" />
     <PackageVersion Include="CommunityToolkit.VectorData.PgVector" Version="1.0.0" />
     <PackageVersion Include="CommunityToolkit.VectorData.Qdrant" Version="1.0.0" />

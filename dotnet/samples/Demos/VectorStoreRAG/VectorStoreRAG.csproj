@@ -20,6 +20,7 @@
     <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" />
     <PackageReference Include="CommunityToolkit.VectorData.AzureDocumentDB" />
     <PackageReference Include="CommunityToolkit.VectorData.AzureCosmosDB" />
+    <PackageReference Include="CommunityToolkit.VectorData.Chroma" />
     <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
     <PackageReference Include="CommunityToolkit.VectorData.Qdrant" />
     <PackageReference Include="CommunityToolkit.VectorData.Redis" />
