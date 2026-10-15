@@ -34,12 +34,12 @@ for the concrete service classes each one exports.
 | Anthropic | `semantic_kernel.connectors.ai.anthropic` | `anthropic` | `anthropic ~= 0.32` |
 | Azure AI Inference | `semantic_kernel.connectors.ai.azure_ai_inference` | `azure` | `azure-ai-inference >= 1.0.0b6`, `azure-core-tracing-opentelemetry >= 1.0.0b11` |
 | Amazon Bedrock | `semantic_kernel.connectors.ai.bedrock` | `aws` | `boto3>=1.36.4,<1.43.0` |
-| Google AI / Vertex AI | `semantic_kernel.connectors.ai.google` | `google` | `google-genai >= 1.51,< 1.75`, `google-cloud-aiplatform>=1.114,<1.134` |
-| Hugging Face | `semantic_kernel.connectors.ai.hugging_face` | `hugging_face` | `transformers[torch] >= 4.28,< 6.0`, `sentence-transformers >= 2.2,< 6.0`, `torch==2.13.0` |
-| Mistral AI | `semantic_kernel.connectors.ai.mistral_ai` | `mistralai` | `mistralai >= 1.2,< 2.7.3` |
+| Google AI / Vertex AI | `semantic_kernel.connectors.ai.google` | `google` | `google-genai >= 1.51,< 2.23`, `google-cloud-aiplatform>=1.114,<1.134` |
+| Hugging Face | `semantic_kernel.connectors.ai.hugging_face` | `hugging_face` | `transformers[torch] >= 5.5.0,< 6.0`, `sentence-transformers >= 2.2,< 6.0`, `torch==2.13.0` |
+| Mistral AI | `semantic_kernel.connectors.ai.mistral_ai` | `mistralai` | `mistralai >= 1.2,< 2.0` |
 | NVIDIA NIM | `semantic_kernel.connectors.ai.nvidia` | `none` | `openai >= 2.0.0` (base dependency; the connector talks to NIM through the OpenAI client) |
 | Ollama | `semantic_kernel.connectors.ai.ollama` | `ollama` | `ollama ~= 0.4` |
-| ONNX GenAI | `semantic_kernel.connectors.ai.onnx` | `onnx` | `onnxruntime==1.22.1`, `onnxruntime>=1.26.0`, `onnxruntime-genai==0.9.0`, `onnxruntime-genai==0.14.1` (selected by python_version marker) |
+| ONNX GenAI | `semantic_kernel.connectors.ai.onnx` | `onnx` | `onnxruntime==1.22.1`, `onnxruntime>=1.26.0`, `onnxruntime-genai==0.9.0`, `onnxruntime-genai==0.15.2` (selected by python_version marker) |
 | OpenAI / Azure OpenAI | `semantic_kernel.connectors.ai.open_ai` | `none` | `openai >= 2.0.0` (base dependency) |
 
 The realtime clients exported by `semantic_kernel.connectors.ai.open_ai`
@@ -89,7 +89,7 @@ They are listed here because some extras exist only for them.
 | Postgres (deprecated) | `semantic_kernel.connectors.memory_stores.postgres` | `postgres` | `psycopg[binary,pool] ~= 3.2` |
 | Qdrant (deprecated) | `semantic_kernel.connectors.memory_stores.qdrant` | `qdrant` | `qdrant-client ~= 1.9` |
 | Redis (deprecated) | `semantic_kernel.connectors.memory_stores.redis` | `redis` | `redis[hiredis] >= 6,< 8` |
-| USearch (deprecated) | `semantic_kernel.connectors.memory_stores.usearch` | `usearch` | `usearch >= 2.16,< 2.25`, `pyarrow>=12.0,<24.0` |
+| USearch (deprecated) | `semantic_kernel.connectors.memory_stores.usearch` | `usearch` | `usearch >= 2.16,< 2.25`, `pyarrow>=12.0,<26.0` |
 | Weaviate (deprecated) | `semantic_kernel.connectors.memory_stores.weaviate` | `weaviate` | `weaviate-client>=4.17.0,<5.0` |
 
 ## Extras that are not connectors
@@ -136,7 +136,7 @@ Two limits worth stating plainly:
   [`tests/unit/test_connector_extras_doc.py`](../tests/unit/test_connector_extras_doc.py),
   which runs in the unit-test and coverage workflows above. It parses the tables here and
   `pyproject.toml` and fails when an extra is renamed, added or removed, or when the upstream
-  package names or version constraints listed here stop matching `pyproject.toml`. Version
-  specifiers in a `none` row are checked against the base `[project] dependencies`; a package
-  named without a version specifier (such as `httpx` above) is documentation only and is not
-  machine-checked.
+  package names or version constraints listed here stop matching `pyproject.toml`. Packages in a `none` row are only checked to
+  still be base `[project] dependencies` by name, so a routine bump of a base constraint does
+  not fail the test (the specifier shown there can lag); a package named without a version
+  specifier (such as `httpx` above) is documentation only and is not machine-checked.

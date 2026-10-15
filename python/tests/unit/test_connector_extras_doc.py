@@ -172,18 +172,32 @@ def test_upstream_package_names_match_pyproject():
 
 
 def test_version_constraints_match_pyproject():
-    """Every version specifier printed in the doc must still be the one pyproject.toml declares."""
+    """Every version specifier printed for an extra must still be the one pyproject.toml declares.
+
+    Rows with install extra `none` run on the base install. Their packages must still be base
+    dependencies by name, but their specifiers are not compared: base constraints are bumped
+    routinely (Dependabot included) and that alone must not fail this test.
+    """
     dependencies, optional = _load_pyproject()
-    base = {_normalize(requirement) for requirement in dependencies}
+    base_names = {_canonical_name(requirement) for requirement in dependencies}
     for row in _parse_rows():
         extras = row["extras"] - {"none"}
-        allowed = base if not extras else {_normalize(r) for extra in extras for r in optional[extra]}
+        if not extras:
+            for requirement in row["upstream"]:
+                if not HAS_SPECIFIER.search(requirement):
+                    continue  # documentation-only entry, e.g. a transitive dependency
+                assert _canonical_name(requirement) in base_names, (
+                    f"{DOC.name} line {row['line']} ({row['connector']}): '{requirement}' is not a base "
+                    f"[project] dependency in pyproject.toml"
+                )
+            continue
+        allowed = {_normalize(r) for extra in extras for r in optional[extra]}
         for requirement in row["upstream"]:
             if not HAS_SPECIFIER.search(requirement):
                 continue  # documentation-only entry, e.g. a transitive dependency
             assert _normalize(requirement) in allowed, (
                 f"{DOC.name} line {row['line']} ({row['connector']}): '{requirement}' does not match the "
-                f"constraint declared in pyproject.toml for {sorted(extras) or '[project] dependencies'}"
+                f"constraint declared in pyproject.toml for {sorted(extras)}"
             )
 
 
@@ -217,23 +231,30 @@ def _import_candidates(requirement: str) -> set[str]:
 
 
 def test_documented_packages_are_actually_imported_by_the_connector():
-    """A row must not claim a package its own connector never imports.
+    """Each extra a row names must be backed by a package that connector actually imports.
 
     This is what stops a self-consistent wrong pairing: without it a row can name a real
     extra whose real packages simply belong to a different connector, and every other
-    check in this file still passes.
+    check in this file still passes. The check runs per extra, so in a row that lists two
+    extras a wrongly added one cannot hide behind the other one's imports.
     """
+    _, optional = _load_pyproject()
     for row in _parse_rows():
-        if not row["extras"] - {"none"}:
+        extras = row["extras"] - {"none"}
+        if not extras:
             continue  # base-install connectors, nothing extra to attribute
         imported = _import_names(row["import_path"])
-        hit = any(
-            candidate == name or name.startswith(f"{candidate}.")
-            for requirement in row["upstream"]
-            for candidate in _import_candidates(requirement)
-            for name in imported
-        )
-        assert hit, (
-            f"{DOC.name} line {row['line']} ({row['connector']}): none of {row['upstream']} is imported "
-            f"anywhere under '{row['import_path']}' -- the row attributes a package to the wrong connector"
-        )
+        for extra in sorted(extras):
+            owned = {_canonical_name(requirement) for requirement in optional[extra]}
+            hit = any(
+                candidate == name or name.startswith(f"{candidate}.")
+                for requirement in row["upstream"]
+                if _canonical_name(requirement) in owned
+                for candidate in _import_candidates(requirement)
+                for name in imported
+            )
+            assert hit, (
+                f"{DOC.name} line {row['line']} ({row['connector']}): no package of extra '{extra}' is "
+                f"imported anywhere under '{row['import_path']}' -- the row attributes the extra to the "
+                f"wrong connector"
+            )
