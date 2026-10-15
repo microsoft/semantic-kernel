@@ -95,6 +95,41 @@ def test_update_data_uri():
     assert binary.metadata == {"foo": "bar"}
 
 
+@pytest.mark.parametrize(
+    "initial_data",
+    [
+        {"data_uri": "data:text/plain;foo=old;base64,b2xk"},
+        {"data": b"old", "mime_type": "text/plain"},
+        {"data": array([1, 2, 3]), "data_format": "base64", "mime_type": "text/plain"},
+    ],
+    ids=["base64", "bytes", "array"],
+)
+@pytest.mark.parametrize(
+    "replacement",
+    ["data:image/jpeg;foo=new;base64,bmV3", "data:image/jpeg;foo=new;,new"],
+    ids=["base64", "text"],
+)
+def test_replace_data_uri(initial_data, replacement):
+    binary = BinaryContent(**initial_data, metadata={"source": "test"})
+
+    binary.data_uri = replacement
+
+    assert binary.data == b"new"
+    assert binary.mime_type == "image/jpeg"
+    assert binary.metadata == {"source": "test", "foo": "new"}
+    assert BinaryContent(data_uri=binary.data_uri).data == b"new"
+
+
+def test_replace_data_uri_invalid_preserves_existing_data():
+    binary = BinaryContent(data_uri="data:image/jpeg;base64,b2xk")
+
+    with pytest.raises(ContentInitializationError):
+        binary.data_uri = "data:image/jpeg;base64,invalid!"
+
+    assert binary.data == b"old"
+    assert binary.data_uri == "data:image/jpeg;base64,b2xk"
+
+
 def test_to_str_uri():
     binary = BinaryContent(uri="http://test_uri")
     assert str(binary) == "http://test_uri/"
