@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   integration-tests:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     strategy:
       matrix:
         os: [ubuntu-latest]
