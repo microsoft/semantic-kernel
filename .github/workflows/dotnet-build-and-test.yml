@@ -140,7 +140,7 @@ jobs:
 
   dotnet-integration-tests:
     needs: paths-filter
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.dotnetChanges == 'true'
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && needs.paths-filter.outputs.dotnetChanges == 'true'
     runs-on: ubuntu-latest
     environment: "integration"
     permissions:

@@ -47,7 +47,7 @@ jobs:
   python-merge-gate-ai-services:
     name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
     needs: paths-filter
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -93,7 +93,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -164,7 +163,7 @@ jobs:
   python-merge-gate-multi-modality:
     name: Python Pre-Merge Integration Tests - Multi-Modality
     needs: paths-filter
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -193,7 +192,6 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -209,7 +207,7 @@ jobs:
   python-merge-gate-agents:
     name: Python Pre-Merge Integration Tests - Agents
     needs: paths-filter
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -246,7 +244,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -263,7 +260,7 @@ jobs:
     name: Python Pre-Merge Integration Tests - Ollama
     needs: paths-filter
     # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, this job is disabled for now.
-    if: false && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: false && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -315,7 +312,7 @@ jobs:
   python-merge-gate-memory:
     name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
     needs: paths-filter
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -360,7 +357,6 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -377,7 +373,7 @@ jobs:
   python-integration-tests:
     name: Python Integration Tests - Scheduled run
     needs: paths-filter
-    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -459,7 +455,6 @@ jobs:
           Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
           Start-CosmosDbEmulator
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
