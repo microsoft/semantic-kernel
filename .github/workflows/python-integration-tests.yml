@@ -47,7 +47,7 @@ jobs:
   python-merge-gate-ai-services:
     name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
     needs: paths-filter
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -163,7 +163,7 @@ jobs:
   python-merge-gate-multi-modality:
     name: Python Pre-Merge Integration Tests - Multi-Modality
     needs: paths-filter
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -207,7 +207,7 @@ jobs:
   python-merge-gate-agents:
     name: Python Pre-Merge Integration Tests - Agents
     needs: paths-filter
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
@@ -260,7 +260,7 @@ jobs:
     name: Python Pre-Merge Integration Tests - Ollama
     needs: paths-filter
     # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, this job is disabled for now.
-    if: false && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: false && (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -312,7 +312,7 @@ jobs:
   python-merge-gate-memory:
     name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
     needs: paths-filter
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     permissions:
       contents: read
       id-token: write
