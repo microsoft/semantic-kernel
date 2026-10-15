@@ -228,7 +228,7 @@ class TimePlugin(KernelBaseModel):
         Example:
             {{time.timeZoneOffset}} => -08:00
         """
-        now = datetime.datetime.now()
+        now = datetime.datetime.now().astimezone()
         return now.strftime("%z")
 
     @kernel_function(description="Get the current time zone name", name="timeZoneName")
@@ -238,5 +238,5 @@ class TimePlugin(KernelBaseModel):
         Example:
             {{time.timeZoneName}} => PST
         """
-        now = datetime.datetime.now()
+        now = datetime.datetime.now().astimezone()
         return now.strftime("%Z")
