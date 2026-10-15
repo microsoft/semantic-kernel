@@ -110,9 +110,6 @@ The scripts below are used to build, test, and lint within the project.
 - Typescript:
   - Build/Test: `yarn build`
   - Linting (auto-fix): `yarn lint:fix`
-- GitHub automation:
-  - Install test dependencies: `npm ci --prefix .github/tests --ignore-scripts`
-  - Test: `node --test .github/tests/*.js`
 
 ### Adding Plugins and Memory Connectors
 

@@ -1,8 +1,0 @@
-{
-  "private": true,
-  "description": "Offline tests for GitHub automation",
-  "dependencies": {
-    "@actions/expressions": "0.3.61",
-    "yaml": "2.9.1"
-  }
-}
