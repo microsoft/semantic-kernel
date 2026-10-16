@@ -226,7 +226,7 @@ class TimePlugin(KernelBaseModel):
         """Get the current time zone offset.
 
         Example:
-            {{time.timeZoneOffset}} => -08:00
+            {{time.timeZoneOffset}} => -0800
         """
         now = datetime.datetime.now().astimezone()
         return now.strftime("%z")
