@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
@@ -123,6 +124,48 @@ public class TextPluginTests
 
         // Act
         string result = target.Concat(textToConcat ?? string.Empty, text2ToConcat);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ItCanUppercaseWithCulture()
+    {
+        // Arrange
+        var plugin = new TextPlugin();
+
+        // Act
+        var result = plugin.Uppercase("i", new CultureInfo("tr-TR"));
+
+        // Assert
+        Assert.Equal("İ", result);
+    }
+
+    [Fact]
+    public void ItCanLowercaseWithCulture()
+    {
+        // Arrange
+        var plugin = new TextPlugin();
+
+        // Act
+        var result = plugin.Lowercase("I", new CultureInfo("tr-TR"));
+
+        // Assert
+        Assert.Equal("ı", result);
+    }
+
+    [Theory]
+    [InlineData("hello", "hello")]
+    [InlineData("", "")]
+    [InlineData(" ", " ")]
+    public void ItCanEcho(string input, string expected)
+    {
+        // Arrange
+        var plugin = new TextPlugin();
+
+        // Act
+        var result = plugin.Echo(input);
 
         // Assert
         Assert.Equal(expected, result);
