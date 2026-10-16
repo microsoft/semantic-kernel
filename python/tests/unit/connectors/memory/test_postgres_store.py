@@ -24,10 +24,15 @@ from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
     VectorSearchOptions,
+    VectorStoreCollectionDefinition,
     VectorStoreField,
     vectorstoremodel,
 )
-from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreOperationException
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreModelValidationError,
+    VectorStoreOperationException,
+)
 from semantic_kernel.functions import KernelParameterMetadata
 
 
@@ -196,6 +201,81 @@ async def test_ensure_collection_exists_model_with_python_types(vector_store: Po
         'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
         'USING hnsw ("embedding" vector_cosine_ops)'
     )
+
+
+async def test_ensure_collection_exists_explicit_definition_with_supported_aliases(
+    vector_store: PostgresStore, mock_cursor: Mock
+) -> None:
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="title", type="text"),
+            VectorStoreField("data", name="count", type="INTEGER"),
+            VectorStoreField("data", name="score", type="double precision"),
+            VectorStoreField("data", name="enabled", type="BOOLEAN"),
+            VectorStoreField("data", name="metadata", type="jsonb"),
+            VectorStoreField("data", name="created_at", type="TIMESTAMP"),
+            VectorStoreField("data", name="payload", type="bytea"),
+            VectorStoreField("data", name="tags", type="list[str]"),
+            VectorStoreField("data", name="weights", type="DOUBLE PRECISION[]"),
+            VectorStoreField("data", name="items", type="Dict[str, Any]"),
+        ]
+    )
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=dict,
+        definition=definition,
+    )
+
+    await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_awaited_once()
+    statement = mock_cursor.execute.call_args.args[0]
+    assert statement.as_string() == (
+        'CREATE TABLE "public"."test_collection" '
+        '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "score" DOUBLE PRECISION, '
+        '"enabled" BOOLEAN, "metadata" JSONB, "created_at" TIMESTAMP, "payload" BYTEA, '
+        '"tags" TEXT[], "weights" DOUBLE PRECISION[], "items" JSONB)'
+    )
+
+
+@pytest.mark.parametrize(
+    "unsupported_type",
+    [
+        "TEXT); SELECT 1; --",
+        "TEXT -- comment",
+        "TEXT/*comment*/",
+        "TEXT\n); SELECT 1",
+        "list[int",
+        "list[]",
+        "INTEGER[",
+        "INTEGER[] trailing",
+        "list[custom_type]",
+    ],
+)
+async def test_ensure_collection_exists_rejects_unsupported_types_before_execution(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+    mock_connection_pool,
+    unsupported_type: str,
+) -> None:
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="content", type=unsupported_type),
+        ]
+    )
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=dict,
+        definition=definition,
+    )
+
+    with pytest.raises(VectorStoreModelValidationError, match="not supported for automatic collection creation"):
+        await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_not_awaited()
+    mock_connection_pool[0].assert_not_called()
 
 
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:

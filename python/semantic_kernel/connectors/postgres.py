@@ -90,53 +90,58 @@ INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
     IndexKind.IVF_FLAT: "ivfflat",
     IndexKind.DEFAULT: "hnsw",
 }
+POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
+    "str": "TEXT",
+    "text": "TEXT",
+    "int": "INTEGER",
+    "integer": "INTEGER",
+    "float": "DOUBLE PRECISION",
+    "double precision": "DOUBLE PRECISION",
+    "bool": "BOOLEAN",
+    "boolean": "BOOLEAN",
+    "dict": "JSONB",
+    "jsonb": "JSONB",
+    "datetime": "TIMESTAMP",
+    "timestamp": "TIMESTAMP",
+    "bytes": "BYTEA",
+    "bytea": "BYTEA",
+}
+LIST_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"list\s*\[(.+)\]", re.IGNORECASE)
+DICT_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"dict\s*\[(.+),\s*(.+)\]", re.IGNORECASE)
+ARRAY_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"(.+)\[\]")
 
 # region: Helpers
 
 
-def _python_type_to_postgres(python_type_str: str) -> str | None:
-    """Convert a string representation of a Python type to a PostgreSQL data type.
+def _get_postgres_type(type_name: str) -> sql.Composable:
+    """Convert a supported field type to a trusted PostgreSQL type expression.
 
     Args:
-        python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
+        type_name: The Python or PostgreSQL type name.
 
     Returns:
-        Corresponding PostgreSQL data type as a string, if found. If the type is not found, return None.
+        A trusted PostgreSQL type expression.
+
+    Raises:
+        VectorStoreModelValidationError: If the type is not supported for automatic table creation.
     """
-    # Basic type mapping from Python types (in string form) to PostgreSQL types
-    type_mapping = {
-        "str": "TEXT",
-        "int": "INTEGER",
-        "float": "DOUBLE PRECISION",
-        "bool": "BOOLEAN",
-        "dict": "JSONB",
-        "datetime": "TIMESTAMP",
-        "bytes": "BYTEA",
-        "NoneType": "NULL",
-    }
+    normalized_type = " ".join(type_name.strip().split())
+    if postgres_type := POSTGRES_TYPE_ALIASES.get(normalized_type.casefold()):
+        return sql.SQL(postgres_type)
 
-    # Regular expression to detect lists, e.g., "List[str]" or "List[int]"
-    list_pattern = re.compile(r"(?i)List\[(.*)\]")
+    if match := LIST_TYPE_PATTERN.fullmatch(normalized_type):
+        return sql.SQL("{}[]").format(_get_postgres_type(match.group(1)))
 
-    # Check if the type is a list
-    match = list_pattern.match(python_type_str)
-    if match:
-        # Extract the inner type of the list and convert it to a PostgreSQL array type
-        element_type_str = match.group(1)
-        postgres_element_type = _python_type_to_postgres(element_type_str)
-        return f"{postgres_element_type}[]"
+    if DICT_TYPE_PATTERN.fullmatch(normalized_type):
+        return sql.SQL("JSONB")
 
-    # Check if the type is a dictionary
-    dict_pattern = re.compile(r"(?i)Dict\[(.*), (.*)\]")
-    match = dict_pattern.match(python_type_str)
-    if match:
-        return "JSONB"
+    if match := ARRAY_TYPE_PATTERN.fullmatch(normalized_type):
+        return sql.SQL("{}[]").format(_get_postgres_type(match.group(1)))
 
-    # Handle basic types
-    if python_type_str in type_mapping:
-        return type_mapping[python_type_str]
-
-    return None
+    raise VectorStoreModelValidationError(
+        f"PostgreSQL field type {type_name!r} is not supported for automatic collection creation. "
+        "Use a supported Python or PostgreSQL type, or create the table before using the collection."
+    )
 
 
 def _convert_row_to_dict(row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreField | None]]) -> dict[str, Any]:
@@ -562,12 +567,17 @@ class PostgresCollection(
 
     @override
     async def ensure_collection_exists(self, **kwargs: Any) -> None:
-        """Create a PostgreSQL table based on a dictionary of VectorStoreRecordField.
+        """Create a PostgreSQL table based on the collection definition.
+
+        Automatic creation supports built-in Python field types, their corresponding PostgreSQL aliases,
+        and arrays of those types. For custom domains, enums, extension types, or type modifiers, create the
+        table separately and use the collection without calling this method.
 
         Args:
-            table_name: Name of the table to be created
-            fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
-            **kwargs: Additional arguments
+            **kwargs: Additional arguments.
+
+        Raises:
+            VectorStoreModelValidationError: If a field type is not supported for automatic table creation.
         """
         if self.connection_pool is None:
             raise VectorStoreOperationException(
@@ -581,8 +591,7 @@ class PostgresCollection(
             if not field.type_:
                 raise ValueError(f"Property type is not defined for field '{field.name}'")
 
-            # If the property type represents a Python type, convert it to a PostgreSQL type
-            property_type = _python_type_to_postgres(field.type_) or field.type_.upper()
+            property_type = _get_postgres_type(field.type_)
 
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
@@ -595,17 +604,15 @@ class PostgresCollection(
                     )
                 )
             elif field.field_type == FieldTypes.KEY:
-                # Use the property_type directly for key fields
                 column_definitions.append(
                     sql.SQL("{name} {col_type} PRIMARY KEY").format(
-                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=property_type
                     )
                 )
             else:
-                # Use the property_type directly for other types
                 column_definitions.append(
                     sql.SQL("{name} {col_type}").format(
-                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=property_type
                     )
                 )
 
