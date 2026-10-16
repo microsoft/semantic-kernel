@@ -230,3 +230,53 @@ def test_locate_safe_reduction_index_tool_role_without_function_result_content()
             f"Tool result at index 2 was kept but tool call at index 1 was dropped. "
             f"Kept indices: {kept_indices}, reduction index: {idx}"
         )
+
+
+def test_extract_range_preserve_pairs_parallel_calls_filtered_result():
+    """
+    When one assistant message holds several parallel function calls and filter_func drops only
+    one of their results, the call and its remaining results must not be split: either all are
+    kept or all are skipped, so no result is left without its call.
+    """
+    user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    call = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", function_name="get_weather", arguments={"city": "Paris"}),
+            FunctionCallContent(id="call_tokyo", function_name="get_weather", arguments={"city": "Tokyo"}),
+        ],
+    )
+    result_paris = ChatMessageContent(
+        role=AuthorRole.TOOL, items=[FunctionResultContent(id="call_paris", function_name="get_weather", result="15C")]
+    )
+    result_tokyo = ChatMessageContent(
+        role=AuthorRole.TOOL, items=[FunctionResultContent(id="call_tokyo", function_name="get_weather", result="22C")]
+    )
+    done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [user, call, result_paris, result_tokyo, done]
+
+    assert get_call_result_pairs(history) == [(1, 2), (1, 3)]
+
+    extracted = extract_range(
+        history, start=0, end=len(history), filter_func=lambda m: m is result_tokyo, preserve_pairs=True
+    )
+    assert extracted == [user, done]
+
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+    assert extracted == history
+
+    # Filtering the call itself skips all of its results, without skipping unrelated messages
+    extracted = extract_range(history, start=0, end=len(history), filter_func=lambda m: m is call, preserve_pairs=True)
+    assert extracted == [user, done]
+
+    # With the call outside the range, a remaining result is not tied to its filtered sibling
+    extracted = extract_range(
+        history, start=2, end=len(history), filter_func=lambda m: m is result_paris, preserve_pairs=True
+    )
+    assert extracted == [result_tokyo, done]
+
+    # A message interleaved between the call and its results keeps its position
+    note = ChatMessageContent(role=AuthorRole.USER, content="also Tokyo")
+    history = [call, note, result_paris, result_tokyo]
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+    assert extracted == history
