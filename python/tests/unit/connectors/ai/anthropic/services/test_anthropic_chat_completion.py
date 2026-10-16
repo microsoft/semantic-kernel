@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic import AsyncAnthropic
-from anthropic.types import Message
+from anthropic.types import Message, MessageDeltaUsage, RawMessageDeltaEvent, TextBlock, Usage
+from anthropic.types.raw_message_delta_event import Delta
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
@@ -18,6 +19,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent, FunctionCallContent, TextContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -547,3 +549,40 @@ def test_chat_completion_reset_settings(
 
     assert settings.tools is None
     assert settings.tool_choice is None
+
+
+@pytest.mark.parametrize(
+    ("stop_reason", "finish_reason"),
+    [
+        ("end_turn", FinishReason.STOP),
+        ("stop_sequence", FinishReason.STOP),
+        ("max_tokens", FinishReason.LENGTH),
+        ("model_context_window_exceeded", FinishReason.LENGTH),
+        ("tool_use", FinishReason.TOOL_CALLS),
+        ("refusal", FinishReason.CONTENT_FILTER),
+        ("pause_turn", None),
+    ],
+)
+def test_stop_reason_maps_to_finish_reason(anthropic_unit_test_env, stop_reason, finish_reason) -> None:
+    chat_completion = AnthropicChatCompletion()
+    message = Message(
+        id="msg_1",
+        type="message",
+        role="assistant",
+        model="claude-sonnet-4-5",
+        content=[TextBlock(type="text", text="Hello")],
+        stop_reason=stop_reason,
+        stop_sequence=None,
+        usage=Usage(input_tokens=1, output_tokens=1),
+    )
+    delta_event = RawMessageDeltaEvent(
+        type="message_delta",
+        delta=Delta(stop_reason=stop_reason, stop_sequence=None),
+        usage=MessageDeltaUsage(output_tokens=1),
+    )
+
+    content = chat_completion._create_chat_message_content(message, {})
+    streaming_content = chat_completion._create_streaming_chat_message_content(delta_event)
+
+    assert content.finish_reason == finish_reason
+    assert streaming_content.finish_reason == finish_reason
