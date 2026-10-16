@@ -219,6 +219,8 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
             VectorStoreField("data", name="tags", type="list[str]"),
             VectorStoreField("data", name="weights", type="DOUBLE PRECISION[]"),
             VectorStoreField("data", name="items", type="Dict[str, Any]"),
+            VectorStoreField("data", name="item_history", type="Dict[str, Any][]"),
+            VectorStoreField("data", name="nested_item_history", type="dict[str, list[int]][][]"),
         ]
     )
     collection = vector_store.get_collection(
@@ -235,7 +237,8 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
         'CREATE TABLE "public"."test_collection" '
         '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "score" DOUBLE PRECISION, '
         '"enabled" BOOLEAN, "metadata" JSONB, "created_at" TIMESTAMP, "payload" BYTEA, '
-        '"tags" TEXT[], "weights" DOUBLE PRECISION[], "items" JSONB)'
+        '"tags" TEXT[], "weights" DOUBLE PRECISION[], "items" JSONB, "item_history" JSONB[], '
+        '"nested_item_history" JSONB[][])'
     )
 
 
@@ -251,6 +254,9 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
         "INTEGER[",
         "INTEGER[] trailing",
         "list[custom_type]",
+        "Dict[str, Any]]",
+        "list[Dict[str, Any]]]",
+        "dict[str, Any -- comment]",
     ],
 )
 async def test_ensure_collection_exists_rejects_unsupported_types_before_execution(

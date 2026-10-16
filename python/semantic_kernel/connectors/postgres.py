@@ -4,7 +4,6 @@ import ast
 import json
 import logging
 import random
-import re
 import string
 import sys
 from collections.abc import AsyncGenerator, MutableSequence, Sequence
@@ -106,11 +105,43 @@ POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
     "bytes": "BYTEA",
     "bytea": "BYTEA",
 }
-LIST_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"list\s*\[(.+)\]", re.IGNORECASE)
-DICT_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"dict\s*\[(.+),\s*(.+)\]", re.IGNORECASE)
-ARRAY_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"(.+)\[\]")
 
 # region: Helpers
+
+
+def _get_python_generic_arguments(type_name: str, generic_name: str, argument_count: int) -> tuple[str, ...] | None:
+    """Get validated arguments from a Python generic type annotation."""
+    try:
+        expression = ast.parse(type_name, mode="eval").body
+    except SyntaxError:
+        return None
+
+    if not isinstance(expression, ast.Subscript):
+        return None
+
+    if isinstance(expression.value, ast.Name):
+        expression_name = expression.value.id
+    else:
+        return None
+
+    arguments = expression.slice.elts if isinstance(expression.slice, ast.Tuple) else [expression.slice]
+    if expression_name.casefold() != generic_name or len(arguments) != argument_count:
+        return None
+
+    def is_valid_annotation(node: ast.expr) -> bool:
+        if isinstance(node, ast.Name):
+            return True
+        if isinstance(node, ast.Attribute):
+            return is_valid_annotation(node.value)
+        if isinstance(node, ast.Subscript):
+            values = node.slice.elts if isinstance(node.slice, ast.Tuple) else [node.slice]
+            return is_valid_annotation(node.value) and all(is_valid_annotation(value) for value in values)
+        return False
+
+    if not all(is_valid_annotation(argument) for argument in arguments):
+        return None
+
+    return tuple(ast.unparse(argument) for argument in arguments)
 
 
 def _get_postgres_type(type_name: str) -> sql.Composable:
@@ -129,14 +160,14 @@ def _get_postgres_type(type_name: str) -> sql.Composable:
     if postgres_type := POSTGRES_TYPE_ALIASES.get(normalized_type.casefold()):
         return sql.SQL(postgres_type)
 
-    if match := LIST_TYPE_PATTERN.fullmatch(normalized_type):
-        return sql.SQL("{}[]").format(_get_postgres_type(match.group(1)))
+    if normalized_type.endswith("[]"):
+        return sql.SQL("{}[]").format(_get_postgres_type(normalized_type[:-2]))
 
-    if DICT_TYPE_PATTERN.fullmatch(normalized_type):
+    if list_arguments := _get_python_generic_arguments(normalized_type, "list", 1):
+        return sql.SQL("{}[]").format(_get_postgres_type(list_arguments[0]))
+
+    if _get_python_generic_arguments(normalized_type, "dict", 2):
         return sql.SQL("JSONB")
-
-    if match := ARRAY_TYPE_PATTERN.fullmatch(normalized_type):
-        return sql.SQL("{}[]").format(_get_postgres_type(match.group(1)))
 
     raise VectorStoreModelValidationError(
         f"PostgreSQL field type {type_name!r} is not supported for automatic collection creation. "
