@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import base64
 import json
 import logging
 from collections.abc import Callable, Mapping
@@ -9,8 +10,10 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -19,6 +22,102 @@ logger: logging.Logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+
+ANTHROPIC_SUPPORTED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+
+
+def _infer_image_mime_type(raw_bytes: bytes | bytearray | None, mime_type: str | None) -> str:
+    """Infer or validate a supported image MIME type for Anthropic vision."""
+    if mime_type and mime_type in ANTHROPIC_SUPPORTED_IMAGE_TYPES:
+        return mime_type
+    if raw_bytes:
+        prefix = bytes(raw_bytes[:16])
+        if prefix.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if prefix.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if prefix.startswith((b"GIF87a", b"GIF89a")):
+            return "image/gif"
+        if prefix.startswith(b"RIFF") and b"WEBP" in prefix:
+            return "image/webp"
+    if mime_type and mime_type in ANTHROPIC_SUPPORTED_IMAGE_TYPES:
+        return mime_type
+
+    if mime_type == "text/plain" or not mime_type:
+        return "image/jpeg"
+
+    raise ServiceInvalidRequestError(
+        f"Unsupported image format: '{mime_type}'. Anthropic Claude vision only supports "
+        f"{', '.join(sorted(ANTHROPIC_SUPPORTED_IMAGE_TYPES))}."
+    )
+
+
+def _has_inline_image_data(image_content: ImageContent) -> bool:
+    """Check whether the ImageContent carries inline image data (not just a remote reference)."""
+    data = image_content.data
+    if isinstance(data, (bytes, bytearray)):
+        # BinaryContent defaults data to b"" when only a URI is given.
+        return len(data) > 0
+    return bool(image_content.data_string) or data is not None
+
+
+def _create_base64_image_content(image_content: ImageContent) -> dict[str, Any]:
+    """Create an Anthropic base64 image content block from inline image data."""
+    raw_bytes = image_content.data if isinstance(image_content.data, (bytes, bytearray)) else None
+    mime_type = _infer_image_mime_type(raw_bytes, image_content.mime_type)
+
+    if raw_bytes is not None:
+        data = base64.b64encode(raw_bytes).decode("utf-8")
+    elif image_content.data_string:
+        data = image_content.data_string
+    elif image_content.data is not None:
+        data = str(image_content.data)
+    else:
+        raise ServiceInvalidRequestError(
+            "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
+        )
+
+    if not data:
+        raise ServiceInvalidRequestError(
+            "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
+        )
+
+    return {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": mime_type,
+            "data": data,
+        },
+    }
+
+
+def _create_image_content(image_content: ImageContent) -> dict[str, Any]:
+    """Create an Anthropic image content block from an ImageContent object.
+
+    Inline image data takes precedence over a remote URL: per ImageContent's
+    contract, its URI may refer to different content than its data, so sending
+    the URL when bytes are available can send the wrong image (or fail for
+    URLs requiring authentication).
+    """
+    if _has_inline_image_data(image_content):
+        return _create_base64_image_content(image_content)
+
+    if image_content.uri:
+        uri_str = str(image_content.uri)
+        if uri_str.startswith(("http://", "https://")):
+            return {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": uri_str,
+                },
+            }
+
+    raise ServiceInvalidRequestError(
+        "ImageContent without data, data_uri, or valid http(s) uri while formatting message for Anthropic."
+    )
 
 
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
@@ -30,9 +129,30 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     Returns:
         The formatted user message.
     """
+    if not message.items or (len(message.items) == 1 and isinstance(message.items[0], TextContent)):
+        return {
+            "role": "user",
+            "content": message.content,
+        }
+
+    contents: list[dict[str, Any]] = []
+    for item in message.items:
+        if isinstance(item, TextContent):
+            if item.text:
+                contents.append({
+                    "type": "text",
+                    "text": item.text,
+                })
+        elif isinstance(item, ImageContent):
+            contents.append(_create_image_content(item))
+        else:
+            logger.warning(
+                f"Unsupported item type in User message while formatting chat history for Anthropic: {type(item)}"
+            )
+
     return {
         "role": "user",
-        "content": message.content,
+        "content": contents,
     }
 
 
