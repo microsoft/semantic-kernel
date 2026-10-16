@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import PrivateAttr
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.memory.memory_guard import MemoryGuardBase, MemoryPoisoningError
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -23,18 +24,27 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
     _storage: MemoryStoreBase = PrivateAttr()
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
+    _memory_guard: MemoryGuardBase | None = PrivateAttr(default=None)
 
-    def __init__(self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase) -> None:
+    def __init__(
+        self,
+        storage: MemoryStoreBase,
+        embeddings_generator: EmbeddingGeneratorBase,
+        memory_guard: MemoryGuardBase | None = None,
+    ) -> None:
         """Initialize a new instance of SemanticTextMemory.
 
         Args:
             storage (MemoryStoreBase): The MemoryStoreBase to use for storage.
             embeddings_generator (EmbeddingGeneratorBase): The EmbeddingGeneratorBase
                 to use for generating embeddings.
+            memory_guard (MemoryGuardBase | None): Optional OWASP ASI06 memory guard
+                for memory poisoning defense.
         """
         super().__init__()
         self._storage = storage
         self._embeddings_generator = embeddings_generator
+        self._memory_guard = memory_guard
 
     async def save_information(
         self,
@@ -54,7 +64,17 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             description (Optional[str]): The description of the information.
             additional_metadata (Optional[str]): Additional metadata of the information.
             embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the information.
+
+        Raises:
+            MemoryPoisoningError: If the memory guard detects a poisoning attempt (OWASP ASI06).
         """
+        if self._memory_guard is not None:
+            scan_res = self._memory_guard.scan_write(text=text, collection=collection, id=id)
+            if not scan_res.is_safe:
+                raise MemoryPoisoningError(
+                    f"Memory write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
+                )
+
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
@@ -89,7 +109,17 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             description (Optional[str]): The description of the reference.
             additional_metadata (Optional[str]): Additional metadata of the reference.
             embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the reference.
+
+        Raises:
+            MemoryPoisoningError: If the memory guard detects a poisoning attempt (OWASP ASI06).
         """
+        if self._memory_guard is not None:
+            scan_res = self._memory_guard.scan_write(text=text, collection=collection, id=external_id)
+            if not scan_res.is_safe:
+                raise MemoryPoisoningError(
+                    f"Memory reference write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
+                )
+
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
