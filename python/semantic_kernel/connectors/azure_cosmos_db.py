@@ -1036,8 +1036,12 @@ class CosmosNoSqlCollection(
         try:
             await container_proxy.read(**kwargs)
             return True
-        except CosmosHttpResponseError:
+        except CosmosResourceNotFoundError:
             return False
+        except Exception as e:
+            raise VectorStoreOperationException(
+                f"Failed to check if container '{self.collection_name}' exists, with message {e}"
+            ) from e
 
     @override
     async def ensure_collection_deleted(self, **kwargs) -> None:

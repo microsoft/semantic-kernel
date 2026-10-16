@@ -676,3 +676,48 @@ async def test_client_is_closed(
         assert collection.cosmos_client is not None
 
     mock_cosmos_client_close.assert_called()
+
+
+# -- collection_exists: only a missing container is "absent" --
+#
+# CosmosHttpResponseError is the parent of every Cosmos HTTP error: 401, 403, 429 and 5xx as
+# well as 404. _does_database_exist in the same connector already narrows to
+# CosmosResourceNotFoundError and raises VectorStoreOperationException for the rest;
+# collection_exists now does the same.
+
+
+def _collection(record_type, collection_name, container_proxy) -> CosmosNoSqlCollection:
+    collection = CosmosNoSqlCollection(record_type=record_type, collection_name=collection_name)
+    collection._get_container_proxy = AsyncMock(return_value=container_proxy)
+    return collection
+
+
+async def test_azure_cosmos_db_no_sql_collection_exists_is_false_when_the_container_is_missing(
+    azure_cosmos_db_no_sql_unit_test_env, record_type, collection_name: str
+):
+    container_proxy = MagicMock()
+    container_proxy.read = AsyncMock(side_effect=CosmosResourceNotFoundError)
+
+    assert await _collection(record_type, collection_name, container_proxy).collection_exists() is False
+
+
+async def test_azure_cosmos_db_no_sql_collection_exists_raises_on_a_throttled_request(
+    azure_cosmos_db_no_sql_unit_test_env, record_type, collection_name: str
+):
+    """A 429 is a failure to look, not an answer of "absent"."""
+    container_proxy = MagicMock()
+    container_proxy.read = AsyncMock(
+        side_effect=CosmosHttpResponseError(status_code=429, message="Request rate is large")
+    )
+
+    with pytest.raises(VectorStoreOperationException):
+        await _collection(record_type, collection_name, container_proxy).collection_exists()
+
+
+async def test_azure_cosmos_db_no_sql_collection_exists_is_true_when_the_read_succeeds(
+    azure_cosmos_db_no_sql_unit_test_env, record_type, collection_name: str
+):
+    container_proxy = MagicMock()
+    container_proxy.read = AsyncMock(return_value={"id": collection_name})
+
+    assert await _collection(record_type, collection_name, container_proxy).collection_exists() is True
