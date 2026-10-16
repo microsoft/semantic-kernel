@@ -16,6 +16,7 @@ internal sealed class ApplicationConfig
     private readonly RagConfig _ragConfig = new();
     private readonly AzureAISearchConfig _azureAISearchConfig = new();
     private readonly CosmosConfig _azureDocumentDBConfig = new();
+    private readonly ChromaConfig _chromaConfig = new();
     private readonly CosmosConfig _cosmosNoSqlConfig = new();
     private readonly QdrantConfig _qdrantConfig = new();
     private readonly RedisConfig _redisConfig = new();
@@ -46,6 +47,9 @@ internal sealed class ApplicationConfig
             .GetRequiredSection($"VectorStores:{CosmosConfig.DocumentDBConfigSectionName}")
             .Bind(this._azureDocumentDBConfig);
         configurationManager
+            .GetRequiredSection($"VectorStores:{ChromaConfig.ConfigSectionName}")
+            .Bind(this._chromaConfig);
+        configurationManager
             .GetRequiredSection($"VectorStores:{CosmosConfig.NoSqlConfigSectionName}")
             .Bind(this._cosmosNoSqlConfig);
         configurationManager
@@ -72,6 +76,8 @@ internal sealed class ApplicationConfig
     public AzureAISearchConfig AzureAISearchConfig => this._azureAISearchConfig;
 
     public CosmosConfig AzureDocumentDBConfig => this._azureDocumentDBConfig;
+
+    public ChromaConfig ChromaConfig => this._chromaConfig;
 
     public CosmosConfig CosmosNoSqlConfig => this._cosmosNoSqlConfig;
 
