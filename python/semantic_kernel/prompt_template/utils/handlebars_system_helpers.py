@@ -10,12 +10,15 @@ from xml.etree.ElementTree import Element, SubElement, tostring  # nosec B405
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _messages(this, options, *args, **kwargs):
+def _messages(this, *args, **kwargs):
     from semantic_kernel.contents.chat_history import ChatHistory
 
-    if not isinstance(this.context["chat_history"], ChatHistory):
+    # Use the argument passed to the helper, e.g. {{messages my_history}}.
+    # Fall back to the "chat_history" variable when no argument is given.
+    chat_history = args[0] if args else this.context.get("chat_history")
+    if not isinstance(chat_history, ChatHistory):
         return ""
-    return this.context["chat_history"].to_prompt()
+    return chat_history.to_prompt()
 
 
 def _message_to_prompt(this, *args, **kwargs):
