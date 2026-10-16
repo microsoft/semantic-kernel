@@ -175,7 +175,19 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 continue
-            messages.append(MESSAGE_CONVERTERS[message.role](message))
+            formatted_message = MESSAGE_CONVERTERS[message.role](message)
+            if messages and messages[-1][role_key] == formatted_message[role_key]:
+                # The Bedrock Converse API requires that consecutive messages with the same role be
+                # combined into a single message. In particular, SK emits one tool message per parallel
+                # tool result (all mapped to the "user" role), which Bedrock rejects unless every
+                # toolResult block for an assistant turn is grouped in a single user message.
+                # Build a new combined content list rather than mutating the previous message in place.
+                messages[-1][content_key] = [
+                    *messages[-1][content_key],
+                    *formatted_message[content_key],
+                ]
+            else:
+                messages.append(formatted_message)
 
         return messages
 
