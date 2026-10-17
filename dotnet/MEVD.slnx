@@ -20,12 +20,10 @@
   <Folder Name="/src/" />
   <Folder Name="/src/VectorData/">
     <File Path="src/VectorData/Directory.Build.props" />
-    <Project Path="src/VectorData/Chroma/Chroma.csproj" />
     <Project Path="src/VectorData/Milvus/Milvus.csproj" />
   </Folder>
   <Folder Name="/test/" />
   <Folder Name="/test/VectorData/">
-    <Project Path="test/VectorData/Chroma.UnitTests/Chroma.UnitTests.csproj" />
     <Project Path="test/VectorData/Milvus.UnitTests/Milvus.UnitTests.csproj" />
   </Folder>
 </Solution>
