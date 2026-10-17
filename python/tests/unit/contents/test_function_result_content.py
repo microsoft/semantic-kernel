@@ -116,6 +116,16 @@ def test_from_fcc_and_result(result: any):
     assert frc.metadata == {"test": "test", "test2": "test2"}
 
 
+def test_from_fcc_and_empty_chat_message_result():
+    fcc = FunctionCallContent(id="test", name="test-function")
+    result = ChatMessageContent(role="assistant")
+
+    frc = FunctionResultContent.from_function_call_content_and_result(fcc, result)
+
+    assert frc.result == ""
+    assert frc.inner_content is result
+
+
 def test_to_cmc():
     frc = FunctionResultContent(id="test", name="test-function", result="test-result")
     cmc = frc.to_chat_message_content()
