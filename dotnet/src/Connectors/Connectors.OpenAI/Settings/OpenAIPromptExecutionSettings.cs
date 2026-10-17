@@ -177,6 +177,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(TypeOrFunctionResponseFormatConverter))]
     public object? ResponseFormat
     {
         get => this._responseFormat;
