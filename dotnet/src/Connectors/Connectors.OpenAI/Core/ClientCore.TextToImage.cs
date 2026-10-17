@@ -40,8 +40,8 @@ internal partial class ClientCore
         };
 
         // The model is not required by the OpenAI API and defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
-        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to gpt-image-1 in the line below.
-        targetModel = string.IsNullOrEmpty(targetModel) ? "gpt-image-1" : targetModel!;
+        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to gpt-image-2 in the line below.
+        targetModel = string.IsNullOrEmpty(targetModel) ? "gpt-image-2" : targetModel!;
 
         ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
