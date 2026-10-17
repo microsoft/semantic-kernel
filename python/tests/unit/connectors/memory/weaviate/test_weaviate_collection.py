@@ -106,7 +106,7 @@ def test_weaviate_collection_init_with_invalid_settings_more_than_one_backends(
     """Test the initialization of a WeaviateCollection object with multiple backend options enabled."""
     collection_name = "TestCollection"
 
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="only one of the following"):
         WeaviateCollection(
             record_type=record_type,
             definition=definition,
@@ -123,7 +123,7 @@ def test_weaviate_collection_init_with_invalid_settings_no_backends(
     """Test the initialization of a WeaviateCollection object with no backend options enabled."""
     collection_name = "TestCollection"
 
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="must specify either a Weaviate Cloud"):
         WeaviateCollection(
             record_type=record_type,
             definition=definition,
