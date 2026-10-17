@@ -6,6 +6,7 @@ from typing import Annotated, Any, Optional, Union
 from unittest.mock import Mock
 
 import pytest
+from pydantic import Field
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -455,3 +456,47 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class ConstrainedParams(KernelBaseModel):
+    top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
+
+
+def test_build_model_schema_with_field_constraints_keeps_description():
+    # Regression test for https://github.com/microsoft/semantic-kernel/issues/14443:
+    # pydantic constraint objects (Ge, Le, ...) live in FieldInfo.metadata and
+    # must not end up in the field description.
+    schema = KernelJsonSchemaBuilder.build_model_schema(ConstrainedParams)
+    assert schema["properties"]["top_p"]["description"] == "nucleus sampling"
+    json.dumps(schema)  # the schema must be JSON serializable
+
+
+@pytest.mark.parametrize("metadata", ["Annotated description", {"description": "Annotated description"}])
+@pytest.mark.parametrize("container", [list, tuple])
+def test_build_model_schema_with_annotated_description(metadata, container):
+    class Params(KernelBaseModel):
+        value: Annotated[float, Field(ge=0), metadata]
+
+    field = Params.model_fields["value"]
+    field.metadata = container(field.metadata)
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert schema["properties"]["value"]["description"] == "Annotated description"
+    json.dumps(schema)
+
+
+def test_build_model_schema_explicit_description_overrides_metadata():
+    class Params(KernelBaseModel):
+        value: Annotated[float, "Fallback description", Field(ge=0, description="Explicit description")]
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert schema["properties"]["value"]["description"] == "Explicit description"
+    json.dumps(schema)
+
+
+def test_build_model_schema_ignores_non_description_metadata():
+    class Params(KernelBaseModel):
+        value: Annotated[float, Field(ge=0), {"description": 123}]
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+    assert "description" not in schema["properties"]["value"]
+    json.dumps(schema)
