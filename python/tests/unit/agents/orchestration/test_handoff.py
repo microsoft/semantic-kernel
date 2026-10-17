@@ -264,6 +264,9 @@ def test_orchestration_handoff_add():
     agent_a = MockAgent()
     agent_b = MockAgent()
 
+    agent_a.description = "Description Agent A"
+    agent_b.description = "Description Agent B"
+
     orchestration_handoffs = OrchestrationHandoffs().add(agent_a, agent_b).add(agent_b, agent_a)
 
     assert isinstance(orchestration_handoffs, OrchestrationHandoffs)
@@ -272,10 +275,48 @@ def test_orchestration_handoff_add():
     assert len(orchestration_handoffs[agent_b.name]) == 1
     for handoff_agent_name, handoff_description in orchestration_handoffs[agent_a.name].items():
         assert handoff_agent_name == agent_b.name
-        assert handoff_description == ""
+        assert handoff_description == "Description Agent B"
     for handoff_agent_name, handoff_description in orchestration_handoffs[agent_b.name].items():
         assert handoff_agent_name == agent_a.name
-        assert handoff_description == ""
+        assert handoff_description == "Description Agent A"
+
+
+def test_orchestration_handoff_add_with_description():
+    """Test the add method of the OrchestrationHandoffs."""
+    agent_a = MockAgent()
+    agent_b = MockAgent()
+
+    orchestration_handoffs = (
+        OrchestrationHandoffs()
+        .add(agent_a, agent_b, "Description from Agent A to Agent B")
+        .add(agent_b, agent_a, "Description from Agent B to Agent A")
+    )
+
+    for handoff_agent_name, handoff_description in orchestration_handoffs[agent_a.name].items():
+        assert handoff_agent_name == agent_b.name
+        assert handoff_description == "Description from Agent A to Agent B"
+    for handoff_agent_name, handoff_description in orchestration_handoffs[agent_b.name].items():
+        assert handoff_agent_name == agent_a.name
+        assert handoff_description == "Description from Agent B to Agent A"
+
+
+def test_orchestration_handoff_add_by_name_with_description():
+    """Test the add method of the OrchestrationHandoffs."""
+    agent_a = MockAgent()
+    agent_b = MockAgent()
+
+    orchestration_handoffs = (
+        OrchestrationHandoffs()
+        .add(agent_a.name, agent_b.name, "Description from Agent A to Agent B")
+        .add(agent_b.name, agent_a.name, "Description from Agent B to Agent A")
+    )
+
+    for handoff_agent_name, handoff_description in orchestration_handoffs[agent_a.name].items():
+        assert handoff_agent_name == agent_b.name
+        assert handoff_description == "Description from Agent A to Agent B"
+    for handoff_agent_name, handoff_description in orchestration_handoffs[agent_b.name].items():
+        assert handoff_agent_name == agent_a.name
+        assert handoff_description == "Description from Agent B to Agent A"
 
 
 def test_orchestration_handoff_add_many():
