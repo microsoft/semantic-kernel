@@ -131,6 +131,22 @@ def test_kernel_function_param_annotated():
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
+def test_kernel_function_does_not_mutate_shared_annotated_metadata():
+    shared = {"description": "the answer count"}
+
+    @kernel_function
+    def first(value: Annotated[int, shared]) -> int:
+        return value
+
+    @kernel_function
+    def second(value: Annotated[int, shared]) -> int:
+        return value
+
+    assert shared == {"description": "the answer count"}
+    assert first.__kernel_function_parameters__[0]["description"] == "the answer count"
+    assert second.__kernel_function_parameters__[0]["description"] == "the answer count"
+
+
 def test_kernel_function_param_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_optional")
