@@ -140,6 +140,7 @@ async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, de
         ("range", "0 5 2", "[0, 2, 4]"),
         ("range", "0 5 1 1", "[]"),
         ("range", "'a' 5", "[0, 1, 2, 3, 4]"),
+        ("range", "'a' 'b' 5", "[0, 1, 2, 3, 4]"),
         ("concat", "'test1' 'test2' 'test3'", "test1test2test3"),
         ("or", "true false", "true"),
         ("add", "1 2", "3.0"),
