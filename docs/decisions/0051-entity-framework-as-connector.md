@@ -12,7 +12,7 @@ deciders: sergeymenshykh, markwallace, rbarreto, westey-m
 
 This ADR contains investigation results about adding Entity Framework as Vector Store connector to the Semantic Kernel codebase. 
 
-Entity Framework is a modern object-relation mapper that allows to build a clean, portable, and high-level data access layer with .NET (C#) across a variety of databases, including SQL Database (on-premises and Azure), SQLite, MySQL, PostgreSQL, Azure Cosmos DB and more. It supports LINQ queries, change tracking, updates and schema migrations. 
+Entity Framework is a modern object-relation mapper that allows you to build a clean, portable, and high-level data access layer with .NET (C#) across a variety of databases, including SQL Database (on-premises and Azure), SQLite, MySQL, PostgreSQL, Azure Cosmos DB and more. It supports LINQ queries, change tracking, updates and schema migrations. 
 
 One of the huge benefits of Entity Framework for Semantic Kernel is the support of multiple databases. In theory, one Entity Framework connector can work as a hub to multiple databases at the same time, which should simplify the development and maintenance of integration with these databases.
 
