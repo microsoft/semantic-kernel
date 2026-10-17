@@ -62,7 +62,7 @@ jobs:
             }
             
             // Check if the body or the title contains the words 'dotnet', '.net', 'c#' or 'csharp' (case-insensitive)
-            if ((body != null && body.match(/.net/i)) || (title != null && title.match(/.net/i)) ||
+            if ((body != null && body.match(/\.net/i)) || (title != null && title.match(/\.net/i)) ||
                 (body != null && body.match(/dotnet/i)) || (title != null && title.match(/dotnet/i)) ||
                 (body != null && body.match(/C#/i)) || (title != null && title.match(/C#/i)) ||
                 (body != null && body.match(/csharp/i)) || (title != null && title.match(/csharp/i))) {
