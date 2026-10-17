@@ -298,9 +298,10 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An AgentResponseItem of type ChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
         initial_history = (
-            arguments.get("chat_history")
-            if arguments and isinstance(arguments.get("chat_history"), ChatHistory)
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
             else None
         )
         thread = await self._ensure_thread_exists_with_messages(
@@ -360,9 +361,10 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An async iterable of AgentResponseItem of type ChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
         initial_history = (
-            arguments.get("chat_history")
-            if arguments and isinstance(arguments.get("chat_history"), ChatHistory)
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
             else None
         )
         thread = await self._ensure_thread_exists_with_messages(
@@ -417,9 +419,10 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An async generator of AgentResponseItem of type StreamingChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
         initial_history = (
-            arguments.get("chat_history")
-            if arguments and isinstance(arguments.get("chat_history"), ChatHistory)
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
             else None
         )
         thread = await self._ensure_thread_exists_with_messages(
