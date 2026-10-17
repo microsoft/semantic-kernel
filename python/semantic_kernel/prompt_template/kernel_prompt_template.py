@@ -91,6 +91,19 @@ class KernelPromptTemplate(PromptTemplateBase):
             str: The prompt template ready to be used for an AI request
 
         """
+        # Apply documented input-variable defaults for any variable that the
+        # caller did not supply. Without this, a declared default is validated
+        # (string-only) and exposed as metadata, but never actually used.
+        if self.prompt_template_config.input_variables:
+            if arguments is None:
+                arguments = KernelArguments()
+            for variable in self.prompt_template_config.input_variables:
+                if (
+                    variable.name not in arguments
+                    and variable.name.lower() not in {k.lower() for k in arguments}
+                    and variable.default
+                ):
+                    arguments[variable.name] = variable.default
         return await self.render_blocks(self._blocks, kernel, arguments)
 
     async def render_blocks(
