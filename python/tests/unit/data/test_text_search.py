@@ -117,6 +117,32 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
     assert results.value == ["test"]
 
 
+@pytest.mark.parametrize(("default_value", "expected_literal"), [(0, "0"), (False, "False"), ("", "''")])
+async def test_create_kernel_function_applies_falsy_filter_defaults(
+    kernel: Kernel, default_value: int | bool | str, expected_literal: str
+):
+    test_search = TestSearch()
+    kernel_function = test_search.create_search_function(
+        parameters=[
+            KernelParameterMetadata(
+                name="category",
+                description="Category filter.",
+                type=type(default_value).__name__,
+                is_required=False,
+                default_value=default_value,
+                type_object=type(default_value),
+            )
+        ]
+    )
+
+    with patch.object(test_search, "search", wraps=test_search.search) as mock_search:
+        await kernel_function.invoke(kernel)
+
+    mock_search.assert_awaited_once_with(
+        query="", output_type=str, filter=f"lambda x: x.category == {expected_literal}"
+    )
+
+
 async def test_create_kernel_function_inner_with_other_options_type(kernel: Kernel):
     test_search = TestSearch()
 
