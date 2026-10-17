@@ -18,7 +18,9 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-NAMED_ARG_REGEX = r"^(?P<name>[0-9A-Za-z_]+)[=]{1}(?P<value>[${1}](?P<var_name>[0-9A-Za-z_]+)|(?P<quote>[\"'])(?P<val>.[^\"^']*)(?P=quote))$"  # noqa: E501
+NAMED_ARG_REGEX = (
+    r"^(?P<name>[0-9A-Za-z_]+)[=]{1}(?P<value>[${1}](?P<var_name>[0-9A-Za-z_]+)|(?P<quote>[\"'])(?P<val>.+)(?P=quote))$"
+)
 
 NAMED_ARG_MATCHER = compile(NAMED_ARG_REGEX)
 
