@@ -114,7 +114,13 @@ class BinaryContent(KernelContent):
     @data_uri.setter
     def data_uri(self, value: str):
         """Set the data uri."""
-        self._data_uri = DataUri.from_data_uri(value, self.default_mime_type)
+        data_uri = DataUri.from_data_uri(value, self.default_mime_type)
+        if self._data_uri:
+            for key, parameter in self._data_uri.parameters.items():
+                current_value = self.metadata.get(key)
+                if isinstance(current_value, str) and current_value == parameter:
+                    self.metadata.pop(key, None)
+        self._data_uri = data_uri
         self.metadata.update(self._data_uri.parameters)
 
     @property

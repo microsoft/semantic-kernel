@@ -105,29 +105,48 @@ def test_update_data_uri():
     ids=["base64", "bytes", "array"],
 )
 @pytest.mark.parametrize(
-    "replacement",
-    ["data:image/jpeg;foo=new;base64,bmV3", "data:image/jpeg;foo=new;,new"],
-    ids=["base64", "text"],
+    "replacement,parameters",
+    [
+        ("data:image/jpeg;foo=new;base64,bmV3", {"foo": "new"}),
+        ("data:image/jpeg;foo=new;,new", {"foo": "new"}),
+        ("data:image/jpeg;base64,bmV3", {}),
+        ("data:image/jpeg;,new", {}),
+    ],
+    ids=["base64", "text", "base64-no-parameters", "text-no-parameters"],
 )
-def test_replace_data_uri(initial_data, replacement):
+def test_replace_data_uri(initial_data, replacement, parameters):
     binary = BinaryContent(**initial_data, metadata={"source": "test"})
 
     binary.data_uri = replacement
 
     assert binary.data == b"new"
     assert binary.mime_type == "image/jpeg"
-    assert binary.metadata == {"source": "test", "foo": "new"}
+    assert binary.metadata == {"source": "test", **parameters}
     assert BinaryContent(data_uri=binary.data_uri).data == b"new"
 
 
+@pytest.mark.parametrize("metadata_value", ["caller", None, array([1, 2]), {"custom": True}])
+def test_replace_data_uri_preserves_updated_caller_metadata(metadata_value):
+    binary = BinaryContent(data_uri="data:text/plain;foo=old;base64,b2xk")
+    binary.metadata["foo"] = metadata_value
+
+    binary.data_uri = "data:image/jpeg;base64,bmV3"
+
+    assert set(binary.metadata) == {"foo"}
+    assert binary.metadata["foo"] is metadata_value
+    assert binary.data == b"new"
+
+
 def test_replace_data_uri_invalid_preserves_existing_data():
-    binary = BinaryContent(data_uri="data:image/jpeg;base64,b2xk")
+    binary = BinaryContent(data_uri="data:image/jpeg;foo=old;base64,b2xk", metadata={"source": "test"})
+    original_data_uri = binary.data_uri
 
     with pytest.raises(ContentInitializationError):
         binary.data_uri = "data:image/jpeg;base64,invalid!"
 
     assert binary.data == b"old"
-    assert binary.data_uri == "data:image/jpeg;base64,b2xk"
+    assert binary.data_uri == original_data_uri
+    assert binary.metadata == {"source": "test", "foo": "old"}
 
 
 def test_to_str_uri():
