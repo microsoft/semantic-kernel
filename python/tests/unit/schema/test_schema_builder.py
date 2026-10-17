@@ -455,3 +455,41 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+def test_build_model_schema_field_description_with_constraints():
+    """Field descriptions must survive when the field also has constraints.
+
+    Pydantic stores constraints (e.g. `ge=0`) in `FieldInfo.metadata`; taking
+    `metadata[0]` as the description leaks the constraint object into the
+    schema, which then cannot be JSON serialized when sent to the model.
+    """
+    from pydantic import Field
+
+    class ModelWithConstraints(KernelBaseModel):
+        count: int = Field(description="number of items", ge=0)
+        ratio: float = Field(description="the ratio", gt=0, le=1)
+        label: str = Field(description="the label")
+
+    schema = KernelJsonSchemaBuilder.build(ModelWithConstraints)
+
+    assert schema["properties"]["count"]["description"] == "number of items"
+    assert schema["properties"]["ratio"]["description"] == "the ratio"
+    assert schema["properties"]["label"]["description"] == "the label"
+    # the full schema must stay JSON serializable (function calling payload)
+    assert json.loads(json.dumps(schema))
+
+
+def test_build_model_schema_annotated_descriptions():
+    """Descriptions supplied via Annotated metadata must be used, also with constraints."""
+    from pydantic import Field
+
+    class ModelWithAnnotated(KernelBaseModel):
+        amount: Annotated[int, "amount description"] = Field(ge=1)
+        tagged: Annotated[str, {"description": "tagged description"}] = "x"
+
+    schema = KernelJsonSchemaBuilder.build(ModelWithAnnotated)
+
+    assert schema["properties"]["amount"]["description"] == "amount description"
+    assert schema["properties"]["tagged"]["description"] == "tagged description"
+    assert json.loads(json.dumps(schema))
