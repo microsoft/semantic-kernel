@@ -268,7 +268,7 @@ class ChatMessageContent(KernelContent):
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
-            items.append(TextContent(text=unescape(element.text)))
+            items.append(TextContent(text=element.text))
         for child in element:
             if child.tag not in TAG_CONTENT_MAP:
                 logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
