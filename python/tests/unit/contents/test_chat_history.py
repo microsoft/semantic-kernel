@@ -232,6 +232,34 @@ def test_iter(chat_history: ChatHistory):
         assert message.content == messages[i]
 
 
+@pytest.mark.parametrize(
+    "get_messages",
+    [lambda history: history, lambda history: history.messages, lambda history: iter(history)],
+    ids=["history", "messages", "iterator"],
+)
+def test_replace_from_same_history(chat_history: ChatHistory, get_messages):
+    chat_history.add_user_message("Question")
+    chat_history.add_assistant_message("Answer")
+    expected_messages = list(chat_history)
+    messages = chat_history.messages
+
+    chat_history.replace(get_messages(chat_history))
+
+    assert chat_history.messages == expected_messages
+    assert chat_history.messages is messages
+
+
+def test_replace_from_filtered_history(chat_history: ChatHistory):
+    chat_history.add_system_message("Instructions")
+    chat_history.add_user_message("Question")
+    chat_history.add_assistant_message("Answer")
+    expected_messages = chat_history.messages[:2]
+
+    chat_history.replace(message for message in chat_history if message.role != AuthorRole.ASSISTANT)
+
+    assert chat_history.messages == expected_messages
+
+
 def test_eq():
     # Create two instances of ChatHistory
     chat_history1 = ChatHistory()

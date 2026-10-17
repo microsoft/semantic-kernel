@@ -300,12 +300,13 @@ class ChatHistory(KernelBaseModel):
     def replace(self, messages: Iterable[ChatMessageContent]) -> None:
         """Replace the chat history with a list of messages.
 
-        This calls clear() and then extend(messages=messages).
+        The iterable is consumed before clearing the history so it can refer to the current messages.
 
         Args:
             messages: The messages to add to the history.
                 Can be a list of ChatMessageContent instances or a ChatHistory itself.
         """
+        messages = list(messages)
         self.clear()
         self.extend(messages=messages)
 
