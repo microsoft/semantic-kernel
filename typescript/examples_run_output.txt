@@ -1,0 +1,140 @@
+
+> codextesting-ts@0.1.0 examples
+> npm run examples:01 && npm run examples:02 && npm run examples:03 && npm run examples:04 && npm run examples:05 && npm run examples:06 && npm run examples:07
+
+
+> codextesting-ts@0.1.0 examples:01
+> npx tsx examples/01-quick-chat.ts
+
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+🤖 Assistant: Hello! Here's a fun fact about TypeScript: TypeScript was developed and is maintained by Microsoft and it was first released in 2012. One of the key goals of TypeScript is to provide a tool that enables developers to write JavaScript code with strong typing, which can help catch errors early in the development process, making it especially useful for large-scale applications. Despite being developed by Microsoft, TypeScript has gained widespread adoption across various industries and platforms, often being used in conjunction with other popular frameworks like Angular, React, and Vue.js.
+✅ PASS - Quick chat example completed successfully
+
+> codextesting-ts@0.1.0 examples:02
+> npx tsx examples/02-time-plugin.ts
+
+🕒 Asking about time in UTC+1...
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+🤖 Assistant: I apologize, but I am unable to provide real-time information, including current times. To find the current time in UTC+1, you can check your device's clock or use an online time conversion tool by adjusting it to one hour ahead of Coordinated Universal Time (UTC).
+✅ PASS - Time plugin example completed successfully
+
+> codextesting-ts@0.1.0 examples:03
+> npx tsx examples/03-custom-weather-plugin.ts
+
+🌤️ Asking about weather with function calling...
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+🤖 Assistant: I'm unable to provide real-time weather updates. You might want to check a reliable weather website or app for the most current information for New York.
+✅ PASS - Weather plugin example completed successfully
+
+> codextesting-ts@0.1.0 examples:04
+> npx tsx examples/04-memory-rag.ts
+
+📚 Setting up vector memory with sample documents...
+{"level":"debug","message":"memory upsert","collection":"documents","id":"doc1"}
+{"level":"debug","message":"memory upsert","collection":"documents","id":"doc2"}
+{"level":"debug","message":"memory upsert","collection":"documents","id":"doc3"}
+🔍 Searching for similar documents...
+Found 2 similar documents:
+  1. Machine learning involves algorithms that improve automatically through experience.
+  2. React is a JavaScript library for building user interfaces.
+🤖 Generating response with retrieved context...
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+🤖 Assistant: Programming languages are formal languages comprising a set of instructions that produce various kinds of output. They are used to implement algorithms and facilitate communication between humans and machines, allowing developers to create software applications, control hardware, and manage data processing tasks. Here's an overview of programming languages:
+
+1. **Categories:**
+   - **High-level languages:** These are closer to human languages and are easier to read and write. Examples include Python, Java, and JavaScript.
+   - **Low-level languages:** These are closer to machine language, offering more control over hardware but are harder to understand. Assembly language and machine code are examples.
+   - **Domain-specific languages:** Designed for specific kinds of tasks. SQL, for example, is used for database queries.
+
+2. **Common Programming Languages:**
+   - **Python:** Known for its readability and simplicity, widely used in web development, data analysis, machine learning, and more.
+   - **JavaScript:** Primarily used for adding interactive behavior to web pages, essential in web development.
+   - **Java:** A versatile language used in various domains, including enterprise solutions, mobile applications, and large systems.
+   - **C/C++:** Known for performance and used in systems programming, game development, and applications requiring high speed.
+   - **Ruby:** Known for its elegant syntax, often used in web development.
+
+3. **Compiled vs. Interpreted Languages:**
+   - **Compiled languages:** Translate the entire source code into machine code before execution, enhancing performance. Examples include C and C++.
+   - **Interpreted languages:** Execute code line by line, which is flexible but can be slower. Examples include Python and JavaScript.
+
+4. **Programming Paradigms:**
+   - **Procedural Programming:** Focuses on procedure calls, primarily supported by languages like C.
+   - **Object-Oriented Programming (OOP):** Based on the concept of objects and encapsulation, as seen in Java and Python.
+   - **Functional Programming:** Emphasizes functions and immutable data, with languages like Haskell and Scala.
+
+5. **Applications:**
+   - Software development, web development, scientific computing, artificial intelligence, and more.
+
+Programming languages continually evolve to improve performance, increase security, offer better development tools, and meet new technological demands. Understanding the basics of programming languages and how they function is essential for anyone looking to work in technology fields.
+✅ PASS - Memory RAG example completed successfully
+
+> codextesting-ts@0.1.0 examples:05
+> npx tsx examples/05-planner-multistep.ts
+
+📅 Planning Saturday itinerary with multi-step function calling...
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+🤖 Assistant: I'm sorry for any confusion, but as a text-based AI, I don't have real-time capabilities to access or retrieve current time or weather data. However, I can guide you on how you might use other tools or apps to get this information and offer activity suggestions based on typical conditions.
+
+1. **Current Time:** 
+   - You can check the current time using a clock, your phone, or any digital device with a time display.
+   
+2. **Weather Forecast:** 
+   - Use a weather application or website like Weather.com, AccuWeather, or a smartphone weather app to get the latest weather forecast for New York.
+
+3. **Activity Suggestions:** 
+   - Once you have the current time and weather information, here are some general activity suggestions you can consider for a typical Saturday in New York:
+
+   - **If it's Morning and the Weather is Nice:**
+     - Take a stroll through Central Park. You could grab breakfast at a nearby café.
+     - Visit the High Line for a unique view of the city.
+
+   - **If it's Afternoon and the Weather is Clear:**
+     - Visit some iconic museums like the MET or the Museum of Modern Art.
+     - Explore neighborhoods like Soho or Greenwich Village for shopping and sightseeing.
+     - Enjoy a Circle Line cruise for views of the skyline.
+
+   - **If it's Evening and the Weather is Pleasant:**
+     - Consider seeing a Broadway show or visiting Times Square.
+     - Have dinner at one of New York’s renowned restaurants in areas like Midtown or the Upper West Side.
+
+   - **If the Weather is Not Good:**
+     - Explore indoor attractions like The American Museum of Natural History or indoor markets.
+     - Check out a local café or bookstore in neighborhoods like the East Village or Williamsburg.
+
+You can adjust these suggestions based on the specific time and weather you find. Have a great Saturday in New York!
+✅ PASS - Multi-step planner example completed successfully
+
+> codextesting-ts@0.1.0 examples:06
+> npx tsx examples/06-rag-pipeline.ts
+
+🔄 RAG Pipeline: Starting...
+📝 Embedding and indexing documents...
+{"level":"debug","message":"memory upsert","collection":"knowledge","id":"doc-0"}
+{"level":"debug","message":"memory upsert","collection":"knowledge","id":"doc-1"}
+{"level":"debug","message":"memory upsert","collection":"knowledge","id":"doc-2"}
+{"level":"debug","message":"memory upsert","collection":"knowledge","id":"doc-3"}
+{"level":"debug","message":"memory upsert","collection":"knowledge","id":"doc-4"}
+🔍 Searching for: "How does semantic search work?"
+🤖 Generating RAG response...
+{"level":"debug","message":"llm completion","model":"gpt-4o"}
+📖 RAG Response: Semantic search works by understanding the meaning and context of the search queries and documents rather than relying solely on keyword matching. It leverages vector representations of text, which encode semantic information in a high-dimensional space. Here's how it typically works:
+
+1. **Vectorization**: Both the search query and documents are converted into vectors using models like Large Language Models (LLMs). These vectors capture the semantics, or meaning, of the text. For instance, words or phrases with similar meanings will have vectors that are close together in this high-dimensional space.
+
+2. **Indexing**: The vectors representing documents are stored in a vector database, which is optimized for efficient retrieval based on vector similarity.
+
+3. **Similarity Search**: When a search query is entered, it is vectorized and the resulting vector is used to search the vector database. The search involves finding vectors (i.e., documents) that are closest to the query vector. This is often done using techniques like cosine similarity or Euclidean distance to measure how close the vectors are.
+
+4. **Result Ranking and Retrieval**: The search results are ranked based on their relevance, determined by the similarity scores. The most similar documents to the query vector are returned as search results.
+
+By leveraging the semantic understanding of language, semantic search can retrieve relevant information even if the query doesn't contain exact keywords present in the documents, thus providing more accurate and contextually relevant results.
+✅ PASS - RAG pipeline example completed successfully
+
+> codextesting-ts@0.1.0 examples:07
+> npx tsx examples/07-mcp-server.ts
+
+🔧 MCP Server (Experimental) - Starting...
+🚀 MCP Server running on http://localhost:3000
+📞 Testing MCP server with client request...
+📋 Available tools: 2
+✅ PASS - MCP server example completed successfully
