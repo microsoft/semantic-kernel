@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic import AsyncAnthropic
-from anthropic.types import Message
+from anthropic.types import Message, TextBlock, ToolUseBlock, Usage
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
@@ -527,6 +527,73 @@ async def test_send_chat_stream_request_tool_calls(
         assert message is not None
 
 
+async def test_get_chat_message_contents_preserves_tools_when_auto_invoke_exhausted(
+    kernel: Kernel,
+    mock_tool_calls_message: ChatMessageContent,
+    mock_tool_call_result_message: ChatMessageContent,
+):
+    tool_call_response = Message(
+        id="tool_call_message_id",
+        content=[
+            ToolUseBlock(
+                id="test_tool_use_block_id",
+                input={"key": "test"},
+                name="test-test",
+                type="tool_use",
+            )
+        ],
+        model="claude-3-opus-20240229",
+        role="assistant",
+        stop_reason="tool_use",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=10, output_tokens=10),
+    )
+    final_response = Message(
+        id="final_message_id",
+        content=[TextBlock(text="Final answer", type="text")],
+        model="claude-3-opus-20240229",
+        role="assistant",
+        stop_reason="end_turn",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=10, output_tokens=10),
+    )
+
+    client = MagicMock(spec=AsyncAnthropic)
+    messages_mock = MagicMock()
+    messages_mock.create = AsyncMock(side_effect=[tool_call_response, final_response])
+    client.messages = messages_mock
+
+    chat_history = ChatHistory()
+    chat_history.add_user_message("What is 3+3?")
+    chat_history.add_message(mock_tool_calls_message)
+    chat_history.add_message(mock_tool_call_result_message)
+
+    kernel.add_function("test", kernel_function(lambda key: "test", name="test"))
+
+    settings = AnthropicChatPromptExecutionSettings(function_choice_behavior=FunctionChoiceBehavior.Auto())
+    settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
+    chat_completion = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=client,
+    )
+
+    await chat_completion.get_chat_message_contents(
+        chat_history=chat_history,
+        settings=settings,
+        kernel=kernel,
+        arguments=KernelArguments(),
+    )
+
+    payload = messages_mock.create.call_args_list[-1].kwargs
+    assert "tools" in payload
+    assert payload["tools"]
+    assert payload["tool_choice"] == {"type": "none"}
+
+
 def test_client_base_url(mock_anthropic_client_completion: MagicMock):
     chat_completion_base = AnthropicChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_anthropic_client_completion
@@ -545,5 +612,66 @@ def test_chat_completion_reset_settings(
     settings = AnthropicChatPromptExecutionSettings(tools=[{"name": "test"}], tool_choice={"type": "any"})
     chat_completion._reset_function_choice_settings(settings)
 
-    assert settings.tools is None
-    assert settings.tool_choice is None
+    assert settings.tools == [{"name": "test"}]
+    assert settings.tool_choice == {"type": "none"}
+
+
+def test_get_tool_calls_from_message_serializes_arguments(
+    mock_anthropic_client_completion: MagicMock,
+):
+    chat_completion = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_anthropic_client_completion
+    )
+    message = Message(
+        id="test_message_id",
+        content=[
+            TextBlock(text="<thinking></thinking>", type="text"),
+            ToolUseBlock(
+                id="test_tool_use_block_id",
+                input={"input": 3, "amount": 3},
+                name="math-Add",
+                type="tool_use",
+            ),
+        ],
+        model="claude-3-opus-20240229",
+        role="assistant",
+        stop_reason="tool_use",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=100, output_tokens=100),
+    )
+
+    tool_calls = chat_completion._get_tool_calls_from_message(message)
+
+    assert len(tool_calls) == 1
+    assert tool_calls[0].arguments == '{"input": 3, "amount": 3}'
+
+
+def test_get_tool_calls_from_message_serializes_empty_arguments_dict(
+    mock_anthropic_client_completion: MagicMock,
+):
+    chat_completion = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_anthropic_client_completion
+    )
+    message = Message(
+        id="test_message_id",
+        content=[
+            ToolUseBlock(
+                id="test_tool_use_block_id",
+                input={},
+                name="math-Add",
+                type="tool_use",
+            ),
+        ],
+        model="claude-3-opus-20240229",
+        role="assistant",
+        stop_reason="tool_use",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=100, output_tokens=100),
+    )
+
+    tool_calls = chat_completion._get_tool_calls_from_message(message)
+
+    assert len(tool_calls) == 1
+    assert tool_calls[0].arguments == "{}"
