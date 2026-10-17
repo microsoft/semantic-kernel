@@ -414,12 +414,14 @@ class ChatHistory(KernelBaseModel):
         """Stores the serialized ChatHistory to a file.
 
         Uses mode "w" which means the file is created if it does not exist and gets truncated if it does.
+        The file is always written as UTF-8, so that histories with non-ASCII content can be stored
+        and reloaded on platforms whose locale encoding is not UTF-8.
 
         Args:
             file_path: The path to the file where the serialized data will be stored.
         """
         json_str = self.serialize()
-        with open(file_path, "w") as local_file:
+        with open(file_path, "w", encoding="utf-8") as local_file:
             local_file.write(json_str)
 
     @classmethod
@@ -427,6 +429,7 @@ class ChatHistory(KernelBaseModel):
         """Loads the ChatHistory from a file.
 
         Uses mode "r" which means it can only be read if it exists.
+        The file is always read as UTF-8, matching what store_chat_history_to_file writes.
 
         Args:
             file_path: The path to the file from which to load the ChatHistory.
@@ -434,6 +437,6 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The deserialized ChatHistory instance.
         """
-        with open(file_path) as file:
+        with open(file_path, encoding="utf-8") as file:
             json_str = file.read()
         return cls.restore_chat_history(json_str)
