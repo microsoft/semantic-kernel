@@ -392,7 +392,7 @@ public sealed class Program
         {
             builder.AddHuggingFaceChatCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
-                endpoint: new Uri("https://api-inference.huggingface.co"),
+                endpoint: new Uri("https://router.huggingface.co/hf-inference"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
                 serviceId: HuggingFaceServiceKey);
         }
