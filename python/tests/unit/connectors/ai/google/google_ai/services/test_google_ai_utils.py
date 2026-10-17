@@ -199,3 +199,39 @@ def test_google_ai_function_call_format_empty_parameters() -> None:
     )
     result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
     assert result["parameters"] is None
+
+
+def test_google_ai_function_call_format_skips_params_excluded_from_function_choices() -> None:
+    metadata = KernelFunctionMetadata(
+        name="lookup",
+        description="Look up a user",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="query", description="What to look up", schema_data={"type": "string"}, is_required=True
+            ),
+            KernelParameterMetadata(
+                name="token",
+                description="Internal",
+                schema_data={"type": "string"},
+                is_required=True,
+                include_in_function_choices=False,
+            ),
+        ],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    assert list(result["parameters"]["properties"]) == ["query"]
+    assert result["parameters"]["required"] == ["query"]
+
+
+def test_google_ai_function_call_format_all_params_excluded_gives_no_parameters() -> None:
+    metadata = KernelFunctionMetadata(
+        name="hidden_only",
+        description="Only hidden parameters",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(name="token", schema_data={"type": "string"}, include_in_function_choices=False),
+        ],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    assert result["parameters"] is None

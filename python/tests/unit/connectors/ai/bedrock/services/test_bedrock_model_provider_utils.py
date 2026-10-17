@@ -25,6 +25,8 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 
 
@@ -441,3 +443,32 @@ def test_update_settings_from_function_choice_configuration_required_one(mock_be
     assert mock_bedrock_settings.tool_choice == {"tool": {"name": "plugin-function"}}
     assert len(mock_bedrock_settings.tools) == 1
     assert mock_bedrock_settings.tools[0]["toolSpec"]["name"] == "plugin-function"
+
+
+def test_update_settings_from_function_choice_configuration_skips_params_excluded_from_function_choices() -> None:
+    metadata = KernelFunctionMetadata(
+        name="lookup",
+        description="Look up a user",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="query", description="What to look up", schema_data={"type": "string"}, is_required=True
+            ),
+            KernelParameterMetadata(
+                name="token",
+                description="Internal",
+                schema_data={"type": "string"},
+                is_required=True,
+                include_in_function_choices=False,
+            ),
+        ],
+    )
+    config = FunctionCallChoiceConfiguration()
+    config.available_functions = [metadata]
+    settings = BedrockChatPromptExecutionSettings()
+
+    update_settings_from_function_choice_configuration(config, settings, FunctionChoiceType.AUTO)
+
+    schema = settings.tools[0]["toolSpec"]["inputSchema"]["json"]
+    assert list(schema["properties"]) == ["query"]
+    assert schema["required"] == ["query"]
