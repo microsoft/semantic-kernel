@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import json
 import sys
 from enum import Enum
@@ -575,6 +576,35 @@ def test_type_expression_forward_reference_is_still_resolved():
 def test_is_type_expression(reference: str, is_type_expression: bool):
     """The guard admits type expressions and rejects anything that can call out."""
     assert KernelJsonSchemaBuilder._is_type_expression(reference) is is_type_expression
+
+
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "InnerForward",
+        "dict[str, InnerForward]",
+        "InnerForward | None",
+        "tuple[int, str]",
+        "Optional[InnerForward]",
+        "Union[int, str, None]",
+        "Annotated[int, 'meta']",
+        "list[dict[str, 'InnerForward']]",
+        "json.JSONDecoder",
+    ],
+)
+def test_evaluate_type_expression_matches_eval(reference: str):
+    """Every expression the guard admits evaluates to the same object `eval` would return."""
+    assert KernelJsonSchemaBuilder._is_type_expression(reference)
+    tree = ast.parse(reference, mode="eval")
+
+    assert KernelJsonSchemaBuilder._evaluate_type_expression(tree, globals()) == eval(reference, globals(), {})
+
+
+def test_unknown_name_in_forward_reference_is_left_unchanged():
+    annotation = list["DoesNotExistAnywhere"]  # noqa: F821
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(annotation, globals())
+
+    assert resolved is annotation
 
 
 def forward_reference_helper(count: int) -> str:

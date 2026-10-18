@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import ast
+import builtins
 import sys
 import types
 from enum import Enum
@@ -171,8 +172,8 @@ class KernelJsonSchemaBuilder:
 
         A forward reference names a type: an identifier, a dotted path, a subscription such as
         `dict[str, Inner]`, or a `X | None` union. Calls, lambdas and comprehensions are not part
-        of that grammar, so rejecting them keeps `eval` from running anything a type annotation
-        would never legitimately contain.
+        of that grammar, so rejecting them limits `_evaluate_type_expression` to the few
+        operations a type annotation is made of.
         """
         try:
             tree = ast.parse(source, mode="eval")
@@ -184,6 +185,36 @@ class KernelJsonSchemaBuilder:
             if isinstance(node, ast.Constant) and not isinstance(node.value, (str, int, bool, type(None))):
                 return False
         return True
+
+    @classmethod
+    def _evaluate_type_expression(cls, node: ast.AST, globalns: dict[str, Any]) -> Any:
+        """Evaluate a tree that `_is_type_expression` admitted, without using `eval`.
+
+        Names are looked up the way `eval` looks them up, in `globalns` first and then in the
+        builtins. Every other admitted node is a subscription, an attribute access, a `|` union,
+        a tuple or list of arguments, or a literal; there is no call node to evaluate.
+        """
+        if isinstance(node, ast.Expression):
+            return cls._evaluate_type_expression(node.body, globalns)
+        if isinstance(node, ast.Name):
+            if node.id in globalns:
+                return globalns[node.id]
+            return getattr(builtins, node.id)
+        if isinstance(node, ast.Attribute):
+            return getattr(cls._evaluate_type_expression(node.value, globalns), node.attr)
+        if isinstance(node, ast.Subscript):
+            value = cls._evaluate_type_expression(node.value, globalns)
+            return value[cls._evaluate_type_expression(node.slice, globalns)]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
+            left = cls._evaluate_type_expression(node.left, globalns)
+            return left | cls._evaluate_type_expression(node.right, globalns)
+        if isinstance(node, ast.Tuple):
+            return tuple(cls._evaluate_type_expression(element, globalns) for element in node.elts)
+        if isinstance(node, ast.List):
+            return [cls._evaluate_type_expression(element, globalns) for element in node.elts]
+        if isinstance(node, ast.Constant):
+            return node.value
+        raise TypeError(f"Unsupported node in a type expression: {type(node).__name__}")
 
     @classmethod
     def _is_type_or_typing_construct(cls, value: Any) -> bool:
@@ -227,7 +258,7 @@ class KernelJsonSchemaBuilder:
                     # annotation can run while a schema is being built.
                     return annotation
                 try:
-                    resolved = eval(reference, globalns, {})
+                    resolved = cls._evaluate_type_expression(ast.parse(reference, mode="eval"), globalns)
                 except Exception:
                     # Not resolvable from this module; leave the annotation alone so the existing
                     # fallback applies instead of raising while a schema is being built.
