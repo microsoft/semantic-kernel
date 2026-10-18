@@ -186,6 +186,15 @@ class KernelJsonSchemaBuilder:
         return True
 
     @classmethod
+    def _is_type_or_typing_construct(cls, value: Any) -> bool:
+        """Return whether `value` is something a forward reference can name.
+
+        That is a class (a model, an enum, a builtin) or a typing construct such as
+        `dict[str, Inner]`, `Optional[Inner]` or `Inner | None`, all of which `get_origin` recognizes.
+        """
+        return isinstance(value, type) or get_origin(value) is not None
+
+    @classmethod
     def _resolve_nested_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
         """Resolve string forward references nested inside a generic alias.
 
@@ -201,7 +210,7 @@ class KernelJsonSchemaBuilder:
 
         Returns:
             Any: The annotation with resolvable string arguments replaced by the types they name,
-                or the original annotation when nothing could be resolved.
+                or the original annotation when a reference does not resolve to a type.
         """
         args = get_args(annotation)
         if not args:
@@ -222,6 +231,11 @@ class KernelJsonSchemaBuilder:
                 except Exception:
                     # Not resolvable from this module; leave the annotation alone so the existing
                     # fallback applies instead of raising while a schema is being built.
+                    return annotation
+                if not cls._is_type_or_typing_construct(resolved):
+                    # The name exists but is a module, a function or a plain value rather than a
+                    # type. Substituting it would make `build` raise or describe the wrong object,
+                    # so keep the reference as written and let the existing fallback apply.
                     return annotation
                 changed = True
             else:

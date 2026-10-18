@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import sys
 from enum import Enum
-from typing import Annotated, Any, Optional, Union, get_args
+from typing import Annotated, Any, ForwardRef, Optional, Union, get_args
 from unittest.mock import Mock
 
 import pytest
@@ -457,6 +458,14 @@ def test_build_schema_with_nonpydantic_structured_output():
     assert structured_output_schema == expected_schema
 
 
+# Up to 3.10, get_type_hints leaves a string nested in list[...] as written, so the builder is what resolves it.
+# From 3.11 on, get_type_hints evaluates that string itself, and the builder only ever sees the result.
+skip_if_get_type_hints_evaluates_nested_strings = pytest.mark.skipif(
+    sys.version_info >= (3, 11),
+    reason="From 3.11 on, get_type_hints evaluates strings nested in list[...] itself, before the builder runs.",
+)
+
+
 class InnerForward(KernelBaseModel):
     value: int
     label: str
@@ -565,3 +574,71 @@ def test_type_expression_forward_reference_is_still_resolved():
 def test_is_type_expression(reference: str, is_type_expression: bool):
     """The guard admits type expressions and rejects anything that can call out."""
     assert KernelJsonSchemaBuilder._is_type_expression(reference) is is_type_expression
+
+
+def forward_reference_helper(count: int) -> str:
+    return str(count)
+
+
+FORWARD_REFERENCE_LIMITS = [1, 2, 3]
+FORWARD_REFERENCE_ALIAS = "int"
+
+
+class HolderModuleReference:
+    items: list["json"]
+
+
+class HolderFunctionReference:
+    items: list["forward_reference_helper"]
+
+
+class HolderListValueReference:
+    items: list["FORWARD_REFERENCE_LIMITS"]
+
+
+class HolderStrValueReference:
+    items: list["FORWARD_REFERENCE_ALIAS"]
+
+
+@pytest.mark.parametrize(
+    "reference", ["json", "forward_reference_helper", "FORWARD_REFERENCE_LIMITS", "FORWARD_REFERENCE_ALIAS"]
+)
+@pytest.mark.parametrize("wrap", [str, ForwardRef], ids=["str", "ForwardRef"])
+def test_forward_reference_to_non_type_global_is_left_unchanged(reference: str, wrap: Any):
+    """A name that resolves to a module, a function or a plain value does not name a type.
+
+    Substituting it would hand `build` a module (raises), a function (rendered as a model of its
+    parameters), a list (raises as an unhashable mapping key) or a string (read as another type
+    name). The annotation must come back unchanged so the existing fallback applies.
+    """
+    annotation = list[wrap(reference)]
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(annotation, globals())
+
+    assert resolved is annotation
+
+
+@pytest.mark.parametrize(
+    ("reference", "expected"),
+    [
+        ("InnerForward", InnerForward),
+        ("dict[str, InnerForward]", dict[str, InnerForward]),
+        ("Optional[InnerForward]", Optional[InnerForward]),
+        ("InnerForward | None", InnerForward | None),
+    ],
+)
+def test_forward_reference_to_type_or_typing_construct_is_resolved(reference: str, expected: Any):
+    """Classes and typing constructs are what a forward reference names; those are still substituted."""
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(list[reference], globals())
+
+    assert get_args(resolved) == (expected,)
+
+
+@skip_if_get_type_hints_evaluates_nested_strings
+@pytest.mark.parametrize(
+    "holder",
+    [HolderModuleReference, HolderFunctionReference, HolderListValueReference, HolderStrValueReference],
+)
+def test_build_with_non_type_forward_reference_keeps_object_fallback(holder: type):
+    schema = KernelJsonSchemaBuilder.build(holder)
+
+    assert schema["properties"]["items"] == {"type": "array", "items": {"type": "object"}}
