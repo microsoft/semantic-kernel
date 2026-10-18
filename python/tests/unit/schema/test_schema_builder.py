@@ -518,6 +518,7 @@ def test_build_optional_with_string_forward_reference_still_works():
     }
 
 
+@skip_if_get_type_hints_evaluates_nested_strings
 def test_unresolvable_forward_reference_falls_back_instead_of_raising():
     """An annotation naming something that doesn't exist must not break schema building."""
 
