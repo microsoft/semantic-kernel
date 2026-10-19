@@ -90,6 +90,14 @@ class MiscClass:
     def func_no_typing(self, input):
         return input
 
+    @kernel_function
+    def func_input_none_default(self, input=None):
+        return input
+
+    @kernel_function
+    def func_input_annotated_none_default(self, input: str = None):
+        return input
+
 
 def test_func_name_as_name():
     decorator_test = MiscClass()
@@ -241,6 +249,24 @@ def test_kernel_function_no_typing():
     my_func = getattr(decorator_test, "func_no_typing")
     assert my_func.__kernel_function_parameters__[0]["type_"] == "Any"
     assert my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0].get("default_value") is None
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_param_none_default():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_none_default")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "Any"
+    assert not my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0].get("default_value") is None
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_param_annotated_none_default():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_annotated_none_default")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
+    assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0].get("default_value") is None
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 

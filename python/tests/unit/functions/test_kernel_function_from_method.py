@@ -461,6 +461,20 @@ async def test_function_invoke_return_list_type(kernel: Kernel):
     assert str(result) == "test1,test2"
 
 
+async def test_function_invoke_with_none_default_argument(kernel: Kernel):
+    @kernel_function(name="greet")
+    def greet(name: str, punctuation=None) -> str:
+        return f"Hello {name}{punctuation if punctuation else '!'}"
+
+    func = KernelFunction.from_method(greet, "test")
+
+    assert func.parameters[1].name == "punctuation"
+    assert func.parameters[1].is_required is False
+
+    result = await kernel.invoke(function=func, arguments=KernelArguments(name="Ada"))
+    assert result.value == "Hello Ada!"
+
+
 async def test_function_invocation_filters(kernel: Kernel):
     func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
     kernel.add_function(plugin_name="math", function=func)
