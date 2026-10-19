@@ -116,10 +116,10 @@ POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
     "bytea": "BYTEA",
 }
 LENGTH_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"(varchar|character varying)\s*\(\s*(\d+)\s*\)", re.IGNORECASE
+    r"(varchar|character varying)\s*\(\s*(\d{1,8})\s*\)", re.IGNORECASE
 )
 PRECISION_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"(decimal|numeric)\s*\(\s*(\d+)(?:\s*,\s*(\d+))?\s*\)", re.IGNORECASE
+    r"(decimal|numeric)\s*\(\s*(\d{1,4})(?:\s*,\s*(\d{1,4}))?\s*\)", re.IGNORECASE
 )
 
 # region: Helpers

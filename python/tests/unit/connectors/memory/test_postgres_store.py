@@ -300,9 +300,11 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
         "varchar()",
         "varchar(255, 1)",
         "varchar(255); SELECT 1",
+        "varchar(123456789)",
         "numeric()",
         "numeric(10, 2, 1)",
         "numeric(10, scale)",
+        "numeric(12345)",
     ],
 )
 async def test_ensure_collection_exists_rejects_unsupported_types_before_execution(
