@@ -4,6 +4,7 @@ import ast
 import json
 import logging
 import random
+import re
 import string
 import sys
 from collections.abc import AsyncGenerator, MutableSequence, Sequence
@@ -94,17 +95,32 @@ POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
     "text": "TEXT",
     "int": "INTEGER",
     "integer": "INTEGER",
+    "bigint": "BIGINT",
+    "smallint": "SMALLINT",
     "float": "DOUBLE PRECISION",
     "double precision": "DOUBLE PRECISION",
+    "real": "REAL",
     "bool": "BOOLEAN",
     "boolean": "BOOLEAN",
     "dict": "JSONB",
     "jsonb": "JSONB",
+    "date": "DATE",
     "datetime": "TIMESTAMP",
     "timestamp": "TIMESTAMP",
+    "timestamptz": "TIMESTAMP WITH TIME ZONE",
+    "timestamp with time zone": "TIMESTAMP WITH TIME ZONE",
+    "uuid": "UUID",
+    "decimal": "DECIMAL",
+    "numeric": "NUMERIC",
     "bytes": "BYTEA",
     "bytea": "BYTEA",
 }
+LENGTH_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(varchar|character varying)\s*\(\s*(\d+)\s*\)", re.IGNORECASE
+)
+PRECISION_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(decimal|numeric)\s*\(\s*(\d+)(?:\s*,\s*(\d+))?\s*\)", re.IGNORECASE
+)
 
 # region: Helpers
 
@@ -162,6 +178,17 @@ def _get_postgres_type(type_name: str) -> sql.Composable:
 
     if normalized_type.endswith("[]"):
         return sql.SQL("{}[]").format(_get_postgres_type(normalized_type[:-2]))
+
+    if match := LENGTH_TYPE_PATTERN.fullmatch(normalized_type):
+        postgres_type = "VARCHAR" if match.group(1).casefold() == "varchar" else "CHARACTER VARYING"
+        return sql.SQL("{}({})").format(sql.SQL(postgres_type), sql.Literal(int(match.group(2))))
+
+    if match := PRECISION_TYPE_PATTERN.fullmatch(normalized_type):
+        postgres_type = POSTGRES_TYPE_ALIASES[match.group(1).casefold()]
+        modifiers = [sql.Literal(int(match.group(2)))]
+        if scale := match.group(3):
+            modifiers.append(sql.Literal(int(scale)))
+        return sql.SQL("{}({})").format(sql.SQL(postgres_type), sql.SQL(", ").join(modifiers))
 
     if list_arguments := _get_python_generic_arguments(normalized_type, "list", 1):
         return sql.SQL("{}[]").format(_get_postgres_type(list_arguments[0]))
@@ -601,8 +628,9 @@ class PostgresCollection(
         """Create a PostgreSQL table based on the collection definition.
 
         Automatic creation supports built-in Python field types, their corresponding PostgreSQL aliases,
-        and arrays of those types. For custom domains, enums, extension types, or type modifiers, create the
-        table separately and use the collection without calling this method.
+        validated length and precision modifiers, and arrays of those types. For custom domains, enums,
+        extension types, or other type expressions, create the table separately and use the collection without
+        calling this method.
 
         Args:
             **kwargs: Additional arguments.

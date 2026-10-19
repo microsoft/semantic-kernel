@@ -4,8 +4,11 @@ import ast
 import asyncio
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
 from typing import Annotated, Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from uuid import UUID
 
 import pytest
 import pytest_asyncio
@@ -203,6 +206,32 @@ async def test_ensure_collection_exists_model_with_python_types(vector_store: Po
     )
 
 
+async def test_ensure_collection_exists_model_with_common_postgres_types(
+    vector_store: PostgresStore, mock_cursor: Mock
+) -> None:
+    @vectorstoremodel
+    @dataclass
+    class ModelWithCommonPostgresTypes:
+        name: Annotated[str, VectorStoreField("key")]
+        event_date: Annotated[date, VectorStoreField("data")]
+        external_id: Annotated[UUID, VectorStoreField("data")]
+        amount: Annotated[Decimal, VectorStoreField("data")]
+
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=ModelWithCommonPostgresTypes,
+    )
+
+    await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_awaited_once()
+    statement = mock_cursor.execute.call_args.args[0]
+    assert statement.as_string() == (
+        'CREATE TABLE "public"."test_collection" '
+        '("name" TEXT PRIMARY KEY, "event_date" DATE, "external_id" UUID, "amount" DECIMAL)'
+    )
+
+
 async def test_ensure_collection_exists_explicit_definition_with_supported_aliases(
     vector_store: PostgresStore, mock_cursor: Mock
 ) -> None:
@@ -211,12 +240,21 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
             VectorStoreField("key", name="id", type="int"),
             VectorStoreField("data", name="title", type="text"),
             VectorStoreField("data", name="count", type="INTEGER"),
+            VectorStoreField("data", name="large_count", type="bigint"),
+            VectorStoreField("data", name="small_count", type="SMALLINT"),
             VectorStoreField("data", name="score", type="double precision"),
+            VectorStoreField("data", name="approximate_score", type="real"),
             VectorStoreField("data", name="enabled", type="BOOLEAN"),
             VectorStoreField("data", name="metadata", type="jsonb"),
             VectorStoreField("data", name="created_at", type="TIMESTAMP"),
+            VectorStoreField("data", name="processed_at", type="timestamptz"),
             VectorStoreField("data", name="payload", type="bytea"),
+            VectorStoreField("data", name="summary", type="varchar(255)"),
+            VectorStoreField("data", name="description", type="character varying ( 1024 )"),
+            VectorStoreField("data", name="amount", type="numeric(10, 2)"),
+            VectorStoreField("data", name="ratio", type="decimal(6)"),
             VectorStoreField("data", name="tags", type="list[str]"),
+            VectorStoreField("data", name="codes", type="varchar(12)[]"),
             VectorStoreField("data", name="weights", type="DOUBLE PRECISION[]"),
             VectorStoreField("data", name="items", type="Dict[str, Any]"),
             VectorStoreField("data", name="item_history", type="Dict[str, Any][]"),
@@ -235,10 +273,12 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
     statement = mock_cursor.execute.call_args.args[0]
     assert statement.as_string() == (
         'CREATE TABLE "public"."test_collection" '
-        '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "score" DOUBLE PRECISION, '
-        '"enabled" BOOLEAN, "metadata" JSONB, "created_at" TIMESTAMP, "payload" BYTEA, '
-        '"tags" TEXT[], "weights" DOUBLE PRECISION[], "items" JSONB, "item_history" JSONB[], '
-        '"nested_item_history" JSONB[][])'
+        '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "large_count" BIGINT, '
+        '"small_count" SMALLINT, "score" DOUBLE PRECISION, "approximate_score" REAL, "enabled" BOOLEAN, '
+        '"metadata" JSONB, "created_at" TIMESTAMP, "processed_at" TIMESTAMP WITH TIME ZONE, "payload" BYTEA, '
+        '"summary" VARCHAR(255), "description" CHARACTER VARYING(1024), "amount" NUMERIC(10, 2), '
+        '"ratio" DECIMAL(6), "tags" TEXT[], "codes" VARCHAR(12)[], "weights" DOUBLE PRECISION[], '
+        '"items" JSONB, "item_history" JSONB[], "nested_item_history" JSONB[][])'
     )
 
 
@@ -257,6 +297,12 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
         "Dict[str, Any]]",
         "list[Dict[str, Any]]]",
         "dict[str, Any -- comment]",
+        "varchar()",
+        "varchar(255, 1)",
+        "varchar(255); SELECT 1",
+        "numeric()",
+        "numeric(10, 2, 1)",
+        "numeric(10, scale)",
     ],
 )
 async def test_ensure_collection_exists_rejects_unsupported_types_before_execution(
