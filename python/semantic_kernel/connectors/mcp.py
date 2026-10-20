@@ -359,7 +359,12 @@ class MCPPluginBase:
                 self.session = session
             elif self.session._request_id == 0:
                 # If the session is not initialized, we need to reinitialize it
-                await self.session.initialize()
+                try:
+                    await self.session.initialize()
+                except Exception as ex:
+                    raise KernelPluginInvalidConfigurationError(
+                        "Failed to initialize session. Please check your configuration."
+                    ) from ex
             logger.debug("Connected to MCP server: %s", self.session)
             if self.load_tools_flag:
                 await self.load_tools()

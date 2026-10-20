@@ -256,9 +256,10 @@ async def test_mcp_plugin_failed_get_session():
                 pass
 
 
+@pytest.mark.parametrize("supplied_session", [False, True])
 @patch("semantic_kernel.connectors.mcp.streamablehttp_client")
 @patch("semantic_kernel.connectors.mcp.ClientSession")
-async def test_streamable_http_initialization_failure_unblocks_connect(mock_session, mock_client):
+async def test_streamable_http_initialization_failure_unblocks_connect(mock_session, mock_client, supplied_session):
     mock_read = MagicMock()
     mock_write = MagicMock()
     mock_callback = MagicMock()
@@ -268,17 +269,24 @@ async def test_streamable_http_initialization_failure_unblocks_connect(mock_sess
     mock_generator.__aexit__.return_value = (mock_read, mock_write, mock_callback)
     mock_client.return_value = mock_generator
 
-    mock_session.return_value.__aenter__.return_value.initialize.side_effect = RuntimeError("Unauthorized")
+    session = mock_session.return_value.__aenter__.return_value
+    session._request_id = 0
+    initialization_error = RuntimeError("Unauthorized")
+    session.initialize.side_effect = initialization_error
 
     plugin = MCPStreamableHttpPlugin(
         name="test",
         url="http://localhost:8080/mcp",
+        session=session if supplied_session else None,
         load_tools=False,
         load_prompts=False,
     )
 
-    with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to initialize session"):
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to initialize session") as exc_info:
         await asyncio.wait_for(plugin.connect(), timeout=1)
+
+    assert exc_info.value.__cause__ is initialization_error
+    assert plugin.session is None
 
 
 @pytest.mark.parametrize("failed_loader", ["load_tools", "load_prompts"])
