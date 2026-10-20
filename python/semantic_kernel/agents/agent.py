@@ -564,6 +564,7 @@ class Agent(KernelBaseModel, ABC):
         version: str | None = None,
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+        use_plugin_names: bool = False,
     ) -> "Server[LifespanResultT]":
         """Convert the agent to an MCP server.
 
@@ -572,6 +573,7 @@ class Agent(KernelBaseModel, ABC):
 
         By default, the server name will be the same as the agent name.
         If a server name is provided, it will be used instead.
+        Set `use_plugin_names=True` to prefix the tool name with its plugin name.
 
         Returns:
             The MCP server instance.
@@ -585,6 +587,7 @@ class Agent(KernelBaseModel, ABC):
             version=version,
             instructions=instructions,
             lifespan=lifespan,
+            use_plugin_names=use_plugin_names,
         )
 
 

@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+import logging
 from collections.abc import AsyncGenerator, Iterable
+from contextlib import nullcontext
+from importlib import import_module
 from typing import Annotated, Any
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+from opentelemetry.trace import StatusCode
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
@@ -17,6 +21,8 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+kernel_function_module = import_module("semantic_kernel.functions.kernel_function")
 
 
 class CustomType(KernelBaseModel):
@@ -175,6 +181,115 @@ async def test_invoke_non_async(kernel: Kernel):
     with pytest.raises(NotImplementedError):
         async for _ in native_function.invoke_stream(kernel=kernel, arguments=None):
             pass
+
+
+async def test_invoke_logs_argument_count_without_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    @kernel_function
+    def echo(value: str) -> str:
+        return value
+
+    native_function = KernelFunction.from_method(method=echo, plugin_name="MockPlugin")
+
+    with caplog.at_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function"):
+        result = await native_function.invoke(kernel=kernel, arguments=KernelArguments(value=secret))
+
+    messages = [
+        record.getMessage() for record in caplog.records if record.name == "semantic_kernel.functions.kernel_function"
+    ]
+    assert result.value == secret
+    assert secret not in "\n".join(messages)
+    assert "Function arguments provided: 1." in messages
+    assert "Function result available." in messages
+
+
+@pytest.mark.parametrize("streaming", [False, True])
+async def test_invoke_failure_omits_exception_value_without_sensitive_diagnostics(
+    kernel: Kernel, caplog, streaming: bool
+):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    if streaming:
+
+        @kernel_function
+        def fail(value: str) -> Iterable[str]:
+            if value:
+                raise ValueError(value)
+            yield ""
+
+    else:
+
+        @kernel_function
+        def fail(value: str) -> str:
+            raise ValueError(value)
+
+    native_function = KernelFunction.from_method(method=fail, plugin_name="MockPlugin")
+    span = Mock()
+
+    with (
+        patch.object(
+            kernel_function_module.tracer,
+            "start_as_current_span",
+            return_value=nullcontext(span),
+        ) as start_span,
+        patch.object(
+            kernel_function_module.function_tracer,
+            "are_sensitive_events_enabled",
+            return_value=False,
+        ),
+        caplog.at_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function"),
+        pytest.raises(ValueError, match=secret),
+    ):
+        if streaming:
+            async for _ in native_function.invoke_stream(kernel=kernel, arguments=KernelArguments(value=secret)):
+                pass
+        else:
+            await native_function.invoke(kernel=kernel, arguments=KernelArguments(value=secret))
+
+    messages = [
+        record.getMessage() for record in caplog.records if record.name == "semantic_kernel.functions.kernel_function"
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Function failed. Error type: ValueError." in messages
+    assert start_span.call_args.kwargs["record_exception"] is False
+    assert start_span.call_args.kwargs["set_status_on_exception"] is False
+    span.record_exception.assert_not_called()
+    span.set_status.assert_called_once_with(StatusCode.ERROR)
+
+
+async def test_invoke_failure_records_exception_with_sensitive_diagnostics(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    @kernel_function
+    def fail(value: str) -> str:
+        raise ValueError(value)
+
+    native_function = KernelFunction.from_method(method=fail, plugin_name="MockPlugin")
+    span = Mock()
+
+    with (
+        patch.object(
+            kernel_function_module.tracer,
+            "start_as_current_span",
+            return_value=nullcontext(span),
+        ),
+        patch.object(
+            kernel_function_module.function_tracer,
+            "are_sensitive_events_enabled",
+            return_value=True,
+        ),
+        caplog.at_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function"),
+        pytest.raises(ValueError, match=secret) as exc_info,
+    ):
+        await native_function.invoke(kernel=kernel, arguments=KernelArguments(value=secret))
+
+    messages = [
+        record.getMessage() for record in caplog.records if record.name == "semantic_kernel.functions.kernel_function"
+    ]
+    assert secret not in "\n".join(messages)
+    span.record_exception.assert_called_once_with(exc_info.value)
+    span.set_status.assert_called_once_with(StatusCode.ERROR, description=secret)
 
 
 async def test_invoke_async(kernel: Kernel):
