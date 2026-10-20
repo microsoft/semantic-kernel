@@ -31,6 +31,18 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+# Finish reasons where Gemini stopped the response for the content, not for length or a natural end.
+_GOOGLE_AI_CONTENT_FILTER_REASONS = frozenset({
+    FinishReason.SAFETY,
+    FinishReason.RECITATION,
+    FinishReason.BLOCKLIST,
+    FinishReason.PROHIBITED_CONTENT,
+    FinishReason.SPII,
+    FinishReason.IMAGE_SAFETY,
+    FinishReason.IMAGE_PROHIBITED_CONTENT,
+})
+
+
 def finish_reason_from_google_ai_to_semantic_kernel(
     finish_reason: FinishReason | None,
 ) -> SemanticKernelFinishReason | None:
@@ -47,7 +59,7 @@ def finish_reason_from_google_ai_to_semantic_kernel(
     if finish_reason == FinishReason.MAX_TOKENS:
         return SemanticKernelFinishReason.LENGTH
 
-    if finish_reason == FinishReason.SAFETY:
+    if finish_reason in _GOOGLE_AI_CONTENT_FILTER_REASONS:
         return SemanticKernelFinishReason.CONTENT_FILTER
 
     return None
