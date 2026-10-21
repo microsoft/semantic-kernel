@@ -22,6 +22,7 @@ pytestmark = pytest.mark.parametrize(
             "openai",
             {},
             1536,  # text-embedding-ada-002 doesn't support custom output dimensionality
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai",
         ),
         pytest.param(

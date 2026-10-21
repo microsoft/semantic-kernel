@@ -20,6 +20,10 @@ public class OpenApiFunctionExecutionParameters
     /// <remarks>
     /// The default client does not follow redirects so that URL validation cannot be bypassed.
     /// Custom clients should also be configured with <c>AllowAutoRedirect = false</c>.
+    /// In the .NET 8 and .NET 10 builds, the default client pins direct operation connections
+    /// to validated DNS addresses. Custom clients own their connection-time DNS validation;
+    /// setting <c>AllowAutoRedirect = false</c> alone does not prevent DNS rebinding.
+    /// Proxy-mediated requests and the .NET Standard 2.0 build are not pinned.
     /// </remarks>
     public HttpClient? HttpClient { get; set; }
 
