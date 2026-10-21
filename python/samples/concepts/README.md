@@ -150,6 +150,7 @@
 ### Filtering - Creating and using Filters
 
 - [Auto Function Invoke Filters](./filtering/auto_function_invoke_filters.py)
+- [Command Guard Filter](./filtering/command_guard_filter.py)
 - [Function Invocation Filters](./filtering/function_invocation_filters.py)
 - [Function Invocation Filters Stream](./filtering/function_invocation_filters_stream.py)
 - [Prompt Filters](./filtering/prompt_filters.py)
