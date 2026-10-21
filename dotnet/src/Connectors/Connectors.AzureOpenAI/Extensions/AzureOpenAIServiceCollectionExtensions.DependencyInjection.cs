@@ -45,8 +45,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -56,16 +55,13 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            AzureOpenAIClient client =
-                Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                    endpoint,
-                    new ApiKeyCredential(apiKey),
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    apiVersion
-                );
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                new ApiKeyCredential(apiKey),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
 
-            var builder = client
-                .GetChatClient(deploymentName)
+            var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
@@ -79,10 +75,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             return builder.Build();
         }
 
-        services.AddKeyedSingleton<IChatClient>(
-            serviceId,
-            (Func<IServiceProvider, object?, IChatClient>)Factory
-        );
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
 
         return services;
     }
@@ -112,8 +105,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -123,16 +115,13 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            AzureOpenAIClient client =
-                Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                    endpoint,
-                    credentials,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    apiVersion
-                );
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                credentials,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
 
-            var builder = client
-                .GetChatClient(deploymentName)
+            var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
@@ -146,10 +135,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             return builder.Build();
         }
 
-        services.AddKeyedSingleton<IChatClient>(
-            serviceId,
-            (Func<IServiceProvider, object?, IChatClient>)Factory
-        );
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
 
         return services;
     }
@@ -173,8 +159,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? serviceId = null,
         string? modelId = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
@@ -183,11 +168,9 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         {
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            var client =
-                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
+            var client = azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
 
-            var builder = client
-                .GetChatClient(deploymentName)
+            var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
                 .UseKernelFunctionInvocation(loggerFactory)
@@ -201,10 +184,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             return builder.Build();
         }
 
-        services.AddKeyedSingleton<IChatClient>(
-            serviceId,
-            (Func<IServiceProvider, object?, IChatClient>)Factory
-        );
+        services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
 
         return services;
     }
@@ -239,41 +219,33 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                new ApiKeyCredential(apiKey),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-                AzureOpenAIClient client =
-                    Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                        endpoint,
-                        new ApiKeyCredential(apiKey),
-                        HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                        apiVersion
-                    );
-
-                var builder = client
-                    .GetEmbeddingClient(deploymentName)
-                    .AsIEmbeddingGenerator(dimensions)
-                    .AsBuilder()
-                    .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
@@ -303,41 +275,33 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(credentials);
 
-        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                credentials,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-                AzureOpenAIClient client =
-                    Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                        endpoint,
-                        credentials,
-                        HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                        apiVersion
-                    );
-
-                var builder = client
-                    .GetEmbeddingClient(deploymentName)
-                    .AsIEmbeddingGenerator(dimensions)
-                    .AsBuilder()
-                    .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
@@ -361,39 +325,33 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? modelId = null,
         int? dimensions = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
 
-        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            var client = azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                var client =
-                    azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
-
-                var builder = client
-                    .GetEmbeddingClient(deploymentName)
-                    .AsIEmbeddingGenerator(dimensions)
-                    .AsBuilder()
-                    .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     #endregion
 
     #region Image Generation
+
     /// <summary>
     /// Adds the <see cref="IImageGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
@@ -402,11 +360,10 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIImageGenerator(
@@ -415,43 +372,38 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null,
-        string? openTelemetrySourceName = null
-    //Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IImageGenerator>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IImageGenerator>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                new ApiKeyCredential(apiKey),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
+
+            var builder = client.GetImageClient(deploymentName)
+                .AsIImageGenerator()
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-                AzureOpenAIClient client =
-                    Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                        endpoint,
-                        new ApiKeyCredential(apiKey),
-                        HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                        apiVersion
-                    );
-
-                var builder = client.GetImageClient(deploymentName).AsIImageGenerator().AsBuilder();
-                //.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig); NOT SUPPORTED YET
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
@@ -462,11 +414,10 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIImageGenerator(
@@ -475,43 +426,38 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null,
-        string? openTelemetrySourceName = null
-    //Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null NOT SUPPORTED YET
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        return services.AddKeyedSingleton<IImageGenerator>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IImageGenerator>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
+                endpoint,
+                credentials,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                apiVersion);
+
+            var builder = client.GetImageClient(deploymentName)
+                .AsIImageGenerator()
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-                AzureOpenAIClient client =
-                    Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
-                        endpoint,
-                        credentials,
-                        HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                        apiVersion
-                    );
-
-                var builder = client.GetImageClient(deploymentName).AsIImageGenerator().AsBuilder();
-                //.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig); NOT SUPPORTED YET
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
@@ -521,9 +467,8 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIImageGenerator(
@@ -531,33 +476,29 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string deploymentName,
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
-        string? modelId = null,
-        string? openTelemetrySourceName = null
-    //Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null  NOT SUPPORTED YET
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        return services.AddKeyedSingleton<IImageGenerator>(
-            serviceId,
-            (serviceProvider, _) =>
+        return services.AddKeyedSingleton<IImageGenerator>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            var client = azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
+
+            var builder = client.GetImageClient(deploymentName)
+                .AsIImageGenerator()
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
             {
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                var client =
-                    azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
-
-                var builder = client.GetImageClient(deploymentName).AsIImageGenerator().AsBuilder();
-                //.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);  NOT SUPPORTED YET
-
-                if (loggerFactory is not null)
-                {
-                    builder.UseLogging(loggerFactory);
-                }
-
-                return builder.Build();
+                builder.UseLogging(loggerFactory);
             }
-        );
+
+            return builder.Build();
+        });
     }
 
     #endregion

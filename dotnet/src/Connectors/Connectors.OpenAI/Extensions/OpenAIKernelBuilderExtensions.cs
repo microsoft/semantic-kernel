@@ -46,25 +46,20 @@ public static class OpenAIKernelBuilderExtensions
         string? orgId = null,
         string? serviceId = null,
         HttpClient? httpClient = null,
-        int? dimensions = null
-    )
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new OpenAITextEmbeddingGenerationService(
-                    modelId,
-                    apiKey,
-                    orgId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    dimensions
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
+                modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -85,22 +80,17 @@ public static class OpenAIKernelBuilderExtensions
         string modelId,
         OpenAIClient? openAIClient = null,
         string? serviceId = null,
-        int? dimensions = null
-    )
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new OpenAITextEmbeddingGenerationService(
-                    modelId,
-                    openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    dimensions
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
+                modelId,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -124,8 +114,7 @@ public static class OpenAIKernelBuilderExtensions
         string? orgId = null,
         int? dimensions = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -137,8 +126,7 @@ public static class OpenAIKernelBuilderExtensions
             orgId,
             dimensions,
             serviceId,
-            httpClient
-        );
+            httpClient);
 
         return builder;
     }
@@ -158,13 +146,16 @@ public static class OpenAIKernelBuilderExtensions
         string modelId,
         OpenAIClient? openAIClient = null,
         int? dimensions = null,
-        string? serviceId = null
-    )
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
-        builder.Services.AddOpenAIEmbeddingGenerator(modelId, openAIClient, dimensions, serviceId);
+        builder.Services.AddOpenAIEmbeddingGenerator(
+            modelId,
+            openAIClient,
+            dimensions,
+            serviceId);
 
         return builder;
     }
@@ -188,23 +179,18 @@ public static class OpenAIKernelBuilderExtensions
         string? orgId = null,
         string? modelId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new OpenAITextToImageService(
-                    apiKey,
-                    orgId,
-                    modelId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>()
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToImageService(
+                apiKey,
+                orgId,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
@@ -229,24 +215,19 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextToAudioService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new OpenAITextToAudioService(
-                    modelId,
-                    apiKey,
-                    orgId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>()
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToAudioService(
+                modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
@@ -271,21 +252,18 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(
-                modelId,
+            new(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+                serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -305,18 +283,13 @@ public static class OpenAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null
-    )
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(
-                modelId,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -344,22 +317,17 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton(
-            serviceId,
-            (serviceProvider, _) =>
-                new OpenAIFileService(
-                    apiKey,
-                    orgId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>()
-                )
-        );
+        builder.Services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new OpenAIFileService(
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
@@ -384,30 +352,21 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         OpenAIChatCompletionService Factory(IServiceProvider serviceProvider, object? _) =>
-            new(
-                modelId,
+            new(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+                serviceProvider.GetService<ILoggerFactory>());
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
 
         return builder;
     }
@@ -424,27 +383,16 @@ public static class OpenAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null
-    )
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
         OpenAIChatCompletionService Factory(IServiceProvider serviceProvider, object? _) =>
-            new(
-                modelId,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
 
         return builder;
     }
@@ -467,30 +415,21 @@ public static class OpenAIKernelBuilderExtensions
         string? apiKey,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
 
         OpenAIChatCompletionService Factory(IServiceProvider serviceProvider, object? _) =>
-            new(
-                modelId: modelId,
+            new(modelId: modelId,
                 apiKey: apiKey,
                 endpoint: endpoint,
                 organization: orgId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()
-            );
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(
-            serviceId,
-            (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory
-        );
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (Func<IServiceProvider, object?, OpenAIChatCompletionService>)Factory);
 
         return builder;
     }
@@ -503,11 +442,13 @@ public static class OpenAIKernelBuilderExtensions
     /// Adds an OpenAI <see cref="IImageGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">Model identifier, e.g., 'dall-e-3' or 'gpt-image-1'</param>
+    /// <param name="modelId">Model identifier, for example, 'gpt-image-1'.</param>
     /// <param name="apiKey">OpenAI API key</param>
     /// <param name="organizationId">OpenAI organization ID (optional)</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIImageGenerator(
@@ -516,8 +457,9 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? organizationId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -526,8 +468,9 @@ public static class OpenAIKernelBuilderExtensions
             apiKey,
             organizationId,
             serviceId,
-            httpClient
-        );
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
@@ -536,21 +479,29 @@ public static class OpenAIKernelBuilderExtensions
     /// Adds an OpenAI <see cref="IImageGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">Model identifier, e.g., 'dall-e-3' or 'gpt-image-1'</param>
+    /// <param name="modelId">Model identifier, for example, 'gpt-image-1'.</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIImageGenerator(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null
-    )
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddOpenAIImageGenerator(modelId, openAIClient, serviceId);
+        builder.Services.AddOpenAIImageGenerator(
+            modelId,
+            openAIClient,
+            serviceId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }

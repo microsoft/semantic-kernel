@@ -2,7 +2,6 @@
 
 using System;
 using System.ClientModel;
-using System.Linq;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.AI;
@@ -15,6 +14,8 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
+
+#pragma warning disable MEAI001 // Image generation APIs are experimental.
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
@@ -35,10 +36,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://localhost"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -46,30 +44,12 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAIChatCompletion(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAIChatCompletion(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAIChatCompletion(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIChatCompletion(
-                "deployment-name"
-            ),
-            InitializationType.ApiVersion => builder.AddAzureOpenAIChatCompletion(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIChatCompletion("deployment-name"),
+            InitializationType.ApiVersion => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            _ => builder
         };
 
         // Assert
@@ -91,16 +71,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
     [Obsolete("Temporary Obsoleted AzureOpenAITextEmbeddingGeneration tests.")]
-    public void KernelBuilderAddAzureOpenAITextEmbeddingGenerationAddsValidService(
-        InitializationType type
-    )
+    public void KernelBuilderAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://localhost"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -108,29 +83,12 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAITextEmbeddingGeneration(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAITextEmbeddingGeneration(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAITextEmbeddingGeneration(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider =>
-                builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
-            InitializationType.ApiVersion => builder.AddAzureOpenAITextEmbeddingGeneration(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
+            InitializationType.ApiVersion => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            _ => builder
         };
 
         // Assert
@@ -146,16 +104,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
-    public void KernelBuilderAddAzureOpenAIEmbeddingGeneratorAddsValidService(
-        InitializationType type
-    )
+    public void KernelBuilderAddAzureOpenAIEmbeddingGeneratorAddsValidService(InitializationType type)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://localhost"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -163,36 +116,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAIEmbeddingGenerator(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAIEmbeddingGenerator(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAIEmbeddingGenerator(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIEmbeddingGenerator(
-                "deployment-name"
-            ),
-            InitializationType.ApiVersion => builder.AddAzureOpenAIEmbeddingGenerator(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAIEmbeddingGenerator("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIEmbeddingGenerator("deployment-name"),
+            InitializationType.ApiVersion => builder.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            _ => builder
         };
 
         // Assert
-        var service = builder
-            .Build()
-            .GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        var service = builder.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         Assert.NotNull(service);
     }
@@ -208,12 +141,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
-        var service = sut.AddAzureOpenAITextToAudio(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            )
+        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview")
             .Build()
             .GetRequiredService<ITextToAudioService>();
 
@@ -235,10 +163,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://localhost"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -246,30 +171,12 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAITextToImage(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAITextToImage(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAITextToImage(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAITextToImage(
-                "deployment-name"
-            ),
-            InitializationType.ApiVersion => builder.AddAzureOpenAITextToImage(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAITextToImage("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAITextToImage("deployment-name"),
+            InitializationType.ApiVersion => builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            _ => builder
         };
 
         // Assert
@@ -283,75 +190,43 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     #region Image Generation
 
     [Theory]
-    [InlineData(InitializationType.ApiKey)]
-    [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.ClientInline)]
-    [InlineData(InitializationType.ClientInServiceProvider)]
-    [InlineData(InitializationType.ApiVersion)]
-    public void KernelBuilderAddAzureOpenAIImageGeneratorAddsValidService(InitializationType type)
+    [InlineData(InitializationType.ApiKey, null)]
+    [InlineData(InitializationType.ApiKey, "images")]
+    [InlineData(InitializationType.TokenCredential, null)]
+    [InlineData(InitializationType.TokenCredential, "images")]
+    [InlineData(InitializationType.ClientInline, null)]
+    [InlineData(InitializationType.ClientInline, "images")]
+    [InlineData(InitializationType.ClientInServiceProvider, null)]
+    [InlineData(InitializationType.ClientInServiceProvider, "images")]
+    [InlineData(InitializationType.ApiVersion, null)]
+    [InlineData(InitializationType.ApiVersion, "images")]
+    public void KernelBuilderAddAzureOpenAIImageGeneratorAddsValidService(InitializationType type, string? serviceId)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://localhost"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
-
-        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+        bool telemetryConfigured = false;
+        void configureTelemetry(OpenTelemetryImageGenerator _) => telemetryConfigured = true;
+        builder.Services.AddSingleton(client);
 
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAIImageGenerator(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAIImageGenerator(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAIImageGenerator(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIImageGenerator(
-                "deployment-name"
-            ),
-            InitializationType.ApiVersion => builder.AddAzureOpenAIImageGenerator(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", "api-key", serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", credentials, serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ClientInline => builder.AddAzureOpenAIImageGenerator("deployment-name", client, serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIImageGenerator("deployment-name", serviceId: serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ApiVersion => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", "api-key", serviceId, apiVersion: "2025-04-01-preview", openTelemetryConfig: configureTelemetry),
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 
         // Assert
         var kernel = builder.Build();
-
-        // Test that the service was registered and can be built without throwing
-        Assert.NotNull(kernel);
-
-        // Since IImageGenerator may not be directly available in the test environment,
-        // we'll check that the service was registered by verifying we can get all registered services
-        // and that they include an image generation service
-        try
-        {
-            // Try to get the service - this will throw if not registered
-#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates
-            var service = kernel.GetRequiredService<IImageGenerator>();
-#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates
-            Assert.NotNull(service);
-        }
-        catch (InvalidOperationException)
-        {
-            // If we can't resolve IImageGenerator directly (due to SDK version issues),
-            // we can still verify that the kernel was built successfully without exceptions
-            Assert.True(true, "Kernel built successfully - service registration validated");
-        }
+        var service = kernel.GetRequiredService<IImageGenerator>(serviceId);
+        Assert.Equal("deployment-name", service.GetService<ImageGeneratorMetadata>()!.DefaultModelId);
+        Assert.Same(service, kernel.GetRequiredService<IImageGenerator>(serviceId));
+        Assert.True(telemetryConfigured);
     }
 
     #endregion
@@ -368,10 +243,7 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new AzureOpenAIClient(
-            new Uri("https://endpoint"),
-            new ApiKeyCredential("key")
-        );
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("key"));
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -379,30 +251,12 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureOpenAIAudioToText(
-                "deployment-name",
-                "https://endpoint",
-                "api-key"
-            ),
-            InitializationType.TokenCredential => builder.AddAzureOpenAIAudioToText(
-                "deployment-name",
-                "https://endpoint",
-                credentials
-            ),
-            InitializationType.ClientInline => builder.AddAzureOpenAIAudioToText(
-                "deployment-name",
-                client
-            ),
-            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIAudioToText(
-                "deployment-name"
-            ),
-            InitializationType.ApiVersion => builder.AddAzureOpenAIAudioToText(
-                "deployment-name",
-                "https://endpoint",
-                "api-key",
-                apiVersion: "2024-10-01-preview"
-            ),
-            _ => builder,
+            InitializationType.ApiKey => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAIAudioToText("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIAudioToText("deployment-name"),
+            InitializationType.ApiVersion => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            _ => builder
         };
 
         // Assert
@@ -420,6 +274,6 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         ClientInline,
         ClientInServiceProvider,
         ClientEndpoint,
-        ApiVersion,
+        ApiVersion
     }
 }

@@ -53,8 +53,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -67,8 +66,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             apiVersion,
             httpClient,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -97,8 +95,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -111,8 +108,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             apiVersion,
             httpClient,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -135,8 +131,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryChatClient>? openTelemetryConfig = null
-    )
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -146,8 +141,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             serviceId,
             modelId,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -176,31 +170,20 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (
-            serviceProvider,
-            _
-        ) =>
+        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 new ApiKeyCredential(apiKey),
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                apiVersion
-            );
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider), apiVersion);
 
-            return new(
-                deploymentName,
-                client,
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -229,31 +212,20 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (
-            serviceProvider,
-            _
-        ) =>
+        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 credentials,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                apiVersion
-            );
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider), apiVersion);
 
-            return new(
-                deploymentName,
-                client,
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -276,22 +248,13 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string deploymentName,
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
-        string? modelId = null
-    )
+        string? modelId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (
-            serviceProvider,
-            _
-        ) =>
-            new(
-                deploymentName,
-                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+        Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
+            new(deploymentName, azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
@@ -327,25 +290,20 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null,
         int? dimensions = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName,
-                    endpoint,
-                    apiKey,
-                    modelId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    dimensions,
-                    apiVersion
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
+                deploymentName,
+                endpoint,
+                apiKey,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions,
+                apiVersion));
 
         return builder;
     }
@@ -374,26 +332,21 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null,
         int? dimensions = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(credential);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName,
-                    endpoint,
-                    credential,
-                    modelId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    dimensions,
-                    apiVersion
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
+                deploymentName,
+                endpoint,
+                credential,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions,
+                apiVersion));
 
         return builder;
     }
@@ -416,22 +369,17 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
         string? modelId = null,
-        int? dimensions = null
-    )
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName,
-                    azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
-                    modelId,
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    dimensions
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
+                deploymentName,
+                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                modelId,
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -457,26 +405,21 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        builder.Services.AddKeyedSingleton<ITextToAudioService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextToAudioService(
-                    deploymentName,
-                    endpoint,
-                    credential,
-                    modelId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    apiVersion
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToAudioService(
+                deploymentName,
+                endpoint,
+                credential,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
 
         return builder;
     }
@@ -508,9 +451,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -524,8 +465,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             apiVersion,
             httpClient,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -557,9 +497,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? apiVersion = null,
         HttpClient? httpClient = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(credential);
@@ -574,8 +512,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             apiVersion,
             httpClient,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -601,9 +538,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         int? dimensions = null,
         string? openTelemetrySourceName = null,
-        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig =
-            null
-    )
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -614,8 +549,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             modelId,
             dimensions,
             openTelemetrySourceName,
-            openTelemetryConfig
-        );
+            openTelemetryConfig);
 
         return builder;
     }
@@ -645,26 +579,21 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextToAudioService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextToAudioService(
-                    deploymentName,
-                    endpoint,
-                    apiKey,
-                    modelId,
-                    HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                    serviceProvider.GetService<ILoggerFactory>(),
-                    apiVersion
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToAudioService(
+                deploymentName,
+                endpoint,
+                apiKey,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
 
         return builder;
     }
@@ -694,8 +623,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         string? serviceId = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -708,8 +636,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             modelId,
             serviceId,
             apiVersion,
-            httpClient
-        );
+            httpClient);
 
         return builder;
     }
@@ -735,8 +662,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         string? serviceId = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null
-    )
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -749,8 +675,7 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             serviceId: serviceId,
             modelId: modelId,
             apiVersion: apiVersion,
-            httpClient: httpClient
-        );
+            httpClient: httpClient);
 
         return builder;
     }
@@ -770,22 +695,17 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string deploymentName,
         AzureOpenAIClient? azureOpenAIClient = null,
         string? modelId = null,
-        string? serviceId = null
-    )
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        builder.Services.AddKeyedSingleton<ITextToImageService>(
-            serviceId,
-            (serviceProvider, _) =>
-                new AzureOpenAITextToImageService(
-                    deploymentName,
-                    azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
-                    modelId,
-                    serviceProvider.GetService<ILoggerFactory>()
-                )
-        );
+        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                modelId,
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
@@ -815,32 +735,22 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (
-            serviceProvider,
-            _
-        ) =>
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 new ApiKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                apiVersion
-            );
+                apiVersion);
 
-            return new(
-                deploymentName,
-                client,
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -869,32 +779,22 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? serviceId = null,
         string? modelId = null,
         HttpClient? httpClient = null,
-        string? apiVersion = null
-    )
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
-        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (
-            serviceProvider,
-            _
-        ) =>
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                apiVersion
-            );
+                apiVersion);
 
-            return new(
-                deploymentName,
-                client,
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -917,22 +817,13 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string deploymentName,
         AzureOpenAIClient? openAIClient = null,
         string? serviceId = null,
-        string? modelId = null
-    )
+        string? modelId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (
-            serviceProvider,
-            _
-        ) =>
-            new(
-                deploymentName,
-                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>()
-            );
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
+            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -951,11 +842,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIImageGenerator(
@@ -964,12 +854,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null,
-        string? openTelemetrySourceName = null
-    // Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -978,12 +866,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             endpoint,
             apiKey,
             serviceId,
-            modelId,
             apiVersion,
             httpClient,
-            openTelemetrySourceName
-        //openTelemetryConfig
-        );
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
@@ -996,11 +882,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIImageGenerator(
@@ -1009,12 +894,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null,
-        string? openTelemetrySourceName = null
-    //Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -1023,12 +906,10 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             endpoint,
             credentials,
             serviceId,
-            modelId,
             apiVersion,
             httpClient,
-            openTelemetrySourceName
-        //openTelemetryConfig
-        );
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
@@ -1040,9 +921,8 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
-    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IImageGenerator"/> instance.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIImageGenerator(
@@ -1050,10 +930,8 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string deploymentName,
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
-        string? modelId = null,
-        string? openTelemetrySourceName = null
-    //Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null
-    )
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -1061,36 +939,17 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             deploymentName,
             azureOpenAIClient,
             serviceId,
-            modelId,
-            openTelemetrySourceName
-        //openTelemetryConfig
-        );
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
 
     #endregion
-    private static AzureOpenAIClient CreateAzureOpenAIClient(
-        string endpoint,
-        ApiKeyCredential credentials,
-        HttpClient? httpClient,
-        string? apiVersion
-    ) =>
-        new(
-            new Uri(endpoint),
-            credentials,
-            AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion)
-        );
 
-    private static AzureOpenAIClient CreateAzureOpenAIClient(
-        string endpoint,
-        TokenCredential credentials,
-        HttpClient? httpClient,
-        string? apiVersion
-    ) =>
-        new(
-            new Uri(endpoint),
-            credentials,
-            AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion)
-        );
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
+
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 }
