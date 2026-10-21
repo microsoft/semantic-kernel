@@ -25,9 +25,38 @@ public class SessionsPythonSettings
     public Uri Endpoint { get; set; }
 
     /// <summary>
-    /// List of allowed domains to download from.
+    /// Gets or sets the domains to which the plugin may send requests.
+    /// If <c>null</c> or empty, all requests are denied.
     /// </summary>
+    /// <remarks>
+    /// Configure the HTTP client factory used by <see cref="SessionsPythonPlugin"/> with automatic redirects disabled
+    /// to prevent redirects from bypassing this allowlist.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether dangerous file upload operations are enabled.
+    /// Default is <c>false</c>. Must be set to <c>true</c> along with configuring
+    /// <see cref="AllowedUploadDirectories"/> to enable file uploads.
+    /// </summary>
+    [JsonIgnore]
+    public bool EnableDangerousFileUploads { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of allowed local directories for file uploads.
+    /// When <see cref="EnableDangerousFileUploads"/> is <c>true</c>, only files within these directories can be uploaded.
+    /// If <c>null</c> or empty, file uploads are denied.
+    /// </summary>
+    [JsonIgnore]
+    public IEnumerable<string>? AllowedUploadDirectories { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of allowed local directories for file downloads.
+    /// If configured, files can only be downloaded to these directories.
+    /// If <c>null</c> or empty, all paths are allowed (permissive by default).
+    /// </summary>
+    [JsonIgnore]
+    public IEnumerable<string>? AllowedDownloadDirectories { get; set; }
 
     /// <summary>
     /// The session identifier.

@@ -265,9 +265,15 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 3. **Direct Constructor Input:**
    - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
 
-## Microsoft Entra Token Authentication
+## Azure Authentication
 
-To authenticate to your Azure resources using a Microsoft Entra Authentication Token, the `AzureChatCompletion` AI Service connector now supports this as a built-in feature. If you do not provide an API key -- either through an environment variable, a `.env` file, or the constructor -- and you also do not provide a custom `AsyncAzureOpenAI` client, an `ad_token`, or an `ad_token_provider`, the `AzureChatCompletion` connector will attempt to retrieve a token using the [`DefaultAzureCredential`](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
+To authenticate to your Azure resources, you must provide one of the following authentication methods to successfully authenticate:
+
+1. **AsyncTokenCredential** - provide one of the `AsyncTokenCredential` types (e.g. `AzureCliCredential`, `ManagedIdentityCredential`). More information here: [Credentials for asynchronous Azure SDK clients]("https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.aio?view=azure-python").
+2. **Custom AsyncAzureOpenAI client** - Pass a pre-configured client instance.
+3. **Access Token (`ad_token`)** - Provide a valid Microsoft Entra access token directly.
+4. **Token Provider (`ad_token_provider`)** - Provide a callable that returns a valid access token.
+5. **API Key** - Provide through an environment variable, a `.env` file, or the constructor.
 
 To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 

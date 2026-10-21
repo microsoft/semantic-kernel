@@ -5,10 +5,14 @@ from abc import ABC
 from typing import Any, ClassVar, Union
 
 from openai import AsyncOpenAI, AsyncStream
-from openai.types import CreateEmbeddingResponse
+from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.completion import Completion
+from openai.types.create_embedding_response import CreateEmbeddingResponse
 
-from semantic_kernel.connectors.ai.nvidia import (
-    NvidiaPromptExecutionSettings,
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaChatPromptExecutionSettings,
+    NvidiaEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -18,7 +22,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-RESPONSE_TYPE = Union[list[Any],]
+RESPONSE_TYPE = Union[list[Any], ChatCompletion, Completion, AsyncStream[Any]]
 
 
 class NvidiaHandler(KernelBaseModel, ABC):
@@ -26,22 +30,23 @@ class NvidiaHandler(KernelBaseModel, ABC):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "nvidia"
     client: AsyncOpenAI
-    ai_model_type: NvidiaModelTypes = (
-        NvidiaModelTypes.EMBEDDING
-    )  # TODO: revert this to chat after adding support for chat-compl  # noqa: TD002
-    prompt_tokens: int = 0
+    ai_model_type: NvidiaModelTypes = NvidiaModelTypes.CHAT
     completion_tokens: int = 0
     total_tokens: int = 0
+    prompt_tokens: int = 0
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the Nvidia API."""
         if self.ai_model_type == NvidiaModelTypes.EMBEDDING:
-            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
+        if self.ai_model_type == NvidiaModelTypes.CHAT:
+            assert isinstance(settings, NvidiaChatPromptExecutionSettings)  # nosec
+            return await self._send_chat_completion_request(settings)
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
 
-    async def _send_embedding_request(self, settings: NvidiaPromptExecutionSettings) -> list[Any]:
+    async def _send_embedding_request(self, settings: NvidiaEmbeddingPromptExecutionSettings) -> list[Any]:
         """Send a request to the OpenAI embeddings endpoint."""
         try:
             # unsupported parameters are internally excluded from main dict and added to extra_body
@@ -55,9 +60,35 @@ class NvidiaHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
+    async def _send_chat_completion_request(
+        self, settings: NvidiaChatPromptExecutionSettings
+    ) -> ChatCompletion | AsyncStream[Any]:
+        """Send a request to the NVIDIA chat completion endpoint."""
+        try:
+            settings_dict = settings.prepare_settings_dict()
+
+            # Handle structured output if nvext is present in extra_body
+            if settings.extra_body and "nvext" in settings.extra_body:
+                if "extra_body" not in settings_dict:
+                    settings_dict["extra_body"] = {}
+                settings_dict["extra_body"]["nvext"] = settings.extra_body["nvext"]
+
+            response = await self.client.chat.completions.create(**settings_dict)
+            self.store_usage(response)
+            return response
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the chat",
+                ex,
+            ) from ex
+
     def store_usage(
         self,
-        response: CreateEmbeddingResponse,
+        response: ChatCompletion
+        | Completion
+        | AsyncStream[ChatCompletionChunk]
+        | AsyncStream[Completion]
+        | CreateEmbeddingResponse,
     ):
         """Store the usage information from the response."""
         if not isinstance(response, AsyncStream) and response.usage:

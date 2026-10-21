@@ -13,7 +13,7 @@ https://eastus.acasessions.io/subscriptions/{{subscriptionId}}/resourceGroups/{{
 ```
 
 You can also provide the the `ACA_TOKEN_ENDPOINT` if you want to override the default value of `https://acasessions.io/.default`. If this token endpoint doesn't need to be overridden, then it is
-not necessary to include this as an environment variable, in the .env file, or via the plugin's constructor. Please follow the [Azure Container Apps Documentation](https://learn.microsoft.com/en-us/azure/container-apps/sessions-code-interpreter) to review the proper role required to authenticate with the `DefaultAzureCredential`.
+not necessary to include this as an environment variable, in the .env file, or via the plugin's constructor. Please follow the [Azure Container Apps Documentation](https://learn.microsoft.com/en-us/azure/container-apps/sessions-code-interpreter) to review the proper role required to authenticate with the `AsyncTokenCredential`.
 
 Next, let's move on to implementing the plugin in code. It is possible to add the code interpreter plugin as follows:
 
@@ -40,19 +40,19 @@ print(result)
 
 Instead of hard-coding a well-formatted Python code string, you may use automatic function calling inside of SK and allow the model to form the Python and call the plugin.
 
-The authentication callback must return a valid token for the session pool. One possible way of doing this with a `DefaultAzureCredential` is as follows:
+The authentication callback must return a valid token for the session pool. One possible way of doing this with a `AzureCliCredential` is as follows:
 
 ```python
 async def auth_callback() -> str:
     """Auth callback for the SessionsPythonTool.
-    This is a sample auth callback that shows how to use Azure's DefaultAzureCredential
+    This is a sample auth callback that shows how to use Azure's AzureCliCredential
     to get an access token.
     """
     global auth_token
     current_utc_timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
     if not auth_token or auth_token.expires_on < current_utc_timestamp:
-        credential = DefaultAzureCredential()
+        credential = AzureCliCredential()
 
         try:
             auth_token = credential.get_token(ACA_TOKEN_ENDPOINT)

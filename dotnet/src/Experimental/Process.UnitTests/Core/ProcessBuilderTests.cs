@@ -168,6 +168,37 @@ public class ProcessBuilderTests
     }
 
     /// <summary>
+    /// Tests that AddStepFromType(Type) throws ArgumentException for non-KernelProcessStep types.
+    /// </summary>
+    [Fact]
+    public void AddStepFromTypeWithInvalidTypeThrowsArgumentException()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => processBuilder.AddStepFromType(typeof(string)));
+        Assert.Contains("must be a subclass of KernelProcessStep", ex.Message);
+    }
+
+    /// <summary>
+    /// Tests that AddStepFromType(Type) succeeds for valid KernelProcessStep types.
+    /// </summary>
+    [Fact]
+    public void AddStepFromTypeWithValidTypeAddsStep()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+
+        // Act
+        var stepBuilder = processBuilder.AddStepFromType(typeof(TestStep), StepName);
+
+        // Assert
+        Assert.Single(processBuilder.Steps);
+        Assert.Equal(StepName, stepBuilder.Name);
+    }
+
+    /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
     private sealed class TestStep : KernelProcessStep<TestState>

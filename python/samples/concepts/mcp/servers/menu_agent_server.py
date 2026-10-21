@@ -9,6 +9,7 @@ import logging
 from typing import Annotated, Any, Literal
 
 import anyio
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -126,7 +127,7 @@ class RestaurantPlugin:
 
 async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -> None:
     agent = ChatCompletionAgent(
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
         name="Host",
         instructions="Answer questions about the menu for different restaurants, use the list_restaurants function "
         "to get the list of restaurants.",

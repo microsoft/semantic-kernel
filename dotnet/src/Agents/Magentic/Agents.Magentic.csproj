@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.Magentic</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Magentic</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks> 
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks> 
     <NoWarn>$(NoWarn);IDE1006;SKEXP0110;SKEXP0001</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>preview</VersionSuffix>

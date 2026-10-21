@@ -180,6 +180,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
     [InlineData("us-central1-a")]
     [InlineData("northamerica-northeast1")]
     [InlineData("australia-southeast1")]
+    [InlineData("global")]
     public void ItAcceptsValidHostnameSegments(string validLocation)
     {
         // Arrange
@@ -203,6 +204,52 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         });
 
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ShouldUseGlobalEndpointWhenLocationIsGlobalAsync()
+    {
+        // Arrange
+        var client = new VertexAIEmbeddingClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            bearerTokenProvider: () => ValueTask.FromResult("fake-key"),
+            apiVersion: VertexAIVersion.V1,
+            location: "global",
+            projectId: "fake-project-id");
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/global/", requestUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ShouldUseRegionalEndpointWhenLocationIsRegionalAsync()
+    {
+        // Arrange
+        var client = new VertexAIEmbeddingClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            bearerTokenProvider: () => ValueTask.FromResult("fake-key"),
+            apiVersion: VertexAIVersion.V1,
+            location: "us-central1",
+            projectId: "fake-project-id");
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        var requestUri = this._messageHandlerStub.RequestUri.ToString();
+        Assert.StartsWith("https://us-central1-aiplatform.googleapis.com/", requestUri);
+        Assert.Contains("/locations/us-central1/", requestUri, StringComparison.Ordinal);
     }
 
     private VertexAIEmbeddingClient CreateEmbeddingsClient(

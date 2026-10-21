@@ -313,7 +313,8 @@ public sealed class OpenAIFunction
         {
             return;
         }
-        if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
+        if (typeValue is JsonArray jsonArray &&
+            !jsonArray.Any(static x => x is JsonValue jv && jv.GetValueKind() == JsonValueKind.String && jv.GetValue<string>() == NullType))
         {
             jsonArray.Add(NullType);
         }

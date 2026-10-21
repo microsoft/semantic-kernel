@@ -14,7 +14,7 @@ Once you have an API key, you can start using Gemini models in SK using the `goo
 kernel = Kernel()
 kernel.add_service(
     GoogleAIChatCompletion(
-        gemini_model_id="gemini-1.5-flash",
+        gemini_model_id="gemini-2.5-flash",
         api_key="...",
     )
 )
@@ -39,9 +39,11 @@ Once you have your project and your environment is set up, you can start using G
 ```Python
 kernel = Kernel()
 kernel.add_service(
-    VertexAIChatCompletion(
+    GoogleAIChatCompletion(
         project_id="...",
-        gemini_model_id="gemini-1.5-flash",
+        region="...",
+        gemini_model_id="gemini-2.5-flash",
+        use_vertexai=True,
     )
 )
 ...

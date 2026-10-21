@@ -38,6 +38,7 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
@@ -222,6 +223,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             "handlebars",
             "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
+        prompt_template_config: PromptTemplateConfig | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Invoke a function from the provided prompt.
@@ -232,6 +234,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -247,6 +250,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
+            prompt_template_config=prompt_template_config,
         )
         return await self.invoke(function=function, arguments=arguments)
 
@@ -262,6 +266,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         return_function_results: bool | None = False,
+        prompt_template_config: PromptTemplateConfig | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
         """Invoke a function from the provided prompt and stream the results.
@@ -273,6 +278,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -290,6 +296,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
+            prompt_template_config=prompt_template_config,
         )
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
@@ -340,6 +347,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                     raise FunctionExecutionException(
                         f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                     )
+            elif function_behavior is None:
+                logger.debug(
+                    "invoke_function_call called without function_behavior. "
+                    "No allowlist validation will be performed for function '%s'. "
+                    "Pass a FunctionChoiceBehavior with filters to enable validation.",
+                    function_call.name,
+                )
             function_to_call = self.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
@@ -409,7 +423,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info("Calling %s function.", function_call.name)
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -461,7 +475,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.error(
+                "Error invoking function %s. Error type: %s.",
+                context.function.fully_qualified_name,
+                type(exc).__name__,
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value
@@ -536,9 +554,23 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         New lists of plugins and filters are created. It will not affect the original lists when the new instance
         is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
         instance is mutated.
+
+        Important: Plugins are cloned without deep-copying their underlying callable methods. This avoids attempting
+        to pickle/clone unpickleable objects (e.g., async generators), which can be present when plugins wrap async
+        context managers such as MCP client sessions. Function metadata is deep-copied while callables are shared.
         """
+        # Safely clone plugins by copying function metadata while retaining callable references.
+        # This avoids deepcopying bound methods that may reference unpickleable async components.
+        new_plugins: dict[str, KernelPlugin] = {}
+        for plugin_name, plugin in self.plugins.items():
+            cloned_plugin = KernelPlugin(name=plugin.name, description=plugin.description)
+            # Using KernelPlugin.add will copy functions via KernelFunction.function_copy(),
+            # which deep-copies metadata but keeps callables shallow.
+            cloned_plugin.add(plugin.functions)
+            new_plugins[plugin_name] = cloned_plugin
+
         return Kernel(
-            plugins=deepcopy(self.plugins),
+            plugins=new_plugins,
             # Shallow copy of the services, as they are not serializable
             services={k: v for k, v in self.services.items()},
             ai_service_selector=deepcopy(self.ai_service_selector),
@@ -556,6 +588,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
         excluded_functions: OptionalOneOrMany[str] = None,
+        *,
+        use_plugin_names: bool = False,
         **kwargs: Any,
     ) -> "Server":
         """Create a MCP server from this kernel.
@@ -563,9 +597,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-        By default, all functions are exposed as Tools, you can control this by
-        using use the `excluded_functions` argument.
-        These need to be set to the function name, without the plugin_name.
+        By default, functions are exposed as Tools using bare function names.
+        Duplicate names retain the first function and produce a warning.
+        Set `use_plugin_names=True` to expose `<registered_plugin_name>-<function_name>` tool names.
+        The `excluded_functions` argument always uses bare function names.
+        Tool names over MCP's recommended 128 characters are exposed with a warning.
 
         Args:
             kernel: The kernel instance to use.
@@ -576,6 +612,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             lifespan: The lifespan of the server.
             excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
+            use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
+                Defaults to False.
             kwargs: Any extra arguments to pass to the server creation.
 
         Returns:
@@ -593,5 +631,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             instructions=instructions,
             lifespan=lifespan,
             excluded_functions=excluded_functions,
+            use_plugin_names=use_plugin_names,
             **kwargs,
         )

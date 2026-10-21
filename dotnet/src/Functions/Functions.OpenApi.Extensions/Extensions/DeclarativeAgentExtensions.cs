@@ -112,7 +112,7 @@ public static class DeclarativeAgentExtensions
         {
             return source;
         }
-#if NETCOREAPP3_0_OR_GREATER
+#if NET
         var filePath = source[8..^3];
 #else
         var filePath = source.Substring(8, source.Length - 11);

@@ -4,7 +4,7 @@ import asyncio
 import os
 
 from azure.ai.agents.models import FileInfo, FileSearchTool, VectorStore
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import AuthorRole
@@ -24,7 +24,7 @@ USER_INPUTS = [
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Read and upload the file to the Azure AI agent service

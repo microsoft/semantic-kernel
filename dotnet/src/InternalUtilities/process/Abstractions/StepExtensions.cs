@@ -118,10 +118,10 @@ internal static class StepExtensions
             throw new KernelException("Internal Error: The step has not been initialized.").Log(logger);
         }
 
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
+        Dictionary<string, Dictionary<string, object?>?> inputs = [];
         foreach (var kvp in functions)
         {
-            inputs[kvp.Key] = new();
+            inputs[kvp.Key] = [];
             foreach (var param in kvp.Value.Metadata.Parameters)
             {
                 // Optional parameters are should not be added to the input dictionary.

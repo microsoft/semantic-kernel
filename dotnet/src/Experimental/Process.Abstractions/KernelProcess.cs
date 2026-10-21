@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -50,5 +51,9 @@ public sealed record KernelProcess : KernelProcessStepInfo
         Verify.NotNullOrWhiteSpace(state.Name);
 
         this.Steps = [.. steps];
+        if (threads is not null)
+        {
+            this.Threads = threads.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
     }
 }

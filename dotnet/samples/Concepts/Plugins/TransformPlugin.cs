@@ -151,7 +151,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     public static KernelPlugin CreatePluginWithParameters(KernelPlugin plugin, IncludeKernelParameter includeKernelParameter, UpdateKernelArguments updateKernelArguments)
     {
-        List<KernelFunction>? functions = new();
+        List<KernelFunction>? functions = [];
 
         foreach (KernelFunction function in plugin)
         {
@@ -189,7 +189,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private static List<KernelParameterMetadata> CreateParameterMetadataWithParameters(IReadOnlyList<KernelParameterMetadata> parameters, IncludeKernelParameter includeKernelParameter)
     {
-        List<KernelParameterMetadata>? parametersToInclude = new();
+        List<KernelParameterMetadata>? parametersToInclude = [];
         foreach (var parameter in parameters)
         {
             if (includeKernelParameter(parameter))

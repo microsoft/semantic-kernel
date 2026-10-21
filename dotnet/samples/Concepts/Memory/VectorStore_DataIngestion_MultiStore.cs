@@ -3,14 +3,14 @@
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using CommunityToolkit.VectorData.InMemory;
+using CommunityToolkit.VectorData.Qdrant;
+using CommunityToolkit.VectorData.Redis;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Redis;
 using Qdrant.Client;
 using StackExchange.Redis;
 
@@ -80,7 +80,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
         // Redis and InMemory supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
-        if (databaseType == "Redis" || databaseType == "InMemory")
+        if (databaseType is "Redis" or "InMemory")
         {
             await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid().ToString());
         }
@@ -133,7 +133,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
         // Redis and InMemory supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
-        if (databaseType == "Redis" || databaseType == "InMemory")
+        if (databaseType is "Redis" or "InMemory")
         {
             await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid().ToString());
         }

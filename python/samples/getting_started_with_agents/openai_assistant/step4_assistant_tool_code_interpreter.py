@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
@@ -16,7 +18,7 @@ TASK = "Use code to determine the values in the Fibonacci sequence that that are
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # 2. Configure the code interpreter tool and resources for the Assistant
     code_interpreter_tool, code_interpreter_tool_resources = AzureAssistantAgent.configure_code_interpreter_tool()

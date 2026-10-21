@@ -12,11 +12,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class OpenAIResponseExtensions
 {
     /// <summary>
-    /// Converts a <see cref="OpenAIResponse"/> instance to a <see cref="ChatMessageContent"/>.
+    /// Converts a <see cref="ResponseResult"/> instance to a <see cref="ChatMessageContent"/>.
     /// </summary>
     /// <param name="response">The response to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this OpenAIResponse response)
+    public static ChatMessageContent ToChatMessageContent(this ResponseResult response)
     {
         var messageItem = response.OutputItems
             .FirstOrDefault(item => item is MessageResponseItem);
@@ -27,8 +27,7 @@ internal static class OpenAIResponseExtensions
         var kernelContents = response.OutputItems
             .SelectMany(item => item.ToChatMessageContentItemCollection())
             .ToList();
-        ChatMessageContentItemCollection items = new();
-        items.AddRange(kernelContents);
+        ChatMessageContentItemCollection items = [.. kernelContents];
 
         return new ChatMessageContent(
             role,
@@ -175,7 +174,7 @@ internal static class OpenAIResponseExtensions
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in content)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText || part.Kind == ResponseContentPartKind.InputText)
+            if (part.Kind is ResponseContentPartKind.OutputText or ResponseContentPartKind.InputText)
             {
                 collection.Add(new TextContent(part.Text, innerContent: part));
             }
@@ -195,14 +194,14 @@ internal static class OpenAIResponseExtensions
         return collection;
     }
 
-    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IReadOnlyList<ReasoningSummaryPart> parts)
+    private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ReasoningSummaryPart> parts)
     {
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in parts)
         {
             if (part is ReasoningSummaryTextPart text)
             {
-                collection.Add(new TextContent(text.Text, innerContent: text));
+                collection.Add(new ReasoningContent(text.Text) { InnerContent = text });
             }
         }
         return collection;

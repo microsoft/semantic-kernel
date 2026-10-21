@@ -102,7 +102,7 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected async override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
+    protected override async Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
         const string ErrorMessage = "The thread could not be created due to an error response from the service.";
 

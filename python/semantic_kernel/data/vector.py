@@ -1316,7 +1316,9 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         try:
             results = await self._inner_upsert(data if isinstance(data, list) else [data], **kwargs)  # type: ignore
         except Exception as exc:
-            raise VectorStoreOperationException(f"Error upserting record(s): {exc}") from exc
+            raise VectorStoreOperationException(
+                f"Error upserting record(s) into collection '{self.collection_name}': {exc}"
+            ) from exc
         if batch or self._container_mode:
             return results
         return results[0]

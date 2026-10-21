@@ -5,6 +5,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
 from typing import Any
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
 from pydantic_core import Url
@@ -39,6 +40,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
         instruction_role: str | None = None,
+        credential: TokenCredential | None = None,
         **kwargs: Any,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
@@ -62,6 +64,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
             instruction_role (str | None): The role to use for 'instruction' messages, for example, summarization
                 prompts could use `developer` or `system`. (Optional)
+            credential: The credential to use for authentication. (Optional)
             kwargs: Additional keyword arguments.
 
         """
@@ -75,12 +78,12 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             # If the client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
             # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI
             # settings.
-            if not api_key and not ad_token_provider and not ad_token and token_endpoint:
-                ad_token = get_entra_auth_token(token_endpoint)
+            if not api_key and not ad_token_provider and not ad_token and token_endpoint and credential:
+                ad_token = get_entra_auth_token(credential, token_endpoint)
 
-            if not api_key and not ad_token and not ad_token_provider:
+            if not api_key and not ad_token and not ad_token_provider and not credential:
                 raise ServiceInitializationError(
-                    "Please provide either api_key, ad_token or ad_token_provider or a client."
+                    "Please provide either api_key, ad_token, ad_token_provider, credential or a client."
                 )
 
             if not endpoint and not base_url:

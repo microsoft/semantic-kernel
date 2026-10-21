@@ -71,7 +71,13 @@ internal sealed class HandoffActor :
             new()
             {
                 Kernel = kernel,
-                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                KernelArguments = new(new PromptExecutionSettings
+                {
+                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new()
+                    {
+                        RetainArgumentTypes = true,
+                    })
+                }),
                 OnIntermediateMessage = messageHandler,
             };
 

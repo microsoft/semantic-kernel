@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import (
     ChatCompletionAgent,
 )
@@ -40,7 +42,7 @@ async def main():
     agent = ChatCompletionAgent(
         name="NumeroTranslator",
         instructions="Add one to the latest user number and spell it in Spanish without explanation.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=AzureCliCredential()),
     )
 
     # Number of messages to simulate

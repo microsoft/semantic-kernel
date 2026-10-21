@@ -35,6 +35,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="description">The description to use for the function.</param>
     /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
+    /// <param name="promptTemplateConfig">Optional: Prompt template config</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -46,6 +47,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         string? description = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
+        PromptTemplateConfig? promptTemplateConfig = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(promptTemplate);
@@ -58,7 +60,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
 
-        var promptConfig = new PromptTemplateConfig
+        if (promptTemplateConfig is not null && string.IsNullOrWhiteSpace(promptTemplateConfig.Template))
+        {
+            promptTemplateConfig.Template = promptTemplate;
+        }
+
+        var promptConfig = promptTemplateConfig ?? new PromptTemplateConfig
         {
             TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
             Name = functionName,
@@ -89,6 +96,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="description">The description to use for the function.</param>
     /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
+    /// <param name="promptTemplateConfig">Optional: Prompt template config</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction Create(
@@ -99,6 +107,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         string? description = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
+        PromptTemplateConfig? promptTemplateConfig = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(promptTemplate);
@@ -111,7 +120,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
 
-        var promptConfig = new PromptTemplateConfig
+        if (promptTemplateConfig is not null && string.IsNullOrWhiteSpace(promptTemplateConfig.Template))
+        {
+            promptTemplateConfig.Template = promptTemplate;
+        }
+
+        var promptConfig = promptTemplateConfig ?? new PromptTemplateConfig
         {
             TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
             Name = functionName,

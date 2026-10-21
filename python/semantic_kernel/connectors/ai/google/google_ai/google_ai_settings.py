@@ -28,10 +28,19 @@ class GoogleAISettings(KernelBaseSettings):
     - api_key: SecretStr - The API key for the Google AI service deployment.
                 This value can be found in the Google AI service deployment.
                 (Env var GOOGLE_AI_API_KEY)
+    - cloud_project_id: str - The Google Cloud project ID.
+                (Env var GOOGLE_AI_CLOUD_PROJECT_ID)
+    - cloud_region: str - The Google Cloud region.
+                (Env var GOOGLE_AI_CLOUD_REGION)
+    - use_vertexai: bool - Whether to use Vertex AI. If true, cloud_project_id and cloud_region must be provided.
+                (Env var GOOGLE_AI_USE_VERTEXAI)
     """
 
     env_prefix: ClassVar[str] = "GOOGLE_AI_"
 
     gemini_model_id: str | None = None
     embedding_model_id: str | None = None
-    api_key: SecretStr
+    api_key: SecretStr | None = None
+    cloud_project_id: str | None = None
+    cloud_region: str | None = None
+    use_vertexai: bool = False

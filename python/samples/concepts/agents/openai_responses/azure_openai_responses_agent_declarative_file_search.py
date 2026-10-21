@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 
 """
@@ -31,7 +33,7 @@ tools:
 
 async def main():
     # Setup the Azure OpenAI client
-    client = AzureResponsesAgent.create_client()
+    client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
 
     # Read and upload the file to the OpenAI AI service
     pdf_file_path = os.path.join(

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using A2A;
 
 namespace SemanticKernel.Agents.UnitTests.A2A;
+
 public class BaseA2AClientTest : IDisposable
 {
     internal MultipleHttpMessageHandlerStub MessageHandlerStub { get; }

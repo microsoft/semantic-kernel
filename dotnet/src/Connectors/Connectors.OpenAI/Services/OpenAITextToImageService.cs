@@ -36,7 +36,7 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId ?? "dall-e-2", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(modelId ?? "gpt-image-1", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
     /// <inheritdoc/>

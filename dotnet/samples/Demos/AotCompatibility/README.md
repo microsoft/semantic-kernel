@@ -37,12 +37,3 @@ At the moment, the following Semantic Kernel packages are AOT compatible:
 | Connectors.Onnx            | ✔️              |  
 
 Other packages are not AOT compatible yet, but we plan to make them compatible in the future.
-
-### Known Issues
-#### 1. KernelFunction JSON Schema
-Semantic Kernel uses System.Text.Json (STJ) v8 to generate JSON schemas for the parameters and return types of kernel plugin functions.
-
-However, because STJ v8 uses reflection to resolve certain metadata, such as nullability annotations and constructor parameters,
-it produces an incorrect JSON Schema in Native-AOT scenarios. For more details, see the following issue: [Incorrect type schema ...](https://github.com/eiriktsarpalis/stj-schema-mapper/issues/7).
-
-This issue can be worked around by disabling the `IlcTrimMetadata` property in the application's project; however, this may increase the size of the application.

@@ -53,13 +53,13 @@
     "Endpoint": ""
   },
   "OpenAITextToImage": {
-    "ServiceId": "dall-e-2",
-    "ModelId": "dall-e-2",
+    "ServiceId": "gpt-image-1",
+    "ModelId": "gpt-image-1",
     "ApiKey": ""
   },
   "AzureOpenAITextToImage": {
-    "ServiceId": "azure-dalle3",
-    "DeploymentName": "Dalle3",
+    "ServiceId": "azure-gpt-image-1",
+    "DeploymentName": "gpt-image-1",
     "Endpoint": ""
   },
   "HuggingFace": {

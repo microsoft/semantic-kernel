@@ -23,6 +23,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai",
         ),
         pytest.param(
@@ -69,7 +70,10 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "vertex_ai",
             {},
-            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI environment variables not set"),
+            marks=(
+                pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI environment variables not set"),
+                pytest.mark.timeout(300),  # Vertex AI may take longer time
+            ),
             id="vertex_ai",
         ),
         pytest.param(

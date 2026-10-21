@@ -33,7 +33,13 @@ prompt_template_config = PromptTemplateConfig(
     description="Chat with the assistant",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history", description="The conversation history", is_required=False, default=""),
+        InputVariable(
+            name="chat_history",
+            description="The conversation history",
+            is_required=False,
+            default="",
+            allow_dangerously_set_content=True,
+        ),
         InputVariable(name="request", description="The user's request", is_required=True),
     ],
     execution_settings=OpenAIChatPromptExecutionSettings(service_id=model, max_tokens=4000, temperature=0.2),

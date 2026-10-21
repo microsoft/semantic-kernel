@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from typing import Any, TypeVar
 
+from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
@@ -34,6 +35,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        credential: TokenCredential | None = None,
     ) -> None:
         """Initialize an AzureAudioToText service.
 
@@ -58,6 +60,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
             env_file_path: Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding: The encoding of the environment settings file. (Optional)
+            credential: The credential to use for authentication. (Optional)
         """
         try:
             azure_openai_settings = AzureOpenAISettings(
@@ -88,6 +91,7 @@ class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.AUDIO_TO_TEXT,
             client=async_client,
+            credential=credential,
         )
 
     @classmethod

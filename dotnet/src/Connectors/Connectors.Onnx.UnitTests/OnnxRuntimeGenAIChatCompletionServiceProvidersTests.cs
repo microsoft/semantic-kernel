@@ -32,7 +32,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
             new OnnxRuntimeGenAIChatCompletionService(TestModelId, TestModelPath, providers));
 
         // The exception should not be from parameter validation (ArgumentException/ArgumentNullException)
-        Assert.False(exception is ArgumentException || exception is ArgumentNullException,
+        Assert.False(exception is ArgumentException or ArgumentNullException,
             "Constructor should not fail due to parameter validation when valid parameters are provided");
     }
 
@@ -114,7 +114,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
             new OnnxRuntimeGenAIChatCompletionService(TestModelId, TestModelPath, providers));
 
         // The exception should not be from parameter validation
-        Assert.False(exception is ArgumentException || exception is ArgumentNullException,
+        Assert.False(exception is ArgumentException or ArgumentNullException,
             "Constructor should not fail due to parameter validation when valid parameters are provided");
     }
 
@@ -134,7 +134,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
             new OnnxRuntimeGenAIChatCompletionService(TestModelId, TestModelPath, providers));
 
         // The exception should not be from parameter validation
-        Assert.False(exception is ArgumentException || exception is ArgumentNullException,
+        Assert.False(exception is ArgumentException or ArgumentNullException,
             "Constructor should not fail due to parameter validation when valid parameters are provided");
     }
 
@@ -152,7 +152,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
             new OnnxRuntimeGenAIChatCompletionService(TestModelId, TestModelPath, providers));
 
         // The exception should not be from parameter validation
-        Assert.False(exception is ArgumentException || exception is ArgumentNullException,
+        Assert.False(exception is ArgumentException or ArgumentNullException,
             "Constructor should not fail due to parameter validation when valid parameters are provided");
     }
 
@@ -171,7 +171,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceProvidersTests
             new OnnxRuntimeGenAIChatCompletionService(TestModelId, TestModelPath, providers));
 
         // The exception should not be from parameter validation
-        Assert.False(exception is ArgumentException || exception is ArgumentNullException,
+        Assert.False(exception is ArgumentException or ArgumentNullException,
             "Constructor should not fail due to parameter validation when valid parameters are provided");
     }
 

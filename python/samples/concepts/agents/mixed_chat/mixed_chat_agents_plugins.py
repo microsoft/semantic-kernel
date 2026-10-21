@@ -3,6 +3,9 @@
 import asyncio
 from typing import Annotated
 
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
@@ -75,15 +78,16 @@ class MenuPlugin:
         return "$9.99"
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+def _create_kernel_with_chat_completion(service_id: str, credential: TokenCredential) -> Kernel:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
     return kernel
 
 
 async def main():
-    kernel = _create_kernel_with_chat_completion("artdirector")
+    credential = AzureCliCredential()
+    kernel = _create_kernel_with_chat_completion("artdirector", credential)
     settings = kernel.get_prompt_execution_settings_from_service_id(service_id="artdirector")
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
@@ -95,7 +99,7 @@ async def main():
     )
 
     # Create the Assistant Agent using Azure OpenAI resources
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=credential)
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(
@@ -105,10 +109,7 @@ async def main():
     )
 
     # Create the AzureAssistantAgent instance using the client and the assistant definition
-    agent_writer = AzureAssistantAgent(
-        client=client,
-        definition=definition,
-    )
+    agent_writer = AzureAssistantAgent(client=client, definition=definition)
 
     chat = AgentGroupChat(
         agents=[agent_writer, agent_reviewer],

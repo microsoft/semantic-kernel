@@ -3,7 +3,7 @@
 import asyncio
 
 from azure.ai.agents.models import McpTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
@@ -28,7 +28,7 @@ async def handle_intermediate_messages(message: ChatMessageContent) -> None:
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Define the MCP tool with the server URL
@@ -40,6 +40,8 @@ async def main() -> None:
 
         # Optionally you may configure to require approval
         # Allowed values are "never" or "always"
+        # When set to "always", Semantic Kernel asks the `mcp_tool_approval_callback` configured on the
+        # agent before each MCP tool call, and denies the call if no callback is configured.
         mcp_tool.set_approval_mode("never")
 
         # 2. Create an agent with the MCP tool on the Azure AI agent service

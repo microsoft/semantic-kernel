@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -50,7 +50,7 @@ settings = AzureAIAgentSettings()  # ChatModelId comes from .env/env vars
 
 async def main():
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         try:

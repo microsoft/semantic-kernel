@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -33,8 +35,10 @@ kernel = Kernel()
 # The filter is used for demonstration purposes to show the function invocation.
 kernel.add_filter("function_invocation", function_invocation_filter)
 
+credential = AzureCliCredential()
+
 billing_agent = ChatCompletionAgent(
-    service=AzureChatCompletion(),
+    service=AzureChatCompletion(credential=credential),
     name="BillingAgent",
     instructions=(
         "You specialize in handling customer questions related to billing issues. "
@@ -46,7 +50,7 @@ billing_agent = ChatCompletionAgent(
 )
 
 refund_agent = ChatCompletionAgent(
-    service=AzureChatCompletion(),
+    service=AzureChatCompletion(credential=credential),
     name="RefundAgent",
     instructions=(
         "You specialize in addressing customer inquiries regarding refunds. "
@@ -58,7 +62,7 @@ refund_agent = ChatCompletionAgent(
 )
 
 triage_agent = ChatCompletionAgent(
-    service=AzureChatCompletion(),
+    service=AzureChatCompletion(credential=credential),
     kernel=kernel,
     name="TriageAgent",
     instructions=(

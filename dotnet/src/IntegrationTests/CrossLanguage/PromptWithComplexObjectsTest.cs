@@ -30,10 +30,17 @@ public class PromptWithComplexObjectsTest
         using var kernelProvider = new KernelRequestTracer();
         Kernel kernel = kernelProvider.GetNewKernel();
 
+        var promptTemplateConfig = new PromptTemplateConfig
+        {
+            Template = prompt,
+            TemplateFormat = templateFormat,
+            AllowDangerouslySetContent = true
+        };
+
         await KernelRequestTracer.RunPromptAsync(kernel, isInline, isStreaming, templateFormat, prompt, new()
         {
             ["city"] = new City("Seattle")
-        });
+        }, promptTemplateConfig);
 
         string requestContent = kernelProvider.GetRequestContent();
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);

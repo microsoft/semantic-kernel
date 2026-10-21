@@ -37,7 +37,17 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     {
         Verify.NotNull(calledToolResult);
 
-        this.CalledToolResult = calledToolResult;
+        this.CalledToolResults = [calledToolResult];
+
+        // Parse plugin and function names from FullyQualifiedName
+        var functionName = FunctionName.Parse(calledToolResult.FullyQualifiedName, GeminiFunction.NameSeparator);
+
+        // Also populate Items collection with FunctionResultContent for compatibility with FunctionChoiceBehavior
+        this.Items.Add(new FunctionResultContent(
+            functionName: functionName.Name,
+            pluginName: functionName.PluginName,
+            callId: null, // Gemini doesn't provide call IDs
+            result: calledToolResult.FunctionResult));
     }
 
     /// <summary>
@@ -62,7 +72,45 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.CalledToolResult = calledToolResult;
+        this.CalledToolResults = calledToolResult is null ? null : [calledToolResult];
+
+        // Also populate Items collection with FunctionResultContent for compatibility with FunctionChoiceBehavior
+        if (calledToolResult is not null)
+        {
+            // Parse plugin and function names from FullyQualifiedName
+            var functionName = FunctionName.Parse(calledToolResult.FullyQualifiedName, GeminiFunction.NameSeparator);
+
+            this.Items.Add(new FunctionResultContent(
+                functionName: functionName.Name,
+                pluginName: functionName.PluginName,
+                callId: null, // Gemini doesn't provide call IDs
+                result: calledToolResult.FunctionResult));
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class with multiple tool results.
+    /// </summary>
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="content">Content of the message</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="calledToolResults">The results of tools called by the kernel.</param>
+    /// <param name="metadata">Additional metadata</param>
+    internal GeminiChatMessageContent(
+        AuthorRole role,
+        string? content,
+        string modelId,
+        IEnumerable<GeminiFunctionToolResult>? calledToolResults = null,
+        GeminiMetadata? metadata = null)
+        : base(
+            role: role,
+            content: content,
+            modelId: modelId,
+            innerContent: content,
+            encoding: Encoding.UTF8,
+            metadata: metadata)
+    {
+        this.CalledToolResults = calledToolResults?.ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -88,6 +136,40 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             metadata: metadata)
     {
         this.ToolCalls = functionsToolCalls?.Select(tool => new GeminiFunctionToolCall(tool)).ToList();
+        this.PopulateFunctionCallContentItems();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
+    /// </summary>
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="content">Content of the message</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="partsWithFunctionCalls">Parts containing function calls (preserves ThoughtSignature)</param>
+    /// <param name="metadata">Additional metadata</param>
+    /// <remarks>
+    /// This constructor preserves <see cref="GeminiFunctionToolCall.ThoughtSignature"/> from the parent
+    /// <see cref="GeminiPart"/>, which is required for function calling when thinking is enabled.
+    /// </remarks>
+    internal GeminiChatMessageContent(
+        AuthorRole role,
+        string? content,
+        string modelId,
+        IEnumerable<GeminiPart>? partsWithFunctionCalls,
+        GeminiMetadata? metadata = null)
+        : base(
+            role: role,
+            content: content,
+            modelId: modelId,
+            innerContent: content,
+            encoding: Encoding.UTF8,
+            metadata: metadata)
+    {
+        this.ToolCalls = partsWithFunctionCalls?
+            .Where(p => p.FunctionCall is not null)
+            .Select(part => new GeminiFunctionToolCall(part))
+            .ToList();
+        this.PopulateFunctionCallContentItems();
     }
 
     /// <summary>
@@ -96,12 +178,48 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
-    /// The result of tool called by the kernel.
+    /// The results of tools called by the kernel.
     /// </summary>
-    public GeminiFunctionToolResult? CalledToolResult { get; }
+    public IReadOnlyList<GeminiFunctionToolResult>? CalledToolResults { get; }
+
+    /// <summary>
+    /// The result of tool called by the kernel (for backward compatibility).
+    /// Returns the first tool result if multiple exist, or null if none.
+    /// </summary>
+    public GeminiFunctionToolResult? CalledToolResult => this.CalledToolResults?.Count > 0 ? this.CalledToolResults[0] : null;
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
     public new GeminiMetadata? Metadata => (GeminiMetadata?)base.Metadata;
+
+    /// <summary>
+    /// Populates the Items collection with FunctionCallContent for compatibility with FunctionChoiceBehavior.
+    /// </summary>
+    private void PopulateFunctionCallContentItems()
+    {
+        if (this.ToolCalls is null)
+        {
+            return;
+        }
+
+        foreach (var toolCall in this.ToolCalls)
+        {
+            KernelArguments? arguments = null;
+            if (toolCall.Arguments is not null)
+            {
+                arguments = new KernelArguments();
+                foreach (var arg in toolCall.Arguments)
+                {
+                    arguments[arg.Key] = arg.Value;
+                }
+            }
+
+            this.Items.Add(new FunctionCallContent(
+                functionName: toolCall.FunctionName,
+                pluginName: toolCall.PluginName,
+                id: null, // Gemini doesn't provide call IDs
+                arguments: arguments));
+        }
+    }
 }

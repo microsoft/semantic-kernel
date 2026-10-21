@@ -97,5 +97,6 @@ else
 }
 
 app.MapA2A(hostAgent!.TaskManager!, "/");
+app.MapWellKnownAgentCard(hostAgent!.TaskManager!, "/");
 
 await app.RunAsync();

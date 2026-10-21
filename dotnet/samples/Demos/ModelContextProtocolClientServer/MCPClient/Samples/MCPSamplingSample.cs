@@ -47,7 +47,7 @@ internal sealed class MCPSamplingSample : BaseSample
         kernel.FunctionInvocationFilters.Add(new HumanInTheLoopFilter());
 
         // Create an MCP client with a custom sampling request handler
-        await using IMcpClient mcpClient = await CreateMcpClientAsync(kernel, SamplingRequestHandlerAsync);
+        McpClient mcpClient = await CreateMcpClientAsync(kernel, SamplingRequestHandlerAsync);
 
         // Import MCP tools as Kernel functions so AI model can call them
         IList<McpClientTool> tools = await mcpClient.ListToolsAsync();

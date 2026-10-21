@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, ConcurrentOrchestration
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -21,15 +23,17 @@ def get_agents() -> list[Agent]:
 
     Feel free to add or remove agents.
     """
+    credential = AzureCliCredential()
+
     physics_agent = ChatCompletionAgent(
         name="PhysicsExpert",
         instructions="You are an expert in physics. You answer questions from a physics perspective.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     chemistry_agent = ChatCompletionAgent(
         name="ChemistryExpert",
         instructions="You are an expert in chemistry. You answer questions from a chemistry perspective.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     return [physics_agent, chemistry_agent]

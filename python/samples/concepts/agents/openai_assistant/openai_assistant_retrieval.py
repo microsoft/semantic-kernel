@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai import AzureOpenAISettings
 
@@ -15,7 +17,7 @@ ID and creating a new instance of the assistant using the retrieved definition.
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client = AzureAssistantAgent.create_client()
+    client = AzureAssistantAgent.create_client(credential=AzureCliCredential())
 
     # Create the assistant definition
     definition = await client.beta.assistants.create(

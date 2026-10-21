@@ -54,13 +54,13 @@ public sealed class A2AHostAgentTests : BaseA2AClientTest
     }
 
     #region private
-    private List<Message> CreateUserMessages(string[] userMessages)
+    private List<AgentMessage> CreateUserMessages(string[] userMessages)
     {
-        var messages = new List<Message>();
+        var messages = new List<AgentMessage>();
 
         foreach (var userMessage in userMessages)
         {
-            messages.Add(new Message()
+            messages.Add(new AgentMessage()
             {
                 Role = MessageRole.User,
                 Parts = [new TextPart() { Text = userMessage }],

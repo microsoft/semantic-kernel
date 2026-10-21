@@ -223,7 +223,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         {
             var promptExecutionSettings = arguments.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId];
 
-            if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
+            if (promptExecutionSettings is not null and OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
             {
                 // Share only selected functions with AI.
                 openAIPromptExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions);
@@ -389,25 +389,25 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     private sealed class NewsPlugin
     {
         [KernelFunction, Description("Provides the latest news headlines.")]
-        public List<string> GetLatestHeadlines() => new()
-        {
+        public List<string> GetLatestHeadlines() =>
+        [
             "Tourism Industry Sees Record Growth",
             "Tech Company Releases New Product",
             "Sports Team Wins Championship",
             "New Study Reveals Health Benefits of Walking"
-        };
+        ];
     }
 
     private sealed class CalendarPlugin
     {
         [KernelFunction, Description("Provides a list of upcoming events.")]
-        public List<string> GetUpcomingEvents() => new()
-        {
+        public List<string> GetUpcomingEvents() =>
+        [
             "Meeting with Bob on June 22",
             "Project deadline on June 30",
             "Dentist appointment on July 5",
             "Vacation starts on July 12"
-        };
+        ];
     }
 
     #endregion

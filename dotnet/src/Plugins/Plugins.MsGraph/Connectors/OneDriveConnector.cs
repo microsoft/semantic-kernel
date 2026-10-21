@@ -105,7 +105,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET8_0_OR_GREATER
+#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
 #else
             throw new HttpOperationException(null, responseContent: null, ex.Message, ex);
@@ -114,7 +114,7 @@ public class OneDriveConnector : ICloudDriveConnector
     }
 
     /// <inheritdoc/>
-    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous",
+    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "organization",
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
@@ -139,7 +139,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET8_0_OR_GREATER
+#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
 #else
             throw new HttpOperationException(null, responseContent: null, ex.Message, ex);

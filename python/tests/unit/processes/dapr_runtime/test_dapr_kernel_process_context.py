@@ -11,11 +11,14 @@ from semantic_kernel.processes.dapr_runtime.interfaces.process_interface import 
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 
 
-class DummyInnerStepType:
+class DummyInnerStepType(KernelProcessStep):
+    """A valid KernelProcessStep subclass for testing."""
+
     pass
 
 
@@ -38,7 +41,10 @@ def process_context():
         mock_dapr_process = AsyncMock(spec=ProcessInterface)
         mock_actor_proxy_create.return_value = mock_dapr_process
 
-        context = DaprKernelProcessContext(process=process)
+        context = DaprKernelProcessContext(
+            process=process,
+            allowed_module_prefixes=("semantic_kernel.", DummyInnerStepType.__module__),
+        )
 
         yield context, mock_dapr_process
 

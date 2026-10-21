@@ -3,7 +3,7 @@
 import asyncio
 
 from azure.ai.agents.models import BingGroundingTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import (
@@ -42,7 +42,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name

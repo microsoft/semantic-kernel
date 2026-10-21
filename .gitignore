@@ -415,6 +415,9 @@ FodyWeavers.xsd
 *.iml
 *.iws
 
+# VS Code
+.vscode/
+
 .env
 certs/
 launchSettings.json
@@ -499,3 +502,5 @@ swa-cli.config.json
 
 # dapr extension files
 **/dapr.yaml
+
+*.lscache

@@ -111,7 +111,7 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = new List<string>(),
+            AdditionalModelResponseFieldPaths = [],
             GuardrailConfig = null, // Set if needed
             ToolConfig = null // Set if needed
         };
@@ -194,7 +194,7 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = new List<string>(),
+            AdditionalModelResponseFieldPaths = [],
             GuardrailConfig = null, // Set if needed
             ToolConfig = null // Set if needed
         };

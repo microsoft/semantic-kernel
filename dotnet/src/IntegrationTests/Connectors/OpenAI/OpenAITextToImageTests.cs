@@ -11,6 +11,7 @@ using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 public sealed class OpenAITextToImageTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
@@ -21,8 +22,7 @@ public sealed class OpenAITextToImageTests
         .Build();
 
     [Theory(Skip = "This test is for manual verification.")]
-    [InlineData("dall-e-2", 512, 512)]
-    [InlineData("dall-e-3", 1024, 1024)]
+    [InlineData("gpt-image-1", 1024, 1024)]
     public async Task OpenAITextToImageByModelTestAsync(string modelId, int width, int height)
     {
         // Arrange
@@ -44,7 +44,7 @@ public sealed class OpenAITextToImageTests
     }
 
     [Fact(Skip = "Failing in integration tests pipeline with - HTTP 400 (invalid_request_error: billing_hard_limit_reached) error.")]
-    public async Task OpenAITextToImageUseDallE2ByDefaultAsync()
+    public async Task OpenAITextToImageUseDefaultModelAsync()
     {
         // Arrange
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
@@ -57,7 +57,7 @@ public sealed class OpenAITextToImageTests
         var service = kernel.GetRequiredService<ITextToImageService>();
 
         // Act
-        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 256, 256);
+        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 1024, 1024);
 
         // Assert
         Assert.NotNull(result);
@@ -65,14 +65,14 @@ public sealed class OpenAITextToImageTests
     }
 
     [Fact(Skip = "Failing in integration tests pipeline with - HTTP 400 (invalid_request_error: billing_hard_limit_reached) error.")]
-    public async Task OpenAITextToImageDalle3GetImagesTestAsync()
+    public async Task OpenAITextToImageGetImagesTestAsync()
     {
         // Arrange
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: "dall-e-3")
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: "gpt-image-1")
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();
@@ -83,6 +83,7 @@ public sealed class OpenAITextToImageTests
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        Assert.NotEmpty(result[0].Uri!.ToString());
+        var imageContent = result[0];
+        Assert.True(imageContent.Uri is not null || imageContent.Data is not null, "Image content should have either a URI or binary data.");
     }
 }

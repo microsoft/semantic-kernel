@@ -42,7 +42,7 @@ internal sealed class HttpMessageHandlerStub : HttpMessageHandler
         this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
-    protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;

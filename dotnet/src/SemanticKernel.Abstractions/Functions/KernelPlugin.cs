@@ -99,7 +99,6 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// </remarks>
     /// <param name="kernel">The default <see cref="Kernel"/> to be used when the <see cref="AIFunction"/> is invoked.</param>
     /// <returns>An enumerable clone of <see cref="AIFunction"/> instances, for each <see cref="KernelFunction"/> in this plugin.</returns>
-    [Experimental("SKEXP0001")]
     public IEnumerable<AIFunction> AsAIFunctions(Kernel? kernel = null)
     {
         foreach (KernelFunction function in this)

@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Utilities;
+
 public static class ProcessStateMetadataUtilities
 {
     // Path used for storing json processes samples in repository

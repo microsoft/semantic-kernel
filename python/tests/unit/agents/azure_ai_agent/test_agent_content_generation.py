@@ -39,6 +39,7 @@ from azure.ai.agents.models import (
 )
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    THREAD_MESSAGE_ID,
     generate_annotation_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
@@ -295,11 +296,12 @@ def test_generate_streaming_message_content_text_only_no_annotations():
             ],
         ),
     )
-    out = generate_streaming_message_content("assistant", delta)
+    out = generate_streaming_message_content("assistant", delta, thread_msg_id="thread_1")
     assert out.content == "just text"
     assert len(out.items) == 1
     assert isinstance(out.items[0], StreamingTextContent)
     assert out.items[0].text == "just text"
+    assert out.metadata.get(THREAD_MESSAGE_ID) == "thread_1"
 
 
 def test_generate_annotation_content_empty_title_and_url_only():

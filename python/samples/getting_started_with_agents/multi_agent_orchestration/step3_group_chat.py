@@ -2,6 +2,8 @@
 
 import asyncio
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration, RoundRobinGroupChatManager
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -30,13 +32,15 @@ def get_agents() -> list[Agent]:
 
     Feel free to add or remove agents.
     """
+    credential = AzureCliCredential()
+
     writer = ChatCompletionAgent(
         name="Writer",
         description="A content writer.",
         instructions=(
             "You are an excellent content writer. You create new content and edit contents based on the feedback."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
     reviewer = ChatCompletionAgent(
         name="Reviewer",
@@ -44,7 +48,7 @@ def get_agents() -> list[Agent]:
         instructions=(
             "You are an excellent content reviewer. You review the content and provide feedback to the writer."
         ),
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # The order of the agents in the list will be the order in which they will be picked by the round robin manager

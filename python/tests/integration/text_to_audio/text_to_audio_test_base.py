@@ -3,6 +3,7 @@
 import os
 
 import pytest
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.connectors.ai.open_ai import AzureTextToAudio, OpenAITextToAudio
 from semantic_kernel.connectors.ai.text_to_audio_client_base import TextToAudioClientBase
@@ -21,7 +22,9 @@ class TextToAudioTestBase:
         """Return text-to-audio services."""
         return {
             "openai": OpenAITextToAudio(),
-            "azure_openai": AzureTextToAudio(endpoint=os.environ["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"])
+            "azure_openai": AzureTextToAudio(
+                endpoint=os.environ["AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT"], credential=AzureCliCredential()
+            )
             if azure_setup
             else None,
         }

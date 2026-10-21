@@ -52,6 +52,15 @@ def test_azure_ai_inference_text_embedding_init_with_service_id(
     assert isinstance(azure_ai_inference.client, EmbeddingsClient)
 
 
+def test_azure_ai_inference_text_embedding_init_with_api_version(azure_ai_inference_unit_test_env, model_id) -> None:
+    """Test initialization of AzureAIInferenceTextEmbedding with api_version"""
+    azure_ai_inference = AzureAIInferenceTextEmbedding(model_id, api_version="2024-02-15-test")
+
+    assert azure_ai_inference.ai_model_id == model_id
+    assert isinstance(azure_ai_inference.client, EmbeddingsClient)
+    assert azure_ai_inference.client._config.api_version == "2024-02-15-test"
+
+
 @pytest.mark.parametrize(
     "azure_ai_inference_client",
     [AzureAIInferenceTextEmbedding.__name__],

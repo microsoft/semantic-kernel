@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from azure.identity import AzureCliCredential
 from pydantic import ValidationError
 
 from samples.service_settings import ServiceSettings
@@ -55,13 +56,14 @@ def add_service(
             kernel.add_service(OpenAITextCompletion(service_id=service_id))
             # </OpenAITextCompletionKernelCreation>
     else:
+        credential = AzureCliCredential()
         if use_chat:
             # <TypicalKernelCreation>
-            kernel.add_service(AzureChatCompletion(service_id=service_id))
+            kernel.add_service(AzureChatCompletion(service_id=service_id, credential=credential))
             # </TypicalKernelCreation>
         else:
             # <TextCompletionKernelCreation>
-            kernel.add_service(AzureTextCompletion(service_id=service_id))
+            kernel.add_service(AzureTextCompletion(service_id=service_id, credential=credential))
             # </TextCompletionKernelCreation>
 
     return kernel

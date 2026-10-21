@@ -4,7 +4,7 @@ import asyncio
 import os
 
 from azure.ai.agents.models import CodeInterpreterTool, FilePurpose
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import AuthorRole
@@ -19,7 +19,7 @@ TASK = "What's the total sum of all sales for all segments using Python?"
 
 async def main() -> None:
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create an agent with a code interpreter on the Azure AI agent service

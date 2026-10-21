@@ -110,6 +110,9 @@ public class ResponseItemExtensionsTests
 
         // Assert
         Assert.NotNull(messageContent);
-        Assert.Equal("Foo", messageContent.Content);
+        Assert.Single(messageContent.Items);
+        var reasoningContent = messageContent.Items[0] as ReasoningContent;
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("Foo", reasoningContent.Text);
     }
 }

@@ -2,6 +2,7 @@
 
 from typing import ClassVar
 
+from azure.core.credentials import TokenCredential
 from pydantic import SecretStr
 from pydantic_core import Url
 
@@ -83,7 +84,7 @@ class AzureOpenAISettings(KernelBaseSettings):
                 your resource from the Azure portal, the endpoint should end in openai.azure.com.
                 If both base_url and endpoint are supplied, base_url will be used.
                 (Env var AZURE_OPENAI_ENDPOINT)
-    - api_version: str | None - The API version to use. The default value is "2024-02-01".
+    - api_version: str | None - The API version to use. The default value is "2024-10-21".
                 (Env var AZURE_OPENAI_API_VERSION)
     - token_endpoint: str - The token endpoint to use to retrieve the authentication token.
                 The default value is "https://cognitiveservices.azure.com/.default".
@@ -106,7 +107,9 @@ class AzureOpenAISettings(KernelBaseSettings):
     api_version: str = DEFAULT_AZURE_API_VERSION
     token_endpoint: str = "https://cognitiveservices.azure.com/.default"
 
-    def get_azure_openai_auth_token(self, token_endpoint: str | None = None) -> str | None:
+    def get_azure_openai_auth_token(
+        self, credential: TokenCredential | None = None, token_endpoint: str | None = None
+    ) -> str | None:
         """Retrieve a Microsoft Entra Auth Token for a given token endpoint for the use with Azure OpenAI.
 
         The required role for the token is `Cognitive Services OpenAI Contributor`.
@@ -115,6 +118,7 @@ class AzureOpenAISettings(KernelBaseSettings):
         The `token_endpoint` argument takes precedence over the `token_endpoint` attribute.
 
         Args:
+            credential: The credential to use for authentication.
             token_endpoint: The token endpoint to use. Defaults to `https://cognitiveservices.azure.com/.default`.
 
         Returns:
@@ -126,4 +130,6 @@ class AzureOpenAISettings(KernelBaseSettings):
         endpoint_to_use = token_endpoint or self.token_endpoint
         if endpoint_to_use is None:
             raise ServiceInitializationError("Please provide a token endpoint to retrieve the authentication token.")
-        return get_entra_auth_token(endpoint_to_use)
+        if credential is None:
+            raise ServiceInitializationError("Please provide a credential to retrieve the authentication token.")
+        return get_entra_auth_token(credential, endpoint_to_use)

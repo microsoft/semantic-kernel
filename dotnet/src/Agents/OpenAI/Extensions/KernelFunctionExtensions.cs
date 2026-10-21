@@ -54,15 +54,16 @@ public static class KernelFunctionExtensions
             BinaryData parameterData = function.Metadata.CreateParameterSpec();
             return ResponseTool.CreateFunctionTool(
                 functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
-                functionDescription: function.Description,
                 functionParameters: parameterData,
-                functionSchemaIsStrict: functionSchemaIsStrict);
+                strictModeEnabled: functionSchemaIsStrict,
+                functionDescription: function.Description);
         }
 
         return ResponseTool.CreateFunctionTool(
             functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
-            functionDescription: function.Description,
-            functionParameters: s_emptyFunctionParameters);
+            functionParameters: s_emptyFunctionParameters,
+            null,
+            functionDescription: function.Description);
     }
 
     #region private

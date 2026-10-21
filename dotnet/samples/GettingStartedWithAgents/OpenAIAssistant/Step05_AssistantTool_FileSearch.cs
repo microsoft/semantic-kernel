@@ -35,7 +35,6 @@ public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAss
         string vectorStoreId =
             await this.Client.CreateVectorStoreAsync(
                 [fileId],
-                waitUntilCompleted: true,
                 metadata: SampleMetadata);
 
         // Create a thread associated with a vector-store for the agent conversation.

@@ -6,6 +6,8 @@ import os
 from collections.abc import Callable, Coroutine
 from typing import Any
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
@@ -46,7 +48,7 @@ async def input_output_filter(
 
 async def main() -> None:
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id="chat-gpt"))
+    kernel.add_service(AzureChatCompletion(service_id="chat-gpt", credential=AzureCliCredential()))
     kernel.add_plugin(
         parent_directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), plugin_name="chat"
     )

@@ -4,6 +4,7 @@ import os
 from typing import Annotated
 
 import pytest
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureResponsesAgent, OpenAIResponsesAgent
@@ -13,6 +14,8 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
+
+openai_api_key_skip = pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401).")
 
 
 class WeatherPlugin:
@@ -49,7 +52,7 @@ class TestOpenAIResponsesAgentIntegration:
         tools, plugins, text = [], [], None
 
         if agent_type == "azure":
-            client = AzureResponsesAgent.create_client()
+            client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
             model = AzureOpenAISettings().chat_deployment_name
             AgentClass = AzureResponsesAgent
         else:  # agent_type == "openai"
@@ -98,7 +101,12 @@ class TestOpenAIResponsesAgentIntegration:
 
     # region Simple 'Hello' messages tests
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_get_response(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent."""
         response = await agent_test_base.get_response_with_retry(responses_agent, messages="Hello")
@@ -107,7 +115,12 @@ class TestOpenAIResponsesAgentIntegration:
         assert response.message.content is not None
         assert "thread_id" in response.message.metadata
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_get_response_with_thread(
         self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
     ):
@@ -126,7 +139,12 @@ class TestOpenAIResponsesAgentIntegration:
 
         await thread.delete() if thread else None
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent."""
         async for response in responses_agent.invoke(messages="Hello"):
@@ -134,7 +152,12 @@ class TestOpenAIResponsesAgentIntegration:
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_with_thread(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent with a thread."""
         thread = None
@@ -153,7 +176,12 @@ class TestOpenAIResponsesAgentIntegration:
 
         await thread.delete() if thread else None
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_stream(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke stream of the agent."""
         responses = await agent_test_base.get_invoke_stream_with_retry(responses_agent, messages="Hello")
@@ -163,7 +191,12 @@ class TestOpenAIResponsesAgentIntegration:
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
-    @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "responses_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_stream_with_thread(
         self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
     ):
@@ -192,7 +225,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             # Azure OpenAI Responses API doesn't yet support the web search tool
-            ("openai", {"enable_web_search": True}),
+            pytest.param(("openai", {"enable_web_search": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["openai-web-search-get-response"],
@@ -214,7 +247,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_file_search": True}),
-            ("openai", {"enable_file_search": True}),
+            pytest.param(("openai", {"enable_file_search": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-file-search-get-response", "openai-file-search-get-response"],
@@ -233,7 +266,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_file_search": True}),
-            ("openai", {"enable_file_search": True}),
+            pytest.param(("openai", {"enable_file_search": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-file-search-invoke", "openai-file-search-invoke"],
@@ -252,7 +285,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_file_search": True}),
-            ("openai", {"enable_file_search": True}),
+            pytest.param(("openai", {"enable_file_search": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-file-search-invoke-stream", "openai-file-search-invoke-stream"],
@@ -277,7 +310,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-function-calling-get-response", "openai-function-calling-get-response"],
@@ -299,7 +332,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-function-calling-invoke", "openai-function-calling-invoke"],
@@ -321,7 +354,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-function-calling-invoke-stream", "openai-function-calling-invoke-stream"],
@@ -348,7 +381,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_structured_outputs": True}),
-            ("openai", {"enable_structured_outputs": True}),
+            pytest.param(("openai", {"enable_structured_outputs": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-get-response", "openai-structured-outputs-get-response"],
@@ -370,7 +403,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_structured_outputs": True}),
-            ("openai", {"enable_structured_outputs": True}),
+            pytest.param(("openai", {"enable_structured_outputs": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke", "openai-structured-outputs-invoke"],
@@ -394,7 +427,7 @@ class TestOpenAIResponsesAgentIntegration:
         "responses_agent",
         [
             ("azure", {"enable_structured_outputs": True}),
-            ("openai", {"enable_structured_outputs": True}),
+            pytest.param(("openai", {"enable_structured_outputs": True}), marks=openai_api_key_skip),
         ],
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke-stream", "openai-structured-outputs-invoke-stream"],

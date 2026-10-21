@@ -4,11 +4,12 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 from azure.ai.projects.aio import AIProjectClient
-from azure.identity.aio import DefaultAzureCredential
+from azure.core.credentials_async import AsyncTokenCredential
 
 from semantic_kernel.agents.agent import AgentResponseItem
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -340,7 +341,7 @@ async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definit
 
 
 def test_create_client_with_explicit_endpoint():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AIProjectClient") as mock_client_cls:
         mock_client = MagicMock(spec=AIProjectClient)
@@ -362,7 +363,7 @@ def test_create_client_with_explicit_endpoint():
 
 
 def test_create_client_uses_settings_when_endpoint_none():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with (
         patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls,
@@ -385,7 +386,7 @@ def test_create_client_uses_settings_when_endpoint_none():
 
 
 def test_create_client_raises_if_no_endpoint():
-    credential = MagicMock(spec=DefaultAzureCredential)
+    credential = MagicMock(spec=AsyncTokenCredential)
 
     with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls:
         mock_settings = MagicMock()
@@ -398,3 +399,80 @@ def test_create_client_raises_if_no_endpoint():
             assert "Azure AI endpoint" in str(e)
         else:
             assert False, "Expected AgentInitializationException to be raised"
+
+
+async def test_azure_ai_agent_get_response_passes_function_choice_behavior(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    thread = AsyncMock(spec=AzureAIAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        await agent.get_response(messages="message", thread=thread, function_choice_behavior=fcb)
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_azure_ai_agent_invoke_passes_function_choice_behavior(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    thread = AsyncMock(spec=AzureAIAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        async for _ in agent.invoke(messages="message", thread=thread, function_choice_behavior=fcb):
+            pass
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_azure_ai_agent_invoke_stream_passes_function_choice_behavior(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    thread = AsyncMock(spec=AzureAIAgentThread)
+    fcb = FunctionChoiceBehavior.Auto()
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke_stream",
+        side_effect=fake_invoke,
+    ):
+        async for _ in agent.invoke_stream(messages="message", thread=thread, function_choice_behavior=fcb):
+            pass
+
+    assert captured_kwargs.get("function_choice_behavior") is fcb
+
+
+async def test_azure_ai_agent_get_response_no_fcb_passes_none(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    thread = AsyncMock(spec=AzureAIAgentThread)
+    captured_kwargs = {}
+
+    async def fake_invoke(*args, **kwargs):
+        captured_kwargs.update(kwargs)
+        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+
+    with patch(
+        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        await agent.get_response(messages="message", thread=thread)
+
+    assert captured_kwargs.get("function_choice_behavior") is None

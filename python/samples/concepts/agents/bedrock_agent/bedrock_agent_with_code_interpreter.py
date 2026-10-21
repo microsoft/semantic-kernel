@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
+from pathlib import Path
 
 from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 from semantic_kernel.contents.binary_content import BinaryContent
@@ -57,8 +57,16 @@ async def main():
     if not binary_item:
         raise RuntimeError("No chart generated")
 
-    file_path = os.path.join(os.path.dirname(__file__), binary_item.metadata["name"])
-    binary_item.write_to_file(os.path.join(os.path.dirname(__file__), binary_item.metadata["name"]))
+    # Securely assemble the file path and validate it's within the expected directory
+    # This is a defense-in-depth measure against directory traversal attacks
+    output_dir = Path(__file__).parent.resolve()
+    file_path = (output_dir / binary_item.metadata["name"]).resolve()
+
+    # Verify the resolved path is within the expected directory
+    if not file_path.is_relative_to(output_dir):
+        raise RuntimeError("Invalid filename: would write outside the expected directory")
+
+    binary_item.write_to_file(file_path)
     print(f"Chart saved to {file_path}")
 
     # Sample output (using anthropic.claude-3-haiku-20240307-v1:0):

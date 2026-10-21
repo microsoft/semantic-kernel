@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+#pragma warning disable CS0618 // ITextSearch is obsolete - Sample demonstrates legacy interface usage
+
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.SemanticKernel;

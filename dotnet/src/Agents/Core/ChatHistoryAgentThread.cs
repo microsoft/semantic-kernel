@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public sealed class ChatHistoryAgentThread : AgentThread
 {
-    private readonly ChatHistory _chatHistory = new();
+    private readonly ChatHistory _chatHistory = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class.

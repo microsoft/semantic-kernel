@@ -19,7 +19,7 @@ public interface ICloudDriveConnector
     /// <param name="scope">Scope of the link.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Shareable link.</returns>
-    Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous", CancellationToken cancellationToken = default);
+    Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "organization", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get the content of a file.

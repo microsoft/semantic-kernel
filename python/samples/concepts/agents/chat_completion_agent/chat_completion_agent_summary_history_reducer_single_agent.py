@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistorySummarizationReducer
@@ -23,9 +25,13 @@ async def main():
     reducer_msg_count = 10
     reducer_threshold = 10
 
+    credential = AzureCliCredential()
+
     # Create a summarization reducer
     history_summarization_reducer = ChatHistorySummarizationReducer(
-        service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
+        service=AzureChatCompletion(credential=credential),
+        target_count=reducer_msg_count,
+        threshold_count=reducer_threshold,
     )
 
     thread: ChatHistoryAgentThread = ChatHistoryAgentThread(chat_history=history_summarization_reducer)
@@ -34,7 +40,7 @@ async def main():
     agent = ChatCompletionAgent(
         name="NumeroTranslator",
         instructions="Add one to the latest user number and spell it in Spanish without explanation.",
-        service=AzureChatCompletion(),
+        service=AzureChatCompletion(credential=credential),
     )
 
     # Number of messages to simulate

@@ -18,30 +18,10 @@ internal class KernelChatOptions : ChatOptions
     /// <param name="kernel">Target kernel.</param>
     /// <param name="options">Original chat options.</param>
     /// <param name="settings">Prompt execution settings.</param>
-    internal KernelChatOptions(Kernel kernel, ChatOptions? options = null, PromptExecutionSettings? settings = null)
+    internal KernelChatOptions(Kernel kernel, ChatOptions? options = null, PromptExecutionSettings? settings = null) :
+        base(options)
     {
         Verify.NotNull(kernel);
-
-        if (options is not null)
-        {
-            this.AdditionalProperties = options.AdditionalProperties;
-            this.AllowMultipleToolCalls = options.AllowMultipleToolCalls;
-            this.Tools = options.Tools;
-            this.Temperature = options.Temperature;
-            this.TopP = options.TopP;
-            this.TopK = options.TopK;
-            this.Seed = options.Seed;
-            this.ResponseFormat = options.ResponseFormat;
-            this.MaxOutputTokens = options.MaxOutputTokens;
-            this.FrequencyPenalty = options.FrequencyPenalty;
-            this.PresencePenalty = options.PresencePenalty;
-            this.StopSequences = options.StopSequences;
-            this.RawRepresentationFactory = options.RawRepresentationFactory;
-            this.ConversationId = options.ConversationId;
-            this.Seed = options.Seed;
-            this.ToolMode = options.ToolMode;
-            this.ModelId = options.ModelId;
-        }
 
         this.ExecutionSettings = settings;
         this.Kernel = kernel;
@@ -55,4 +35,9 @@ internal class KernelChatOptions : ChatOptions
 
     [JsonIgnore]
     public PromptExecutionSettings? ExecutionSettings { get; internal set; }
+
+    public override ChatOptions Clone() => new KernelChatOptions(this.Kernel, this, this.ExecutionSettings)
+    {
+        ChatMessageContent = this.ChatMessageContent
+    };
 }

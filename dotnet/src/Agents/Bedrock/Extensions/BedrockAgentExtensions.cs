@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
+using Microsoft.Agents.AI;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -13,6 +16,22 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// </summary>
 public static class BedrockAgentExtensions
 {
+    /// <summary>
+    /// Exposes a Semantic Kernel Agent Framework <see cref="BedrockAgent"/> as a Microsoft Agent Framework <see cref="AIAgent"/>.
+    /// </summary>
+    /// <param name="bedrockAgent">The Semantic Kernel <see cref="BedrockAgent"/> to expose as a Microsoft Agent Framework <see cref="AIAgent"/>.</param>
+    /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="AIAgent"/></returns>
+    [Experimental("SKEXP0110")]
+    public static AIAgent AsAIAgent(this BedrockAgent bedrockAgent)
+        => bedrockAgent.AsAIAgent(
+            () => new BedrockAgentThread(bedrockAgent.RuntimeClient),
+            (json, options) =>
+            {
+                var agentId = JsonSerializer.Deserialize<string>(json);
+                return agentId is null ? new BedrockAgentThread(bedrockAgent.RuntimeClient) : new BedrockAgentThread(bedrockAgent.RuntimeClient, agentId);
+            },
+            (thread, options) => JsonSerializer.SerializeToElement((thread as BedrockAgentThread)?.Id));
+
     /// <summary>
     /// Creates an agent.
     /// </summary>

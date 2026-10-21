@@ -13,6 +13,7 @@ input_variables:
     - name: chat_history
       description: The running conversation.
       is_required: true
+      allow_dangerously_set_content: true
 execution_settings:
     default:
       max_tokens: 2000

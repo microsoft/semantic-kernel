@@ -77,18 +77,18 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     }
 
     /// <summary>
-    /// Executing similar requests two times using Azure Cosmos DB for MongoDB caching store to compare execution time and results.
+    /// Executing similar requests two times using Azure DocumentDB caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
-    /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
+    /// How to set up Azure DocumentDB: https://learn.microsoft.com/azure/documentdb/quickstart-portal
     /// </summary>
     [Fact]
-    public async Task CosmosMongoDBCacheAsync()
+    public async Task DocumentDbCacheAsync()
     {
         var kernel = GetKernelWithCache(services =>
         {
-            services.AddCosmosMongoVectorStore(
-                TestConfiguration.CosmosMongo.ConnectionString,
-                TestConfiguration.CosmosMongo.DatabaseName);
+            services.AddDocumentDBVectorStore(
+                TestConfiguration.AzureDocumentDb.ConnectionString,
+                TestConfiguration.AzureDocumentDb.DatabaseName);
         });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
@@ -293,7 +293,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         [VectorStoreData]
         public string Result { get; set; }
 
-        [VectorStoreVector(Dimensions: 1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 

@@ -1,0 +1,1 @@
+The Pinecone connector for Semantic Kernel has been removed because Pinecone has archived their .NET SDK repository ([pinecone-io/pinecone-dotnet-client](https://github.com/pinecone-io/pinecone-dotnet-client)) and it is no longer supported.

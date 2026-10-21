@@ -15,7 +15,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -33,7 +33,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -48,7 +48,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentWithThreadedConversationAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in the users preferred language.",
@@ -84,7 +84,7 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
     public async Task UseOpenAIResponseAgentWithThreadedConversationStreamingAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in the users preferred language.",
@@ -109,6 +109,35 @@ public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponse
 
             // Update the thread so the previous response id is used
             agentThread = await WriteAgentStreamMessageAsync(responseItems);
+        }
+    }
+
+    [Fact]
+    public async Task UseOpenAIResponseAgentWithImageContentAsync()
+    {
+        // Define the agent
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
+        {
+            Name = "ResponseAgent",
+            Instructions = "Provide a detailed description including the weather conditions.",
+        };
+
+        ICollection<ChatMessageContent> messages =
+        [
+            new ChatMessageContent(
+                AuthorRole.User,
+                items: [
+                    new TextContent("What is in this image?"),
+                    new ImageContent(new Uri("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"))
+                ]
+            ),
+        ];
+
+        // Invoke the agent and output the response
+        var responseItems = agent.InvokeAsync(messages);
+        await foreach (ChatMessageContent responseItem in responseItems)
+        {
+            WriteAgentChatMessage(responseItem);
         }
     }
 }

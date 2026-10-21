@@ -95,7 +95,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 
             throw new InvalidOperationException($"The arguments provided in the initialization must be of type {nameof(KernelArguments)}.");
         }
-        init => base.Arguments = value ?? new();
+        init => base.Arguments = value ?? [];
     }
 
     /// <summary>

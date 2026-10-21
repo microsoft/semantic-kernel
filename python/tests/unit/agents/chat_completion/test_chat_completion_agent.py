@@ -279,7 +279,10 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
         arguments: KernelArguments,
     ):
         responses = [
-            ChatMessageContent(role=AuthorRole.TOOL, content="Tool Call Result"),
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=[FunctionResultContent(result="Tool Call Result")],
+            ),
         ]
         chat_history.messages.extend(responses)
         return responses
@@ -289,7 +292,7 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
     messages = [message async for message in agent.invoke(messages="test", thread=thread)]
 
     assert len(messages) == 1
-    assert messages[0].message.content == "Tool Call Result"
+    assert messages[0].message.items[0].result == "Tool Call Result"
     assert messages[0].message.role == AuthorRole.TOOL
     assert messages[0].message.name == "TestAgent"
 
@@ -298,7 +301,7 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
 
     assert len(thread_messages) == 2
     assert thread_messages[0].content == "test"
-    assert thread_messages[1].content == "Tool Call Result"
+    assert thread_messages[1].items[0].result == "Tool Call Result"
     assert thread_messages[1].name == "TestAgent"
     assert thread_messages[1].role == AuthorRole.TOOL
 

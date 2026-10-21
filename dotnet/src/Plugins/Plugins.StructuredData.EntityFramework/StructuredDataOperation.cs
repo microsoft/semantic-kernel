@@ -33,13 +33,13 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     /// <summary>
     /// The default set of supported operations.
     /// </summary>
-    public static readonly HashSet<StructuredDataOperation> Default = new()
-    {
+    public static readonly HashSet<StructuredDataOperation> Default =
+    [
         Select,
         Insert,
         Update,
         Delete
-    };
+    ];
 
     /// <summary>
     /// Gets the label associated with this <see cref="StructuredDataOperation"/>.

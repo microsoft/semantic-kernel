@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
+
 internal class LocalEdgeGroupProcessor
 {
     private readonly KernelProcessEdgeGroup _edgeGroup;
     private readonly Dictionary<string, object?> _messageData = [];
-    private HashSet<string> _requiredMessages = new();
-    private HashSet<string> _absentMessages = new();
+    private HashSet<string> _requiredMessages = [];
+    private HashSet<string> _absentMessages = [];
 
     public LocalEdgeGroupProcessor(KernelProcessEdgeGroup edgeGroup)
     {

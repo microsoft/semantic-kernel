@@ -5,7 +5,7 @@ from typing import Annotated
 
 import pytest
 from azure.ai.agents.models import CodeInterpreterTool, FileInfo, FileSearchTool
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
@@ -29,7 +29,7 @@ class TestAzureAIAgentIntegration:
     async def azureai_agent(self, request):
         ai_agent_settings = AzureAIAgentSettings()
         async with (
-            DefaultAzureCredential() as creds,
+            AzureCliCredential() as creds,
             AzureAIAgent.create_client(credential=creds) as client,
         ):
             tools, tool_resources, plugins = [], {}, []

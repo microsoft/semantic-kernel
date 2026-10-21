@@ -10,11 +10,6 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 internal sealed class GrpcOperation
 {
     /// <summary>
-    /// Name of 'address' argument used as override for the address provided by gRPC operation.
-    /// </summary>
-    internal const string AddressArgumentName = "address";
-
-    /// <summary>
     /// Name of 'payload' argument that represents gRPC operation request message.
     /// </summary>
     internal const string PayloadArgumentName = "payload";
@@ -90,12 +85,6 @@ internal sealed class GrpcOperation
     /// <returns>The list of parameters.</returns>
     internal static List<KernelParameterMetadata> CreateParameters() =>
     [
-        // Register the "address" parameter so that it's possible to override it if needed.
-        new(GrpcOperation.AddressArgumentName)
-        {
-            Description = "Address for gRPC channel to use.",
-        },
-
         // Register the "payload" parameter to be used as gRPC operation request message.
         new(GrpcOperation.PayloadArgumentName)
         {

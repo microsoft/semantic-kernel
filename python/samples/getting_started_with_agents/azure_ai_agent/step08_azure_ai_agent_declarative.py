@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.functions import kernel_function
@@ -61,7 +61,7 @@ tools:
 async def main() -> None:
     settings = AzureAIAgentSettings()
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create a Kernel instance

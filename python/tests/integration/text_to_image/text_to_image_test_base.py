@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+from azure.identity import AzureCliCredential
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_image import AzureTextToImage
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
@@ -15,5 +16,5 @@ class TextToImageTestBase:
         """Return text-to-image services."""
         return {
             "openai": OpenAITextToImage(),
-            "azure_openai": AzureTextToImage(),
+            "azure_openai": AzureTextToImage(credential=AzureCliCredential()),
         }

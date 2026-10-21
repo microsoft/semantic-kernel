@@ -131,6 +131,8 @@ internal partial class AzureClientCore
             }
         }
 
+        OpenAIPromptExecutionSettings.ApplyExtraBody(options, executionSettings);
+
         return options;
     }
 

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Resources;
@@ -43,14 +44,15 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
             """;
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
                     age = 30,
-                    membership = "Gold",
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]
@@ -67,6 +69,14 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
             Template = template,
             TemplateFormat = "liquid",
             Name = "ContosoChatPrompt",
+            InputVariables =
+            [
+                // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+                // Consider encoding for each argument to prevent prompt injection attacks.
+                // If argument value is string, encoding will be performed automatically.
+                new() { Name = "customer", AllowDangerouslySetContent = true },
+                new() { Name = "history", AllowDangerouslySetContent = true },
+            ]
         };
 
         // Render the prompt
@@ -93,18 +103,26 @@ public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
         var liquidPromptYaml = EmbeddedResource.Read("LiquidPrompt.yaml");
 
         // Create the prompt function from the YAML resource
-        var templateFactory = new LiquidPromptTemplateFactory();
+        var templateFactory = new LiquidPromptTemplateFactory()
+        {
+            // Set AllowDangerouslySetContent to 'true' only if arguments do not contain harmful content.
+            // Consider encoding for each argument to prevent prompt injection attacks.
+            // If argument value is string, encoding will be performed automatically.
+            AllowDangerouslySetContent = true
+        };
+
         var function = kernel.CreateFunctionFromPromptYaml(liquidPromptYaml, templateFactory);
 
         // Input data for the prompt rendering and execution
+        // Performing manual encoding for each property for safe content rendering
         var arguments = new KernelArguments()
         {
             { "customer", new
                 {
-                    firstName = "John",
-                    lastName = "Doe",
+                    firstName = HttpUtility.HtmlEncode("John"),
+                    lastName = HttpUtility.HtmlEncode("Doe"),
                     age = 30,
-                    membership = "Gold",
+                    membership = HttpUtility.HtmlEncode("Gold"),
                 }
             },
             { "history", new[]

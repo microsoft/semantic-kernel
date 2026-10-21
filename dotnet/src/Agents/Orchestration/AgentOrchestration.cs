@@ -114,17 +114,18 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         CancellationTokenSource orchestrationCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
+        TaskCompletionSource<TOutput> completion = new();
+
         OrchestrationContext context =
             new(this.OrchestrationLabel,
                 topic,
                 this.ResponseCallback,
                 this.StreamingResponseCallback,
+                exception => completion.SetException(exception),
                 this.LoggerFactory,
                 cancellationToken);
 
         ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
-
-        TaskCompletionSource<TOutput> completion = new();
 
         AgentType orchestrationType = await this.RegisterAsync(runtime, context, completion, handoff: null).ConfigureAwait(false);
 

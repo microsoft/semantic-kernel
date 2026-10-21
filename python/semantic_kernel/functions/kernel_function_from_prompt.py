@@ -113,6 +113,8 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
+            elif not prompt_template_config.template:
+                prompt_template_config.template = prompt
             prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
                 prompt_template_config=prompt_template_config
             )  # type: ignore

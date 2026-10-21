@@ -13,6 +13,7 @@ import yaml
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -563,6 +564,7 @@ class Agent(KernelBaseModel, ABC):
         version: str | None = None,
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+        use_plugin_names: bool = False,
     ) -> "Server[LifespanResultT]":
         """Convert the agent to an MCP server.
 
@@ -571,6 +573,7 @@ class Agent(KernelBaseModel, ABC):
 
         By default, the server name will be the same as the agent name.
         If a server name is provided, it will be used instead.
+        Set `use_plugin_names=True` to prefix the tool name with its plugin name.
 
         Returns:
             The MCP server instance.
@@ -584,6 +587,7 @@ class Agent(KernelBaseModel, ABC):
             version=version,
             instructions=instructions,
             lifespan=lifespan,
+            use_plugin_names=use_plugin_names,
         )
 
 
@@ -998,9 +1002,19 @@ class DeclarativeSpecMixin(ABC):
             if v.get("default") is not None
         }
 
-        # Start with model options
-        arguments = KernelArguments(**model_options)
-        # Update with input defaults (only if not already provided by model options)
+        # Convert model options to execution settings
+        # Model options (like response_format, temperature, etc.) should be execution settings,
+        # not regular arguments
+        if model_options:
+            # Create PromptExecutionSettings from model options
+            # The PromptExecutionSettings constructor handles **kwargs by putting them in extension_data
+            # and then unpacking them to actual fields if they exist
+            exec_settings = PromptExecutionSettings(**model_options)
+            arguments = KernelArguments(settings=exec_settings)
+        else:
+            arguments = KernelArguments()
+
+        # Add input defaults as regular dict items (not execution settings)
         for k, v in input_defaults.items():
             if k not in arguments:
                 arguments[k] = v

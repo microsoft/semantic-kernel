@@ -4,7 +4,7 @@ import asyncio
 import os
 
 from azure.ai.agents.models import FilePurpose
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings
 
@@ -40,7 +40,7 @@ settings = AzureAIAgentSettings()  # ChatModelId & Endpoint come from env vars
 
 async def main():
     async with (
-        DefaultAzureCredential() as creds,
+        AzureCliCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # Create the CSV file path for the sample

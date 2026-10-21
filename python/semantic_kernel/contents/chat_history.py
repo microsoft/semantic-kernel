@@ -353,6 +353,23 @@ class ChatHistory(KernelBaseModel):
             elif item.tag == CHAT_HISTORY_TAG:
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
+            else:
+                # Unknown XML tags (e.g. HTML tags like <p>, <div>) are not SK
+                # template tags.  Serialize them back to text and append to the
+                # previous message so that the original content is preserved.
+                saved_tail = item.tail
+                item.tail = None
+                raw = unescape(tostring(item, encoding="unicode", short_empty_elements=False))
+                item.tail = saved_tail
+                if messages:
+                    messages[-1].content = (messages[-1].content or "") + raw
+                else:
+                    messages.append(ChatMessageContent(role=AuthorRole.USER, content=raw))
+                # For unknown tags the tail is part of the surrounding text,
+                # so keep it in the same message instead of starting a new one.
+                if item.tail:
+                    messages[-1].content = (messages[-1].content or "") + unescape(item.tail)
+                continue
             if item.tail and item.tail.strip():
                 messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:

@@ -17,7 +17,7 @@ namespace SemanticKernel.Process.IntegrationTests.Controllers;
 [Produces("application/json")]
 public class ProcessTestController : Controller
 {
-    private static readonly Dictionary<string, DaprKernelProcessContext> s_processes = new();
+    private static readonly Dictionary<string, DaprKernelProcessContext> s_processes = [];
     private readonly Kernel _kernel;
 
     /// <summary>

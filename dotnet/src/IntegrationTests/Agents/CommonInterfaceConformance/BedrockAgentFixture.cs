@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Agents.Bedrock;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
@@ -38,6 +39,8 @@ public sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
 
     public override Microsoft.SemanticKernel.Agents.Agent Agent => this._agent!;
+
+    public override MAAI.AIAgent AIAgent => this._agent!.AsAIAgent();
 
     public override AgentThread AgentThread => this._thread!;
 

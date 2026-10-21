@@ -67,11 +67,6 @@ internal static class YamlAgentDefinitionExtensions
                     continue;
                 }
 
-                if (property.Name.Equals("Options", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("");
-                }
-
                 var value = property.GetValue(obj);
                 if (value is null)
                 {

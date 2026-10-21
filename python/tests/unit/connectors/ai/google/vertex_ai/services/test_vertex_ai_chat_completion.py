@@ -4,8 +4,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from google.cloud.aiplatform_v1beta1.types.content import Content
-from vertexai.generative_models import GenerativeModel
+from vertexai.generative_models import Content, GenerativeModel
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
@@ -95,12 +94,23 @@ async def test_vertex_ai_chat_completion(
         chat_history, settings
     )
 
-    mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_called_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.call_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
     assert len(responses) == 1
     assert responses[0].role == "assistant"
     assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
@@ -188,12 +198,23 @@ async def test_vertex_ai_chat_completion_with_function_choice_behavior_no_tool_c
         kernel=kernel,
     )
 
-    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.await_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
     assert len(responses) == 1
     assert responses[0].role == "assistant"
     assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
@@ -225,13 +246,24 @@ async def test_vertex_ai_streaming_chat_completion(
         assert "usage" in messages[0].metadata
         assert "prompt_feedback" in messages[0].metadata
 
-    mock_vertex_ai_model_generate_content_async.assert_called_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-        stream=True,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_called_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.call_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
+    assert call_args.kwargs["stream"] is True
 
 
 async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
@@ -328,13 +360,24 @@ async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior
         assert len(messages) == 1
         assert messages[0].role == "assistant"
 
-    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
-        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
-        generation_config=settings.prepare_settings_dict(),
-        tools=None,
-        tool_config=None,
-        stream=True,
-    )
+    # Verify the call was made once
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once()
+
+    # Get the actual call arguments
+    call_args = mock_vertex_ai_model_generate_content_async.await_args
+
+    # Verify the contents
+    contents = call_args.kwargs["contents"]
+    assert len(contents) == 1
+    assert contents[0].role == "user"
+    assert len(contents[0].parts) == 1
+    assert contents[0].parts[0].text == "test_prompt"
+
+    # Verify other arguments
+    assert call_args.kwargs["generation_config"] == settings.prepare_settings_dict()
+    assert call_args.kwargs["tools"] is None
+    assert call_args.kwargs["tool_config"] is None
+    assert call_args.kwargs["stream"] is True
 
 
 # endregion streaming chat completion
@@ -359,3 +402,144 @@ def test_vertex_ai_chat_completion_parse_chat_history_correctly(vertex_ai_unit_t
     assert parsed_chat_history[0].parts[0].text == "test_user_message"
     assert parsed_chat_history[1].role == "model"
     assert parsed_chat_history[1].parts[0].text == "test_assistant_message"
+
+
+# region thought_signature deserialization tests
+
+
+def test_create_chat_message_content_with_thought_signature(vertex_ai_unit_test_env) -> None:
+    """Test that thought_signature from a Part dict is deserialized into FunctionCallContent.metadata."""
+    from unittest.mock import MagicMock
+
+    from google.cloud.aiplatform_v1beta1.types.content import Candidate as GapicCandidate
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    thought_sig_value = "vertex-test-thought-sig"
+
+    # Create a mock Part whose to_dict() returns thought_signature
+    mock_part = MagicMock()
+    mock_part.text = None
+    mock_part.to_dict.return_value = {
+        "function_call": {"name": "test_function", "args": {"key": "value"}},
+        "thought_signature": thought_sig_value,
+    }
+    mock_part.function_call.name = "test_function"
+    mock_part.function_call.args = {"key": "value"}
+
+    # Build a mock candidate with the mock part
+    mock_candidate = MagicMock()
+    mock_candidate.index = 0
+    mock_candidate.content.parts = [mock_part]
+    mock_candidate.finish_reason = GapicCandidate.FinishReason.STOP
+
+    # Build a mock response
+    mock_response = MagicMock()
+
+    completion = VertexAIChatCompletion()
+    result = completion._create_chat_message_content(mock_response, mock_candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert fc_items[0].metadata is not None
+    assert fc_items[0].metadata["thought_signature"] == thought_sig_value
+
+
+def test_create_chat_message_content_without_thought_signature(vertex_ai_unit_test_env) -> None:
+    """Test that FunctionCallContent works when Part dict has no thought_signature."""
+    from unittest.mock import MagicMock
+
+    from google.cloud.aiplatform_v1beta1.types.content import Candidate as GapicCandidate
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    mock_part = MagicMock()
+    mock_part.text = None
+    mock_part.to_dict.return_value = {
+        "function_call": {"name": "test_function", "args": {"key": "value"}},
+    }
+    mock_part.function_call.name = "test_function"
+    mock_part.function_call.args = {"key": "value"}
+
+    mock_candidate = MagicMock()
+    mock_candidate.index = 0
+    mock_candidate.content.parts = [mock_part]
+    mock_candidate.finish_reason = GapicCandidate.FinishReason.STOP
+
+    mock_response = MagicMock()
+
+    completion = VertexAIChatCompletion()
+    result = completion._create_chat_message_content(mock_response, mock_candidate)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert "thought_signature" not in fc_items[0].metadata
+
+
+def test_create_streaming_chat_message_content_with_thought_signature(vertex_ai_unit_test_env) -> None:
+    """Test that thought_signature from a Part dict is deserialized in streaming path."""
+    from unittest.mock import MagicMock
+
+    from google.cloud.aiplatform_v1beta1.types.content import Candidate as GapicCandidate
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    thought_sig_value = "vertex-streaming-thought-sig"
+
+    mock_part = MagicMock()
+    mock_part.text = None
+    mock_part.to_dict.return_value = {
+        "function_call": {"name": "stream_func", "args": {"a": "b"}},
+        "thought_signature": thought_sig_value,
+    }
+    mock_part.function_call.name = "stream_func"
+    mock_part.function_call.args = {"a": "b"}
+
+    mock_candidate = MagicMock()
+    mock_candidate.index = 0
+    mock_candidate.content.parts = [mock_part]
+    mock_candidate.finish_reason = GapicCandidate.FinishReason.STOP
+
+    mock_chunk = MagicMock()
+
+    completion = VertexAIChatCompletion()
+    result = completion._create_streaming_chat_message_content(mock_chunk, mock_candidate, function_invoke_attempt=0)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert fc_items[0].metadata is not None
+    assert fc_items[0].metadata["thought_signature"] == thought_sig_value
+
+
+def test_create_streaming_chat_message_content_without_thought_signature(vertex_ai_unit_test_env) -> None:
+    """Test that streaming FunctionCallContent works when Part dict lacks thought_signature."""
+    from unittest.mock import MagicMock
+
+    from google.cloud.aiplatform_v1beta1.types.content import Candidate as GapicCandidate
+
+    from semantic_kernel.contents.function_call_content import FunctionCallContent
+
+    mock_part = MagicMock()
+    mock_part.text = None
+    mock_part.to_dict.return_value = {
+        "function_call": {"name": "stream_func", "args": {"a": "b"}},
+    }
+    mock_part.function_call.name = "stream_func"
+    mock_part.function_call.args = {"a": "b"}
+
+    mock_candidate = MagicMock()
+    mock_candidate.index = 0
+    mock_candidate.content.parts = [mock_part]
+    mock_candidate.finish_reason = GapicCandidate.FinishReason.STOP
+
+    mock_chunk = MagicMock()
+
+    completion = VertexAIChatCompletion()
+    result = completion._create_streaming_chat_message_content(mock_chunk, mock_candidate, function_invoke_attempt=0)
+
+    fc_items = [item for item in result.items if isinstance(item, FunctionCallContent)]
+    assert len(fc_items) == 1
+    assert "thought_signature" not in fc_items[0].metadata
+
+
+# endregion thought_signature deserialization tests

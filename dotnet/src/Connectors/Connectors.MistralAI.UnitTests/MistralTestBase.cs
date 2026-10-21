@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.MistralAI.UnitTests;
+
 public abstract class MistralTestBase : IDisposable
 {
     protected AssertingDelegatingHandler? DelegatingHandler { get; set; }

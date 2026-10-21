@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -174,6 +175,8 @@ public sealed class GeminiChatStreamingTests : IDisposable
         }
 
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata.PromptTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata!.CachedContentTokenCount, metadata.CachedContentTokenCount);
+        Assert.Equal(testDataResponse.UsageMetadata!.ThoughtsTokenCount, metadata.ThoughtsTokenCount);
         Assert.Equal(testDataCandidate.TokenCount, metadata.CurrentCandidateTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata.CandidatesTokenCount);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
@@ -218,6 +221,8 @@ public sealed class GeminiChatStreamingTests : IDisposable
         }
 
         Assert.Equal(testDataResponse.UsageMetadata!.PromptTokenCount, metadata[nameof(GeminiMetadata.PromptTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata!.CachedContentTokenCount, metadata[nameof(GeminiMetadata.CachedContentTokenCount)]);
+        Assert.Equal(testDataResponse.UsageMetadata!.ThoughtsTokenCount, metadata[nameof(GeminiMetadata.ThoughtsTokenCount)]);
         Assert.Equal(testDataCandidate.TokenCount, metadata[nameof(GeminiMetadata.CurrentCandidateTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.CandidatesTokenCount, metadata[nameof(GeminiMetadata.CandidatesTokenCount)]);
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
@@ -422,6 +427,46 @@ public sealed class GeminiChatStreamingTests : IDisposable
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestUri);
         Assert.DoesNotContain("key=", this._messageHandlerStub.RequestUri.ToString());
+    }
+
+    [Fact]
+    public async Task ShouldHandleStreamingThoughtPartsAsync()
+    {
+        // Arrange
+        var streamingResponse = """
+            data: {"candidates": [{"content": {"parts": [{"text": "Let me think...", "thought": true}], "role": "model"}, "index": 0}]}
+
+            data: {"candidates": [{"content": {"parts": [{"text": "The answer is"}], "role": "model"}, "index": 0}]}
+
+            data: {"candidates": [{"content": {"parts": [{"text": " 42."}], "role": "model"}, "finishReason": "STOP", "index": 0}]}
+
+            """;
+
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(streamingResponse);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, messages.Count);
+
+        // First message should contain thought
+        var firstMessage = messages[0];
+        Assert.True(string.IsNullOrEmpty(firstMessage.Content));
+        Assert.Single(firstMessage.Items);
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var thoughtItem = firstMessage.Items.OfType<StreamingReasoningContent>().Single();
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        Assert.Equal("Let me think...", thoughtItem.InnerContent);
+
+        // Second and third messages contain regular text
+        var secondMessage = messages[1];
+        Assert.Equal("The answer is", secondMessage.Content);
+
+        var thirdMessage = messages[2];
+        Assert.Equal(" 42.", thirdMessage.Content);
     }
 
     private static ChatHistory CreateSampleChatHistory()

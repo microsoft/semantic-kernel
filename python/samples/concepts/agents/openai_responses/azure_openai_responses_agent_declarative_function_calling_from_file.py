@@ -4,6 +4,8 @@ import asyncio
 import os
 from typing import Annotated
 
+from azure.identity import AzureCliCredential
+
 from semantic_kernel.agents import AgentRegistry, AzureResponsesAgent
 from semantic_kernel.functions import kernel_function
 
@@ -35,7 +37,7 @@ class MenuPlugin:
 
 async def main():
     try:
-        client = AzureResponsesAgent.create_client()
+        client = AzureResponsesAgent.create_client(credential=AzureCliCredential())
 
         # Define the YAML file path for the sample
         file_path = os.path.join(

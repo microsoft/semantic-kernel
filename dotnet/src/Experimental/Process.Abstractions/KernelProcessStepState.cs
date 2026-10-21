@@ -17,7 +17,7 @@ public record KernelProcessStepState
     /// <summary>
     /// A set of known types that may be used in serialization.
     /// </summary>
-    private readonly static ConcurrentDictionary<string, Type> s_knownTypes = [];
+    private static readonly ConcurrentDictionary<string, Type> s_knownTypes = [];
 
     /// <summary>
     /// Used to dynamically provide the set of known types for serialization.

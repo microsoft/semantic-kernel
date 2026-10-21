@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData;
+
+#pragma warning disable CS0618 // FilterClause is obsolete - TextSearchFilter itself is obsolete and references FilterClause
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -15,6 +18,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// service filter the search results.
 /// </remarks>
 [Experimental("SKEXP0001")]
+[Obsolete("Use LINQ expressions via TextSearchOptions<TRecord>.Filter instead. This type will be removed in a future version.")]
 public sealed class TextSearchFilter
 {
     /// <summary>

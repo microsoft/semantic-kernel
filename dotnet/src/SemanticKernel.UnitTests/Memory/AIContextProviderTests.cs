@@ -73,11 +73,11 @@ public class AIContextProviderTests
 
         var aiContext = new AIContext
         {
-            AIFunctions = new List<AIFunction>
-            {
+            AIFunctions =
+            [
                 AIFunctionFactory.Create(() => Task.FromResult("Function1 Result"), "Function1"),
                 AIFunctionFactory.Create(() => Task.FromResult("Function2 Result"), "Function2")
-            }
+            ]
         };
 
         Assert.Equal("TestPlugin", plugins.AddFromAIContext(aiContext, "TestPlugin"));
