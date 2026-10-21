@@ -84,7 +84,10 @@ internal static class OpenAIResponseExtensions
             KernelArguments? arguments = null;
             try
             {
-                arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
+                if (!string.IsNullOrWhiteSpace(functionCallResponseItem.FunctionArguments?.ToString()))
+                {
+                    arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
+                }
             }
             catch (JsonException ex)
             {
@@ -116,7 +119,10 @@ internal static class OpenAIResponseExtensions
         KernelArguments? arguments = null;
         try
         {
-            arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
+            if (!string.IsNullOrWhiteSpace(functionCallResponseItem.FunctionArguments?.ToString()))
+            {
+                arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
+            }
         }
         catch (JsonException ex)
         {
