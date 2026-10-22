@@ -139,7 +139,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] >= 6,< 8",
+    "redis[hiredis] >= 6,< 9",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
