@@ -137,3 +137,29 @@ async def test_it_renders_code_error(kernel: Kernel):
     target = create_kernel_prompt_template(template, allow_dangerously_set_content=True)
     with pytest.raises(TemplateRenderException):
         await target.render(kernel, arguments)
+
+
+async def test_input_variable_default_used_when_argument_missing(kernel: Kernel):
+    config = PromptTemplateConfig(
+        name="test",
+        description="test",
+        template="Hello {{$name}}!",
+        template_format="semantic-kernel",
+        input_variables=[InputVariable(name="name", description="who", default="STRANGER")],
+    )
+    template = KernelPromptTemplate(prompt_template_config=config)
+    rendered = await template.render(kernel)
+    assert rendered == "Hello STRANGER!"
+
+
+async def test_input_variable_default_does_not_override_argument(kernel: Kernel):
+    config = PromptTemplateConfig(
+        name="test",
+        description="test",
+        template="Hello {{$name}}!",
+        template_format="semantic-kernel",
+        input_variables=[InputVariable(name="name", description="who", default="STRANGER")],
+    )
+    template = KernelPromptTemplate(prompt_template_config=config)
+    rendered = await template.render(kernel, KernelArguments(name="World"))
+    assert rendered == "Hello World!"
