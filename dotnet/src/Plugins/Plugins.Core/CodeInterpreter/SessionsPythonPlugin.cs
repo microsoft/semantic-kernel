@@ -111,7 +111,7 @@ public sealed partial class SessionsPythonPlugin
     /// <summary>
     /// Uploads a file to the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`. Must not contain `.` or `..` path segments.</param>
+    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`. Must not be rooted or contain `.` or `..` path segments.</param>
     /// <param name="localFilePath">The path to the file on the local machine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The metadata of the uploaded file.</returns>
@@ -120,7 +120,7 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
-        [Description("The name of the remote file, relative to `/mnt/data`. Must not contain `.` or `..` path segments.")] string remoteFileName,
+        [Description("The name of the remote file, relative to `/mnt/data`. Must not be rooted or contain `.` or `..` path segments.")] string remoteFileName,
         [Description("The path to the file on the local machine.")] string localFilePath,
         CancellationToken cancellationToken = default)
     {
@@ -295,9 +295,16 @@ public sealed partial class SessionsPythonPlugin
 
     private static void ValidateRemoteFileName(string remoteFileName)
     {
-        if (remoteFileName.Split('/').Any(segment => segment is "." or ".."))
+        var hasDrivePrefix = remoteFileName.Length >= 2
+            && remoteFileName[1] == ':'
+            && char.IsLetter(remoteFileName[0]);
+
+        if (remoteFileName[0] is '/' or '\\'
+            || hasDrivePrefix
+            || remoteFileName.Split('/', '\\').Any(segment => segment is "." or ".."))
         {
-            throw new InvalidOperationException("The remote file name must not contain '.' or '..' path segments.");
+            throw new InvalidOperationException(
+                "The remote file name must be relative and must not contain '.' or '..' path segments.");
         }
     }
 

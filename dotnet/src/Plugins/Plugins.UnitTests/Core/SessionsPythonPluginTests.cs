@@ -288,7 +288,15 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("nested/../test-file.txt")]
     [InlineData("nested/..")]
     [InlineData("/mnt/data/../../test-file.txt")]
-    public async Task ItShouldRejectUploadRemoteFileNamesWithDotSegmentsAsync(string remoteFileName)
+    [InlineData(@"nested\.\test-file.txt")]
+    [InlineData(@"nested\..\test-file.txt")]
+    [InlineData(@"\test-file.txt")]
+    [InlineData(@"\\server\share\test-file.txt")]
+    [InlineData(@"C:\test-file.txt")]
+    [InlineData("C:test-file.txt")]
+    [InlineData("C:/test-file.txt")]
+    [InlineData("/test-file.txt")]
+    public async Task ItShouldRejectUnsafeUploadRemoteFileNamesAsync(string remoteFileName)
     {
         // Arrange
         var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
@@ -304,9 +312,10 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
     [Theory]
     [InlineData("nested/dir/test-file.txt")]
+    [InlineData(@"nested\dir\test-file.txt")]
     [InlineData(".hidden/test-file.txt")]
     [InlineData("nested/a..b/test-file.txt")]
-    public async Task ItShouldAllowUploadRemoteFileNamesWithoutDotSegmentsAsync(string remoteFileName)
+    public async Task ItShouldAllowSafeUploadRemoteFileNamesAsync(string remoteFileName)
     {
         // Arrange
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
