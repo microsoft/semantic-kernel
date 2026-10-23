@@ -213,5 +213,7 @@ def finish_reason_from_bedrock_to_semantic_kernel(finish_reason: str) -> FinishR
         "end_turn": FinishReason.STOP,
         "max_tokens": FinishReason.LENGTH,
         "content_filtered": FinishReason.CONTENT_FILTER,
+        "guardrail_intervened": FinishReason.CONTENT_FILTER,
+        "model_context_window_exceeded": FinishReason.LENGTH,
         "tool_use": FinishReason.TOOL_CALLS,
     }.get(finish_reason)
