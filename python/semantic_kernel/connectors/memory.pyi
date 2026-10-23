@@ -13,6 +13,7 @@ from .azure_cosmos_db import (
 from .chroma import ChromaCollection, ChromaStore
 from .faiss import FaissCollection, FaissStore
 from .in_memory import InMemoryCollection, InMemoryStore
+from .milvus import MilvusCollection, MilvusSettings, MilvusStore
 from .mongodb import MongoDBAtlasCollection, MongoDBAtlasSettings, MongoDBAtlasStore
 from .pinecone import PineconeCollection, PineconeSettings, PineconeStore
 from .postgres import PostgresCollection, PostgresSettings, PostgresStore
@@ -38,6 +39,9 @@ __all__ = [
     "FaissStore",
     "InMemoryCollection",
     "InMemoryStore",
+    "MilvusCollection",
+    "MilvusSettings",
+    "MilvusStore",
     "MongoDBAtlasCollection",
     "MongoDBAtlasSettings",
     "MongoDBAtlasStore",
