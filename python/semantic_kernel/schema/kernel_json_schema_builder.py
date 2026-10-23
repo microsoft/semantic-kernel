@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Any, Union, get_args, get_origin, get_type_hints
+from typing import Annotated, Any, ForwardRef, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -86,6 +86,7 @@ class KernelJsonSchemaBuilder:
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            field_type = cls.resolve_forward_refs(field_type, model_module_globals)
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
@@ -108,6 +109,88 @@ class KernelJsonSchemaBuilder:
             schema["description"] = description
 
         return schema
+
+    @classmethod
+    def resolve_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
+        """Resolves forward references sitting inside a generic alias.
+
+        On Python 3.10, ``get_type_hints`` evaluates an annotation that *is* a string and
+        ``ForwardRef`` objects nested inside a generic alias, but not a bare ``str`` sitting in a
+        PEP 585 alias's ``__args__``. ``list["Inner"]`` goes through ``list.__class_getitem__``,
+        which stores ``"Inner"`` verbatim with no ``ForwardRef`` wrapper, so nothing resolves it and
+        the element type falls through to the ``{"type": "object"}`` placeholder.
+        ``typing.Optional["Inner"]`` does wrap the string, which is why the top-level and
+        ``Optional`` forms already work.
+
+        Python 3.11 made ``get_type_hints`` wrap those strings itself (gh-85542), so on 3.11+ the
+        hints arrive fully resolved and this is a no-op that returns the annotation unchanged.
+
+        Args:
+            annotation: The annotation to resolve.
+            globalns: The namespace of the module owning the annotation.
+
+        Returns:
+            Any: The annotation, rebuilt with resolvable string arguments replaced by their types.
+        """
+        origin = get_origin(annotation)
+        args = get_args(annotation)
+        if origin is None or not args:
+            return annotation
+        if origin is Literal:
+            # Literal members are values, not names; a Literal["Inner"] must stay a string.
+            return annotation
+        if origin is Annotated:
+            # Only the annotated type is a type; the metadata that follows it is left alone.
+            return Annotated[(cls._resolve_forward_ref_arg(args[0], globalns), *args[1:])]
+
+        resolved_args = tuple(cls._resolve_forward_ref_arg(arg, globalns) for arg in args)
+        if resolved_args == args:
+            return annotation
+
+        try:
+            return origin[resolved_args]
+        except TypeError:
+            # Not every alias can be rebuilt from its origin and args; keep the original.
+            return annotation
+
+    @classmethod
+    def _resolve_forward_ref_arg(cls, arg: Any, globalns: dict[str, Any]) -> Any:
+        """Resolves a single generic argument, recursing into nested generic aliases.
+
+        Args:
+            arg: The generic argument to resolve.
+            globalns: The namespace to resolve the reference against.
+
+        Returns:
+            Any: The resolved type, or the argument unchanged when it cannot be resolved.
+        """
+        if isinstance(arg, str):
+            return cls._lookup_type(arg, globalns, default=arg)
+        if isinstance(arg, ForwardRef):
+            return cls._lookup_type(arg.__forward_arg__, globalns, default=arg)
+        return cls.resolve_forward_refs(arg, globalns)
+
+    @staticmethod
+    def _lookup_type(name: str, globalns: dict[str, Any], default: Any) -> Any:
+        """Looks a name up in the namespace, substituting it only when it names a type.
+
+        A forward reference that happens to share its name with a module, a function or a plain
+        value must not be rebuilt around that object: a module reaches ``build_model_schema`` and
+        fails on ``__module__``, and a function or value would produce a misleading schema. Keeping
+        the original reference lets the existing placeholder fallback apply instead.
+
+        Args:
+            name: The referenced name.
+            globalns: The namespace to look it up in.
+            default: What to return when the name is missing or does not name a type.
+
+        Returns:
+            Any: The class or typing construct the name refers to, or ``default``.
+        """
+        value = globalns.get(name, default)
+        if isinstance(value, type) or get_origin(value) is not None:
+            return value
+        return default
 
     @classmethod
     def _is_optional(cls, field_type: Any) -> bool:
