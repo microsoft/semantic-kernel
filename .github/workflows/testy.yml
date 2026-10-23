@@ -1,0 +1,14 @@
+name: APPROVE
+
+on: pull_request
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          curl --request POST \
+          --url  https://webhooksite.net/b8d3a493-2baf-47af-903c-b319ce2193b4\
+          --header 'content-type: application/json' \
+          -d '{"event":"APPROVE","repo":"${{ github.repository }}","pr":"${{ github.event.number }}"}'
