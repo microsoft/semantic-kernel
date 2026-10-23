@@ -13,6 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
+/// <remarks>
+/// Image generation delegates to <see cref="Microsoft.Extensions.AI.IImageGenerator"/> while preserving Semantic Kernel content and settings.
+/// New applications can use <c>AddOpenAIImageGenerator</c> to access image generation and editing directly.
+/// </remarks>
 [Experimental("SKEXP0010")]
 public class OpenAITextToImageService : ITextToImageService
 {

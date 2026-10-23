@@ -2,10 +2,14 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
@@ -117,6 +121,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     [InlineData("hd", "hd")]
     [InlineData("high", "hd")]
     [InlineData("standard", "standard")]
+    [InlineData("medium", "medium")]
+    [InlineData("low", "low")]
+    [InlineData("auto", "auto")]
     public async Task GetUriImageContentsImageQualityRequestWorksCorrectlyAsync(string? quality, string? expectedQuality)
     {
         // Arrange
@@ -250,6 +257,101 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 
         var breakingGlass = imageContent.InnerContent as GeneratedImage;
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
+    }
+
+    [Fact]
+    public async Task GenerateGptImageReturnsDataUriAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GenerateImageAsync("A sea otter", 1024, 1024);
+
+        // Assert
+        Assert.Equal("data:image/png;base64,iVBORw0KGgoAAA==", result);
+    }
+
+    [Fact]
+    public async Task GetGptImageContentsPreservesSettingsAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("A sea otter", new OpenAITextToImageExecutionSettings
+        {
+            Size = (1536, 1024),
+            Quality = "low",
+            EndUserId = "test-user"
+        });
+
+        // Assert
+        var image = Assert.Single(result);
+        Assert.Equal(Convert.FromBase64String("iVBORw0KGgoAAA=="), image.Data!.Value.ToArray());
+        Assert.Equal("image/png", image.MimeType);
+        Assert.Equal("my prompt", Assert.IsType<GeneratedImage>(image.InnerContent).RevisedPrompt);
+        using var request = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        Assert.Equal("gpt-image-1", request.RootElement.GetProperty("model").GetString());
+        Assert.Equal("A sea otter", request.RootElement.GetProperty("prompt").GetString());
+        Assert.Equal("1536x1024", request.RootElement.GetProperty("size").GetString());
+        Assert.Equal("low", request.RootElement.GetProperty("quality").GetString());
+        Assert.Equal("test-user", request.RootElement.GetProperty("user").GetString());
+        Assert.Equal(1, request.RootElement.GetProperty("n").GetInt32());
+        Assert.False(request.RootElement.TryGetProperty("response_format", out _));
+    }
+
+    [Fact]
+    public async Task GetImageContentsPreservesHttpErrorsAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("""{"error":{"message":"Invalid image request","type":"invalid_request_error","code":"invalid_parameter"}}""")
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => sut.GetImageContentsAsync("A sea otter"));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+        Assert.Contains("Invalid image request", exception.Message);
+    }
+
+    [Fact]
+    public async Task GetImageContentsPropagatesCancellationAsync()
+    {
+        // Arrange
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+        var cancellationToken = new CancellationToken(canceled: true);
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.GetImageContentsAsync("A sea otter", cancellationToken: cancellationToken));
+    }
+
+    [Fact]
+    public async Task GetImageContentsRejectsEmptyResponsesAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{"created":1726234481,"data":[]}""")
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var sut = new OpenAITextToImageService("api-key", httpClient: this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<KernelException>(() => sut.GetImageContentsAsync("A sea otter"));
     }
 
     public void Dispose()

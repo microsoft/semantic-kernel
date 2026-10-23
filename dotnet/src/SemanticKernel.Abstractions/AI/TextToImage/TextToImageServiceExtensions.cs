@@ -20,7 +20,7 @@ public static class TextToImageServiceExtensions
     /// <param name="height">Image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Generated image in base64 format or image URL</returns>
+    /// <returns>Generated image as a data URI or an image URL.</returns>
     public static async Task<string> GenerateImageAsync(this ITextToImageService service,
     string description,
     int width,
@@ -39,6 +39,7 @@ public static class TextToImageServiceExtensions
 
         var result = await service.GetImageContentsAsync(new TextContent(description), executionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        return result[0].Uri!.ToString();
+        var image = result[0];
+        return image.Uri?.ToString() ?? image.DataUri ?? throw new KernelException("The generated image has no valid content.");
     }
 }
