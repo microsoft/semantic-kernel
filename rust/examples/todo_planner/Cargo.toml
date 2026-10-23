@@ -1,0 +1,22 @@
+[package]
+name = "todo_planner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Todo planner example demonstrating Sequential and Stepwise planners"
+
+[[bin]]
+name = "todo_planner"
+path = "todo_planner.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-plan = { path = "../../sk-plan" }
+tokio.workspace = true
+serde_json.workspace = true
+chrono.workspace = true

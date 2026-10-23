@@ -1,0 +1,26 @@
+[package]
+name = "sk-openai"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "OpenAI connector for Semantic Kernel, providing chat completion and embedding services"
+
+[dependencies]
+semantic_kernel = { path = "../semantic_kernel" }
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+dotenv.workspace = true
+futures = "0.3"
+
+[dev-dependencies]
+tracing-subscriber.workspace = true

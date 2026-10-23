@@ -1,0 +1,32 @@
+[package]
+name = "sk-memory"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Memory store trait and implementations for Semantic Kernel"
+
+[dependencies]
+semantic_kernel = { path = "../semantic_kernel" }
+# Async runtime
+tokio = { workspace = true }
+async-trait = { workspace = true }
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+# Collections
+uuid = { version = "1.0", features = ["v4"] }
+# Qdrant client (optional)
+qdrant-client = { version = "1.11", optional = true }
+
+[features]
+default = ["memory-store"]
+memory-store = []
+qdrant = ["dep:qdrant-client"]

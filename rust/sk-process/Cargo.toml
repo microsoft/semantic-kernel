@@ -1,0 +1,34 @@
+[package]
+name = "sk-process"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Process Framework for declarative business workflows in Semantic Kernel"
+
+[features]
+default = []
+process = []
+
+[dependencies]
+semantic_kernel = { path = "../semantic_kernel" }
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid = { workspace = true, features = ["serde"] }
+chrono = { workspace = true, features = ["serde"] }
+tracing.workspace = true
+
+# OpenTelemetry for traces
+opentelemetry = "0.26"
+opentelemetry_sdk = { version = "0.26", features = ["trace"] }
+
+[dev-dependencies]
+tracing-subscriber.workspace = true
