@@ -123,6 +123,28 @@ async def test_valid_lambda_filter_attribute_access(collection):
     assert "2" in results
 
 
+async def test_multiple_filters_are_combined_with_and(collection):
+    await collection.upsert([
+        {"id": "1", "content": "a", "vector": [1, 2, 3, 4, 5]},
+        {"id": "2", "content": "b", "vector": [1, 2, 3, 4, 5]},
+        {"id": "3", "content": "a", "vector": [1, 2, 3, 4, 5]},
+    ])
+    filters = ["lambda x: x.content == 'a'", "lambda x: x.id != '3'"]
+    results = collection._get_filtered_records(type("opt", (), {"filter": filters})())
+    assert list(results) == ["1"]
+
+
+async def test_multiple_callable_filters_are_combined_with_and(collection):
+    await collection.upsert([
+        {"id": "1", "content": "a", "vector": [1, 2, 3, 4, 5]},
+        {"id": "2", "content": "b", "vector": [1, 2, 3, 4, 5]},
+        {"id": "3", "content": "a", "vector": [1, 2, 3, 4, 5]},
+    ])
+    filters = [lambda x: x.content == "a", lambda x: x.id != "3"]
+    results = collection._get_filtered_records(type("opt", (), {"filter": filters})())
+    assert list(results) == ["1"]
+
+
 async def test_invalid_filter_not_lambda(collection):
     with raises(VectorStoreOperationException, match="must be a lambda expression"):
         collection._get_filtered_records(type("opt", (), {"filter": "x.id == '1'"})())
