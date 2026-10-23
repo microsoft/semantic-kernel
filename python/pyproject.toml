@@ -255,5 +255,5 @@ exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 name = "semantic_kernel"
 
 [build-system]
-requires = ["flit-core >= 3.9,<4.0"]
+requires = ["flit-core >= 3.9,< 5.0"]
 build-backend = "flit_core.buildapi"
