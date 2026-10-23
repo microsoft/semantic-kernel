@@ -111,7 +111,7 @@ public sealed partial class SessionsPythonPlugin
     /// <summary>
     /// Uploads a file to the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`.</param>
+    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`. Must not contain `.` or `..` path segments.</param>
     /// <param name="localFilePath">The path to the file on the local machine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The metadata of the uploaded file.</returns>
@@ -120,13 +120,14 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
-        [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
+        [Description("The name of the remote file, relative to `/mnt/data`. Must not contain `.` or `..` path segments.")] string remoteFileName,
         [Description("The path to the file on the local machine.")] string localFilePath,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
+        ValidateRemoteFileName(remoteFileName);
         var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
 
         this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
@@ -290,6 +291,14 @@ public sealed partial class SessionsPythonPlugin
         await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void ValidateRemoteFileName(string remoteFileName)
+    {
+        if (remoteFileName.Split('/').Any(segment => segment is "." or ".."))
+        {
+            throw new InvalidOperationException("The remote file name must not contain '.' or '..' path segments.");
+        }
     }
 
     /// <summary>
