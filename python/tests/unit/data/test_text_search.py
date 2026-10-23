@@ -117,6 +117,19 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
     assert results.value == ["test"]
 
 
+async def test_create_search_function_preserves_filter_for_invalid_invocation_options(kernel: Kernel):
+    test_search = TestSearch()
+    search_filter = "lambda x: x.category == 'books'"
+    kernel_function = test_search.create_search_function(filter=search_filter)
+
+    with patch.object(test_search, "search") as mock_search:
+        mock_search.return_value = KernelSearchResults(results=desync_list([]))
+        await kernel_function.invoke(kernel, KernelArguments(query="query", top=0))
+
+    mock_search.assert_awaited_once()
+    assert mock_search.await_args.kwargs["filter"] == search_filter
+
+
 async def test_create_kernel_function_inner_with_other_options_type(kernel: Kernel):
     test_search = TestSearch()
 
