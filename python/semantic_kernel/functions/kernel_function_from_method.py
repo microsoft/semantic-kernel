@@ -4,9 +4,9 @@ import inspect
 import logging
 from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import Any
+from typing import Any, get_origin
 
-from pydantic import Field, ValidationError
+from pydantic import Field, TypeAdapter, ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -140,6 +140,13 @@ class KernelFunctionFromMethod(KernelFunction):
                 return [self._parse_parameter(item, item_type) for item in value]
             raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
         else:
+            if get_origin(param_type) is not None:
+                try:
+                    return TypeAdapter(param_type).validate_python(value)
+                except Exception as exc:
+                    raise FunctionExecutionException(
+                        f"Parameter is expected to be parsed to {param_type} but is not."
+                    ) from exc
             try:
                 if isinstance(value, dict) and hasattr(param_type, "__init__"):
                     return param_type(**value)
@@ -171,7 +178,6 @@ class KernelFunctionFromMethod(KernelFunction):
                 value: Any = context.arguments[param.name]
                 if (
                     param.type_
-                    and "," not in param.type_
                     and param.type_object
                     and param.type_object is not inspect._empty
                     and param.type_object is not Any
