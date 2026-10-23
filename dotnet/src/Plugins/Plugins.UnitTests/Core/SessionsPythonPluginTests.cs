@@ -278,6 +278,61 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../test-file.txt")]
+    [InlineData("../../test-file.txt")]
+    [InlineData("./test-file.txt")]
+    [InlineData("nested/./test-file.txt")]
+    [InlineData("nested/../test-file.txt")]
+    [InlineData("nested/..")]
+    [InlineData("/mnt/data/../../test-file.txt")]
+    [InlineData(@"nested\.\test-file.txt")]
+    [InlineData(@"nested\..\test-file.txt")]
+    [InlineData(@"\test-file.txt")]
+    [InlineData(@"\\server\share\test-file.txt")]
+    [InlineData(@"C:\test-file.txt")]
+    [InlineData("C:test-file.txt")]
+    [InlineData("C:/test-file.txt")]
+    [InlineData("/test-file.txt")]
+    public async Task ItShouldRejectUnsafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath));
+
+        // Assert
+        Assert.Contains("must not contain '.' or '..' path segments", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
+    }
+
+    [Theory]
+    [InlineData("nested/dir/test-file.txt")]
+    [InlineData(@"nested\dir\test-file.txt")]
+    [InlineData(".hidden/test-file.txt")]
+    [InlineData("nested/a..b/test-file.txt")]
+    public async Task ItShouldAllowSafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseContent),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        await plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+    }
+
     [Fact]
     public async Task ItShouldDownloadFileWithoutSavingInDiskAsync()
     {
