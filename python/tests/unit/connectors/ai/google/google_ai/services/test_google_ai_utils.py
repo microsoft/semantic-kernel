@@ -33,6 +33,22 @@ def test_finish_reason_from_google_ai_to_semantic_kernel():
     assert finish_reason_from_google_ai_to_semantic_kernel(None) is None
 
 
+@pytest.mark.parametrize(
+    "reason",
+    [
+        FinishReason.RECITATION,
+        FinishReason.BLOCKLIST,
+        FinishReason.PROHIBITED_CONTENT,
+        FinishReason.SPII,
+        FinishReason.IMAGE_SAFETY,
+        FinishReason.IMAGE_PROHIBITED_CONTENT,
+    ],
+)
+def test_content_filter_finish_reasons_from_google_ai(reason):
+    """Responses Gemini stopped for their content are reported as content filtered."""
+    assert finish_reason_from_google_ai_to_semantic_kernel(reason) == SemanticKernelFinishReason.CONTENT_FILTER
+
+
 def test_format_user_message():
     """Test format_user_message."""
     user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
