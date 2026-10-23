@@ -89,7 +89,10 @@ class ChatHistoryAgentThread(AgentThread):
             or "thread_id" not in new_message.metadata
             or new_message.metadata["thread_id"] != self._id
         ):
-            self._chat_history.add_message(new_message)
+            if isinstance(self._chat_history, ChatHistoryReducer) and self._chat_history.auto_reduce:
+                await self._chat_history.add_message_async(new_message)
+            else:
+                self._chat_history.add_message(new_message)
 
     async def get_messages(self) -> AsyncIterable[ChatMessageContent]:
         """Retrieve the current chat history.
@@ -295,13 +298,22 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An AgentResponseItem of type ChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
+        initial_history = (
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
+            else None
+        )
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ChatHistoryAgentThread(),
+            construct_thread=lambda: ChatHistoryAgentThread(chat_history=initial_history),
             expected_type=ChatHistoryAgentThread,
         )
         assert thread.id is not None  # nosec
+
+        if isinstance(thread, ChatHistoryAgentThread) and isinstance(thread._chat_history, ChatHistoryReducer):
+            await thread.reduce()
 
         chat_history = ChatHistory()
         async for message in thread.get_messages():
@@ -349,13 +361,22 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An async iterable of AgentResponseItem of type ChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
+        initial_history = (
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
+            else None
+        )
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ChatHistoryAgentThread(),
+            construct_thread=lambda: ChatHistoryAgentThread(chat_history=initial_history),
             expected_type=ChatHistoryAgentThread,
         )
         assert thread.id is not None  # nosec
+
+        if isinstance(thread, ChatHistoryAgentThread) and isinstance(thread._chat_history, ChatHistoryReducer):
+            await thread.reduce()
 
         chat_history = ChatHistory()
         async for message in thread.get_messages():
@@ -398,13 +419,22 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         Returns:
             An async generator of AgentResponseItem of type StreamingChatMessageContent.
         """
+        merged_args = self._merge_arguments(arguments)
+        initial_history = (
+            merged_args.get("chat_history")
+            if merged_args and isinstance(merged_args.get("chat_history"), ChatHistory)
+            else None
+        )
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ChatHistoryAgentThread(),
+            construct_thread=lambda: ChatHistoryAgentThread(chat_history=initial_history),
             expected_type=ChatHistoryAgentThread,
         )
         assert thread.id is not None  # nosec
+
+        if isinstance(thread, ChatHistoryAgentThread) and isinstance(thread._chat_history, ChatHistoryReducer):
+            await thread.reduce()
 
         chat_history = ChatHistory()
         async for message in thread.get_messages():
