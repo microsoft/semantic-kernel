@@ -196,8 +196,14 @@ def update_settings_from_function_choice_configuration(
                     "inputSchema": {
                         "json": {
                             "type": "object",
-                            "properties": {param.name: param.schema_data for param in function.parameters},
-                            "required": [p.name for p in function.parameters if p.is_required],
+                            "properties": {
+                                param.name: param.schema_data
+                                for param in function.parameters
+                                if param.include_in_function_choices
+                            },
+                            "required": [
+                                p.name for p in function.parameters if p.is_required and p.include_in_function_choices
+                            ],
                         }
                     },
                 }
