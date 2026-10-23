@@ -10,8 +10,6 @@ on:
       - ".github/workflows/github-automation-tests.yml"
       - ".github/workflows/label-issues.yml"
       - ".github/workflows/label-pr.yml"
-      - ".github/workflows/python-test-coverage.yml"
-      - ".github/workflows/python-test-coverage-report.yml"
   push:
     branches:
       - main
@@ -23,8 +21,6 @@ on:
       - ".github/workflows/github-automation-tests.yml"
       - ".github/workflows/label-issues.yml"
       - ".github/workflows/label-pr.yml"
-      - ".github/workflows/python-test-coverage.yml"
-      - ".github/workflows/python-test-coverage-report.yml"
 
 permissions:
   contents: read
