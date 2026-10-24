@@ -8,7 +8,6 @@ from typing_extensions import deprecated
 
 from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
-from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -138,12 +137,6 @@ class FunctionResultContent(KernelContent):
         if isinstance(result, TextContent):
             res = result.text
         elif isinstance(result, ChatMessageContent):
-            if isinstance(result.items[0], TextContent):
-                res = result.items[0].text
-            elif isinstance(result.items[0], ImageContent):
-                res = result.items[0].data_uri
-            elif isinstance(result.items[0], FunctionResultContent):
-                res = result.items[0].result
             res = str(result)
         else:
             res = result
