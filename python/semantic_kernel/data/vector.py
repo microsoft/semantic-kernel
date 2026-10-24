@@ -5,7 +5,7 @@ import logging
 import operator
 import sys
 from abc import abstractmethod
-from ast import AST, Lambda, NodeVisitor, expr, parse
+from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UnaryOp, USub, copy_location, expr, parse
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -712,6 +712,28 @@ class GetFilteredRecordOptions:
     top: int = 10
     skip: int = 0
     order_by: Mapping[str, bool] | None = None
+
+
+class _FoldUnaryNumericConstants(NodeTransformer):
+    """Fold negative numeric literals into constants before filter parsers run.
+
+    Python parses negative literals as ``UnaryOp(USub, Constant(n))``. Most vector-store
+    ``_lambda_parser`` implementations reject unary ``+/-`` wholesale, so filters such as
+    ``lambda x: x.price > -5`` fail even though a negative bound is otherwise valid.
+    Folding the unary into a constant here keeps connector parsers unchanged (#14571).
+    """
+
+    def visit_UnaryOp(self, node: UnaryOp) -> AST:
+        """Fold unary minus of an int/float constant; leave other unary ops alone."""
+        self.generic_visit(node)
+        if (
+            isinstance(node.op, USub)
+            and isinstance(node.operand, Constant)
+            and isinstance(node.operand.value, (int, float))
+            and not isinstance(node.operand.value, bool)
+        ):
+            return copy_location(Constant(-node.operand.value), node)
+        return node
 
 
 class LambdaVisitor(NodeVisitor, Generic[TFilters]):
@@ -1987,9 +2009,12 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         created_filters: list[Any] = []
 
         visitor = LambdaVisitor(self._lambda_parser)
+        folder = _FoldUnaryNumericConstants()
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
+            # Fold negative literals so connector parsers see a numeric Constant (#14571).
+            tree = folder.visit(tree)
             visitor.visit(tree)
         created_filters = visitor.output_filters
         if len(created_filters) == 0:
