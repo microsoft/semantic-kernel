@@ -379,19 +379,25 @@ class KernelFunction(KernelBaseModel):
                 KernelFunctionLogMessages.log_function_streaming_completed(logger, duration)
 
     def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
-        """Copy the function, can also override the plugin_name.
+        """Copy the function and optionally override the plugin name.
+
+        Metadata is always deep-copied so each function copy owns an independent
+        metadata instance, even when the plugin name does not change.
 
         Args:
-            plugin_name (str): The new plugin name.
+            plugin_name (str | None): The new plugin name, or None to preserve the current one.
 
         Returns:
             KernelFunction: The copied function.
         """
-        cop: KernelFunction = copy(self)
-        cop.metadata = deepcopy(self.metadata)
-        if plugin_name:
-            cop.metadata.plugin_name = plugin_name
-        return cop
+        copied_function: KernelFunction = copy(self)
+        # Keep metadata isolated across copies to avoid shared mutable state.
+        copied_function.metadata = self.metadata.model_copy(deep=True)
+        if plugin_name is not None:
+            # Assign normally (rather than via model_copy(update=...)) so that
+            # validate_assignment=True runs and rejects an invalid plugin name.
+            copied_function.metadata.plugin_name = plugin_name
+        return copied_function
 
     def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:
         """Handle the exception.
