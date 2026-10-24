@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
+import builtins
 import sys
 import types
 from enum import Enum
@@ -86,6 +88,7 @@ class KernelJsonSchemaBuilder:
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            field_type = cls._resolve_nested_forward_refs(field_type, model_module_globals)
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
@@ -149,6 +152,141 @@ class KernelJsonSchemaBuilder:
         """
         type_name = TYPE_MAPPING.get(parameter_type, "object")
         return {"type": type_name}
+
+    _TYPE_EXPRESSION_NODES = (
+        ast.Expression,
+        ast.Name,
+        ast.Attribute,
+        ast.Subscript,
+        ast.Tuple,
+        ast.List,
+        ast.Load,
+        ast.Constant,
+        ast.BinOp,
+        ast.BitOr,
+    )
+
+    @classmethod
+    def _is_type_expression(cls, source: str) -> bool:
+        """Return whether `source` parses as a type expression and nothing more.
+
+        A forward reference names a type: an identifier, a dotted path, a subscription such as
+        `dict[str, Inner]`, or a `X | None` union. Calls, lambdas and comprehensions are not part
+        of that grammar, so rejecting them limits `_evaluate_type_expression` to the few
+        operations a type annotation is made of.
+        """
+        try:
+            tree = ast.parse(source, mode="eval")
+        except SyntaxError:
+            return False
+        for node in ast.walk(tree):
+            if not isinstance(node, cls._TYPE_EXPRESSION_NODES):
+                return False
+            if isinstance(node, ast.Constant) and not isinstance(node.value, (str, int, bool, type(None))):
+                return False
+        return True
+
+    @classmethod
+    def _evaluate_type_expression(cls, node: ast.AST, globalns: dict[str, Any]) -> Any:
+        """Evaluate a tree that `_is_type_expression` admitted, without using `eval`.
+
+        Names are looked up the way `eval` looks them up, in `globalns` first and then in the
+        builtins. Every other admitted node is a subscription, an attribute access, a `|` union,
+        a tuple or list of arguments, or a literal; there is no call node to evaluate.
+        """
+        if isinstance(node, ast.Expression):
+            return cls._evaluate_type_expression(node.body, globalns)
+        if isinstance(node, ast.Name):
+            if node.id in globalns:
+                return globalns[node.id]
+            return getattr(builtins, node.id)
+        if isinstance(node, ast.Attribute):
+            return getattr(cls._evaluate_type_expression(node.value, globalns), node.attr)
+        if isinstance(node, ast.Subscript):
+            value = cls._evaluate_type_expression(node.value, globalns)
+            return value[cls._evaluate_type_expression(node.slice, globalns)]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
+            left = cls._evaluate_type_expression(node.left, globalns)
+            return left | cls._evaluate_type_expression(node.right, globalns)
+        if isinstance(node, ast.Tuple):
+            return tuple(cls._evaluate_type_expression(element, globalns) for element in node.elts)
+        if isinstance(node, ast.List):
+            return [cls._evaluate_type_expression(element, globalns) for element in node.elts]
+        if isinstance(node, ast.Constant):
+            return node.value
+        raise TypeError(f"Unsupported node in a type expression: {type(node).__name__}")
+
+    @classmethod
+    def _is_type_or_typing_construct(cls, value: Any) -> bool:
+        """Return whether `value` is something a forward reference can name.
+
+        That is a class (a model, an enum, a builtin) or a typing construct such as
+        `dict[str, Inner]`, `Optional[Inner]` or `Inner | None`, all of which `get_origin` recognizes.
+        """
+        return isinstance(value, type) or get_origin(value) is not None
+
+    @classmethod
+    def _resolve_nested_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
+        """Resolve string forward references nested inside a generic alias.
+
+        `get_type_hints` evaluates an annotation that *is* a string, but it does not descend into
+        a generic alias that already exists as an object. `list["Inner"]` goes through
+        `list.__class_getitem__`, which stores `"Inner"` verbatim instead of wrapping it in a
+        `ForwardRef`, so nothing resolves it and `build` formats the bare string rather than the
+        class it names.
+
+        Args:
+            annotation: The annotation to resolve, typically a generic alias.
+            globalns: The globals of the module the owning model was defined in.
+
+        Returns:
+            Any: The annotation with resolvable string arguments replaced by the types they name,
+                or the original annotation when a reference does not resolve to a type.
+        """
+        args = get_args(annotation)
+        if not args:
+            return annotation
+
+        resolved_args = []
+        changed = False
+        for arg in args:
+            reference = arg if isinstance(arg, str) else getattr(arg, "__forward_arg__", None)
+            if reference is not None:
+                if not cls._is_type_expression(reference):
+                    # Anything that isn't the grammar of a type expression is not a forward
+                    # reference; refuse to evaluate it rather than widen what a stray
+                    # annotation can run while a schema is being built.
+                    return annotation
+                try:
+                    resolved = cls._evaluate_type_expression(ast.parse(reference, mode="eval"), globalns)
+                except Exception:
+                    # Not resolvable from this module; leave the annotation alone so the existing
+                    # fallback applies instead of raising while a schema is being built.
+                    return annotation
+                if not cls._is_type_or_typing_construct(resolved):
+                    # The name exists but is a module, a function or a plain value rather than a
+                    # type. Substituting it would make `build` raise or describe the wrong object,
+                    # so keep the reference as written and let the existing fallback apply.
+                    return annotation
+                changed = True
+            else:
+                resolved = cls._resolve_nested_forward_refs(arg, globalns)
+                changed = changed or resolved is not arg
+            resolved_args.append(resolved)
+
+        if not changed:
+            return annotation
+
+        copy_with = getattr(annotation, "copy_with", None)
+        if copy_with is not None:
+            return copy_with(tuple(resolved_args))
+        origin = get_origin(annotation)
+        if origin is None:
+            return annotation
+        try:
+            return origin[tuple(resolved_args)]
+        except TypeError:
+            return annotation
 
     @classmethod
     def handle_complex_type(
