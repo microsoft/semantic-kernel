@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
+import sys
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
 from importlib import import_module
@@ -459,6 +460,32 @@ async def test_function_invoke_return_list_type(kernel: Kernel):
 
     result = await kernel.invoke(function=func)
     assert str(result) == "test1,test2"
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ([], "[]"),
+        (["one"], '"one"'),
+        (["one", "two"], '["one", "two"]'),
+        (None, "The function did not return a result."),
+    ],
+)
+async def test_as_agent_framework_tool_serializes_list_results(kernel: Kernel, monkeypatch, value, expected):
+    class MockAIFunction:
+        def __init__(self, *, func, **kwargs):
+            self.func = func
+
+    monkeypatch.setitem(sys.modules, "agent_framework", Mock(AIFunction=MockAIFunction))
+
+    @kernel_function(name="list_func")
+    def list_func() -> Any:
+        return value
+
+    func = KernelFunction.from_method(list_func, "test")
+    tool = func.as_agent_framework_tool(kernel=kernel)
+
+    assert await tool.func() == expected
 
 
 async def test_function_invocation_filters(kernel: Kernel):
