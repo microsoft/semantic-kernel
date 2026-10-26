@@ -4,6 +4,7 @@ import pytest
 
 from semantic_kernel.agents.bedrock.action_group_utils import (
     BEDROCK_FUNCTION_ALLOWED_PARAMETER_TYPES,
+    kernel_function_metadata_to_bedrock_function_schema,
     kernel_function_parameter_type_to_bedrock_function_parameter_type,
     kernel_function_to_bedrock_function_schema,
     parse_function_result_contents,
@@ -11,6 +12,8 @@ from semantic_kernel.agents.bedrock.action_group_utils import (
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 
 
@@ -33,6 +36,27 @@ def test_kernel_function_to_bedrock_function_schema(kernel_with_function: Kernel
             }
         ]
     }
+
+
+def test_kernel_function_metadata_to_bedrock_function_schema_skips_params_excluded_from_function_choices():
+    metadata = KernelFunctionMetadata(
+        name="lookup",
+        description="Look up a user",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(name="query", schema_data={"type": "string"}, is_required=True),
+            KernelParameterMetadata(
+                name="token",
+                schema_data={"type": "string"},
+                is_required=True,
+                include_in_function_choices=False,
+            ),
+        ],
+    )
+
+    result = kernel_function_metadata_to_bedrock_function_schema(metadata)
+
+    assert list(result["parameters"]) == ["query"]
 
 
 def test_kernel_function_parameter_type_to_bedrock_function_parameter_type():

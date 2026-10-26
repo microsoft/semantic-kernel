@@ -2095,8 +2095,8 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             try:
                 inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
             except ValidationError:
-                # this usually only happens when the kwargs are invalid, so blank options in this case.
-                inner_options = self.options_class()
+                # Ignore invalid invocation overrides and retain the configured options.
+                inner_options = create_options(self.options_class, deepcopy(options))
             inner_options.filter = update_func(filter=inner_options.filter, parameters=parameters, **kwargs)
             match search_type:
                 case SearchType.VECTOR:

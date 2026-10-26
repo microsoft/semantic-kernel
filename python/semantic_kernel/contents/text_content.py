@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from html import unescape
 from typing import ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
@@ -52,7 +51,7 @@ class TextContent(KernelContent):
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
-        return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
+        return cls(text=element.text or "", encoding=element.get("encoding", None))
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

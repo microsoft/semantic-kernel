@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Any, Union, get_args, get_origin, get_type_hints
+from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -196,12 +196,23 @@ class KernelJsonSchemaBuilder:
             if structured_output:
                 schema["additionalProperties"] = False
             return schema
+        if origin is Literal:
+            values = [arg.value if isinstance(arg, Enum) else arg for arg in args]
+            value_types = {"null" if v is None else TYPE_MAPPING.get(type(v), "string") for v in values}
+            ordered_types = sorted(value_types, key=lambda t: (t == "null", t))
+            schema = {"type": ordered_types[0] if len(ordered_types) == 1 else ordered_types, "enum": values}
+            if description:
+                schema["description"] = description
+            return schema
         if origin in {Union, types.UnionType}:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
                 schema = cls.build(non_none_type, structured_output=structured_output)
-                schema["type"] = [schema["type"], "null"]
+                schema_types = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
+                schema["type"] = schema_types if "null" in schema_types else [*schema_types, "null"]
+                if "enum" in schema and None not in schema["enum"]:
+                    schema["enum"] = [*schema["enum"], None]
                 if description:
                     schema["description"] = description
                 if structured_output:
