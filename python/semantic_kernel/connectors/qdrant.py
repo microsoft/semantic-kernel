@@ -274,8 +274,6 @@ class QdrantCollection(
         vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        query_vector: tuple[str, Sequence[float | int]] | Sequence[float | int] | None = None
-
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
 
@@ -287,19 +285,24 @@ class QdrantCollection(
             raise VectorStoreOperationException(
                 f"Vector field {options.vector_property_name} not found in data model definition."
             )
-        query_vector = (vector_field.storage_name or vector_field.name, vector) if self.named_vectors else vector
         filters: Filter | list[Filter] | None = self._build_filter(options.filter)  # type: ignore
-        filter: Filter | None = Filter(must=filters) if filters and isinstance(filters, list) else filters  # type: ignore
+        filter: Filter | None = (
+            Filter(must=filters if isinstance(filters, list) else [filters])  # type: ignore
+            if filters and not isinstance(filters, Filter)
+            else filters
+        )
         if search_type == SearchType.VECTOR:
-            results = await self.qdrant_client.search(
+            points = await self.qdrant_client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,  # type: ignore
+                query=vector,  # type: ignore
+                using=(vector_field.storage_name or vector_field.name) if self.named_vectors else None,
                 query_filter=filter,
                 with_vectors=options.include_vectors,
                 limit=options.top,
                 offset=options.skip,
                 **kwargs,
             )
+            results = points.points
         else:
             # Hybrid search: vector + keywords (RRF fusion)
             # 1. Get keywords and text field
