@@ -451,3 +451,131 @@ async def test_streaming_chat_response_branch(
 
     # Only one batch should be collected
     assert len(collected) == 1
+
+
+@patch("ollama.AsyncClient.chat", new_callable=AsyncMock)
+async def test_streaming_parallel_tool_calls_mapping(
+    mock_chat: AsyncMock,
+    model_id: str,
+    service_id: str,
+    default_options: dict,
+    chat_history,
+) -> None:
+    """Test that parallel tool calls across stream chunks keep distinct indices and do not merge."""
+    from functools import reduce
+
+    async def fake_stream() -> AsyncGenerator[dict, None]:
+        yield {
+            "model": "m",
+            "message": {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "Weather-get_weather", "arguments": {"city": "Paris"}}}],
+            },
+        }
+        yield {
+            "model": "m",
+            "message": {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "Time-get_time", "arguments": {"zone": "Tokyo"}}}],
+            },
+        }
+        yield {"model": "m", "message": {"role": "assistant", "content": ""}, "done": True}
+
+    mock_chat.return_value = fake_stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    settings = OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options)
+
+    chunks: list[StreamingChatMessageContent] = []
+    async for batch in ollama.get_streaming_chat_message_contents(chat_history, settings):
+        chunks.extend(batch)
+
+    full = reduce(lambda x, y: x + y, chunks)
+    function_calls = [item for item in full.items if isinstance(item, FunctionCallContent)]
+
+    assert len(function_calls) == 2
+    assert function_calls[0].name == "Weather-get_weather"
+    assert function_calls[0].arguments == {"city": "Paris"}
+    assert function_calls[0].index == 0
+
+    assert function_calls[1].name == "Time-get_time"
+    assert function_calls[1].arguments == {"zone": "Tokyo"}
+    assert function_calls[1].index == 1
+
+
+@patch("ollama.AsyncClient.chat", new_callable=AsyncMock)
+async def test_streaming_parallel_tool_calls_chat_response(
+    mock_chat: AsyncMock,
+    model_id: str,
+    service_id: str,
+    default_options: dict,
+    chat_history,
+    monkeypatch,
+) -> None:
+    """Test that parallel tool calls across ChatResponse stream chunks keep distinct indices."""
+    from functools import reduce
+
+    class DummyFunction:
+        def __init__(self, name, arguments):
+            self.name = name
+            self.arguments = arguments
+
+    class DummyToolCall:
+        def __init__(self, function):
+            self.function = function
+
+    class DummyMessage:
+        def __init__(self, content: str, tool_calls=None) -> None:
+            self.content = content
+            self.tool_calls = tool_calls or []
+
+    class DummyChatResponse:
+        def __init__(self, content: str, model: str, prompt_eval_count: int, eval_count: int, tool_calls=None) -> None:
+            function_calls = [
+                DummyToolCall(DummyFunction(tc["function"]["name"], tc["function"]["arguments"])) for tc in tool_calls
+            ]
+            self.message = DummyMessage(content, function_calls)
+            self.model = model
+            self.prompt_eval_count = prompt_eval_count
+            self.eval_count = eval_count
+
+    monkeypatch.setattr(occ_module, "ChatResponse", DummyChatResponse)
+
+    async def fake_stream() -> AsyncGenerator[DummyChatResponse, None]:
+        yield DummyChatResponse(
+            content="",
+            model="m",
+            prompt_eval_count=0,
+            eval_count=0,
+            tool_calls=[{"function": {"name": "Weather-get_weather", "arguments": {"city": "Paris"}}}],
+        )
+        yield DummyChatResponse(
+            content="",
+            model="m",
+            prompt_eval_count=0,
+            eval_count=0,
+            tool_calls=[{"function": {"name": "Time-get_time", "arguments": {"zone": "Tokyo"}}}],
+        )
+
+    mock_chat.return_value = fake_stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    settings = OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options)
+
+    chunks: list[StreamingChatMessageContent] = []
+    async for batch in ollama.get_streaming_chat_message_contents(chat_history, settings):
+        chunks.extend(batch)
+
+    full = reduce(lambda x, y: x + y, chunks)
+    function_calls = [item for item in full.items if isinstance(item, FunctionCallContent)]
+
+    assert len(function_calls) == 2
+    assert function_calls[0].name == "Weather-get_weather"
+    assert function_calls[0].arguments == {"city": "Paris"}
+    assert function_calls[0].index == 0
+
+    assert function_calls[1].name == "Time-get_time"
+    assert function_calls[1].arguments == {"zone": "Tokyo"}
+    assert function_calls[1].index == 1
