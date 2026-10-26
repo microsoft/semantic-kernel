@@ -6,6 +6,7 @@ import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
+import semantic_kernel.connectors.redis as redis_module
 from semantic_kernel.connectors.redis import (
     RedisCollectionTypes,
     RedisHashsetCollection,
@@ -306,3 +307,64 @@ async def test_create_index_manual(collection_hash, mock_ensure_collection_exist
 async def test_create_index_fail(collection_hash, mock_ensure_collection_exists):
     with raises(VectorStoreOperationException, match="Invalid index type supplied."):
         await collection_hash.ensure_collection_exists(index_definition="index_definition", fields="fields")
+
+
+async def test_process_search_results_with_legacy_redisvl_api():
+    results = object()
+    query = object()
+
+    def legacy_process_results(results_arg, query_arg, storage_type):
+        assert results_arg is results
+        assert query_arg is query
+        assert storage_type is redis_module.StorageType.HASH
+        return [{"id": "legacy"}]
+
+    with patch.object(redis_module, "process_results", new=legacy_process_results):
+        processed = await redis_module._process_search_results(
+            results,
+            query,
+            "test",
+            object(),
+            redis_module.RedisCollectionTypes.HASHSET,
+        )
+
+    assert processed == [{"id": "legacy"}]
+
+
+async def test_process_search_results_with_current_redisvl_api():
+    results = object()
+    query = object()
+    expected_schema = object()
+    index = type("Index", (), {"schema": expected_schema})()
+    redis_database = object()
+
+    def current_process_results(results_arg, query_arg, schema):
+        assert results_arg is results
+        assert query_arg is query
+        assert schema is expected_schema
+        return [{"id": "current"}]
+
+    with (
+        patch.object(redis_module, "process_results", new=current_process_results),
+        patch.object(
+            redis_module.AsyncSearchIndex,
+            "from_existing",
+            new=AsyncMock(return_value=index),
+        ) as from_existing,
+    ):
+        processed = await redis_module._process_search_results(
+            results,
+            query,
+            "test",
+            redis_database,
+            redis_module.RedisCollectionTypes.HASHSET,
+        )
+
+    from_existing.assert_awaited_once_with(name="test", redis_client=redis_database)
+    assert processed == [{"id": "current"}]
+
+
+def test_hash_deserialization_handles_omitted_vector(collection_hash):
+    records = collection_hash._deserialize_store_models_to_dicts([{"id": "id1", "content": "content"}])
+
+    assert records[0]["vector"] is None
