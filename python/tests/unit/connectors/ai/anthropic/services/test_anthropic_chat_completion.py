@@ -1,15 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
+from functools import reduce
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from anthropic import AsyncAnthropic
-from anthropic.types import Message
+from anthropic.lib.streaming import TextEvent
+from anthropic.types import Message, MessageDeltaUsage, RawMessageDeltaEvent, RawMessageStartEvent, TextBlock, Usage
+from anthropic.types.raw_message_delta_event import Delta
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -27,6 +31,8 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestE
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
+from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
 
 
 async def test_complete_chat_contents(
@@ -547,3 +553,116 @@ def test_chat_completion_reset_settings(
 
     assert settings.tools is None
     assert settings.tool_choice is None
+
+
+@pytest.fixture
+def model_diagnostics_enabled(monkeypatch):
+    monkeypatch.setattr(
+        "semantic_kernel.utils.telemetry.model_diagnostics.decorators.MODEL_DIAGNOSTICS_SETTINGS",
+        ModelDiagnosticSettings(enable_otel_diagnostics=True),
+    )
+
+
+def _usage_span_attributes(mock_tracer: MagicMock) -> dict:
+    mock_span = mock_tracer.start_span.return_value
+    return {
+        args[0]: args[1]
+        for args, _ in mock_span.set_attribute.call_args_list
+        if args[0] in (gen_ai_attributes.INPUT_TOKENS, gen_ai_attributes.OUTPUT_TOKENS)
+    }
+
+
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
+async def test_usage_is_reported_as_completion_usage(
+    mock_tracer: MagicMock,
+    model_diagnostics_enabled,
+    mock_settings: AnthropicChatPromptExecutionSettings,
+):
+    response = Message(
+        id="test_message_id",
+        content=[TextBlock(text="Hello", type="text")],
+        model="claude-sonnet-4-5",
+        role="assistant",
+        stop_reason="end_turn",
+        stop_sequence=None,
+        type="message",
+        usage=Usage(input_tokens=10, output_tokens=7, cache_read_input_tokens=100, cache_creation_input_tokens=20),
+    )
+    client = MagicMock(spec=AsyncAnthropic)
+    client.messages = MagicMock()
+    client.messages.create = AsyncMock(return_value=response)
+    chat_completion = AnthropicChatCompletion(ai_model_id="test_model_id", api_key="", async_client=client)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_user_message")
+
+    result = await chat_completion.get_chat_message_content(chat_history, mock_settings)
+
+    usage = result.metadata["usage"]
+    assert isinstance(usage, CompletionUsage)
+    assert usage.prompt_tokens == 130
+    assert usage.prompt_tokens_details.cached_tokens == 100
+    assert usage.completion_tokens == 7
+    assert _usage_span_attributes(mock_tracer) == {
+        gen_ai_attributes.INPUT_TOKENS: 130,
+        gen_ai_attributes.OUTPUT_TOKENS: 7,
+    }
+
+
+@patch("semantic_kernel.utils.telemetry.model_diagnostics.decorators.tracer")
+async def test_streaming_usage_is_reported_as_completion_usage(
+    mock_tracer: MagicMock,
+    model_diagnostics_enabled,
+    mock_settings: AnthropicChatPromptExecutionSettings,
+):
+    stream_events = [
+        RawMessageStartEvent(
+            message=Message(
+                id="test_message_id",
+                content=[],
+                model="claude-sonnet-4-5",
+                role="assistant",
+                stop_reason=None,
+                stop_sequence=None,
+                type="message",
+                usage=Usage(
+                    input_tokens=10, output_tokens=1, cache_read_input_tokens=100, cache_creation_input_tokens=20
+                ),
+            ),
+            type="message_start",
+        ),
+        TextEvent(type="text", text="Hello", snapshot="Hello"),
+        RawMessageDeltaEvent(
+            delta=Delta(stop_reason="end_turn", stop_sequence=None),
+            type="message_delta",
+            usage=MessageDeltaUsage(output_tokens=7),
+        ),
+    ]
+
+    async def async_generator():
+        for event in stream_events:
+            yield event
+
+    stream_mock = AsyncMock()
+    stream_mock.__aenter__.return_value = async_generator()
+    client = MagicMock(spec=AsyncAnthropic)
+    client.messages = MagicMock()
+    client.messages.stream.return_value = stream_mock
+    chat_completion = AnthropicChatCompletion(ai_model_id="test_model_id", api_key="", async_client=client)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_user_message")
+
+    chunks = [
+        chunk
+        async for chunks in chat_completion.get_streaming_chat_message_contents(chat_history, mock_settings)
+        for chunk in chunks
+    ]
+
+    usage = reduce(lambda x, y: x + y, chunks).metadata["usage"]
+    assert isinstance(usage, CompletionUsage)
+    assert usage.prompt_tokens == 130
+    assert usage.prompt_tokens_details.cached_tokens == 100
+    assert usage.completion_tokens == 7
+    assert _usage_span_attributes(mock_tracer) == {
+        gen_ai_attributes.INPUT_TOKENS: 130,
+        gen_ai_attributes.OUTPUT_TOKENS: 7,
+    }
