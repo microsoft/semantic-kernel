@@ -66,6 +66,33 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
             "base64",
             id="with_params",
         ),
+        pytest.param(
+            "data:image/svg+xml;base64,PHN2Zy8+",
+            b"<svg/>",
+            "PHN2Zy8+",
+            "image/svg+xml",
+            {},
+            "base64",
+            id="mime_type_with_plus",
+        ),
+        pytest.param(
+            "data:text/plain;charset=utf-8;base64,SGVsbG8=",
+            b"Hello",
+            "SGVsbG8=",
+            "text/plain",
+            {"charset": "utf-8"},
+            "base64",
+            id="parameter_before_data_format",
+        ),
+        pytest.param(
+            "data:application/vnd.ms-excel;base64,AAAA",
+            b"\x00\x00\x00",
+            "AAAA",
+            "application/vnd.ms-excel",
+            {},
+            "base64",
+            id="vendor_mime_type",
+        ),
     ],
 )
 def test_data_uri_from_data_uri_str(
