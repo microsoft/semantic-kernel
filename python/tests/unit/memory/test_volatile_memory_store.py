@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-
 from pytest import raises
 
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
