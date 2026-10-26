@@ -362,7 +362,7 @@ class ChromaCollection(
         return result["distance"]
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> dict[str, Any] | str | int | float | bool | None:  # type: ignore
+    def _lambda_parser(self, node: ast.AST) -> dict[str, Any] | list[Any] | str | int | float | bool | None:  # type: ignore
         # Comparison operations
         match node:
             case ast.Compare():
@@ -430,6 +430,17 @@ class ChromaCollection(
                 if isinstance(value, (int, float, bool)) or value is None:
                     return value
                 raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
+            case ast.List():
+                # Elements go into a typed value list, not a SQL string, so string literals are kept as written.
+                items: list[Any] = []
+                for elt in node.elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        items.append(elt.value)
+                    elif isinstance(elt, ast.Constant) and isinstance(elt.value, bytes):
+                        items.append(elt.value.decode("utf-8"))
+                    else:
+                        items.append(self._lambda_parser(elt))
+                return items
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
 
