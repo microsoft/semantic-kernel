@@ -71,7 +71,9 @@ def kernel_function(
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
-            _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
+            _parse_parameter("return", func_sig.return_annotation, Parameter.empty)
+            if func_sig.return_annotation
+            else {}
         )
         setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
         setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
@@ -120,8 +122,7 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         if arg.name == "self":
             continue
         annotation = arg.annotation
-        default = arg.default if arg.default != arg.empty else None
-        parsed_annotation = _parse_parameter(arg.name, annotation, default)
+        parsed_annotation = _parse_parameter(arg.name, annotation, arg.default)
         if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
             underlying_type = _get_underlying_type(annotation)
         else:
@@ -137,7 +138,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default is not None:
+    if default is not Parameter.empty:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
