@@ -174,3 +174,9 @@ async def test_ensure_collection_deleted_does_not_swallow_an_unrelated_value_err
 
     with pytest.raises(VectorStoreOperationException):
         await chroma_collection.ensure_collection_deleted()
+
+
+def test_chroma_collection_build_filter_keeps_apostrophes(chroma_collection):
+    """Chroma filters are dicts, not SQL, so the value must reach Chroma unchanged."""
+    assert chroma_collection._build_filter('lambda x: x.content == "O\'Brien"') == {"content": "O'Brien"}
+    assert chroma_collection._build_filter('lambda x: x.content != "O\'Brien"') == {"content": {"$ne": "O'Brien"}}
