@@ -2,6 +2,7 @@
 import logging
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
+from dataclasses import dataclass
 from importlib import import_module
 from typing import Annotated, Any
 from unittest.mock import Mock, patch
@@ -10,7 +11,7 @@ import pytest
 from opentelemetry.trace import StatusCode
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError, KernelInvokeException
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
@@ -37,6 +38,30 @@ class CustomTypeNonPydantic:
     def __init__(self, id: str, name: str):
         self.id = id
         self.name = name
+
+
+@dataclass
+class CustomTypeDataclass:
+    id: str
+    name: str
+
+
+class DerivedCustomType(CustomTypeNonPydantic):
+    pass
+
+
+@dataclass
+class DerivedDataclass(CustomTypeDataclass):
+    pass
+
+
+@dataclass
+class SingleFieldDataclass:
+    name: str
+
+
+class RevalidatedCustomType(CustomType):
+    model_config = {"revalidate_instances": "always", "validate_assignment": False}
 
 
 @pytest.fixture
@@ -583,6 +608,89 @@ async def test_default_handling_2(kernel: Kernel):
 
     res = await kernel.invoke(func, base="base")
     assert str(res) == "test"
+
+
+@pytest.mark.parametrize(
+    ("param_type", "value"),
+    [
+        (CustomTypeNonPydantic, CustomTypeNonPydantic("1", "Ada")),
+        (CustomTypeDataclass, CustomTypeDataclass("1", "Ada")),
+        (SingleFieldDataclass, SingleFieldDataclass("Ada")),
+        (CustomTypeNonPydantic, DerivedCustomType("1", "Ada")),
+        (CustomTypeDataclass, DerivedDataclass("1", "Ada")),
+    ],
+)
+async def test_invoke_preserves_typed_instance(kernel, param_type, value):
+    @kernel_function
+    def identity(param: param_type) -> Any:
+        return param
+
+    func = kernel.add_function(plugin_name="test", function=identity)
+    for _ in range(2):
+        result = await kernel.invoke(func, arguments=KernelArguments(param=value))
+        assert result.value is value
+
+
+@pytest.mark.parametrize("input_kind", ["dicts", "instances", "mixed"])
+async def test_invoke_list_of_typed_instances(kernel, input_kind):
+    @kernel_function
+    def identity(param: list[CustomTypeDataclass]) -> Any:
+        return param
+
+    values = [CustomTypeDataclass("1", "Ada"), CustomTypeDataclass("2", "Grace")]
+    arguments = [
+        {"id": value.id, "name": value.name}
+        if input_kind == "dicts" or (input_kind == "mixed" and index == 1)
+        else value
+        for index, value in enumerate(values)
+    ]
+    func = kernel.add_function(plugin_name="test", function=identity)
+    result = await kernel.invoke(func, arguments=KernelArguments(param=arguments))
+    assert result.value == values
+    if input_kind != "dicts":
+        assert result.value[0] is values[0]
+
+
+async def test_invoke_typed_instance_returned_by_function(kernel):
+    value = CustomTypeDataclass("1", "Ada")
+
+    @kernel_function
+    def produce() -> CustomTypeDataclass:
+        return value
+
+    @kernel_function
+    def consume(param: CustomTypeDataclass) -> str:
+        assert param is value
+        return param.name
+
+    producer = kernel.add_function(plugin_name="test", function=produce)
+    consumer = kernel.add_function(plugin_name="test", function=consume)
+    produced = await kernel.invoke(producer)
+    result = await kernel.invoke(consumer, arguments=KernelArguments(param=produced.value))
+    assert result.value == "Ada"
+
+
+async def test_invoke_pydantic_instance_still_revalidated(kernel):
+    @kernel_function
+    def identity(param: RevalidatedCustomType) -> Any:
+        return param
+
+    func = kernel.add_function(plugin_name="test", function=identity)
+    value = RevalidatedCustomType(id="1", name="Ada")
+    result = await kernel.invoke(func, arguments=KernelArguments(param=value))
+    assert result.value == value
+    assert result.value is not value
+
+    value.id = 123
+    with pytest.raises(KernelInvokeException):
+        await kernel.invoke(func, arguments=KernelArguments(param=value))
+
+
+@pytest.mark.parametrize("value", [True, "7", 7])
+def test_parse_integer_still_coerces_values(get_custom_type_function_nonpydantic, value):
+    result = get_custom_type_function_nonpydantic._parse_parameter(value, int)
+    assert type(result) is int
+    assert result == int(value)
 
 
 def test_parse_list_of_objects(get_custom_type_function_pydantic):
