@@ -424,9 +424,9 @@ class ChromaCollection(
             case ast.Constant():
                 value = node.value
                 if isinstance(value, str):
-                    return value.replace("'", "''")
+                    return value
                 if isinstance(value, bytes):
-                    return value.decode("utf-8").replace("'", "''")
+                    return value.decode("utf-8")
                 if isinstance(value, (int, float, bool)) or value is None:
                     return value
                 raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
