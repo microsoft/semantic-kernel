@@ -344,6 +344,18 @@ def test_finish_reason_from_bedrock_to_semantic_kernel_tool_use() -> None:
     assert reason == FinishReason.TOOL_CALLS
 
 
+def test_finish_reason_from_bedrock_to_semantic_kernel_guardrail_intervened() -> None:
+    """Test that 'guardrail_intervened' maps to FinishReason.CONTENT_FILTER"""
+    reason = finish_reason_from_bedrock_to_semantic_kernel("guardrail_intervened")
+    assert reason == FinishReason.CONTENT_FILTER
+
+
+def test_finish_reason_from_bedrock_to_semantic_kernel_context_window_exceeded() -> None:
+    """Test that 'model_context_window_exceeded' maps to FinishReason.LENGTH"""
+    reason = finish_reason_from_bedrock_to_semantic_kernel("model_context_window_exceeded")
+    assert reason == FinishReason.LENGTH
+
+
 def test_finish_reason_from_bedrock_to_semantic_kernel_unknown() -> None:
     """Test that unknown finish reason returns None"""
     reason = finish_reason_from_bedrock_to_semantic_kernel("something_unknown")
