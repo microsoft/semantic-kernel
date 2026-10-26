@@ -1,5 +1,27 @@
 # Prompt Template Engine
 
+## Security
+
+Semantic Kernel prompt templates are executable configuration. Function expressions such as
+`{{plugin.function}}` invoke functions registered in the `Kernel` while the template is rendered, before the model
+request. Use template source only from trusted sources.
+
+Pass user-, network-, file-, or service-provided text as a template argument instead of inserting it into the template
+source. Argument values are rendered as text and are not parsed as template expressions:
+
+```python
+arguments = KernelArguments(input=untrusted_text)
+template = KernelPromptTemplate(
+    prompt_template_config=PromptTemplateConfig(template="User input: {{$input}}")
+)
+rendered = await template.render(kernel, arguments)
+```
+
+Content-escaping settings, including `allow_dangerously_set_content`, do not disable function execution from template
+source.
+
+## Grammar
+
 The Semantic Kernel uses the following grammar to parse prompt templates:
 
 ```

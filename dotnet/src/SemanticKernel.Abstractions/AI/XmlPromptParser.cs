@@ -15,11 +15,25 @@ namespace Microsoft.SemanticKernel;
 internal static class XmlPromptParser
 {
     /// <summary>
+    /// Maximum element nesting depth supported in an XML prompt, where top-level prompt elements are at depth 1.
+    /// </summary>
+    /// <remarks>
+    /// Chat prompts only need a shallow structure, such as message elements that contain content elements.
+    /// Each <see cref="PromptNode"/> stores the serialized content of its whole subtree, so the parsing work
+    /// grows with the nesting depth multiplied by the prompt size. Limiting the depth keeps that work
+    /// proportional to the prompt size and also bounds the recursion in <see cref="GetPromptNode"/>.
+    /// </remarks>
+    internal const int MaxElementDepth = 64;
+
+    /// <summary>
     /// Parses text prompt and sets output as collection of <see cref="PromptNode"/> instances.
     /// </summary>
     /// <param name="prompt">Text prompt to parse.</param>
     /// <param name="result">Parsing output as collection of <see cref="PromptNode"/> instances.</param>
-    /// <returns>Returns true if parsing was successful, otherwise false.</returns>
+    /// <returns>
+    /// Returns true if parsing was successful, otherwise false. Prompts whose elements are nested deeper than
+    /// <see cref="MaxElementDepth"/> are not parsed.
+    /// </returns>
     public static bool TryParse(string prompt, [NotNullWhen(true)] out List<PromptNode>? result)
     {
         result = null;
@@ -53,6 +67,13 @@ internal static class XmlPromptParser
             xmlDocument.LoadXml($"<root>{prompt}</root>");
         }
         catch (XmlException)
+        {
+            return false;
+        }
+
+        // Check the depth before building prompt nodes, because building them serializes every subtree.
+        // A rejected prompt takes the same path as invalid XML, so callers use it as plain text.
+        if (ExceedsMaxElementDepth(xmlDocument.DocumentElement!))
         {
             return false;
         }
@@ -114,5 +135,49 @@ internal static class XmlPromptParser
         }
 
         return promptNode;
+    }
+
+    /// <summary>
+    /// Checks whether any element below <paramref name="root"/> is nested deeper than <see cref="MaxElementDepth"/>.
+    /// </summary>
+    /// <param name="root">The wrapper element that contains the top-level prompt elements.</param>
+    private static bool ExceedsMaxElementDepth(XmlElement root)
+    {
+        // Walk the tree without recursion so that a deeply nested document cannot exhaust the stack here.
+        var depth = 1;
+        var node = root.FirstChild;
+
+        while (node is not null)
+        {
+            if (node.NodeType == XmlNodeType.Element)
+            {
+                if (depth > MaxElementDepth)
+                {
+                    return true;
+                }
+
+                if (node.FirstChild is { } firstChild)
+                {
+                    node = firstChild;
+                    depth++;
+                    continue;
+                }
+            }
+
+            // Move to the next sibling, climbing back up through parents that have no further siblings.
+            while (node.NextSibling is null)
+            {
+                node = node.ParentNode!;
+                if (--depth == 0)
+                {
+                    // Climbing to depth 0 means the walk has returned to the root element.
+                    return false;
+                }
+            }
+
+            node = node.NextSibling;
+        }
+
+        return false;
     }
 }

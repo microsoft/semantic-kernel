@@ -670,3 +670,66 @@ def test_chat_history_serialize(chat_history: ChatHistory):
     ])
     chat_history.add_tool_message([FunctionResultContent(id="test1", result=custom_result)])
     assert "CustomResultTestValue" in chat_history.serialize()
+
+
+ENTITY_TEXTS = [
+    "What does &amp; mean in HTML?",
+    "Write &lt;b&gt; as text",
+    "Use &#x3a; as a colon",
+    "Tom & Jerry <3",
+]
+
+
+@pytest.mark.parametrize("text", ENTITY_TEXTS)
+async def test_template_message_input_is_decoded_once(text: str):
+    template = '<message role="user">{{$input}}</message>'
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(input=text))
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].role == AuthorRole.USER
+    assert chat_history.messages[0].content == text
+
+
+@pytest.mark.parametrize("text", ENTITY_TEXTS)
+async def test_template_plain_input_is_decoded_once(text: str):
+    template = "{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(input=text))
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == text
+
+
+@pytest.mark.parametrize("text", ENTITY_TEXTS)
+async def test_template_text_after_message_is_decoded_once(text: str):
+    template = '<message role="system">rules</message>{{$input}}'
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(input=text))
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[1].content == text
+
+
+@pytest.mark.parametrize("text", ENTITY_TEXTS)
+async def test_template_cdata_input_is_decoded_once(text: str):
+    template = '<message role="user"><![CDATA[{{$input}}]]></message>'
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(input=text))
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == text
+
+
+@pytest.mark.parametrize("text", ENTITY_TEXTS)
+def test_chat_history_prompt_round_trip_keeps_entities(text: str):
+    chat_history = ChatHistory()
+    chat_history.add_user_message(text)
+    chat_history.add_assistant_message(text)
+
+    restored = ChatHistory.from_rendered_prompt(chat_history.to_prompt())
+    assert [message.content for message in restored.messages] == [text, text]
