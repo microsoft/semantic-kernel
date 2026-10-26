@@ -252,6 +252,90 @@ async def test_azure_cosmos_db_no_sql_inner_search_multiple_filters_have_unique_
     assert {"name": "@filter_p1", "value": "beta"} in parameters
 
 
+@pytest.mark.parametrize("additional_property_name", ["content", "stored_content"])
+async def test_azure_cosmos_db_no_sql_inner_search_resolves_hybrid_text_field(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    definition,
+    collection_name: str,
+    additional_property_name: str,
+) -> None:
+    """Test hybrid search resolves logical and storage field names before building the query."""
+    from semantic_kernel.data.vector import SearchType, VectorSearchOptions
+
+    definition.data_fields[0].storage_name = "stored_content"
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        definition=definition,
+        collection_name=collection_name,
+    )
+
+    async def _empty_results():
+        for item in []:
+            yield item
+
+    mock_container_proxy = MagicMock()
+    mock_container_proxy.query_items = MagicMock(return_value=_empty_results())
+    options = VectorSearchOptions(
+        vector_property_name="vector",
+        additional_property_name=additional_property_name,
+        top=3,
+    )
+
+    with patch.object(
+        CosmosNoSqlCollection,
+        "_get_container_proxy",
+        new=AsyncMock(return_value=mock_container_proxy),
+    ):
+        await vector_collection._inner_search(
+            search_type=SearchType.KEYWORD_HYBRID,
+            options=options,
+            values="alpha",
+            vector=[0.1, 0.2, 0.3, 0.4, 0.5],
+        )
+
+    query, kwargs = mock_container_proxy.query_items.call_args
+    assert 'FullTextScore(c["stored_content"], @keywords)' in query[0]
+    assert {"name": "@keywords", "value": "alpha"} in kwargs["parameters"]
+
+
+async def test_azure_cosmos_db_no_sql_inner_search_rejects_unknown_hybrid_text_field(
+    azure_cosmos_db_no_sql_unit_test_env,
+    record_type,
+    collection_name: str,
+) -> None:
+    """Test hybrid search rejects injection-shaped text fields before executing a query."""
+    from semantic_kernel.data.vector import SearchType, VectorSearchOptions
+
+    vector_collection = CosmosNoSqlCollection(
+        record_type=record_type,
+        collection_name=collection_name,
+    )
+    mock_container_proxy = MagicMock()
+    options = VectorSearchOptions(
+        vector_property_name="vector",
+        additional_property_name="content), @keywords)) FROM c WHERE true --",
+        top=3,
+    )
+
+    with (
+        patch.object(
+            CosmosNoSqlCollection,
+            "_get_container_proxy",
+            new=AsyncMock(return_value=mock_container_proxy),
+        ),
+        pytest.raises(VectorStoreModelException, match="not found in the data model definition"),
+    ):
+        await vector_collection._inner_search(
+            search_type=SearchType.KEYWORD_HYBRID,
+            options=options,
+            values="alpha",
+            vector=[0.1, 0.2, 0.3, 0.4, 0.5],
+        )
+
+    mock_container_proxy.query_items.assert_not_called()
+
+
 @pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_NO_SQL_URL"]], indirect=True)
 def test_azure_cosmos_db_no_sql_collection_init_no_url(
     azure_cosmos_db_no_sql_unit_test_env,
