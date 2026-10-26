@@ -118,7 +118,9 @@ class OpenApiParser:
                 name=property_name,
                 type=property_schema.get("type", None),
                 is_required=property_name in required_properties,
-                properties=self._get_payload_properties(operation_id, property_schema, required_properties, level + 1),
+                properties=self._get_payload_properties(
+                    operation_id, property_schema, property_schema.get("required", set()), level + 1
+                ),
                 description=property_schema.get("description", None),
                 schema=property_schema,
                 default_value=default_value,

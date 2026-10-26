@@ -383,3 +383,28 @@ def test_create_functions_propagates_enable_file_ref_resolution():
             enable_file_ref_resolution=True,
             enable_http_ref_resolution=False,
         )
+
+
+def test_get_payload_properties_nested_required():
+    parser = OpenApiParser()
+    schema = {
+        "type": "object",
+        "required": ["address"],
+        "properties": {
+            "address": {
+                "type": "object",
+                "required": ["street"],
+                "properties": {
+                    "street": {"type": "string"},
+                    "city": {"type": "string"},
+                },
+            },
+        },
+    }
+    properties = parser._get_payload_properties("operation_id", schema, schema.get("required", []))
+    address = properties[0]
+    assert address.is_required
+    nested = {prop.name: prop.is_required for prop in address.properties}
+    # street is in the address object's own required list, not the root one
+    assert nested["street"]
+    assert not nested["city"]
