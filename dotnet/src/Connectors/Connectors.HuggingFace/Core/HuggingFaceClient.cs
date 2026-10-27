@@ -34,7 +34,8 @@ internal sealed class HuggingFaceClient
         string? modelId = null,
         Uri? endpoint = null,
         string? apiKey = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        Uri? defaultEndpoint = null)
     {
         Verify.NotNull(httpClient);
 
@@ -44,7 +45,7 @@ internal sealed class HuggingFaceClient
             throw new InvalidOperationException("A valid model id or endpoint must be provided.");
         }
 
-        endpoint ??= new Uri("https://api-inference.huggingface.co");
+        endpoint ??= defaultEndpoint ?? new Uri("https://router.huggingface.co/hf-inference");
         this.Separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
         this.Endpoint = endpoint;
         this.ModelId = modelId;
@@ -300,7 +301,7 @@ internal sealed class HuggingFaceClient
     }
 
     private Uri GetEmbeddingGenerationEndpoint(string? modelId)
-        => string.IsNullOrWhiteSpace(modelId) ? this.Endpoint : new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
+        => string.IsNullOrWhiteSpace(modelId) ? this.Endpoint : new($"{this.Endpoint}{this.Separator}models/{modelId}/pipeline/feature-extraction");
 
     #endregion
 
