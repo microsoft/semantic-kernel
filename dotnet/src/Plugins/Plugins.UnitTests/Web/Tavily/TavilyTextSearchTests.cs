@@ -650,6 +650,67 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Fact]
+    public async Task LanguageSearchOptionIsSerializedAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Language = "french" });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains("\"language\":\"french\"", requestBodyJson);
+        Assert.DoesNotContain("filter_by_language", requestBodyJson);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task BooleanSearchOptionsAreSerializedWhenSetAsync(bool value)
+    {
+        // Arrange - explicit false must be sent, not omitted
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new()
+        {
+            HttpClient = this._httpClient,
+            Language = "en",
+            FilterByLanguage = value,
+            ExactMatch = value,
+            AutoParameters = value,
+        });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        var expected = value ? "true" : "false";
+        Assert.Contains($"\"filter_by_language\":{expected}", requestBodyJson);
+        Assert.Contains($"\"exact_match\":{expected}", requestBodyJson);
+        Assert.Contains($"\"auto_parameters\":{expected}", requestBodyJson);
+    }
+
+    [Fact]
+    public async Task LanguageExactMatchAndAutoParametersAreOmittedWhenNotSetAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.DoesNotContain("\"language\"", requestBodyJson);
+        Assert.DoesNotContain("filter_by_language", requestBodyJson);
+        Assert.DoesNotContain("exact_match", requestBodyJson);
+        Assert.DoesNotContain("auto_parameters", requestBodyJson);
+    }
+
+    [Fact]
     public async Task RequestIdentifiesTheClientAsync()
     {
         // Arrange

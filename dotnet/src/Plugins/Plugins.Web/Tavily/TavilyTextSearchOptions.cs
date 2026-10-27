@@ -65,6 +65,36 @@ public sealed class TavilyTextSearchOptions
     public TavilyIncludeDomainsMode? IncludeDomainsMode { get; set; }
 
     /// <summary>
+    /// Boost search results in a specific language. Accepts an ISO 639-1 code (for example "en" or "zh-cn")
+    /// or an English language name (for example "english"). By default this only boosts matching-language
+    /// results in ranking; set <see cref="FilterByLanguage"/> to strictly filter instead. Not sent when null.
+    /// </summary>
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// Strictly filter out results that do not match <see cref="Language"/> instead of only boosting them.
+    /// Tavily requires <see cref="Language"/> to be set and returns an error otherwise.
+    /// Sent when not null, including an explicit false.
+    /// </summary>
+    public bool? FilterByLanguage { get; set; }
+
+    /// <summary>
+    /// Only return results containing the exact quoted phrase(s) in the query, bypassing synonyms or
+    /// semantic variations. Wrap the target phrases in quotes within the query.
+    /// Sent when not null, including an explicit false.
+    /// </summary>
+    public bool? ExactMatch { get; set; }
+
+    /// <summary>
+    /// Let Tavily configure search parameters automatically from the query's content and intent;
+    /// explicitly set options still take precedence. <see cref="IncludeAnswer"/>, <see cref="IncludeRawContent"/>
+    /// and the number of results are never set automatically. Tavily may raise the search depth to advanced,
+    /// which uses 2 API credits per request; set <see cref="SearchDepth"/> to basic to avoid the extra cost.
+    /// Sent when not null, including an explicit false.
+    /// </summary>
+    public bool? AutoParameters { get; set; }
+
+    /// <summary>
     /// Include an LLM-generated answer to the provided query.
     /// basic or true returns a quick answer. advanced returns a more detailed answer.
     /// </summary>

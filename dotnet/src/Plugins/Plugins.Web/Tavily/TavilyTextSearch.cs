@@ -756,7 +756,11 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             FormatDate(this._searchOptions?.StartDate),
             FormatDate(this._searchOptions?.EndDate),
             this._searchOptions?.SafeSearch,
-            includeDomains is { Count: > 0 } ? ToApiIncludeDomainsMode(this._searchOptions?.IncludeDomainsMode) : null);
+            includeDomains is { Count: > 0 } ? ToApiIncludeDomainsMode(this._searchOptions?.IncludeDomainsMode) : null,
+            this._searchOptions?.Language,
+            this._searchOptions?.FilterByLanguage,
+            this._searchOptions?.ExactMatch,
+            this._searchOptions?.AutoParameters);
     }
 
     private static string? FormatDate(DateTime? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
