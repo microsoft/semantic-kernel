@@ -113,9 +113,51 @@ def _effective_port(url: ParseResult) -> int | None:
     return None
 
 
+def _normalize_path(path: str) -> str:
+    """Normalize a URL path the same way httpx does before routing.
+
+    Applies RFC 3986 §5.2.4 remove_dot_segments after decoding percent-encoded
+    ``.`` / ``..`` segments (``%2e`` / ``%2E``). Other percent-encodings are left
+    intact. Empty segments are preserved. Paths that would climb above the root
+    are clamped at ``/``.
+    """
+    # Decode only %2e / %2E (dot) so encoded dot-segments resolve; leave other
+    # encodings untouched so allowlist matching stays literal for them.
+    decoded = ""
+    i = 0
+    lower = path.lower()
+    while i < len(path):
+        if lower[i : i + 3] == "%2e":
+            decoded += "."
+            i += 3
+        else:
+            decoded += path[i]
+            i += 1
+
+    # remove_dot_segments (RFC 3986 §5.2.4), preserving empty segments like httpx.
+    segments = decoded.split("/")
+    resolved: list[str] = []
+    for segment in segments:
+        if segment == ".":
+            continue
+        if segment == "..":
+            if resolved and resolved[-1] != "":
+                resolved.pop()
+            # else: clamp at root (leading empty from absolute path stays)
+            continue
+        resolved.append(segment)
+    # Absolute paths keep a leading empty segment from the initial "/".
+    if not resolved:
+        return "/"
+    normalized = "/".join(resolved)
+    if decoded.startswith("/") and not normalized.startswith("/"):
+        normalized = "/" + normalized
+    return normalized or "/"
+
+
 def _matches_path_prefix(url_path: str, base_path: str) -> bool:
-    url_path = url_path or "/"
-    base_path = base_path or "/"
+    url_path = _normalize_path(url_path or "/")
+    base_path = _normalize_path(base_path or "/")
 
     if url_path.lower() == base_path.lower():
         return True
