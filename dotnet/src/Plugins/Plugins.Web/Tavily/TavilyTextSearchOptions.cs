@@ -29,7 +29,6 @@ public sealed class TavilyTextSearchOptions
     /// <summary>
     /// The number of content chunks to retrieve from each source.
     /// Each chunk's length is maximum 500 characters.
-    /// Available only when search_depth is advanced.
     /// Available when search_depth is basic, advanced or fast.
     /// Required range: 1 - 3
     /// </summary>
@@ -40,6 +39,30 @@ public sealed class TavilyTextSearchOptions
     /// Available only when the search topic is general.
     /// </summary>
     public string? Country { get; set; }
+
+    /// <summary>
+    /// Return only results published or updated after this date (sent as YYYY-MM-DD).
+    /// Not sent when null.
+    /// </summary>
+    public DateTime? StartDate { get; set; }
+
+    /// <summary>
+    /// Return only results published or updated before this date (sent as YYYY-MM-DD).
+    /// Not sent when null.
+    /// </summary>
+    public DateTime? EndDate { get; set; }
+
+    /// <summary>
+    /// Whether to filter out adult or unsafe content from results.
+    /// Not supported by Tavily for the fast or ultra-fast search depths. Not sent when null.
+    /// </summary>
+    public bool? SafeSearch { get; set; }
+
+    /// <summary>
+    /// Controls how the include domain filter is applied. Only sent when the search has at least
+    /// one include domain, because Tavily rejects the mode without include domains. Not sent when null.
+    /// </summary>
+    public TavilyIncludeDomainsMode? IncludeDomainsMode { get; set; }
 
     /// <summary>
     /// Include an LLM-generated answer to the provided query.

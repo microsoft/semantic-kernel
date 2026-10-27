@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -397,7 +398,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     private const string DefaultUri = "https://api.tavily.com/search";
 
     /// <summary>
-    /// The maximum value of the Tavily <c>max_results</c> request parameter.
+    /// The maximum value of the Tavily <c>max_results</c> request parameter. The accepted
+    /// <c>Top</c> range is unchanged; only the outgoing request window is capped.
     /// </summary>
     private const int MaxResultsLimit = 20;
 
@@ -448,9 +450,9 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
     private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken)
     {
-        if (top is <= 0 or > MaxResultsLimit)
+        if (top is <= 0 or > 50)
         {
-            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} count value must be greater than 0 and have a maximum value of {MaxResultsLimit}.");
+            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
         var requestContent = this.BuildRequestContent(query, top, skip, filters);
@@ -690,7 +692,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         int? days = null;
         // Tavily has no offset parameter, so skipped results are requested and then dropped client-side.
         // The window is limited by max_results, so top + skip beyond MaxResultsLimit returns fewer than top results.
-        int? maxResults = Math.Min(top + Math.Max(skip, 0), MaxResultsLimit);
+        int? maxResults = (int)Math.Min((long)top + Math.Max(skip, 0), MaxResultsLimit);
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 
@@ -742,8 +744,21 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             maxResults,
             includeDomains,
             excludeDomains,
-            this._searchOptions?.Country);
+            this._searchOptions?.Country,
+            FormatDate(this._searchOptions?.StartDate),
+            FormatDate(this._searchOptions?.EndDate),
+            this._searchOptions?.SafeSearch,
+            includeDomains is { Count: > 0 } ? ToApiIncludeDomainsMode(this._searchOptions?.IncludeDomainsMode) : null);
     }
+
+    private static string? FormatDate(DateTime? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string? ToApiIncludeDomainsMode(TavilyIncludeDomainsMode? mode) => mode switch
+    {
+        TavilyIncludeDomainsMode.Restrict => "restrict",
+        TavilyIncludeDomainsMode.Prefer => "prefer",
+        _ => null,
+    };
 
     private static string ToApiSearchDepth(TavilySearchDepth searchDepth) => searchDepth switch
     {

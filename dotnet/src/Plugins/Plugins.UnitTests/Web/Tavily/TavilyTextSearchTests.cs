@@ -341,16 +341,19 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Theory]
-    [InlineData(2, 1, 3, new[] { 1, 2 })]
-    [InlineData(2, 0, 2, new[] { 0, 1 })]
-    [InlineData(3, 3, 6, new[] { 3 })]
-    [InlineData(15, 10, 20, new[] { 3 })]
-    public async Task SkipIsAppliedToResultsWithinMaxResultsWindowAsync(int top, int skip, int expectedMaxResults, int[] expectedIndexes)
+    [InlineData(2, 1, 3, 3, 1, 2)]
+    [InlineData(2, 0, 2, 2, 0, 2)]
+    [InlineData(3, 3, 6, 6, 3, 3)]
+    [InlineData(15, 10, 20, 20, 10, 10)]
+    [InlineData(21, 0, 20, 20, 0, 20)]
+    [InlineData(50, 0, 20, 20, 0, 20)]
+    [InlineData(21, 5, 20, 20, 5, 15)]
+    [InlineData(50, 5, 20, 20, 5, 15)]
+    [InlineData(3, int.MaxValue, 20, 20, 20, 0)]
+    public async Task SkipIsAppliedWithinCappedMaxResultsWindowAsync(int top, int skip, int expectedMaxResults, int responseCount, int expectedStart, int expectedCount)
     {
-        // Arrange
-        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
-        var allTitles = JsonDocument.Parse(File.ReadAllText(WhatIsTheSKResponseJson)).RootElement
-            .GetProperty("results").EnumerateArray().Select(r => r.GetProperty("title").GetString()).ToArray();
+        // Arrange - the stub returns as many results as the capped max_results window allows
+        this._messageHandlerStub.AddJsonResponse(BuildResponseJson(responseCount));
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
@@ -360,15 +363,14 @@ public sealed class TavilyTextSearchTests : IDisposable
         var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
         Assert.Contains($"\"max_results\":{expectedMaxResults}", requestBodyJson);
         var names = (await result.Results.ToListAsync()).Select(r => r.Name).ToArray();
-        Assert.Equal(expectedIndexes.Select(i => allTitles[i]).ToArray(), names);
+        Assert.Equal(Enumerable.Range(expectedStart, expectedCount).Select(i => $"Result {i}").ToArray(), names);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    [InlineData(21)]
-    [InlineData(50)]
-    public async Task TopOutsideTavilyMaxResultsRangeThrowsAsync(int top)
+    [InlineData(51)]
+    public async Task TopOutsideAcceptedRangeStillThrowsAsync(int top)
     {
         // Arrange
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
@@ -434,18 +436,61 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Fact]
-    public async Task CountryIsSentWhenConfiguredAsync()
+    public async Task AdditionalSearchOptionsAreSerializedWhenConfiguredAsync()
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
-        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Country = "united states" });
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new()
+        {
+            HttpClient = this._httpClient,
+            Country = "united states",
+            StartDate = new DateTime(2025, 2, 9),
+            EndDate = new DateTime(2025, 12, 29),
+            SafeSearch = true,
+            IncludeDomainsMode = TavilyIncludeDomainsMode.Prefer,
+        });
 
         // Act
-        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("include_domain", "devblogs.microsoft.com") });
 
         // Assert
         var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
         Assert.Contains("\"country\":\"united states\"", requestBodyJson);
+        Assert.Contains("\"start_date\":\"2025-02-09\"", requestBodyJson);
+        Assert.Contains("\"end_date\":\"2025-12-29\"", requestBodyJson);
+        Assert.Contains("\"safe_search\":true", requestBodyJson);
+        Assert.Contains("\"include_domains_mode\":\"prefer\"", requestBodyJson);
+    }
+
+    [Fact]
+    public async Task AdditionalSearchOptionsAreOmittedWhenNotConfiguredAsync()
+    {
+        // Arrange - include domains mode is configured but there are no include domains in the request
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var unconfigured = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+        var modeOnly = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeDomainsMode = TavilyIncludeDomainsMode.Restrict });
+
+        // Act
+        await unconfigured.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        await modeOnly.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        foreach (var content in this._messageHandlerStub.RequestContents)
+        {
+            var requestBodyJson = Encoding.UTF8.GetString(content!);
+            Assert.DoesNotContain("country", requestBodyJson);
+            Assert.DoesNotContain("start_date", requestBodyJson);
+            Assert.DoesNotContain("end_date", requestBodyJson);
+            Assert.DoesNotContain("safe_search", requestBodyJson);
+            Assert.DoesNotContain("include_domains_mode", requestBodyJson);
+        }
+    }
+
+    private static string BuildResponseJson(int resultCount)
+    {
+        var results = Enumerable.Range(0, resultCount).Select(i => new { title = $"Result {i}", url = $"https://example.com/{i}", content = $"Content {i}", score = 0.5 });
+        return JsonSerializer.Serialize(new { query = "q", results, response_time = 0.1 });
     }
 
     /// <inheritdoc/>

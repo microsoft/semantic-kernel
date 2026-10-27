@@ -95,6 +95,30 @@ internal sealed class TavilySearchRequest
     public string? Country { get; set; }
 
     /// <summary>
+    /// Return only results after this date. Format: YYYY-MM-DD.
+    /// </summary>
+    [JsonPropertyName("start_date")]
+    public string? StartDate { get; set; }
+
+    /// <summary>
+    /// Return only results before this date. Format: YYYY-MM-DD.
+    /// </summary>
+    [JsonPropertyName("end_date")]
+    public string? EndDate { get; set; }
+
+    /// <summary>
+    /// Whether to filter out adult or unsafe content from results.
+    /// </summary>
+    [JsonPropertyName("safe_search")]
+    public bool? SafeSearch { get; set; }
+
+    /// <summary>
+    /// How include_domains is applied. Available options: restrict, prefer.
+    /// </summary>
+    [JsonPropertyName("include_domains_mode")]
+    public string? IncludeDomainsMode { get; set; }
+
+    /// <summary>
     /// A list of domains to specifically include in the search results.
     /// </summary>
     [JsonPropertyName("include_domains")]
@@ -129,7 +153,11 @@ internal sealed class TavilySearchRequest
         int? maxResults,
         IList<string>? includeDomains,
         IList<string>? excludeDomains,
-        string? country = null)
+        string? country = null,
+        string? startDate = null,
+        string? endDate = null,
+        bool? safeSearch = null,
+        string? includeDomainsMode = null)
     {
         this.Query = query ?? throw new ArgumentNullException(nameof(query));
         this.Topic = topic;
@@ -145,5 +173,9 @@ internal sealed class TavilySearchRequest
         this.IncludeDomains = includeDomains;
         this.ExcludeDomains = excludeDomains;
         this.Country = country;
+        this.StartDate = startDate;
+        this.EndDate = endDate;
+        this.SafeSearch = safeSearch;
+        this.IncludeDomainsMode = includeDomainsMode;
     }
 }
