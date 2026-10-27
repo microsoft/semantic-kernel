@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import Field, KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
 
@@ -154,6 +154,26 @@ def test_build_model_schema():
     }
     result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
+
+
+def test_build_model_schema_with_constrained_field_with_description():
+    class Params(KernelBaseModel):
+        top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+
+    assert schema["properties"]["top_p"] == {"type": "number", "description": "nucleus sampling"}
+    json.dumps(schema)
+
+
+def test_build_model_schema_with_constrained_field_without_description():
+    class Params(KernelBaseModel):
+        top_p: float = Field(default=0.9, ge=0.0, le=1.0)
+
+    schema = KernelJsonSchemaBuilder.build_model_schema(Params)
+
+    assert schema["properties"]["top_p"] == {"type": "number"}
+    json.dumps(schema)
 
 
 def test_build_from_type_name():
