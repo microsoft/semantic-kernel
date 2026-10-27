@@ -789,18 +789,20 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     {
         try
         {
+            JsonSerializerOptions effectiveOptions = jsonSerializerOptions ?? KernelJsonSchemaBuilder.GetDefaultJsonSerializerOptions();
+
             deserializedValue = value switch
             {
-                JsonDocument document => document.Deserialize(targetType, jsonSerializerOptions),
-                JsonNode node => node.Deserialize(targetType, jsonSerializerOptions),
-                JsonElement element => element.Deserialize(targetType, jsonSerializerOptions),
+                JsonDocument document => document.Deserialize(targetType, effectiveOptions),
+                JsonNode node => node.Deserialize(targetType, effectiveOptions),
+                JsonElement element => element.Deserialize(targetType, effectiveOptions),
                 // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
                 // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the
                 // following exception - "The JSON value could not be converted to System.Int32. Path: $.Id | LineNumber: 0 | BytePositionInLine: 7."
-                _ => JsonSerializer.Deserialize(value.ToString()!, targetType, jsonSerializerOptions)
+                _ => JsonSerializer.Deserialize(value.ToString()!, targetType, effectiveOptions)
             };
 
             return true;
