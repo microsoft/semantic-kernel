@@ -41,7 +41,7 @@ class KernelFunctionSelectionStrategy(SelectionStrategy):
     arguments: KernelArguments | None = None
     function: KernelFunction
     kernel: Kernel
-    result_parser: Callable[..., str] = Field(default_factory=lambda: (lambda: ""))
+    result_parser: Callable[..., str] = Field(default_factory=lambda: (lambda result: str(result).strip()))
     history_reducer: ChatHistoryReducer | None = None
 
     @override
