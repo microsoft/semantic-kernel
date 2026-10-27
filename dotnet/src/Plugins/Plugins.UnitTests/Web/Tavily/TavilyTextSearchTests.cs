@@ -681,8 +681,9 @@ public sealed class TavilyTextSearchTests : IDisposable
         // Act
         await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 1 });
 
-        // Assert - the caller's header is not duplicated or overwritten
-        Assert.False(this._messageHandlerStub.RequestHeaders[0]!.Contains("X-Client-Name"));
+        // Assert - exactly one X-Client-Name value, the caller's, not duplicated and not semantic-kernel
+        // HttpClient merges DefaultRequestHeaders into the request before the handler sees it
+        Assert.Equal(new[] { "caller-app" }, this._messageHandlerStub.RequestHeaders[0]!.GetValues("X-Client-Name").ToArray());
         Assert.Equal(new[] { "caller-app" }, this._httpClient.DefaultRequestHeaders.GetValues("X-Client-Name").ToArray());
     }
 
