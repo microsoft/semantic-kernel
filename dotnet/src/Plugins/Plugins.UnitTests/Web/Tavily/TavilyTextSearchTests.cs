@@ -649,6 +649,43 @@ public sealed class TavilyTextSearchTests : IDisposable
         Assert.Contains("\"max_results\":5", requestBodyJson);
     }
 
+    [Fact]
+    public async Task RequestIdentifiesTheClientAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(BuildResponseJson(1));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 1 });
+
+        // Assert - partner identity is sent per request; the API key and body are unchanged
+        var headers = this._messageHandlerStub.RequestHeaders[0]!;
+        Assert.Equal(new[] { "semantic-kernel" }, headers.GetValues("X-Client-Name").ToArray());
+        Assert.Equal("Bearer ApiKey", headers.GetValues("Authorization").Single());
+        Assert.False(headers.Contains("X-Client-Source"));
+        Assert.Contains("User-Agent", this._httpClient.DefaultRequestHeaders.Select(h => h.Key));
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.DoesNotContain("client_name", requestBodyJson);
+        Assert.DoesNotContain("client_source", requestBodyJson);
+    }
+
+    [Fact]
+    public async Task CallerSuppliedClientNameIsPreservedAsync()
+    {
+        // Arrange
+        this._httpClient.DefaultRequestHeaders.Add("X-Client-Name", "caller-app");
+        this._messageHandlerStub.AddJsonResponse(BuildResponseJson(1));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 1 });
+
+        // Assert - the caller's header is not duplicated or overwritten
+        Assert.False(this._messageHandlerStub.RequestHeaders[0]!.Contains("X-Client-Name"));
+        Assert.Equal(new[] { "caller-app" }, this._httpClient.DefaultRequestHeaders.GetValues("X-Client-Name").ToArray());
+    }
+
     #endregion
 
     #region private

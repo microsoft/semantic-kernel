@@ -385,6 +385,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     #region Private Methods
 
     private readonly ILogger _logger;
+    private const string ClientNameHeader = "X-Client-Name";
+    private const string ClientName = "semantic-kernel";
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Uri? _uri = null;
@@ -465,6 +467,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        // Identify this connector to Tavily unless the caller already set the header on their HttpClient.
+        if (!this._httpClient.DefaultRequestHeaders.Contains(ClientNameHeader))
+        {
+            httpRequestMessage.Headers.Add(ClientNameHeader, ClientName);
         }
 
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
