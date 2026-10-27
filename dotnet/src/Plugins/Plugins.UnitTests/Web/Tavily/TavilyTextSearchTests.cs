@@ -403,6 +403,81 @@ public sealed class TavilyTextSearchTests : IDisposable
     }
 
     [Fact]
+    public async Task StringImageUrlsInResponseAreReturnedAsImageResultsAsync()
+    {
+        // Arrange - without image descriptions Tavily returns the images as URL strings
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(WhatIsTheSKResponseJson))!.AsObject();
+        node["images"] = new System.Text.Json.Nodes.JsonArray("https://example.com/a.png", "https://example.com/b.jpg");
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var list = await result.Results.ToListAsync();
+
+        // Assert - the four web results are unchanged and the two images follow with the URL and an empty description
+        Assert.Equal(6, list.Count);
+        Assert.Equal("https://example.com/a.png", list[4].Link);
+        Assert.Equal("a.png", list[4].Name);
+        Assert.Equal(string.Empty, list[4].Value);
+        Assert.Equal("https://example.com/b.jpg", list[5].Link);
+        Assert.Equal(string.Empty, list[5].Value);
+    }
+
+    [Fact]
+    public async Task ObjectImagesWithDescriptionsAreStillReadAsync()
+    {
+        // Arrange
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(WhatIsTheSKResponseJson))!.AsObject();
+        node["images"] = System.Text.Json.Nodes.JsonNode.Parse("[{\"url\":\"https://example.com/a.png\",\"description\":\"A diagram\"}]");
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true, IncludeImageDescriptions = true });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var list = await result.Results.ToListAsync();
+
+        // Assert
+        Assert.Equal(5, list.Count);
+        Assert.Equal("https://example.com/a.png", list[4].Link);
+        Assert.Equal("A diagram", list[4].Value);
+    }
+
+    [Fact]
+    public async Task ObjectImageWithoutDescriptionStillThrowsAsync()
+    {
+        // Arrange - the object form keeps its required properties
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(WhatIsTheSKResponseJson))!.AsObject();
+        node["images"] = System.Text.Json.Nodes.JsonNode.Parse("[{\"url\":\"https://example.com/a.png\"}]");
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () => await (await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 })).Results.ToListAsync());
+    }
+
+    [Fact]
+    public async Task PerResultImageStringArraysDoNotThrowAsync()
+    {
+        // Arrange - Tavily can also return an images string array on each result
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(WhatIsTheSKResponseJson))!.AsObject();
+        node.Remove("images");
+        foreach (var item in node["results"]!.AsArray())
+        {
+            item!.AsObject()["images"] = new System.Text.Json.Nodes.JsonArray("https://example.com/a.png");
+        }
+
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.Equal(4, (await result.Results.ToListAsync()).Count);
+    }
+
+    [Fact]
     public async Task IncludeImagesWithImagesInResponseAppendsImageResultsAsync()
     {
         // Arrange
