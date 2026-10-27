@@ -36,7 +36,8 @@ public sealed class TavilyTextSearchOptions
 
     /// <summary>
     /// Boost search results from a specific country, for example "united states".
-    /// Available only when the search topic is general.
+    /// Available only when the search topic is general. Not supported with the <see cref="TavilySearchDepth.Fast"/>
+    /// or <see cref="TavilySearchDepth.UltraFast"/> search depths, for which Tavily returns an error.
     /// </summary>
     public string? Country { get; set; }
 
