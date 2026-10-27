@@ -136,7 +136,7 @@ postgres = [
     "psycopg[binary,pool] ~= 3.2"
 ]
 qdrant = [
-    "qdrant-client ~= 1.9"
+    "qdrant-client ~= 1.10"
 ]
 redis = [
     "redis[hiredis] >= 6,< 8",

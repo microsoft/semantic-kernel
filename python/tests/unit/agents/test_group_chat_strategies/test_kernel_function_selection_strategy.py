@@ -104,3 +104,20 @@ async def test_kernel_function_selection_result_parser_is_async(agents):
 
     assert selected_agent.name == "Agent_2"
     mock_function.invoke.assert_awaited_once()
+
+
+async def test_kernel_function_selection_default_result_parser(agents):
+    """Default result_parser must accept the function result (regression for #14589)."""
+    history = [MagicMock(spec=ChatMessageContent)]
+    mock_function = AsyncMock(spec=KernelFunction)
+    mock_result = MagicMock()
+    mock_result.__str__.return_value = "Agent_1"
+    mock_function.invoke.return_value = mock_result
+    mock_kernel = MagicMock(spec=Kernel)
+
+    strategy = KernelFunctionSelectionStrategy(function=mock_function, kernel=mock_kernel)
+
+    selected_agent = await strategy.next(agents, history)
+
+    assert selected_agent.name == "Agent_1"
+    mock_function.invoke.assert_awaited_once()

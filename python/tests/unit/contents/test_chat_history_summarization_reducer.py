@@ -312,3 +312,39 @@ async def test_summarization_preserves_developer_message(mock_service):
     # Developer message must be preserved
     assert result.messages[0].role == AuthorRole.DEVELOPER
     assert result.messages[0].content == "Developer instructions"
+
+
+async def test_summarization_keeps_existing_summaries_after_system_message(mock_service):
+    """With use_single_summary=False, summaries after a preserved system prompt are kept, not re-summarized."""
+    system_message = ChatMessageContent(role=AuthorRole.SYSTEM, content="Important system prompt")
+    existing_summary = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, content="Earlier summary.", metadata={SUMMARY_METADATA_KEY: True}
+    )
+    messages = [
+        system_message,
+        existing_summary,
+        ChatMessageContent(role=AuthorRole.USER, content="User says hello"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds again"),
+        ChatMessageContent(role=AuthorRole.USER, content="User says even more"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant responds yet again"),
+    ]
+
+    reducer = ChatHistorySummarizationReducer(
+        service=mock_service, target_count=2, threshold_count=0, use_single_summary=False
+    )
+    reducer.messages = messages
+
+    new_summary = ChatMessageContent(role=AuthorRole.ASSISTANT, content="New summary.")
+    mock_service.get_chat_message_content.return_value = new_summary
+    mock_service.get_prompt_execution_settings_from_settings.return_value = PromptExecutionSettings()
+
+    result = await reducer.reduce()
+
+    assert result is not None
+    assert result.messages[0] is system_message
+    assert result.messages[1] is existing_summary
+    assert result.messages[2] is new_summary
+    summarized_history = mock_service.get_chat_message_content.call_args.kwargs["chat_history"]
+    assert all(msg.content != "Earlier summary." for msg in summarized_history.messages)

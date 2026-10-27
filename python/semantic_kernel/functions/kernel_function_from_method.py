@@ -141,6 +141,13 @@ class KernelFunctionFromMethod(KernelFunction):
             raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
         else:
             try:
+                # Keep custom instances intact while retaining built-in constructor coercion.
+                if (
+                    isinstance(param_type, type)
+                    and param_type.__module__ != "builtins"
+                    and isinstance(value, param_type)
+                ):
+                    return value
                 if isinstance(value, dict) and hasattr(param_type, "__init__"):
                     return param_type(**value)
                 return param_type(value)

@@ -113,3 +113,9 @@ async def test_chroma_collection_search(chroma_collection, mock_client, include_
     async for res in results.results:
         assert res.record["id"] == "1"
         assert res.score == 0.1
+
+
+def test_chroma_collection_build_filter_keeps_apostrophes(chroma_collection):
+    """Chroma filters are dicts, not SQL, so the value must reach Chroma unchanged."""
+    assert chroma_collection._build_filter('lambda x: x.content == "O\'Brien"') == {"content": "O'Brien"}
+    assert chroma_collection._build_filter('lambda x: x.content != "O\'Brien"') == {"content": {"$ne": "O'Brien"}}
