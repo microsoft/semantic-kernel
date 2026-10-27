@@ -89,6 +89,12 @@ internal sealed class TavilySearchRequest
     public bool? IncludeImageDescriptions { get; set; }
 
     /// <summary>
+    /// Boost search results from a specific country. Available only when topic is general.
+    /// </summary>
+    [JsonPropertyName("country")]
+    public string? Country { get; set; }
+
+    /// <summary>
     /// A list of domains to specifically include in the search results.
     /// </summary>
     [JsonPropertyName("include_domains")]
@@ -122,7 +128,8 @@ internal sealed class TavilySearchRequest
         bool? includeRawContent,
         int? maxResults,
         IList<string>? includeDomains,
-        IList<string>? excludeDomains)
+        IList<string>? excludeDomains,
+        string? country = null)
     {
         this.Query = query ?? throw new ArgumentNullException(nameof(query));
         this.Topic = topic;
@@ -137,5 +144,6 @@ internal sealed class TavilySearchRequest
         this.MaxResults = maxResults;
         this.IncludeDomains = includeDomains;
         this.ExcludeDomains = excludeDomains;
+        this.Country = country;
     }
 }

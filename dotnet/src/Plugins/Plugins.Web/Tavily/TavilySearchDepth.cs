@@ -16,5 +16,15 @@ public enum TavilySearchDepth
     /// <summary>
     /// Advanced search costs 2 API Credits.
     /// </summary>
-    Advanced
+    Advanced,
+
+    /// <summary>
+    /// Fast search prioritizes lower latency while maintaining good relevance. Costs 1 API Credit.
+    /// </summary>
+    Fast,
+
+    /// <summary>
+    /// Ultra-fast search minimizes latency above all else. Costs 1 API Credit.
+    /// </summary>
+    UltraFast
 }

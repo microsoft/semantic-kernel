@@ -30,9 +30,16 @@ public sealed class TavilyTextSearchOptions
     /// The number of content chunks to retrieve from each source.
     /// Each chunk's length is maximum 500 characters.
     /// Available only when search_depth is advanced.
-    /// Required range: 0 - 3
+    /// Available when search_depth is basic, advanced or fast.
+    /// Required range: 1 - 3
     /// </summary>
     public int? ChunksPerSource { get; set; }
+
+    /// <summary>
+    /// Boost search results from a specific country, for example "united states".
+    /// Available only when the search topic is general.
+    /// </summary>
+    public string? Country { get; set; }
 
     /// <summary>
     /// Include an LLM-generated answer to the provided query.

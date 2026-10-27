@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -395,6 +396,11 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
 
     private const string DefaultUri = "https://api.tavily.com/search";
 
+    /// <summary>
+    /// The maximum value of the Tavily <c>max_results</c> request parameter.
+    /// </summary>
+    private const int MaxResultsLimit = 20;
+
     private const string Topic = "topic";
     private const string TimeRange = "time_range";
     private const string Days = "days";
@@ -422,7 +428,13 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        return JsonSerializer.Deserialize<TavilySearchResponse>(json);
+        TavilySearchResponse? searchResponse = JsonSerializer.Deserialize<TavilySearchResponse>(json);
+        if (skip > 0 && searchResponse?.Results is not null)
+        {
+            searchResponse.Results = [.. searchResponse.Results.Skip(skip).Take(top)];
+        }
+
+        return searchResponse;
     }
 
     /// <summary>
@@ -436,9 +448,9 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
     private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int top, int skip, List<(string FieldName, object Value)> filters, CancellationToken cancellationToken)
     {
-        if (top is <= 0 or > 50)
+        if (top is <= 0 or > MaxResultsLimit)
         {
-            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} count value must be greater than 0 and have a maximum value of 50.");
+            throw new ArgumentOutOfRangeException(nameof(top), top, $"{nameof(top)} count value must be greater than 0 and have a maximum value of {MaxResultsLimit}.");
         }
 
         var requestContent = this.BuildRequestContent(query, top, skip, filters);
@@ -474,7 +486,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -502,7 +514,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -537,7 +549,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -571,7 +583,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -676,7 +688,9 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         string? topic = null;
         string? timeRange = null;
         int? days = null;
-        int? maxResults = top - skip;
+        // Tavily has no offset parameter, so skipped results are requested and then dropped client-side.
+        // The window is limited by max_results, so top + skip beyond MaxResultsLimit returns fewer than top results.
+        int? maxResults = Math.Min(top + Math.Max(skip, 0), MaxResultsLimit);
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 
@@ -718,7 +732,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             timeRange,
             days,
 #pragma warning disable CA1308 // Lower is preferred over uppercase
-            this._searchOptions?.SearchDepth?.ToString()?.ToLowerInvariant(),
+            this._searchOptions?.SearchDepth is { } searchDepth ? ToApiSearchDepth(searchDepth) : null,
 #pragma warning restore CA1308
             this._searchOptions?.ChunksPerSource,
             this._searchOptions?.IncludeImages,
@@ -727,8 +741,17 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             this._searchOptions?.IncludeRawContent,
             maxResults,
             includeDomains,
-            excludeDomains);
+            excludeDomains,
+            this._searchOptions?.Country);
     }
+
+    private static string ToApiSearchDepth(TavilySearchDepth searchDepth) => searchDepth switch
+    {
+        TavilySearchDepth.UltraFast => "ultra-fast",
+#pragma warning disable CA1308 // Lower is preferred over uppercase
+        _ => searchDepth.ToString().ToLowerInvariant(),
+#pragma warning restore CA1308
+    };
 
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {

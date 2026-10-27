@@ -340,6 +340,114 @@ public sealed class TavilyTextSearchTests : IDisposable
         Assert.Equal("Value cannot be null. (Parameter 'query')", e.Message);
     }
 
+    [Theory]
+    [InlineData(2, 1, 3, new[] { 1, 2 })]
+    [InlineData(2, 0, 2, new[] { 0, 1 })]
+    [InlineData(3, 3, 6, new[] { 3 })]
+    [InlineData(15, 10, 20, new[] { 3 })]
+    public async Task SkipIsAppliedToResultsWithinMaxResultsWindowAsync(int top, int skip, int expectedMaxResults, int[] expectedIndexes)
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var allTitles = JsonDocument.Parse(File.ReadAllText(WhatIsTheSKResponseJson)).RootElement
+            .GetProperty("results").EnumerateArray().Select(r => r.GetProperty("title").GetString()).ToArray();
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = top, Skip = skip });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains($"\"max_results\":{expectedMaxResults}", requestBodyJson);
+        var names = (await result.Results.ToListAsync()).Select(r => r.Name).ToArray();
+        Assert.Equal(expectedIndexes.Select(i => allTitles[i]).ToArray(), names);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(21)]
+    [InlineData(50)]
+    public async Task TopOutsideTavilyMaxResultsRangeThrowsAsync(int top)
+    {
+        // Arrange
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = top, Skip = 0 }));
+        Assert.Empty(this._messageHandlerStub.RequestContents);
+    }
+
+    [Fact]
+    public async Task IncludeImagesWithoutImagesInResponseDoesNotThrowAsync()
+    {
+        // Arrange
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(WhatIsTheSKResponseJson))!.AsObject();
+        node.Remove("images");
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        this._messageHandlerStub.AddJsonResponse(node.ToJsonString());
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act
+        KernelSearchResults<object> objects = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var objectList = await objects.Results.ToListAsync();
+        KernelSearchResults<TavilyWebPage> pages = await ((ITextSearch<TavilyWebPage>)textSearch).GetSearchResultsAsync("What is the Semantic Kernel?", new TextSearchOptions<TavilyWebPage> { Top = 4, Skip = 0 });
+        var pageList = await pages.Results.ToListAsync();
+
+        // Assert
+        Assert.Equal(4, objectList.Count);
+        Assert.Equal(4, pageList.Count);
+    }
+
+    [Fact]
+    public async Task IncludeImagesWithImagesInResponseAppendsImageResultsAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act
+        KernelSearchResults<object> result = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.Equal(9, (await result.Results.ToListAsync()).Count);
+    }
+
+    [Theory]
+    [InlineData(TavilySearchDepth.Basic, "basic")]
+    [InlineData(TavilySearchDepth.Advanced, "advanced")]
+    [InlineData(TavilySearchDepth.Fast, "fast")]
+    [InlineData(TavilySearchDepth.UltraFast, "ultra-fast")]
+    public async Task SearchDepthIsSerializedWithApiValueAsync(TavilySearchDepth depth, string expected)
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, SearchDepth = depth });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains($"\"search_depth\":\"{expected}\"", requestBodyJson);
+    }
+
+    [Fact]
+    public async Task CountryIsSentWhenConfiguredAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Country = "united states" });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        var requestBodyJson = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.Contains("\"country\":\"united states\"", requestBodyJson);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
