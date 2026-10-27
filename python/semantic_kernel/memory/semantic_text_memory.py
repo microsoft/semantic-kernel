@@ -69,11 +69,13 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             MemoryPoisoningError: If the memory guard detects a poisoning attempt (OWASP ASI06).
         """
         if self._memory_guard is not None:
-            scan_res = self._memory_guard.scan_write(text=text, collection=collection, id=id)
-            if not scan_res.is_safe:
-                raise MemoryPoisoningError(
-                    f"Memory write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
-                )
+            for field_val in (text, description, additional_metadata):
+                if field_val is not None:
+                    scan_res = self._memory_guard.scan_write(text=field_val, collection=collection, id=id)
+                    if not scan_res.is_safe:
+                        raise MemoryPoisoningError(
+                            f"Memory write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
+                        )
 
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
@@ -114,11 +116,13 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             MemoryPoisoningError: If the memory guard detects a poisoning attempt (OWASP ASI06).
         """
         if self._memory_guard is not None:
-            scan_res = self._memory_guard.scan_write(text=text, collection=collection, id=external_id)
-            if not scan_res.is_safe:
-                raise MemoryPoisoningError(
-                    f"Memory reference write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
-                )
+            for field_val in (text, description, additional_metadata):
+                if field_val is not None:
+                    scan_res = self._memory_guard.scan_write(text=field_val, collection=collection, id=external_id)
+                    if not scan_res.is_safe:
+                        raise MemoryPoisoningError(
+                            f"Memory reference write rejected by MemoryGuard (OWASP ASI06): {scan_res.threat_type}"
+                        )
 
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)

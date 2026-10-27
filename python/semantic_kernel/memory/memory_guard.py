@@ -90,8 +90,7 @@ class DefaultMemoryGuard(MemoryGuardBase):
         r"ignore\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instructions?|directions?|prompts?)",
         r"disregard\s+(?:all\s+)?(?:previous|prior)\s+(?:instructions?|guidelines?)",
         r"new\s+(?:instruction|directive|system\s+prompt)\s*:",
-        r"(?:^|
-)\s*(?:system|developer|admin)\s*:\s*",
+        r"(?:^|\n)\s*(?:system|developer|admin)\s*:\s*",
         r"\[(?:system|admin|override|inst)\]",
         r"bypass\s+(?:guardrails?|safety|filters?|rules?)",
         r"you\s+are\s+now\s+(?:unrestricted|in\s+developer\s+mode|dan)",
