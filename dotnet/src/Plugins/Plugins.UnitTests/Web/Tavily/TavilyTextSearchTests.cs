@@ -453,7 +453,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
 
         // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(async () => await (await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 })).Results.ToListAsync());
+        await Assert.ThrowsAsync<JsonException>(async () => await (await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 })).Results.ToListAsync());
     }
 
     [Fact]
