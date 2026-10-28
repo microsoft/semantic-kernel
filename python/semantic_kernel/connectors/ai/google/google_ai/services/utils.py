@@ -214,3 +214,24 @@ def _create_image_part(image_content: ImageContent) -> Part:
     raise ServiceInvalidRequestError(
         "ImageContent without data_uri in User message while formatting chat history for Google AI"
     )
+
+
+def get_completion_token_count(usage_metadata: Any) -> int | None:
+    """Get the number of tokens the model generated, including its thinking tokens.
+
+    Gemini reports the thinking tokens in ``thoughts_token_count``, apart from ``candidates_token_count``,
+    but bills them as output tokens, so both count toward the completion tokens.
+
+    Args:
+        usage_metadata: The usage metadata of a response, if it has one.
+
+    Returns:
+        The completion token count, or None if the response reports neither count.
+    """
+    if not usage_metadata:
+        return None
+    candidates_tokens = usage_metadata.candidates_token_count
+    thoughts_tokens = usage_metadata.thoughts_token_count
+    if candidates_tokens is None and thoughts_tokens is None:
+        return None
+    return (candidates_tokens or 0) + (thoughts_tokens or 0)
