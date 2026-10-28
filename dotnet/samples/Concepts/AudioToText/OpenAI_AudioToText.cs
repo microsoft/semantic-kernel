@@ -50,4 +50,26 @@ public sealed class OpenAI_AudioToText(ITestOutputHelper output) : BaseTest(outp
         // Output the transcribed text
         Console.WriteLine(textContent.Text);
     }
+
+    [Fact(Skip = "Requires a local OpenAI-compatible audio-to-text server, such as FunASR.")]
+    public async Task OpenAICompatibleAudioToTextAsync()
+    {
+        // FunASR exposes the OpenAI-compatible endpoint at /v1/audio/transcriptions.
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIAudioToText(
+                modelId: "sensevoice",
+                endpoint: new Uri("http://localhost:8000/v1"))
+            .Build();
+
+        var audioToTextService = kernel.GetRequiredService<IAudioToTextService>();
+        await using var audioFileStream = EmbeddedResource.ReadStream(AudioFilename);
+        var audioFileBinaryData = await BinaryData.FromStreamAsync(audioFileStream!);
+        AudioContent audioContent = new(audioFileBinaryData, mimeType: null);
+
+        var textContent = await audioToTextService.GetTextContentAsync(
+            audioContent,
+            new OpenAIAudioToTextExecutionSettings(AudioFilename));
+
+        Console.WriteLine(textContent.Text);
+    }
 }
