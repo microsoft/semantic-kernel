@@ -57,7 +57,7 @@ def test_it_parses_val_blocks(template, content):
         ("f", "f"),
         (" x ", "x"),
         ("foo", "foo"),
-        ("fo.o ", "fo.o"),
+        ("a.b ", "a.b"),
         (" f.oo", "f.oo"),
         (" bar ", "bar"),
     ],
@@ -128,3 +128,29 @@ def test_named_args():
     assert blocks[1].content == '"direct"'
     assert blocks[2].content == "arg1=$arg1"
     assert blocks[3].content == 'arg2="arg2"'
+
+
+def test_named_args_with_spaces_in_quoted_values():
+    # Spaces inside the quoted value of a named argument used to split the
+    # token at the space, producing an invalid block instead of a NamedArgBlock.
+    template = "plugin.function arg1='value with spaces'"
+    blocks = CodeTokenizer.tokenize(template)
+    assert len(blocks) == 2
+    assert blocks[0].content == "plugin.function"
+    assert blocks[0].type == BlockTypes.FUNCTION_ID
+    assert blocks[1].content == "arg1='value with spaces'"
+    assert blocks[1].type == BlockTypes.NAMED_ARG
+
+
+@mark.parametrize(
+    "template, expected_content",
+    [
+        ('plugin.function arg1="a b"', 'arg1="a b"'),
+        ("plugin.function 'positional value' arg2='a b'", "arg2='a b'"),
+        ("plugin.function arg1=$var arg2='a b'", "arg2='a b'"),
+    ],
+)
+def test_named_args_with_spaces_variants(template, expected_content):
+    blocks = CodeTokenizer.tokenize(template)
+    named_args = [block for block in blocks if block.type == BlockTypes.NAMED_ARG]
+    assert named_args[-1].content == expected_content
