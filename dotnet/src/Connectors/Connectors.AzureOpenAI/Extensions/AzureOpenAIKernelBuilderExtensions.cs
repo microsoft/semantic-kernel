@@ -832,6 +832,121 @@ public static partial class AzureOpenAIKernelBuilderExtensions
 
     #endregion
 
+    #region Image Generation
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IImageGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIImageGenerator(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIImageGenerator(
+            deploymentName,
+            endpoint,
+            apiKey,
+            serviceId,
+            apiVersion,
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IImageGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIImageGenerator(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIImageGenerator(
+            deploymentName,
+            endpoint,
+            credentials,
+            serviceId,
+            apiVersion,
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IImageGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIImageGenerator(
+        this IKernelBuilder builder,
+        string deploymentName,
+        AzureOpenAIClient? azureOpenAIClient = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIImageGenerator(
+            deploymentName,
+            azureOpenAIClient,
+            serviceId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    #endregion
+
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient, string? apiVersion) =>
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 

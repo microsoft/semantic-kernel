@@ -3,6 +3,7 @@
 using System;
 using System.ClientModel;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -195,6 +196,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     [InlineData("hd", "hd")]
     [InlineData("high", "hd")]
     [InlineData("standard", "standard")]
+    [InlineData("medium", "medium")]
+    [InlineData("low", "low")]
+    [InlineData("auto", "auto")]
     public async Task GetUriImageContentsImageQualityRequestWorksCorrectlyAsync(string? quality, string? expectedQuality)
     {
         // Arrange
@@ -333,6 +337,65 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 
         var breakingGlass = imageContent.InnerContent as GeneratedImage;
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
+    }
+
+    [Fact]
+    public async Task GenerateGptImageReturnsDataUriAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var sut = new AzureOpenAITextToImageService("image-deployment", "https://api-host", "api-key", "gpt-image-1", this._httpClient);
+
+        // Act
+        var result = await sut.GenerateImageAsync("A sea otter", 1024, 1024);
+
+        // Assert
+        Assert.Equal("data:image/png;base64,iVBORw0KGgoAAA==", result);
+    }
+
+    [Fact]
+    public async Task GetGptImageContentsPreservesSettingsWithProvidedClientAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+        this._messageHandlerStub.ResponseToReturn = responseMessage;
+        var client = new AzureOpenAIClient(
+            new Uri("https://api-host"),
+            new ApiKeyCredential("api-key"),
+            AzureClientCore.GetAzureOpenAIClientOptions(this._httpClient, "2025-04-01-preview"));
+        var sut = new AzureOpenAITextToImageService("image-deployment", client, "gpt-image-1");
+
+        // Act
+        var result = await sut.GetImageContentsAsync("A sea otter", new OpenAITextToImageExecutionSettings
+        {
+            Size = (1536, 1024),
+            Quality = "low",
+            EndUserId = "test-user"
+        });
+
+        // Assert
+        var image = Assert.Single(result);
+        Assert.Equal(Convert.FromBase64String("iVBORw0KGgoAAA=="), image.Data!.Value.ToArray());
+        Assert.Equal("image/png", image.MimeType);
+        Assert.Equal("my prompt", Assert.IsType<GeneratedImage>(image.InnerContent).RevisedPrompt);
+        Assert.Equal("gpt-image-1", sut.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.Equal("image-deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
+        using var request = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        Assert.Equal("image-deployment", request.RootElement.GetProperty("model").GetString());
+        Assert.Equal("A sea otter", request.RootElement.GetProperty("prompt").GetString());
+        Assert.Equal("1536x1024", request.RootElement.GetProperty("size").GetString());
+        Assert.Equal("low", request.RootElement.GetProperty("quality").GetString());
+        Assert.Equal("test-user", request.RootElement.GetProperty("user").GetString());
+        Assert.Equal(1, request.RootElement.GetProperty("n").GetInt32());
+        Assert.False(request.RootElement.TryGetProperty("response_format", out _));
+        Assert.Contains("api-version=2025-04-01-preview", this._messageHandlerStub.RequestUri!.Query);
     }
 
     [Theory]
