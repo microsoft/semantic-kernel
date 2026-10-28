@@ -23,6 +23,7 @@ public class AggregatorAgentTests
     [Theory]
     [InlineData(AggregatorMode.Nested, 0)]
     [InlineData(AggregatorMode.Flat, 2)]
+    [InlineData(AggregatorMode.Custom, 0)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
         // Arrange
@@ -43,7 +44,11 @@ public class AggregatorAgentTests
                     }
             };
 
-        AggregatorAgent uberAgent = new(() => groupChat) { Mode = mode };
+        AggregatorAgent uberAgent = new(() => groupChat)
+        {
+            Mode = mode,
+            MessageSelector = mode == AggregatorMode.Custom ? messages => messages[0] : null,
+        };
         AgentGroupChat uberChat = new();
 
         // Add message to outer chat (no agent has joined)
