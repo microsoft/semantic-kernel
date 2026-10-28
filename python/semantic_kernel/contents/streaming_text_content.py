@@ -49,7 +49,7 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
             choice_index=self.choice_index,
             inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
-            metadata=self.metadata,
+            metadata=self.metadata | other.metadata,
             text=(self.text or "") + (other.text or ""),
             encoding=self.encoding,
         )
