@@ -280,3 +280,37 @@ async def test_validate_server_url_still_rejects_path_that_only_shares_prefix_ch
 
     with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
         await validate_server_url("https://api.example.com/apiusers", options)
+
+
+async def test_validate_server_url_rejects_path_that_only_matches_after_decoding():
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/admin/%2e%2e/api", options)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://api.example.com/api/.",
+        "https://api.example.com/api/users/..",
+    ],
+)
+async def test_validate_server_url_preserves_trailing_slash_after_normalization(url):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/"])
+
+    assert await validate_server_url(url, options) == []
+
+
+@pytest.mark.parametrize(
+    "allowed_base_url",
+    [
+        "https://api.example.com/api/.",
+        "https://api.example.com/api/",
+    ],
+)
+async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_path(allowed_base_url):
+    options = ServerUrlValidationOptions(allowed_base_urls=[allowed_base_url])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api", options)
