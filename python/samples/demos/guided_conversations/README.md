@@ -42,7 +42,7 @@ This sample uses the same tooling as the [Semantic Kernel](https://github.com/mi
 
 ## How You Can Use This Framework 
 ### Add a new scenario
-Create a new file and and define the following inputs:
+Create a new file and define the following inputs:
 - An artifact
 - Rules 
 - Conversation flow (optional)
