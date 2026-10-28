@@ -250,6 +250,8 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         # Get all the records in the collection
         memory_records = list(self._store[collection_name].values())
+        if not memory_records:
+            return []
 
         if not memory_records:
             return []
