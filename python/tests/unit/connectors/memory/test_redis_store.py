@@ -276,6 +276,24 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_delete_applies_collection_name_prefix(
+    collection_with_prefix_hash, collection_with_prefix_json, mock_delete_hash, mock_delete_json, type_
+):
+    """Regression test for https://github.com/microsoft/semantic-kernel/issues/13904.
+
+    With prefix_collection_name_to_key_names=True, keys are stored as
+    "{collection_name}:{key}". The delete path must send the same
+    prefixed key, otherwise the record is never deleted.
+    """
+    if type_ == "hashset":
+        await collection_with_prefix_hash._inner_delete(["id1"])
+        mock_delete_hash.assert_called_once_with("test:id1")
+    else:
+        await collection_with_prefix_json._inner_delete(["id1"])
+        mock_delete_json.assert_called_once_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
