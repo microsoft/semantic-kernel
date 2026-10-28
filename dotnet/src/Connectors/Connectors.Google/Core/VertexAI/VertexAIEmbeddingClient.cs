@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -17,6 +17,9 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 internal sealed class VertexAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
+    private readonly VertexAIVersion _apiVersion;
+    private readonly string _location;
+    private readonly string _projectId;
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
 
@@ -53,9 +56,24 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
         string baseUri = GetVertexAIBaseUri(location);
 
+        this._apiVersion = apiVersion;
+        this._location = location;
+        this._projectId = projectId;
         this._embeddingModelId = modelId;
         this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
         this._dimensions = dimensions;
+    }
+
+    private Uri GetEmbeddingEndpoint(string modelId)
+    {
+        if (modelId == this._embeddingModelId)
+        {
+            return this._embeddingEndpoint;
+        }
+
+        string versionSubLink = GetApiVersionSubLink(this._apiVersion);
+        string baseUri = GetVertexAIBaseUri(this._location);
+        return new Uri($"{baseUri}/{versionSubLink}/projects/{this._projectId}/locations/{this._location}/publishers/google/models/{modelId}:predict");
     }
 
     /// <summary>
@@ -72,8 +90,10 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
+        string modelId = !string.IsNullOrWhiteSpace(options?.ModelId) ? options.ModelId : this._embeddingModelId;
         var geminiRequest = this.GetEmbeddingRequest(data, options);
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
+        var endpoint = this.GetEmbeddingEndpoint(modelId);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, endpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
