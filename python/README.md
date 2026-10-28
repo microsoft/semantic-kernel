@@ -20,8 +20,10 @@ Highlights
 pip install --upgrade semantic-kernel
 # Optional: Add integrations
 pip install --upgrade semantic-kernel[hugging_face]
-pip install --upgrade semantic-kernel[all]
+pip install --upgrade semantic-kernel[hugging_face,mistralai]
 ```
+
+Every connector and the extra it needs is listed in [Connector extras and optional dependencies](./docs/CONNECTOR_EXTRAS.md).
 
 Supported Platforms:
 - Python: 3.10+
