@@ -134,6 +134,9 @@ def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
     Returns:
         The formatted tool message.
     """
+    if len(message.items) == 0:
+        raise ValueError("Tool message has no items; expected exactly one FunctionResultContent item.")
+
     if len(message.items) != 1:
         logger.warning(
             "Unsupported number of items in Tool message while formatting chat history for Azure AI"
