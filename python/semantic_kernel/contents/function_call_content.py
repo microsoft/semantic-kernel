@@ -205,6 +205,8 @@ class FunctionCallContent(KernelContent):
         element = Element(self.tag)
         if self.id:
             element.set("id", self.id)
+        if self.call_id:
+            element.set("call_id", self.call_id)
         if self.name:
             element.set("name", self.name)
         if self.arguments:
@@ -217,7 +219,12 @@ class FunctionCallContent(KernelContent):
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
-        return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
+        return cls(
+            name=element.get("name"),
+            id=element.get("id"),
+            call_id=element.get("call_id"),
+            arguments=element.text or "",
+        )
 
     def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
