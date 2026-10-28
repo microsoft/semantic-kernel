@@ -140,6 +140,10 @@
     <Project Path="src/Experimental/Process.UnitTests/Process.UnitTests.csproj" />
     <Project Path="src/Experimental/Process.Utilities.UnitTests/Process.Utilities.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/src/Extensions/">
+    <Project Path="src/Extensions/AgentHooks.UnitTests/AgentHooks.UnitTests.csproj" />
+    <Project Path="src/Extensions/AgentHooks/AgentHooks.csproj" />
+  </Folder>
   <Folder Name="/src/functions/">
     <Project Path="src/Functions/Functions.Grpc/Functions.Grpc.csproj" />
     <Project Path="src/Functions/Functions.OpenApi.Extensions/Functions.OpenApi.Extensions.csproj" />
