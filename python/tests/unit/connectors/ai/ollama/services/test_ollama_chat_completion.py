@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from ollama import AsyncClient
+from ollama._types import ChatResponse, Message
 
 import semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion as occ_module
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -17,6 +18,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -325,6 +327,7 @@ async def test_chat_response_branch(
             self.message = DummyMessage(content, function_calls)
             self.model = model
             self.prompt_eval_count = prompt_eval_count
+            self.done_reason = None
             self.eval_count = eval_count
 
     # Monkeypatch the ChatResponse type in the module so isinstance works
@@ -409,6 +412,7 @@ async def test_streaming_chat_response_branch(
             self.message = DummyMessage(content, function_calls)
             self.model = model
             self.prompt_eval_count = prompt_eval_count
+            self.done_reason = None
             self.eval_count = eval_count
 
     # Monkeypatch ChatResponse type
@@ -539,6 +543,7 @@ async def test_streaming_parallel_tool_calls_chat_response(
             self.message = DummyMessage(content, function_calls)
             self.model = model
             self.prompt_eval_count = prompt_eval_count
+            self.done_reason = None
             self.eval_count = eval_count
 
     monkeypatch.setattr(occ_module, "ChatResponse", DummyChatResponse)
@@ -579,3 +584,124 @@ async def test_streaming_parallel_tool_calls_chat_response(
     assert function_calls[1].name == "Time-get_time"
     assert function_calls[1].arguments == {"zone": "Tokyo"}
     assert function_calls[1].index == 1
+
+
+def _chat_response(done_reason, tool_calls=None, prompt_eval_count=3, eval_count=5, content="text"):
+    return ChatResponse(
+        model="mdl",
+        done=True,
+        done_reason=done_reason,
+        prompt_eval_count=prompt_eval_count,
+        eval_count=eval_count,
+        message=Message(role="assistant", content=content, tool_calls=tool_calls),
+    )
+
+
+_TOOL_CALL = Message.ToolCall(function=Message.ToolCall.Function(name="fn", arguments={"x": 1}))
+
+
+@pytest.mark.parametrize(
+    ("done_reason", "tool_calls", "expected"),
+    [
+        ("stop", None, FinishReason.STOP),
+        ("length", None, FinishReason.LENGTH),
+        ("stop", [_TOOL_CALL], FinishReason.TOOL_CALLS),
+        ("load", None, None),
+        (None, None, None),
+    ],
+)
+@patch("ollama.AsyncClient.chat")
+async def test_chat_completion_finish_reason(
+    mock_chat_client, done_reason, tool_calls, expected, model_id, service_id, chat_history, default_options
+):
+    """The done_reason of the Ollama response is reported as the finish reason."""
+    mock_chat_client.return_value = _chat_response(done_reason, tool_calls)
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    response = await ollama.get_chat_message_contents(
+        chat_history,
+        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].finish_reason == expected
+
+
+@pytest.mark.parametrize(
+    ("done_reason", "expected"),
+    [("stop", FinishReason.STOP), ("length", FinishReason.LENGTH), (None, None)],
+)
+@patch("ollama.AsyncClient.chat")
+async def test_chat_completion_finish_reason_from_mapping(
+    mock_chat_client, done_reason, expected, model_id, service_id, chat_history, default_options
+):
+    mock_chat_client.return_value = {"message": {"content": "text"}, "done_reason": done_reason}
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    response = await ollama.get_chat_message_contents(
+        chat_history,
+        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].finish_reason == expected
+
+
+@patch("ollama.AsyncClient.chat")
+async def test_streaming_chat_completion_finish_reason(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
+    """Only the final chunk of a stream carries a finish reason."""
+
+    async def stream():
+        yield _chat_response(None, content="par")
+        yield _chat_response("length", content="tial")
+
+    mock_chat_client.return_value = stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    chunks = [
+        chunk[0]
+        async for chunk in ollama.get_streaming_chat_message_contents(
+            chat_history,
+            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+    ]
+
+    assert [chunk.finish_reason for chunk in chunks] == [None, FinishReason.LENGTH]
+
+
+@patch("ollama.AsyncClient.chat")
+async def test_streaming_chat_completion_finish_reason_from_mapping(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
+    async def stream():
+        yield {"message": {"content": "par"}}
+        yield {"message": {"content": "tial"}, "done_reason": "stop"}
+
+    mock_chat_client.return_value = stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    chunks = [
+        chunk[0]
+        async for chunk in ollama.get_streaming_chat_message_contents(
+            chat_history,
+            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+    ]
+
+    assert [chunk.finish_reason for chunk in chunks] == [None, FinishReason.STOP]
+
+
+@patch("ollama.AsyncClient.chat")
+async def test_chat_completion_usage_with_zero_prompt_tokens(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
+    """A fully cached prompt reports prompt_eval_count == 0; the usage must not be dropped."""
+    mock_chat_client.return_value = _chat_response("stop", prompt_eval_count=0, eval_count=5)
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    response = await ollama.get_chat_message_contents(
+        chat_history,
+        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].metadata["usage"] == CompletionUsage(prompt_tokens=0, completion_tokens=5)

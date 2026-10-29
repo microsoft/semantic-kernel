@@ -33,6 +33,7 @@ from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CM
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -224,6 +225,15 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     # endregion
 
+    @staticmethod
+    def _get_finish_reason(done_reason: str | None, has_tool_calls: bool) -> FinishReason | None:
+        """Map Ollama's ``done_reason`` to a FinishReason; None while the response is still streaming."""
+        if done_reason == "length":
+            return FinishReason.LENGTH
+        if done_reason == "stop":
+            return FinishReason.TOOL_CALLS if has_tool_calls else FinishReason.STOP
+        return None
+
     def _create_streaming_chat_message_content_from_chat_response(
         self,
         response: ChatResponse,
@@ -248,6 +258,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_chat_response(response),
+            finish_reason=self._get_finish_reason(response.done_reason, bool(response.message.tool_calls)),
             function_invoke_attempt=function_invoke_attempt,
         )
 
@@ -286,6 +297,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_chat_response(response),
+            finish_reason=self._get_finish_reason(response.done_reason, bool(response.message.tool_calls)),
         )
 
     def _create_chat_message_content(self, response: Mapping[str, Any]) -> ChatMessageContent:
@@ -321,6 +333,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             items=items,
             inner_content=response,
             metadata=self._get_metadata_from_response(response),
+            finish_reason=self._get_finish_reason(response.get("done_reason"), bool(message.get("tool_calls"))),
         )
 
     def _create_streaming_chat_message_content(
@@ -364,6 +377,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=part,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_response(part),
+            finish_reason=self._get_finish_reason(part.get("done_reason"), bool(message.get("tool_calls"))),
             function_invoke_attempt=function_invoke_attempt,
         )
 
@@ -386,7 +400,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         metadata: dict[str, Any] = {
             "model": response.model,
         }
-        if response.prompt_eval_count and response.eval_count:
+        if response.prompt_eval_count is not None and response.eval_count is not None:
             metadata["usage"] = CompletionUsage(
                 prompt_tokens=response.prompt_eval_count,
                 completion_tokens=response.eval_count,
