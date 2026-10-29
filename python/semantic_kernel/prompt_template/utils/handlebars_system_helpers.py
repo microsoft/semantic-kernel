@@ -74,13 +74,16 @@ def _array(this, *args, **kwargs):
 
 
 def _range(this, *args, **kwargs):
-    args = list(args)
-    for index, arg in enumerate(args):
-        if not isinstance(arg, int):
+    converted = []
+    for arg in args:
+        if isinstance(arg, int):
+            converted.append(arg)
+        else:
             try:
-                args[index] = int(arg)
-            except ValueError:
-                args.pop(index)
+                converted.append(int(arg))
+            except (ValueError, TypeError):
+                continue
+    args = converted
     if len(args) == 1:
         return list(range(args[0]))
     if len(args) == 2:
