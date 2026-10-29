@@ -449,6 +449,7 @@ async def test_search_keyword_hybrid_search_with_storage_names(
         fields=[
             VectorStoreField("key", name="id", storage_name="doc_id", type="str"),
             VectorStoreField("data", name="content", storage_name="body", type="str", is_full_text_indexed=True),
+            VectorStoreField("data", name="body", storage_name="summary", type="str", is_full_text_indexed=True),
             VectorStoreField(
                 "vector",
                 name="vector",
@@ -465,7 +466,7 @@ async def test_search_keyword_hybrid_search_with_storage_names(
     # 1. Default search fields and vector fields use storage names
     await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3])
     call = mock_search.call_args_list[-1]
-    assert call[1]["search_fields"] == ["body"]
+    assert call[1]["search_fields"] == ["body", "summary"]
     assert call[1]["vector_queries"][0].fields == "vec"
 
     # 2. additional_property_name resolves declared property name to storage name
@@ -474,10 +475,16 @@ async def test_search_keyword_hybrid_search_with_storage_names(
     assert call[1]["search_fields"] == ["body"]
     assert call[1]["vector_queries"][0].fields == "vec"
 
-    # 3. additional_property_name using storage name directly
+    # 3. Declared property name takes precedence over earlier storage alias
     await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3], additional_property_name="body")
     call = mock_search.call_args_list[-1]
-    assert call[1]["search_fields"] == ["body"]
+    assert call[1]["search_fields"] == ["summary"]
+    assert call[1]["vector_queries"][0].fields == "vec"
+
+    # 4. Fallback to direct storage name when no declared property matches
+    await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3], additional_property_name="summary")
+    call = mock_search.call_args_list[-1]
+    assert call[1]["search_fields"] == ["summary"]
     assert call[1]["vector_queries"][0].fields == "vec"
 
 

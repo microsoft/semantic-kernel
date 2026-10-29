@@ -596,14 +596,14 @@ class AzureAISearchCollection(
                     raise VectorStoreOperationException("No vector and/or keywords provided for search.")
                 vector_field = self.definition.try_get_vector_field(options.vector_property_name)
                 if options.additional_property_name is not None:
-                    search_field = next(
-                        (
-                            field.storage_name or field.name
-                            for field in self.definition.fields
-                            if field.name == options.additional_property_name
-                            or field.storage_name == options.additional_property_name
-                        ),
-                        options.additional_property_name,
+                    target_field = next(
+                        (field for field in self.definition.fields if field.name == options.additional_property_name),
+                        None,
+                    )
+                    search_field = (
+                        target_field.storage_name or target_field.name
+                        if target_field is not None
+                        else options.additional_property_name
                     )
                     search_args["search_fields"] = [search_field]
                 else:
