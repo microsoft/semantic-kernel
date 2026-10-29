@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -19,6 +20,7 @@ namespace Microsoft.SemanticKernel;
 /// This prevents link replacement, not changes to mounts, hard links, or the contents of an open file.
 /// Linux file inspection requires libc/kernel support for statx; failure never falls back to a path check.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal static class SecureFileSystem
 {
     internal static FileStream OpenRead(
