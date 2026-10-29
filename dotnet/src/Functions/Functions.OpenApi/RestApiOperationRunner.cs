@@ -194,13 +194,14 @@ internal sealed class RestApiOperationRunner
     {
         var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        await ServerUrlValidator.ValidateAsync(url, this._serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
+        var validatedAddresses = await ServerUrlValidator.ValidateAsync(
+            url, this._serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
 
         var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return await this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken).ConfigureAwait(false);
+        return await this.SendAsync(operation, url, headers, Payload, Content, options, validatedAddresses, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -214,6 +215,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
     /// <param name="options">Options for REST API operation run.</param>
+    /// <param name="validatedAddresses">DNS addresses validated for this request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
@@ -223,12 +225,17 @@ internal sealed class RestApiOperationRunner
         object? payload = null,
         HttpContent? requestContent = null,
         RestApiOperationRunOptions? options = null,
+        IPAddress[]? validatedAddresses = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
 #if NET
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+        if (validatedAddresses is { Length: > 0 })
+        {
+            requestMessage.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, validatedAddresses);
+        }
 #else
         requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
 #endif

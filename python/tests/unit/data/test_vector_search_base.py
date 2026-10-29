@@ -1,9 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from unittest.mock import patch
+
 import pytest
 
-from semantic_kernel.data.vector import VectorSearch, VectorSearchOptions, VectorSearchProtocol
+from semantic_kernel import Kernel
+from semantic_kernel.data.vector import KernelSearchResults, VectorSearch, VectorSearchOptions, VectorSearchProtocol
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.list_handler import desync_list
 
 
 async def test_search(vector_store_record_collection: VectorSearch):
@@ -24,3 +29,17 @@ async def test_get_vector_search_results(vector_store_record_collection: VectorS
     ):
         assert result.record == results[0] if include_vectors else {"id": "test_id", "content": "test_content"}
         break
+
+
+async def test_create_search_function_preserves_filter_for_invalid_invocation_options(
+    kernel: Kernel, vector_store_record_collection: VectorSearch
+):
+    search_filter = "lambda x: x.content == 'test_content'"
+    kernel_function = vector_store_record_collection.create_search_function(filter=search_filter)
+
+    with patch.object(type(vector_store_record_collection), "search") as mock_search:
+        mock_search.return_value = KernelSearchResults(results=desync_list([]))
+        await kernel_function.invoke(kernel, KernelArguments(query="query", top=0))
+
+    mock_search.assert_awaited_once()
+    assert mock_search.await_args.kwargs["filter"] == search_filter

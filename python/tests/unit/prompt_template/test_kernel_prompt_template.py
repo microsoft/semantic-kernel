@@ -81,6 +81,27 @@ async def test_it_renders_code_using_input(kernel: Kernel):
     assert result == "foo-F(INPUT-BAR)-baz"
 
 
+async def test_it_renders_template_syntax_in_arguments_as_literal_text(kernel: Kernel):
+    calls = 0
+
+    @kernel_function(name="function")
+    def my_function() -> str:
+        nonlocal calls
+        calls += 1
+        return "unexpected"
+
+    func = KernelFunction.from_method(my_function, "test")
+    assert func is not None
+    kernel.add_function("test", func)
+
+    template_syntax = "{{test.function}}"
+    target = create_kernel_prompt_template("{{$input}}")
+    result = await target.render(kernel, KernelArguments(input=template_syntax))
+
+    assert result == template_syntax
+    assert calls == 0
+
+
 async def test_it_renders_code_using_variables(kernel: Kernel):
     arguments = KernelArguments()
 

@@ -15,6 +15,7 @@ from mistralai.models import (
 )
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
@@ -112,6 +113,9 @@ async def test_complete_chat_contents(
         chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
     )
     assert content is not None
+    assert isinstance(content[0].metadata["usage"], CompletionUsage)
+    assert content[0].metadata["usage"].prompt_tokens == 10
+    assert content[0].metadata["usage"].completion_tokens == 5
 
 
 mock_message_text_content = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[TextContent(text="test")])
