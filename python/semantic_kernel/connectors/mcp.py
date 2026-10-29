@@ -111,9 +111,13 @@ def _mcp_content_types_to_kernel_content(
     if isinstance(mcp_type, types.TextContent):
         return [TextContent(text=mcp_type.text, inner_content=mcp_type)]
     if isinstance(mcp_type, types.ImageContent):
-        return [ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
+        return [
+            ImageContent(data=mcp_type.data, data_format="base64", mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        ]
     if isinstance(mcp_type, types.AudioContent):
-        return [AudioContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)]
+        return [
+            AudioContent(data=mcp_type.data, data_format="base64", mime_type=mcp_type.mimeType, inner_content=mcp_type)
+        ]
     if isinstance(mcp_type, types.ResourceLink):
         return [
             BinaryContent(
@@ -147,6 +151,8 @@ def _mcp_content_types_to_kernel_content(
     return [
         BinaryContent(
             data=mcp_type.resource.blob,
+            data_format="base64",
+            mime_type=mcp_type.resource.mimeType,
             inner_content=mcp_type,
             metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
         )

@@ -900,3 +900,39 @@ async def test_mcp_server_tool_name_length_uses_registered_alias(
         result = await client.call_tool(expected_name, {})
         assert not result.isError
         assert result.content == [types.TextContent(type="text", text="hello")]
+
+
+PNG_BYTES = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+PNG_BASE64 = "iVBORw0KGgoAAAANSUhEUg=="
+
+
+@pytest.mark.parametrize(
+    "mcp_content,mime_type",
+    [
+        (types.ImageContent(type="image", data=PNG_BASE64, mimeType="image/png"), "image/png"),
+        (types.AudioContent(type="audio", data=PNG_BASE64, mimeType="audio/wav"), "audio/wav"),
+        (
+            types.EmbeddedResource(
+                type="resource",
+                resource=types.BlobResourceContents(uri="file:///image.png", blob=PNG_BASE64, mimeType="image/png"),
+            ),
+            "image/png",
+        ),
+    ],
+    ids=["image", "audio", "blob_resource"],
+)
+async def test_mcp_base64_content_is_decoded(mcp_content, mime_type):
+    plugin = MCPStdioPlugin(name="test", command="echo")
+    plugin.session = AsyncMock(spec=ClientSession)
+    plugin.session.call_tool.return_value = types.CallToolResult(content=[mcp_content])
+    plugin.session.get_prompt.return_value = types.GetPromptResult(
+        messages=[types.PromptMessage(role="user", content=mcp_content)]
+    )
+
+    [tool_content] = await plugin.call_tool("tool")
+    [prompt_message] = await plugin.get_prompt("prompt")
+
+    for content in (tool_content, prompt_message.items[0]):
+        assert content.data == PNG_BYTES
+        assert content.mime_type == mime_type
+        assert content.data_uri == f"data:{mime_type};base64,{PNG_BASE64}"
