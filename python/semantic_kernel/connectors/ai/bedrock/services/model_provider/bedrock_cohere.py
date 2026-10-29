@@ -92,10 +92,16 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
 
 def parse_text_embedding_response(response: dict[str, Any]) -> list[float]:
     """Parse the response from text embedding for Cohere Command models."""
-    if "embeddings" not in response or not isinstance(response["embeddings"], list) or len(response["embeddings"]) == 0:
+    embeddings = response.get("embeddings")
+    if isinstance(embeddings, dict):
+        # With `embedding_types` set, the embeddings are keyed by type ({"float": [[...]], "int8": [[...]]}).
+        # Return the float embedding when it was requested, otherwise the first type in the response.
+        embeddings = embeddings.get("float") or next(iter(embeddings.values()), None)
+
+    if not isinstance(embeddings, list) or len(embeddings) == 0:
         raise ServiceInvalidResponseError("The response from Cohere model does not contain embeddings.")
 
-    return response.get("embeddings")[0]  # type: ignore
+    return embeddings[0]  # type: ignore
 
 
 # endregion
