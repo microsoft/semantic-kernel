@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Document;
 using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 using Moq;
@@ -21,10 +22,11 @@ public class DocumentPluginTests
         var expectedText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.GetFileContentStreamAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.GetFileContentStreamAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
                 It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
@@ -55,10 +57,11 @@ public class DocumentPluginTests
         var anyText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
                 It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync((Stream.Null, false));
@@ -87,10 +90,11 @@ public class DocumentPluginTests
         var anyText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
                 It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync((Stream.Null, true));

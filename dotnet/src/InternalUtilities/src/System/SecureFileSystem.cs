@@ -232,7 +232,7 @@ internal static class SecureFileSystem
         {
             created = false;
             var directoryFlags = GetDirectoryFlags();
-            var currentHandle = OpenPath("/", directoryFlags, 0);
+            var currentHandle = OpenPath("/", directoryFlags);
 
             try
             {
@@ -347,9 +347,9 @@ internal static class SecureFileSystem
                 StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private static SafeFileHandle OpenPath(string path, int flags, uint mode)
+        private static SafeFileHandle OpenPath(string path, int flags)
         {
-            var descriptor = OpenNative(path, flags, mode);
+            var descriptor = OpenNative(path, flags);
             return CreateHandle(descriptor, path);
         }
 
@@ -357,6 +357,21 @@ internal static class SecureFileSystem
         {
             var descriptor = OpenAtNative(directory, path, flags, mode);
             return CreateHandle(descriptor, path);
+        }
+
+        private static int OpenAtNative(SafeFileHandle directory, string path, int flags, uint mode)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
+                RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                // Apple's ARM64 openat reads its optional permissions argument from the stack,
+                // not a register. Fill the five remaining argument registers so this fixed
+                // P/Invoke signature puts mode on the stack, where the native function expects it.
+                return OpenAtMacArm64(directory, path, flags,
+                    IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, mode);
+            }
+
+            return OpenAtDefault(directory, path, flags, mode);
         }
 
         private static void CheckFile(SafeFileHandle handle, bool rejectReadOnly)
@@ -429,10 +444,15 @@ internal static class SecureFileSystem
         }
 
         [DllImport("libc", EntryPoint = "open", SetLastError = true)]
-        private static extern int OpenNative(string path, int flags, uint mode);
+        private static extern int OpenNative(string path, int flags);
 
         [DllImport("libc", EntryPoint = "openat", SetLastError = true)]
-        private static extern int OpenAtNative(SafeFileHandle directoryDescriptor, string path, int flags, uint mode);
+        private static extern int OpenAtDefault(SafeFileHandle directoryDescriptor, string path, int flags, uint mode);
+
+        [DllImport("libc", EntryPoint = "openat", SetLastError = true)]
+        private static extern int OpenAtMacArm64(
+            SafeFileHandle directoryDescriptor, string path, int flags,
+            IntPtr unused3, IntPtr unused4, IntPtr unused5, IntPtr unused6, IntPtr unused7, uint mode);
 
         [DllImport("libc", EntryPoint = "flock", SetLastError = true)]
         private static extern int Flock(SafeFileHandle descriptor, int operation);

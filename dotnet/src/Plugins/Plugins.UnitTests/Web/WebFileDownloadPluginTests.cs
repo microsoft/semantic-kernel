@@ -37,7 +37,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var filePath = Path.Combine(folderPath, "sk_logo.png");
         Directory.CreateDirectory(folderPath);
 
-        var webFileDownload = new WebFileDownloadPlugin()
+        var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
             AllowedDomains = ["raw.githubusercontent.com"],
             AllowedFolders = [folderPath]
@@ -180,7 +180,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var invalidFilePath = Path.Combine(Path.GetTempPath(), "sk_logo.png");
         Directory.CreateDirectory(folderPath);
 
-        var webFileDownload = new WebFileDownloadPlugin()
+        var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
             AllowedDomains = ["raw.githubusercontent.com"],
             AllowedFolders = [folderPath],

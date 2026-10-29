@@ -30,4 +30,4 @@ jobs:
       - name: Test secure file operations
         run: >-
           dotnet test dotnet/src/Plugins/Plugins.UnitTests/Plugins.UnitTests.csproj
-          --filter "FullyQualifiedName~SecureFileSystemTests|FullyQualifiedName~FileIOPluginTests|FullyQualifiedName~SessionsPythonPluginTests|FullyQualifiedName~WebFileDownloadPluginTests|FullyQualifiedName~CloudDrivePluginTests|FullyQualifiedName~DocumentPluginTests|FullyQualifiedName~LocalFileSystemConnectorTests|FullyQualifiedName~OneDriveConnectorTests"
+          --filter "FullyQualifiedName~SecureFileSystemTests|FullyQualifiedName~FileIOPluginTests|FullyQualifiedName~SessionsPythonPluginTests|FullyQualifiedName~WebFileDownloadPluginTests|FullyQualifiedName~CloudDrivePluginTests|FullyQualifiedName~DocumentPluginTests|FullyQualifiedName~LocalFileSystemConnectorTests|FullyQualifiedName~OneDriveConnectorTests|FullyQualifiedName~PathUtilitiesTests"
