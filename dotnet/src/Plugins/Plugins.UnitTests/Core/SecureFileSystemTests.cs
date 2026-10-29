@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -387,6 +388,53 @@ public sealed class SecureFileSystemTests : IDisposable
         var path = Path.Combine(this._allowedDirectory, "missing", "file.txt");
         Assert.Throws<FileNotFoundException>(() => SecureFileSystem.OpenWrite(path, [this._allowedDirectory], out _));
         Assert.False(Directory.Exists(Path.GetDirectoryName(path)));
+    }
+
+    [LinuxNonRootTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [SupportedOSPlatform("linux")]
+    public void SearchOnlyDirectoriesDoNotPreventFileAccess(bool restrictedAncestorOfAllowedRoot)
+    {
+        var restricted = Path.Combine(this._tempDirectory, "search-only");
+        var writable = Path.Combine(restricted, "writable");
+        Directory.CreateDirectory(writable);
+        var allowed = restrictedAncestorOfAllowedRoot ? writable : restricted;
+        var input = Path.Combine(writable, "input.txt");
+        var output = Path.Combine(writable, "output.txt");
+        File.WriteAllText(input, "readable");
+        var originalMode = File.GetUnixFileMode(restricted);
+        try
+        {
+            File.SetUnixFileMode(restricted,
+                UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+            Assert.Equal("readable", File.ReadAllText(input));
+            Assert.Throws<UnauthorizedAccessException>(() => Directory.GetFileSystemEntries(restricted));
+
+            using (var stream = SecureFileSystem.OpenRead(input, [allowed], out _))
+            using (var reader = new StreamReader(stream))
+            {
+                Assert.Equal("readable", reader.ReadToEnd());
+            }
+
+            using (var stream = SecureFileSystem.OpenWrite(output, [allowed], out _, FileMode.CreateNew))
+            {
+                stream.WriteByte(42);
+            }
+
+            using (var stream = SecureFileSystem.OpenUpdate(output, [allowed], out var created))
+            {
+                Assert.False(created);
+                Assert.Equal(42, stream.ReadByte());
+                stream.WriteByte(43);
+            }
+
+            Assert.Equal(new byte[] { 42, 43 }, File.ReadAllBytes(output));
+        }
+        finally
+        {
+            File.SetUnixFileMode(restricted, originalMode);
+        }
     }
 
     [UnixFact(Timeout = 5000)]

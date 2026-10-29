@@ -3,9 +3,11 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Moq;
 using Xunit;
@@ -654,6 +656,94 @@ public sealed class CloudDrivePluginTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync(link, "/file.txt"));
         connector.VerifyNoOtherCalls();
+    }
+
+    [SymbolicLinkTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UploadPathResolutionFailuresReturnTheUsualDenialAsync(bool emptyAllowedDirectories)
+    {
+        var allowed = Path.Combine(this._tempDirectory, "allowed");
+        Directory.CreateDirectory(allowed);
+        var loop = Path.Combine(this._tempDirectory, "loop");
+        Directory.CreateSymbolicLink(loop, loop);
+        Assert.Throws<InvalidOperationException>(() => PathUtilities.GetSafeFullPath(loop));
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedUploadDirectories = emptyAllowedDirectories ? [] : [allowed],
+            AllowedUploadDestinationPaths = ["/"]
+        };
+        var expected = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(Path.Combine(this._tempDirectory, "missing.txt"), "/file.txt"));
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(Path.Combine(loop, "file.txt"), "/file.txt"));
+
+        Assert.Equal(expected.Message, actual.Message);
+        Assert.Null(actual.InnerException);
+        connector.VerifyNoOtherCalls();
+    }
+
+    [SymbolicLinkFact]
+    public async Task UploadPathResolutionFailuresDoNotHideConfigurationErrorsAsync()
+    {
+        var loop = Path.Combine(this._tempDirectory, "loop");
+        Directory.CreateSymbolicLink(loop, loop);
+        var expected = Assert.Throws<InvalidOperationException>(() => PathUtilities.GetSafeFullPath(loop));
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedUploadDirectories = [loop],
+            AllowedUploadDestinationPaths = ["/"]
+        };
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(Path.Combine(this._tempDirectory, "file.txt"), "/file.txt"));
+
+        Assert.Equal(expected.Message, actual.Message);
+        connector.VerifyNoOtherCalls();
+    }
+
+    [LinuxNonRootFact]
+    [SupportedOSPlatform("linux")]
+    public async Task InaccessibleUploadPathsDoNotRevealDetailsOrHideConfigurationErrorsAsync()
+    {
+        var allowed = Path.Combine(this._tempDirectory, "allowed");
+        var restricted = Path.Combine(this._tempDirectory, "restricted");
+        var nested = Path.Combine(restricted, "nested");
+        Directory.CreateDirectory(allowed);
+        Directory.CreateDirectory(nested);
+        var inaccessible = Path.Combine(nested, "file.txt");
+        await File.WriteAllTextAsync(inaccessible, "outside");
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedUploadDirectories = [allowed],
+            AllowedUploadDestinationPaths = ["/"]
+        };
+        var expected = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(Path.Combine(this._tempDirectory, "missing.txt"), "/file.txt"));
+        var originalMode = File.GetUnixFileMode(restricted);
+        try
+        {
+            File.SetUnixFileMode(restricted, UnixFileMode.None);
+            Assert.Throws<UnauthorizedAccessException>(() => PathUtilities.GetSafeFullPath(inaccessible));
+
+            var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => plugin.UploadFileAsync(inaccessible, "/file.txt"));
+            Assert.Equal(expected.Message, actual.Message);
+            Assert.Null(actual.InnerException);
+
+            plugin.AllowedUploadDirectories = [nested];
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => plugin.UploadFileAsync(Path.Combine(allowed, "file.txt"), "/file.txt"));
+            connector.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            File.SetUnixFileMode(restricted, originalMode);
+        }
     }
 
     public void Dispose()

@@ -38,6 +38,37 @@ internal sealed class UnixFactAttribute : FactAttribute
     }
 }
 
+[AttributeUsage(AttributeTargets.Method)]
+internal sealed class LinuxNonRootFactAttribute : FactAttribute
+{
+    public LinuxNonRootFactAttribute()
+    {
+        this.Skip = LinuxNonRootTestSupport.SkipReason;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+internal sealed class LinuxNonRootTheoryAttribute : TheoryAttribute
+{
+    public LinuxNonRootTheoryAttribute()
+    {
+        this.Skip = LinuxNonRootTestSupport.SkipReason;
+    }
+}
+
+internal static class LinuxNonRootTestSupport
+{
+    internal static string? SkipReason { get; } =
+        !RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+            ? "This test requires Linux directory permissions."
+            : GetEffectiveUserId() == 0
+                ? "Root can bypass the directory permissions this test needs to enforce."
+                : null;
+
+    [DllImport("libc", EntryPoint = "geteuid")]
+    private static extern uint GetEffectiveUserId();
+}
+
 internal static class SymbolicLinkTestSupport
 {
     internal static string? SkipReason { get; } = GetSkipReason();

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -176,9 +177,7 @@ public sealed class CloudDrivePlugin
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        var canonicalPath = CanonicalizePath(filePath);
-
-        if (!this.IsUploadPathAllowed(canonicalPath))
+        if (!this.TryGetAllowedUploadPath(filePath, out var canonicalPath))
         {
             throw new InvalidOperationException("Uploading from the provided location is not allowed. Configure 'AllowedUploadDirectories' with trusted directory paths to enable uploads.");
         }
@@ -293,13 +292,28 @@ public sealed class CloudDrivePlugin
     }
 
     /// <summary>
-    /// Expands environment variables and resolves the path to its canonical form.
+    /// Validates the upload location without exposing caller-path resolution errors.
     /// The upload still uses a secure open because this path can change after validation.
     /// </summary>
-    private static string CanonicalizePath(string path)
+    private bool TryGetAllowedUploadPath(string path, out string canonicalPath)
     {
-        var fullPath = SecureFileSystem.NormalizePath(path, expandEnvironmentVariables: true);
-        return PathUtilities.GetSafeFullPath(fullPath);
+        canonicalPath = SecureFileSystem.NormalizePath(path, expandEnvironmentVariables: true);
+        if (this._allowedUploadDirectories.Count == 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or SecurityException)
+        {
+            return false;
+        }
+
+        // Keep trusted configuration errors outside the caller-path error handling.
+        return this.IsUploadPathAllowed(canonicalPath);
     }
 
     /// <summary>

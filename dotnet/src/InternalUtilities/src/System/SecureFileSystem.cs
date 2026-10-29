@@ -217,6 +217,7 @@ internal static class SecureFileSystem
         private const int ReadOnly = 0;
         private const int WriteOnly = 1;
         private const int ReadWrite = 2;
+        private const int LinuxPathOnly = 0x200000;
         private const uint DefaultPermissions = 0x1B6; // 0666, reduced by the process umask.
         private const int AlreadyExists = 17;
 
@@ -319,7 +320,9 @@ internal static class SecureFileSystem
 #pragma warning restore CA2000
 
         private static int GetDirectoryFlags() =>
-            ReadOnly | GetDirectoryFlag() | GetNoFollowFlag() | GetCloseOnExecFlag();
+            // Traversal needs search permission, not permission to list each ancestor.
+            (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? LinuxPathOnly : ReadOnly) |
+            GetDirectoryFlag() | GetNoFollowFlag() | GetCloseOnExecFlag();
 
         private static int GetDirectoryFlag() =>
             RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? 0x100000 : 0x10000;
