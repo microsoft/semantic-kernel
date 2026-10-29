@@ -3,7 +3,7 @@
 import json
 import sys
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import Annotated, NamedTuple
 from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock, patch
 
 from pytest import fixture, mark, param, raises
@@ -21,11 +21,19 @@ from semantic_kernel.connectors.sql_server import (
     _build_select_query,
     _build_select_table_names_query,
 )
-from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField
+from semantic_kernel.data.vector import (
+    DistanceFunction,
+    IndexKind,
+    VectorSearchOptions,
+    VectorStoreField,
+    default_dynamic_filter_function,
+    vectorstoremodel,
+)
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
 class TestQueryBuilder:
@@ -599,3 +607,107 @@ class TestSqlServerCollection:
             await collection.get("1")
         with raises(VectorStoreOperationException):
             await collection.delete("1")
+
+
+@fixture
+def filter_collection(sql_server_unit_test_env):
+    @vectorstoremodel
+    @dataclass
+    class FilterRecord:
+        id: Annotated[int, VectorStoreField("key")]
+        tenant: Annotated[str, VectorStoreField("data")]
+        active: Annotated[bool, VectorStoreField("data")] = False
+        embedding: Annotated[
+            list[float],
+            VectorStoreField("vector", dimensions=3, distance_function=DistanceFunction.COSINE_DISTANCE),
+        ] = None
+
+    return SqlServerCollection(
+        collection_name="filter_records",
+        record_type=FilterRecord,
+        env_file_path="test.env",
+    )
+
+
+@mark.parametrize(
+    "expression, expected_sql, expected_params",
+    [
+        ("x.tenant == None", "[tenant] IS NULL", []),
+        ("x.tenant != None", "[tenant] IS NOT NULL", []),
+        ("x.tenant is None", "[tenant] IS NULL", []),
+        ("x.tenant is not None", "[tenant] IS NOT NULL", []),
+        ("None == x.tenant", "[tenant] IS NULL", []),
+        ("None != x.tenant", "[tenant] IS NOT NULL", []),
+        ("None is x.tenant", "[tenant] IS NULL", []),
+        ("None is not x.tenant", "[tenant] IS NOT NULL", []),
+        ("None == None", "(1 = 1)", []),
+        ("None != None", "(1 = 0)", []),
+        ("None is None", "(1 = 1)", []),
+        ("None is not None", "(1 = 0)", []),
+        ("'value' != None", "(1 = 1)", []),
+        ("None == 'value'", "(1 = 0)", []),
+        ("'value' is not None", "(1 = 1)", []),
+        ("None is 'value'", "(1 = 0)", []),
+        ("0 != None", "(1 = 1)", []),
+        ("False == None", "(1 = 0)", []),
+        ("not x.tenant == None", "NOT ([tenant] IS NULL)", []),
+        ("not x.tenant != None", "NOT ([tenant] IS NOT NULL)", []),
+        ("x.tenant == None or x.id == 1", "([tenant] IS NULL OR [id] = ?)", ["1"]),
+        ("None == x.tenant == None", "([tenant] IS NULL AND [tenant] IS NULL)", []),
+        ("'value' == x.tenant != None", "(? = [tenant] AND [tenant] IS NOT NULL)", ["value"]),
+        ("x.active == True", "[active] = ?", ["1"]),
+        ("x.active == False", "[active] = ?", ["0"]),
+        ("x.active != True", "[active] <> ?", ["1"]),
+        ("x.active != False", "[active] <> ?", ["0"]),
+        ("x.tenant == 'None'", "[tenant] = ?", ["None"]),
+    ],
+)
+def test_null_filter_parser(filter_collection, expression, expected_sql, expected_params):
+    command = filter_collection._build_filter(f"lambda x: {expression}")
+
+    assert str(command) == expected_sql
+    assert command.parameters == expected_params
+
+
+def test_null_filter_query_parameter_order(filter_collection):
+    filters = [
+        "lambda x: x.id > 0",
+        "lambda x: x.tenant == None or x.tenant == 'value'",
+        "lambda x: x.id < 5",
+    ]
+    parsed_filters = filter_collection._build_filter(filters)
+    cmd = _build_search_query(
+        "dbo",
+        "filter_records",
+        filter_collection.definition.key_field,
+        filter_collection.definition.data_fields,
+        filter_collection.definition.vector_fields,
+        [1.0, 0.0, 0.0],
+        VectorSearchOptions(vector_property_name="embedding", filter=filters),
+        filter=parsed_filters,
+    )
+
+    assert str(cmd) == (
+        "SELECT [id], [tenant], [active], VECTOR_DISTANCE('cosine', [embedding], CAST(? AS VECTOR(3))) as "
+        "_vector_distance_value\n"
+        " FROM [dbo].[filter_records] \n"
+        " WHERE [id] > ? \n"
+        " AND ([tenant] IS NULL OR [tenant] = ?) \n"
+        " AND [id] < ? \n"
+        "ORDER BY _vector_distance_value ASC\n"
+        "OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
+    )
+    assert cmd.parameters == ["[1.0, 0.0, 0.0]", "0", "value", "5"]
+
+
+def test_dynamic_null_filter(filter_collection):
+    filter = default_dynamic_filter_function(parameters=[KernelParameterMetadata(name="tenant")], tenant=None)
+    clause = filter_collection._build_filter(filter)
+
+    assert str(clause) == "[tenant] IS NULL"
+    assert clause.parameters == []
+
+
+def test_unsupported_is_operator(filter_collection):
+    with raises(NotImplementedError, match="Unsupported operator"):
+        filter_collection._build_filter("lambda x: x.tenant is 'test'")
