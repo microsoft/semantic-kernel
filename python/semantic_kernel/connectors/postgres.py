@@ -90,53 +90,116 @@ INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
     IndexKind.IVF_FLAT: "ivfflat",
     IndexKind.DEFAULT: "hnsw",
 }
+POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
+    "str": "TEXT",
+    "text": "TEXT",
+    "int": "INTEGER",
+    "integer": "INTEGER",
+    "bigint": "BIGINT",
+    "smallint": "SMALLINT",
+    "float": "DOUBLE PRECISION",
+    "double precision": "DOUBLE PRECISION",
+    "real": "REAL",
+    "bool": "BOOLEAN",
+    "boolean": "BOOLEAN",
+    "dict": "JSONB",
+    "jsonb": "JSONB",
+    "date": "DATE",
+    "datetime": "TIMESTAMP",
+    "timestamp": "TIMESTAMP",
+    "timestamptz": "TIMESTAMP WITH TIME ZONE",
+    "timestamp with time zone": "TIMESTAMP WITH TIME ZONE",
+    "uuid": "UUID",
+    "decimal": "DECIMAL",
+    "numeric": "NUMERIC",
+    "bytes": "BYTEA",
+    "bytea": "BYTEA",
+}
+LENGTH_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(varchar|character varying)\s*\(\s*(\d{1,8})\s*\)", re.IGNORECASE
+)
+PRECISION_TYPE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(decimal|numeric)\s*\(\s*(\d{1,4})(?:\s*,\s*(\d{1,4}))?\s*\)", re.IGNORECASE
+)
 
 # region: Helpers
 
 
-def _python_type_to_postgres(python_type_str: str) -> str | None:
-    """Convert a string representation of a Python type to a PostgreSQL data type.
+def _get_python_generic_arguments(type_name: str, generic_name: str, argument_count: int) -> tuple[str, ...] | None:
+    """Get validated arguments from a Python generic type annotation."""
+    try:
+        expression = ast.parse(type_name, mode="eval").body
+    except SyntaxError:
+        return None
+
+    if not isinstance(expression, ast.Subscript):
+        return None
+
+    if isinstance(expression.value, ast.Name):
+        expression_name = expression.value.id
+    else:
+        return None
+
+    arguments = expression.slice.elts if isinstance(expression.slice, ast.Tuple) else [expression.slice]
+    if expression_name.casefold() != generic_name or len(arguments) != argument_count:
+        return None
+
+    def is_valid_annotation(node: ast.expr) -> bool:
+        if isinstance(node, ast.Name):
+            return True
+        if isinstance(node, ast.Attribute):
+            return is_valid_annotation(node.value)
+        if isinstance(node, ast.Subscript):
+            values = node.slice.elts if isinstance(node.slice, ast.Tuple) else [node.slice]
+            return is_valid_annotation(node.value) and all(is_valid_annotation(value) for value in values)
+        return False
+
+    if not all(is_valid_annotation(argument) for argument in arguments):
+        return None
+
+    return tuple(ast.unparse(argument) for argument in arguments)
+
+
+def _get_postgres_type(type_name: str) -> sql.Composable:
+    """Convert a supported field type to a trusted PostgreSQL type expression.
 
     Args:
-        python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
+        type_name: The Python or PostgreSQL type name.
 
     Returns:
-        Corresponding PostgreSQL data type as a string, if found. If the type is not found, return None.
+        A trusted PostgreSQL type expression.
+
+    Raises:
+        VectorStoreModelValidationError: If the type is not supported for automatic table creation.
     """
-    # Basic type mapping from Python types (in string form) to PostgreSQL types
-    type_mapping = {
-        "str": "TEXT",
-        "int": "INTEGER",
-        "float": "DOUBLE PRECISION",
-        "bool": "BOOLEAN",
-        "dict": "JSONB",
-        "datetime": "TIMESTAMP",
-        "bytes": "BYTEA",
-        "NoneType": "NULL",
-    }
+    normalized_type = " ".join(type_name.strip().split())
+    if postgres_type := POSTGRES_TYPE_ALIASES.get(normalized_type.casefold()):
+        return sql.SQL(postgres_type)
 
-    # Regular expression to detect lists, e.g., "List[str]" or "List[int]"
-    list_pattern = re.compile(r"(?i)List\[(.*)\]")
+    if normalized_type.endswith("[]"):
+        return sql.SQL("{}[]").format(_get_postgres_type(normalized_type[:-2]))
 
-    # Check if the type is a list
-    match = list_pattern.match(python_type_str)
-    if match:
-        # Extract the inner type of the list and convert it to a PostgreSQL array type
-        element_type_str = match.group(1)
-        postgres_element_type = _python_type_to_postgres(element_type_str)
-        return f"{postgres_element_type}[]"
+    if match := LENGTH_TYPE_PATTERN.fullmatch(normalized_type):
+        postgres_type = "VARCHAR" if match.group(1).casefold() == "varchar" else "CHARACTER VARYING"
+        return sql.SQL("{}({})").format(sql.SQL(postgres_type), sql.Literal(int(match.group(2))))
 
-    # Check if the type is a dictionary
-    dict_pattern = re.compile(r"(?i)Dict\[(.*), (.*)\]")
-    match = dict_pattern.match(python_type_str)
-    if match:
-        return "JSONB"
+    if match := PRECISION_TYPE_PATTERN.fullmatch(normalized_type):
+        postgres_type = POSTGRES_TYPE_ALIASES[match.group(1).casefold()]
+        modifiers = [sql.Literal(int(match.group(2)))]
+        if scale := match.group(3):
+            modifiers.append(sql.Literal(int(scale)))
+        return sql.SQL("{}({})").format(sql.SQL(postgres_type), sql.SQL(", ").join(modifiers))
 
-    # Handle basic types
-    if python_type_str in type_mapping:
-        return type_mapping[python_type_str]
+    if list_arguments := _get_python_generic_arguments(normalized_type, "list", 1):
+        return sql.SQL("{}[]").format(_get_postgres_type(list_arguments[0]))
 
-    return None
+    if _get_python_generic_arguments(normalized_type, "dict", 2):
+        return sql.SQL("JSONB")
+
+    raise VectorStoreModelValidationError(
+        f"PostgreSQL field type {type_name!r} is not supported for automatic collection creation. "
+        "Use a supported Python or PostgreSQL type, or create the table before using the collection."
+    )
 
 
 def _convert_row_to_dict(row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreField | None]]) -> dict[str, Any]:
@@ -308,7 +371,12 @@ class PostgresCollection(
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
-    """PostgreSQL collection implementation."""
+    """PostgreSQL collection implementation.
+
+    Search filters accept Python lambdas or strings containing lambda expressions, not raw SQL.
+    Filter values are passed separately from the SQL command as query parameters.
+    Comparisons using ``== None`` and ``!= None`` match null and non-null fields, respectively.
+    """
 
     connection_pool: AsyncConnectionPool | None = None
     db_schema: str = DEFAULT_SCHEMA
@@ -557,12 +625,18 @@ class PostgresCollection(
 
     @override
     async def ensure_collection_exists(self, **kwargs: Any) -> None:
-        """Create a PostgreSQL table based on a dictionary of VectorStoreRecordField.
+        """Create a PostgreSQL table based on the collection definition.
+
+        Automatic creation supports built-in Python field types, their corresponding PostgreSQL aliases,
+        validated length and precision modifiers, and arrays of those types. For custom domains, enums,
+        extension types, or other type expressions, create the table separately and use the collection without
+        calling this method.
 
         Args:
-            table_name: Name of the table to be created
-            fields: A dictionary where keys are column names and values are VectorStoreRecordField instances
-            **kwargs: Additional arguments
+            **kwargs: Additional arguments.
+
+        Raises:
+            VectorStoreModelValidationError: If a field type is not supported for automatic table creation.
         """
         if self.connection_pool is None:
             raise VectorStoreOperationException(
@@ -576,8 +650,7 @@ class PostgresCollection(
             if not field.type_:
                 raise ValueError(f"Property type is not defined for field '{field.name}'")
 
-            # If the property type represents a Python type, convert it to a PostgreSQL type
-            property_type = _python_type_to_postgres(field.type_) or field.type_.upper()
+            property_type = _get_postgres_type(field.type_)
 
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
@@ -590,17 +663,15 @@ class PostgresCollection(
                     )
                 )
             elif field.field_type == FieldTypes.KEY:
-                # Use the property_type directly for key fields
                 column_definitions.append(
                     sql.SQL("{name} {col_type} PRIMARY KEY").format(
-                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=property_type
                     )
                 )
             else:
-                # Use the property_type directly for other types
                 column_definitions.append(
                     sql.SQL("{name} {col_type}").format(
-                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=property_type
                     )
                 )
 
@@ -793,12 +864,13 @@ class PostgresCollection(
             table=sql.Identifier(self.collection_name),
         )
 
-        if where_clauses := self._build_filter(options.filter):  # type: ignore
-            query += (
-                sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
-                if isinstance(where_clauses, list)
-                else sql.SQL("WHERE {clause}").format(clause=where_clauses)
-            )
+        params: list[Any] = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
+        if filters := self._build_filter(options.filter):
+            clauses: list[sql.Composable] = []
+            for clause, values in filters if isinstance(filters, list) else [filters]:
+                clauses.append(sql.SQL("({})").format(clause))
+                params.extend(values)
+            query += sql.SQL(" WHERE {}").format(sql.SQL(" AND ").join(clauses))
 
         query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
             dist_col=sql.Identifier(self._distance_column_name),
@@ -832,9 +904,6 @@ class PostgresCollection(
                 subquery=query,
             )
 
-        # Convert the vector to a string for the query
-        params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
-
         return (
             query,
             params,
@@ -849,81 +918,87 @@ class PostgresCollection(
         )
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> Any:
-        # Comparison operations
-        match node:
-            case ast.Compare():
-                if len(node.ops) > 1:
-                    # Chain comparisons (e.g., 1 < x < 3) become AND of each comparison
-                    values = []
-                    for idx in range(len(node.ops)):
-                        left = node.left if idx == 0 else node.comparators[idx - 1]
-                        right = node.comparators[idx]
-                        op = node.ops[idx]
-                        values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
-                    return f"({' AND '.join(values)})"
-                left = self._lambda_parser(node.left)
-                right = self._lambda_parser(node.comparators[0])
-                op = node.ops[0]
-                match op:
-                    case ast.In():
-                        return f"{left} IN {right}"
-                    case ast.NotIn():
-                        return f"{left} NOT IN {right}"
-                    case ast.Eq():
-                        return f"{left} = {right}"
-                    case ast.NotEq():
-                        return f"{left} <> {right}"
-                    case ast.Gt():
-                        return f"{left} > {right}"
-                    case ast.GtE():
-                        return f"{left} >= {right}"
-                    case ast.Lt():
-                        return f"{left} < {right}"
-                    case ast.LtE():
-                        return f"{left} <= {right}"
-                raise NotImplementedError(f"Unsupported operator: {type(op)}")
-            case ast.BoolOp():
-                op = node.op  # type: ignore
-                values = [self._lambda_parser(v) for v in node.values]
-                if isinstance(op, ast.And):
-                    return f"({' AND '.join(values)})"
-                if isinstance(op, ast.Or):
-                    return f"({' OR '.join(values)})"
-                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
-            case ast.UnaryOp():
-                match node.op:
-                    case ast.Not():
-                        operand = self._lambda_parser(node.operand)
-                        return f"NOT ({operand})"
-                    case ast.UAdd() | ast.USub() | ast.Invert():
-                        raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
-            case ast.Attribute():
-                # Only allow attributes that are in the data model
-                if node.attr not in self.definition.storage_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.attr}' not in data model (storage property names are used)."
-                    )
-                return f'"{node.attr}"'
-            case ast.Name():
-                # Only allow names that are in the data model
-                if node.id not in self.definition.storage_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.id}' not in data model (storage property names are used)."
-                    )
-                return f'"{node.id}"'
-            case ast.Constant():
-                if isinstance(node.value, str):
-                    return "'" + node.value.replace("'", "''") + "'"
-                if node.value is None:
-                    return "NULL"
-                if isinstance(node.value, bool):
-                    return "TRUE" if node.value else "FALSE"
-                return str(node.value)
-            case ast.List():
-                # For IN/NOT IN lists
-                return "(" + ", ".join(self._lambda_parser(elt) for elt in node.elts) + ")"
-        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+    def _lambda_parser(self, node: ast.AST) -> tuple[sql.Composable, list[Any]]:
+        """Parse a filter into SQL with placeholders and its ordered parameter values."""
+        params: list[Any] = []
+
+        def parse(node: ast.AST) -> sql.Composable:
+            match node:
+                case ast.Compare():
+                    if len(node.ops) > 1:
+                        comparisons = []
+                        for idx, op in enumerate(node.ops):
+                            left_node = node.left if idx == 0 else node.comparators[idx - 1]
+                            right_node = node.comparators[idx]
+                            comparisons.append(parse(ast.Compare(left=left_node, ops=[op], comparators=[right_node])))
+                        return sql.SQL("({})").format(sql.SQL(" AND ").join(comparisons))
+                    left_node = node.left
+                    right_node = node.comparators[0]
+                    op = node.ops[0]
+                    if isinstance(op, (ast.Eq, ast.NotEq)):
+                        if isinstance(left_node, ast.Constant) and left_node.value is None:
+                            left_node, right_node = right_node, left_node
+                        if isinstance(right_node, ast.Constant) and right_node.value is None:
+                            if isinstance(left_node, ast.Constant) and (
+                                left_node.value is None or isinstance(left_node.value, (str, int, float, bool))
+                            ):
+                                matches = (left_node.value is None) == isinstance(op, ast.Eq)
+                                return sql.SQL("TRUE" if matches else "FALSE")
+                            return sql.SQL("{} IS NULL" if isinstance(op, ast.Eq) else "{} IS NOT NULL").format(
+                                parse(left_node)
+                            )
+                    left = parse(left_node)
+                    right = parse(right_node)
+                    match op:
+                        case ast.In():
+                            return sql.SQL("{} IN {}").format(left, right)
+                        case ast.NotIn():
+                            return sql.SQL("{} NOT IN {}").format(left, right)
+                        case ast.Eq():
+                            return sql.SQL("{} = {}").format(left, right)
+                        case ast.NotEq():
+                            return sql.SQL("{} <> {}").format(left, right)
+                        case ast.Gt():
+                            return sql.SQL("{} > {}").format(left, right)
+                        case ast.GtE():
+                            return sql.SQL("{} >= {}").format(left, right)
+                        case ast.Lt():
+                            return sql.SQL("{} < {}").format(left, right)
+                        case ast.LtE():
+                            return sql.SQL("{} <= {}").format(left, right)
+                    raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                case ast.BoolOp():
+                    values = [parse(value) for value in node.values]
+                    if isinstance(node.op, ast.And):
+                        return sql.SQL("({})").format(sql.SQL(" AND ").join(values))
+                    if isinstance(node.op, ast.Or):
+                        return sql.SQL("({})").format(sql.SQL(" OR ").join(values))
+                    raise NotImplementedError(f"Unsupported BoolOp: {type(node.op)}")
+                case ast.UnaryOp():
+                    match node.op:
+                        case ast.Not():
+                            return sql.SQL("NOT ({})").format(parse(node.operand))
+                        case ast.UAdd() | ast.USub() | ast.Invert():
+                            raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
+                case ast.Attribute() | ast.Name():
+                    name = node.attr if isinstance(node, ast.Attribute) else node.id
+                    if name not in self.definition.storage_names:
+                        raise VectorStoreOperationException(
+                            f"Field '{name}' not in data model (storage property names are used)."
+                        )
+                    return sql.Identifier(name)
+                case ast.Constant():
+                    if not isinstance(node.value, (str, int, float, bool)) and node.value is not None:
+                        raise VectorStoreOperationException(f"Unsupported constant type: {type(node.value)}")
+                    params.append(node.value)
+                    return sql.Placeholder()
+                case ast.List():
+                    if not node.elts:
+                        raise VectorStoreOperationException("Empty lists are not supported in PostgreSQL filters.")
+                    return sql.SQL("({})").format(sql.SQL(", ").join(parse(elt) for elt in node.elts))
+            raise NotImplementedError(f"Unsupported AST node: {type(node)}")
+
+        return parse(node), params
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:

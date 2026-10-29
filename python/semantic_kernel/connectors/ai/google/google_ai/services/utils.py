@@ -31,6 +31,18 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+# Finish reasons where Gemini stopped the response for the content, not for length or a natural end.
+_GOOGLE_AI_CONTENT_FILTER_REASONS = frozenset({
+    FinishReason.SAFETY,
+    FinishReason.RECITATION,
+    FinishReason.BLOCKLIST,
+    FinishReason.PROHIBITED_CONTENT,
+    FinishReason.SPII,
+    FinishReason.IMAGE_SAFETY,
+    FinishReason.IMAGE_PROHIBITED_CONTENT,
+})
+
+
 def finish_reason_from_google_ai_to_semantic_kernel(
     finish_reason: FinishReason | None,
 ) -> SemanticKernelFinishReason | None:
@@ -47,7 +59,7 @@ def finish_reason_from_google_ai_to_semantic_kernel(
     if finish_reason == FinishReason.MAX_TOKENS:
         return SemanticKernelFinishReason.LENGTH
 
-    if finish_reason == FinishReason.SAFETY:
+    if finish_reason in _GOOGLE_AI_CONTENT_FILTER_REASONS:
         return SemanticKernelFinishReason.CONTENT_FILTER
 
     return None
@@ -149,9 +161,10 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
     """Convert the kernel function metadata to function calling format."""
     parameters: dict[str, Any] | None = None
-    if metadata.parameters:
+    visible_parameters = [p for p in metadata.parameters if p.include_in_function_choices]
+    if visible_parameters:
         properties = {}
-        for param in metadata.parameters:
+        for param in visible_parameters:
             if param.name is None:
                 continue
             prop_schema = sanitize_schema_for_google_ai(param.schema_data) if param.schema_data else param.schema_data
@@ -159,7 +172,7 @@ def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelF
         parameters = {
             "type": "object",
             "properties": properties,
-            "required": [p.name for p in metadata.parameters if p.is_required and p.name is not None],
+            "required": [p.name for p in visible_parameters if p.is_required and p.name is not None],
         }
     return {
         "name": metadata.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR),

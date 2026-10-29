@@ -152,6 +152,24 @@ def test_cmc_to_prompt():
     assert prompt == '<message role="user"><text>Hello, world!</text></message>'
 
 
+@pytest.mark.parametrize(
+    "encoding",
+    [
+        pytest.param("utf-8", id="utf8"),
+        pytest.param("ascii", id="ascii"),
+        pytest.param("latin-1", id="latin1"),
+    ],
+)
+def test_cmc_to_prompt_with_encoding(encoding: str):
+    """The encoding of the content should not change the type or shape of the prompt."""
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, wörld!", encoding=encoding)
+    prompt = message.to_prompt()
+    assert isinstance(prompt, str)
+    assert not prompt.startswith("<?xml")
+    assert "Hello, wörld!" in prompt
+    assert ChatMessageContent.from_element(XML(prompt)).content == "Hello, wörld!"
+
+
 def test_cmc_from_element():
     element = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!").to_element()
     message = ChatMessageContent.from_element(element)

@@ -33,6 +33,22 @@ def test_finish_reason_from_google_ai_to_semantic_kernel():
     assert finish_reason_from_google_ai_to_semantic_kernel(None) is None
 
 
+@pytest.mark.parametrize(
+    "reason",
+    [
+        FinishReason.RECITATION,
+        FinishReason.BLOCKLIST,
+        FinishReason.PROHIBITED_CONTENT,
+        FinishReason.SPII,
+        FinishReason.IMAGE_SAFETY,
+        FinishReason.IMAGE_PROHIBITED_CONTENT,
+    ],
+)
+def test_content_filter_finish_reasons_from_google_ai(reason):
+    """Responses Gemini stopped for their content are reported as content filtered."""
+    assert finish_reason_from_google_ai_to_semantic_kernel(reason) == SemanticKernelFinishReason.CONTENT_FILTER
+
+
 def test_format_user_message():
     """Test format_user_message."""
     user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
@@ -196,6 +212,42 @@ def test_google_ai_function_call_format_empty_parameters() -> None:
         description="No parameters",
         is_prompt=False,
         parameters=[],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    assert result["parameters"] is None
+
+
+def test_google_ai_function_call_format_skips_params_excluded_from_function_choices() -> None:
+    metadata = KernelFunctionMetadata(
+        name="lookup",
+        description="Look up a user",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="query", description="What to look up", schema_data={"type": "string"}, is_required=True
+            ),
+            KernelParameterMetadata(
+                name="token",
+                description="Internal",
+                schema_data={"type": "string"},
+                is_required=True,
+                include_in_function_choices=False,
+            ),
+        ],
+    )
+    result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
+    assert list(result["parameters"]["properties"]) == ["query"]
+    assert result["parameters"]["required"] == ["query"]
+
+
+def test_google_ai_function_call_format_all_params_excluded_gives_no_parameters() -> None:
+    metadata = KernelFunctionMetadata(
+        name="hidden_only",
+        description="Only hidden parameters",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(name="token", schema_data={"type": "string"}, include_in_function_choices=False),
+        ],
     )
     result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
     assert result["parameters"] is None

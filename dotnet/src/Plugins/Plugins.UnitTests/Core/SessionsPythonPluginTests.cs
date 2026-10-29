@@ -33,7 +33,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         endpoint: new Uri("http://localhost:8888"))
     {
         CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+        AllowedDomains = ["localhost"]
     };
 
     private readonly SessionsPythonSettings _settingsWithFileOperationsEnabled;
@@ -57,6 +58,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = ["localhost"],
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! },
             AllowedDownloadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
@@ -276,6 +278,61 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../test-file.txt")]
+    [InlineData("../../test-file.txt")]
+    [InlineData("./test-file.txt")]
+    [InlineData("nested/./test-file.txt")]
+    [InlineData("nested/../test-file.txt")]
+    [InlineData("nested/..")]
+    [InlineData("/mnt/data/../../test-file.txt")]
+    [InlineData(@"nested\.\test-file.txt")]
+    [InlineData(@"nested\..\test-file.txt")]
+    [InlineData(@"\test-file.txt")]
+    [InlineData(@"\\server\share\test-file.txt")]
+    [InlineData(@"C:\test-file.txt")]
+    [InlineData("C:test-file.txt")]
+    [InlineData("C:/test-file.txt")]
+    [InlineData("/test-file.txt")]
+    public async Task ItShouldRejectUnsafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath));
+
+        // Assert
+        Assert.Contains("must not contain '.' or '..' path segments", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
+    }
+
+    [Theory]
+    [InlineData("nested/dir/test-file.txt")]
+    [InlineData(@"nested\dir\test-file.txt")]
+    [InlineData(".hidden/test-file.txt")]
+    [InlineData("nested/a..b/test-file.txt")]
+    public async Task ItShouldAllowSafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseContent),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        await plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+    }
+
     [Fact]
     public async Task ItShouldDownloadFileWithoutSavingInDiskAsync()
     {
@@ -335,6 +392,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("FAKE-TEST-HOST.IO", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
@@ -351,17 +409,63 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
-        // Act
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // Act and assert
+        if (isAllowed)
         {
             await sut.ListFilesAsync();
         }
-        catch when (!isAllowed)
+        else
         {
-            // Ignore exception if the endpoint is not allowed since we expect it
+            await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsNullAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = null;
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsEmptyAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [];
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldRejectRedirectResponseFromNonRedirectingClientAsync()
+    {
+        // Arrange
+        await using var server = new RedirectLoopbackServer("metadata/instance", "application/json", []);
+        using var httpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
+        using var nonRedirectingClient = new HttpClient(httpClientHandler);
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(nonRedirectingClient);
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri(server.BaseUri, "start"))
+        {
+            AllowedDomains = [server.BaseUri.Host],
+            CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        };
+        var sut = new SessionsPythonPlugin(settings, httpClientFactoryMock.Object);
+
+        // Act and assert
+        await Assert.ThrowsAsync<HttpOperationException>(() => sut.ListFilesAsync());
+        Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
     }
 
     [Fact]
@@ -539,6 +643,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
                 sessionId: Guid.NewGuid().ToString(),
                 endpoint: new Uri("http://localhost:8888"))
             {
+                AllowedDomains = ["localhost"],
                 AllowedDownloadDirectories = new[] { tempDir }
             };
 

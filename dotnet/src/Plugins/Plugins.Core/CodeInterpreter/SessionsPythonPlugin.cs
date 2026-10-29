@@ -37,6 +37,10 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="httpClientFactory">The HTTP client factory.</param>
     /// <param name="authTokenProvider">Optional provider for auth token generation.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <remarks>
+    /// The <paramref name="httpClientFactory"/> must create clients with automatic redirects disabled
+    /// to prevent redirects from bypassing <see cref="SessionsPythonSettings.AllowedDomains"/>.
+    /// </remarks>
     public SessionsPythonPlugin(
         SessionsPythonSettings settings,
         IHttpClientFactory httpClientFactory,
@@ -107,7 +111,7 @@ public sealed partial class SessionsPythonPlugin
     /// <summary>
     /// Uploads a file to the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`.</param>
+    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`. Must not be rooted or contain `.` or `..` path segments.</param>
     /// <param name="localFilePath">The path to the file on the local machine.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The metadata of the uploaded file.</returns>
@@ -116,13 +120,14 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
-        [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
+        [Description("The name of the remote file, relative to `/mnt/data`. Must not be rooted or contain `.` or `..` path segments.")] string remoteFileName,
         [Description("The path to the file on the local machine.")] string localFilePath,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
+        ValidateRemoteFileName(remoteFileName);
         var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
 
         this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
@@ -271,11 +276,11 @@ public sealed partial class SessionsPythonPlugin
 
         var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
-        // If a list of allowed domains has been provided, the host of the provided
-        // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        // Deny requests unless the endpoint host is explicitly allowed.
+        if (this._settings.AllowedDomains?.Contains(uri.Host, StringComparer.OrdinalIgnoreCase) != true)
         {
-            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+            throw new InvalidOperationException(
+                $"Sending requests to host '{uri.Host}' is not allowed. Add the host to {nameof(SessionsPythonSettings.AllowedDomains)}.");
         }
 
         using var request = new HttpRequestMessage(method, uri)
@@ -286,6 +291,21 @@ public sealed partial class SessionsPythonPlugin
         await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void ValidateRemoteFileName(string remoteFileName)
+    {
+        var hasDrivePrefix = remoteFileName.Length >= 2
+            && remoteFileName[1] == ':'
+            && char.IsLetter(remoteFileName[0]);
+
+        if (remoteFileName[0] is '/' or '\\'
+            || hasDrivePrefix
+            || remoteFileName.Split('/', '\\').Any(segment => segment is "." or ".."))
+        {
+            throw new InvalidOperationException(
+                "The remote file name must be relative and must not contain '.' or '..' path segments.");
+        }
     }
 
     /// <summary>
