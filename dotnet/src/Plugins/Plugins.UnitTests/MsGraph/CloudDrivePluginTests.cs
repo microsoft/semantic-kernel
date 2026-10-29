@@ -12,17 +12,25 @@ using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class CloudDrivePluginTests
+public sealed class CloudDrivePluginTests : IDisposable
 {
+    private readonly string _tempDirectory = Path.Combine(Path.GetTempPath(), $"CloudDrivePluginTests_{Guid.NewGuid():N}");
+
+    public CloudDrivePluginTests()
+    {
+        Directory.CreateDirectory(this._tempDirectory);
+    }
+
     [Fact]
     public async Task UploadSmallFileAsyncSucceedsAsync()
     {
         // Arrange
-        string allowedDir = Path.GetTempPath();
+        string allowedDir = this._tempDirectory;
         string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+        await File.WriteAllTextAsync(anyFilePath, "upload content");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
@@ -201,11 +209,13 @@ public class CloudDrivePluginTests
     public async Task ItAllowsSubdirectoriesOfAllowedDirectoriesAsync()
     {
         // Arrange
-        var allowedDir = Path.GetTempPath();
+        var allowedDir = this._tempDirectory;
         var subDirPath = Path.Combine(allowedDir, "subdir", "nested", "file.txt");
+        Directory.CreateDirectory(Path.GetDirectoryName(subDirPath)!);
+        await File.WriteAllTextAsync(subDirPath, "nested content");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
@@ -221,16 +231,17 @@ public class CloudDrivePluginTests
     public async Task ItExpandsEnvironmentVariablesAndValidatesAsync()
     {
         // Arrange — set a dedicated test env var to avoid platform-specific assumptions
-        var tempDir = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar);
+        var tempDir = this._tempDirectory;
         var envVarName = "SK_TEST_UPLOAD_DIR";
         var originalValue = Environment.GetEnvironmentVariable(envVarName);
         try
         {
             Environment.SetEnvironmentVariable(envVarName, tempDir);
             var envVarPath = Path.Combine($"%{envVarName}%", "testfile.txt");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "testfile.txt"), "expanded content");
 
             Mock<ICloudDriveConnector> connectorMock = new();
-            connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [tempDir], AllowedUploadDestinationPaths = ["/"] };
@@ -277,11 +288,13 @@ public class CloudDrivePluginTests
     public async Task ItRespectsPlatformCaseSensitivityAsync()
     {
         // Arrange — use differently-cased allowed dir vs file path
-        var allowedDir = Path.Combine(Path.GetTempPath(), "AllowedFolder");
-        var filePath = Path.Combine(Path.GetTempPath(), "allowedfolder", "file.txt");
+        var allowedDir = Path.Combine(this._tempDirectory, "AllowedFolder");
+        var filePath = Path.Combine(this._tempDirectory, "allowedfolder", "file.txt");
+        Directory.CreateDirectory(allowedDir);
+        await File.WriteAllTextAsync(Path.Combine(allowedDir, "file.txt"), "case content");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         CloudDrivePlugin target = new(connectorMock.Object) { AllowedUploadDirectories = [allowedDir], AllowedUploadDestinationPaths = ["/"] };
@@ -566,11 +579,12 @@ public class CloudDrivePluginTests
     public async Task UploadFileAsyncAllowsDestinationInAllowedPathAsync()
     {
         // Arrange
-        string allowedDir = Path.GetTempPath();
+        string allowedDir = this._tempDirectory;
         string anyFilePath = Path.Combine(allowedDir, Guid.NewGuid().ToString());
+        await File.WriteAllTextAsync(anyFilePath, "destination content");
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         CloudDrivePlugin target = new(connectorMock.Object)
@@ -620,5 +634,31 @@ public class CloudDrivePluginTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await target.UploadFileAsync(Path.Combine(Path.GetTempPath(), "file.txt"), "/Confidential/secret.docx"));
         connectorMock.VerifyNoOtherCalls();
+    }
+
+    [SymbolicLinkFact]
+    public async Task UploadDoesNotFollowLinksOutsideAllowedDirectoryAsync()
+    {
+        var allowed = Path.Combine(this._tempDirectory, "allowed");
+        Directory.CreateDirectory(allowed);
+        var outside = Path.Combine(this._tempDirectory, "outside.txt");
+        await File.WriteAllTextAsync(outside, "outside");
+        var link = Path.Combine(allowed, "link.txt");
+        File.CreateSymbolicLink(link, outside);
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedUploadDirectories = [allowed],
+            AllowedUploadDestinationPaths = ["/"]
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync(link, "/file.txt"));
+        connector.VerifyNoOtherCalls();
+    }
+
+    public void Dispose()
+    {
+        Directory.Delete(this._tempDirectory, recursive: true);
+        GC.SuppressFinalize(this);
     }
 }

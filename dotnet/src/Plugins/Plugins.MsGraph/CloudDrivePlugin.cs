@@ -185,8 +185,10 @@ public sealed class CloudDrivePlugin
 
         this._logger.LogDebug("Uploading file '{0}'", canonicalPath);
 
+        using var content = SecureFileSystem.OpenRead(canonicalPath, this._allowedUploadDirectories, out _);
+
         // TODO Add support for large file uploads (i.e. upload sessions)
-        await this._connector.UploadSmallFileAsync(canonicalPath, destinationPath, cancellationToken).ConfigureAwait(false);
+        await this._connector.UploadSmallFileAsync(content, destinationPath, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -292,48 +294,13 @@ public sealed class CloudDrivePlugin
 
     /// <summary>
     /// Expands environment variables and resolves the path to its canonical form.
-    /// This must be called before validation to prevent validate/use mismatches.
+    /// The upload still uses a secure open because this path can change after validation.
     /// </summary>
     private static string CanonicalizePath(string path)
     {
-        Ensure.NotNullOrWhitespace(path, nameof(path));
-
-        if (IsUncOrExtendedPath(path))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        // Expand environment variables first, then canonicalize — so that
-        // validation and I/O operate on the same resolved path.
-        var expanded = Environment.ExpandEnvironmentVariables(path);
-
-        // Re-check after expansion: an env var could have expanded to a UNC
-        // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (IsUncOrExtendedPath(expanded))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        // Re-check after canonicalization: a relative path can still resolve to a UNC path,
-        // for example when the current directory is a UNC share.
-        var fullPath = Path.GetFullPath(expanded);
-        if (IsUncOrExtendedPath(fullPath))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        return fullPath;
+        var fullPath = SecureFileSystem.NormalizePath(path, expandEnvironmentVariables: true);
+        return PathUtilities.GetSafeFullPath(fullPath);
     }
-
-    /// <summary>
-    /// Returns true if the path starts with any combination of two directory separators
-    /// (e.g. <c>\\</c>, <c>//</c>, <c>/\</c>, <c>\/</c>), all of which resolve to UNC or
-    /// extended-length/device paths on Windows.
-    /// </summary>
-    private static bool IsUncOrExtendedPath(string path) =>
-        path.Length >= 2 &&
-        (path[0] is '/' or '\\') &&
-        (path[1] is '/' or '\\');
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed upload directories.
@@ -357,7 +324,7 @@ public sealed class CloudDrivePlugin
 
         foreach (var allowedDirectory in this._allowedUploadDirectories)
         {
-            var canonicalAllowed = Path.GetFullPath(allowedDirectory);
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(allowedDirectory));
             var separator = Path.DirectorySeparatorChar.ToString();
             if (!canonicalAllowed.EndsWith(separator, s_pathComparison))
             {

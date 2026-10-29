@@ -134,7 +134,11 @@ public sealed partial class SessionsPythonPlugin
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
-        using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedLocalPath));
+        using var localFile = SecureFileSystem.OpenRead(
+            localFilePath,
+            this._settings.AllowedUploadDirectories!,
+            out _);
+        using var fileContent = new StreamContent(localFile);
 
         using var multipartFormDataContent = new MultipartFormDataContent()
         {
@@ -181,7 +185,11 @@ public sealed partial class SessionsPythonPlugin
         {
             try
             {
-                File.WriteAllBytes(validatedLocalPath, fileContent);
+                using var localFile = SecureFileSystem.OpenWrite(
+                    localFilePath!,
+                    this._settings.AllowedDownloadDirectories,
+                    out _);
+                localFile.Write(fileContent, 0, fileContent.Length);
             }
             catch (Exception ex)
             {
@@ -328,11 +336,11 @@ public sealed partial class SessionsPythonPlugin
                 "File upload requires 'AllowedUploadDirectories' to be configured.");
         }
 
-        var canonicalPath = PathUtilities.GetSafeFullPath(localFilePath);
+        var canonicalPath = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(localFilePath));
 
         foreach (var allowedDir in this._settings.AllowedUploadDirectories)
         {
-            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(allowedDir);
+            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(allowedDir));
             // Ensure we match the directory correctly by appending separator
             var separator = Path.DirectorySeparatorChar.ToString();
             var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, PathUtilities.PathComparison)
@@ -357,13 +365,13 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="InvalidOperationException">Thrown when the path is not allowed.</exception>
     private string ValidateLocalPathForDownload(string localFilePath)
     {
-        // If no restrictions configured, allow all paths (permissive by default for downloads)
         if (this._settings.AllowedDownloadDirectories is null || !this._settings.AllowedDownloadDirectories.Any())
         {
-            return PathUtilities.GetSafeFullPath(localFilePath);
+            throw new InvalidOperationException(
+                "Saving a download requires 'AllowedDownloadDirectories' to be configured.");
         }
 
-        var canonicalFilePath = PathUtilities.GetSafeFullPath(localFilePath);
+        var canonicalFilePath = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(localFilePath));
 
         // Get the directory of the resolved target file path.
         var targetDirectory = Path.GetDirectoryName(canonicalFilePath);
@@ -376,7 +384,7 @@ public sealed partial class SessionsPythonPlugin
 
         foreach (var allowedDir in this._settings.AllowedDownloadDirectories)
         {
-            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(allowedDir);
+            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(allowedDir));
             // Ensure we match the directory correctly by appending separator
             var separator = Path.DirectorySeparatorChar.ToString();
             var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, PathUtilities.PathComparison)
