@@ -59,6 +59,14 @@ def test_kernel_arguments_bool():
         (KernelArguments(a=1), KernelArguments(a=99), {"a": 99}, None),
         # Merging with a plain dict
         (KernelArguments(a=1), {"b": 2}, {"a": 1, "b": 2}, None),
+        # A key named settings is a regular argument
+        (KernelArguments(a=1), {"settings": "x"}, {"a": 1, "settings": "x"}, None),
+        (
+            KernelArguments(settings=PromptExecutionSettings(service_id="s1")),
+            {"settings": "x"},
+            {"settings": "x"},
+            ["s1"],
+        ),
         # Merging execution_settings together
         (
             KernelArguments(settings=PromptExecutionSettings(service_id="s1")),
@@ -133,6 +141,13 @@ def test_kernel_arguments_inplace_merge(lhs, rhs, expected_dict, expected_settin
         ({"a": 1}, KernelArguments(a=99), {"a": 99}, None),
         # Merging with a KernelArguments
         ({"b": 2}, KernelArguments(a=1), {"b": 2, "a": 1}, None),
+        # A key named settings is a regular argument
+        (
+            {"settings": "x"},
+            KernelArguments(a=1, settings=PromptExecutionSettings(service_id="s2")),
+            {"settings": "x", "a": 1},
+            ["s2"],
+        ),
         # Merging execution_settings together
         (
             {"test": "value"},

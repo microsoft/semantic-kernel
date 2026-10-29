@@ -173,9 +173,11 @@ class FunctionCallContent(KernelContent):
         from semantic_kernel.functions.kernel_arguments import KernelArguments
 
         args = self.parse_arguments()
-        if not args:
-            return KernelArguments()
-        return KernelArguments(**args)
+        kernel_arguments = KernelArguments()
+        if args:
+            # Not KernelArguments(**args), which would read an argument named `settings` as execution settings.
+            kernel_arguments.update(**args)
+        return kernel_arguments
 
     @deprecated("The function_name and plugin_name properties should be used instead.")
     def split_name(self) -> list[str | None]:
