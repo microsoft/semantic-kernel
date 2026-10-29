@@ -385,7 +385,7 @@ async def test_with_different_execution_settings(kernel: Kernel, mock_mistral_ai
         chat_history=chat_history, settings=settings, kernel=kernel, arguments=arguments
     )
     assert mock_mistral_ai_client_completion.chat.complete_async.call_args.kwargs["temperature"] == 0.2
-    assert mock_mistral_ai_client_completion.chat.complete_async.call_args.kwargs["seed"] == 2
+    assert mock_mistral_ai_client_completion.chat.complete_async.call_args.kwargs["random_seed"] == 2
 
 
 async def test_with_different_execution_settings_stream(
@@ -406,7 +406,7 @@ async def test_with_different_execution_settings_stream(
     ):
         continue
     assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["temperature"] == 0.2
-    assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["seed"] == 2
+    assert mock_mistral_ai_client_completion_stream.chat.stream_async.call_args.kwargs["random_seed"] == 2
 
 
 async def test_mistral_ai_chat_completion_get_chat_message_contents_success():
