@@ -440,6 +440,47 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
         assert call[1]["vector_queries"][0].fields == "vector"
 
 
+async def test_search_keyword_hybrid_search_with_storage_names(
+    azure_ai_search_unit_test_env, mock_search, dimensions, index_kind, distance_function, vector_property_type
+):
+    from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField
+
+    storage_definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", storage_name="doc_id", type="str"),
+            VectorStoreField("data", name="content", storage_name="body", type="str", is_full_text_indexed=True),
+            VectorStoreField(
+                "vector",
+                name="vector",
+                storage_name="vec",
+                dimensions=dimensions,
+                index_kind=index_kind,
+                distance_function=distance_function,
+                type=vector_property_type,
+            ),
+        ]
+    )
+    col = AzureAISearchCollection(record_type=dict, definition=storage_definition)
+
+    # 1. Default search fields and vector fields use storage names
+    await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3])
+    call = mock_search.call_args_list[-1]
+    assert call[1]["search_fields"] == ["body"]
+    assert call[1]["vector_queries"][0].fields == "vec"
+
+    # 2. additional_property_name resolves declared property name to storage name
+    await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3], additional_property_name="content")
+    call = mock_search.call_args_list[-1]
+    assert call[1]["search_fields"] == ["body"]
+    assert call[1]["vector_queries"][0].fields == "vec"
+
+    # 3. additional_property_name using storage name directly
+    await col.hybrid_search(values="query", vector=[0.1, 0.2, 0.3], additional_property_name="body")
+    call = mock_search.call_args_list[-1]
+    assert call[1]["search_fields"] == ["body"]
+    assert call[1]["vector_queries"][0].fields == "vec"
+
+
 @mark.parametrize("filter, result", filter_lambda_list("ai_search"))
 def test_lambda_filter(collection, filter, result):
     if isinstance(result, type) and issubclass(result, Exception):
