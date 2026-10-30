@@ -562,7 +562,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
 
-        Assert.Contains("not within allowed upload directories", exception.Message);
+        Assert.Contains("not within allowed directories", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
     }
 
     [Fact]
@@ -771,7 +772,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => plugin.UploadFileAsync("test.txt", disallowedFile));
 
-            Assert.Contains("not within allowed upload directories", exception.Message);
+            Assert.Contains("not within allowed directories", exception.Message);
+            Assert.Null(this._messageHandlerStub.RequestUri);
         }
         finally
         {
@@ -805,7 +807,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => plugin.UploadFileAsync("test.txt", traversalPath));
 
-        Assert.Contains("not within allowed upload directories", exception.Message);
+        Assert.Contains("not within allowed directories", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
     }
 
     public void Dispose()

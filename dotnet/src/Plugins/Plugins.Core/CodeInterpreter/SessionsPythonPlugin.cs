@@ -128,16 +128,16 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
         ValidateRemoteFileName(remoteFileName);
-        var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
-
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
-
-        using var httpClient = this._httpClientFactory.CreateClient();
+        this.ValidateFileUploadConfiguration();
 
         using var localFile = SecureFileSystem.OpenRead(
             localFilePath,
             this._settings.AllowedUploadDirectories!,
-            out _);
+            out var resolvedLocalPath);
+
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", resolvedLocalPath, remoteFileName);
+
+        using var httpClient = this._httpClientFactory.CreateClient();
         using var fileContent = new StreamContent(localFile);
 
         using var multipartFormDataContent = new MultipartFormDataContent()
@@ -317,12 +317,10 @@ public sealed partial class SessionsPythonPlugin
     }
 
     /// <summary>
-    /// Validates that the local file path is within allowed upload directories.
+    /// Validates that local file uploads are enabled and configured.
     /// </summary>
-    /// <param name="localFilePath">The local file path to validate.</param>
-    /// <returns>The canonicalized path if valid.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
-    private string ValidateLocalPathForUpload(string localFilePath)
+    /// <exception cref="InvalidOperationException">Thrown when file uploads are disabled or allowed directories are not configured.</exception>
+    private void ValidateFileUploadConfiguration()
     {
         if (!this._settings.EnableDangerousFileUploads)
         {
@@ -335,26 +333,6 @@ public sealed partial class SessionsPythonPlugin
             throw new InvalidOperationException(
                 "File upload requires 'AllowedUploadDirectories' to be configured.");
         }
-
-        var canonicalPath = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(localFilePath));
-
-        foreach (var allowedDir in this._settings.AllowedUploadDirectories)
-        {
-            var canonicalAllowedDir = PathUtilities.GetSafeFullPath(SecureFileSystem.NormalizePath(allowedDir));
-            // Ensure we match the directory correctly by appending separator
-            var separator = Path.DirectorySeparatorChar.ToString();
-            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, PathUtilities.PathComparison)
-                ? canonicalAllowedDir
-                : canonicalAllowedDir + separator;
-
-            if (canonicalPath.StartsWith(allowedDirWithSeparator, PathUtilities.PathComparison))
-            {
-                return canonicalPath;
-            }
-        }
-
-        throw new InvalidOperationException(
-            $"Access denied: '{localFilePath}' is not within allowed upload directories.");
     }
 
     /// <summary>
