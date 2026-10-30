@@ -74,7 +74,8 @@ public sealed class CloudDrivePlugin
     /// <remarks>
     /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
     /// with trusted remote directory paths before any share-link operations will succeed.
-    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Paths are normalized with forward slashes and literal dot-segments are collapsed before comparison.
+    /// Encoded dot-segments are rejected because URI construction could otherwise reinterpret the checked path.
     /// Matching is case-insensitive (OneDrive paths are case-insensitive).
     /// </remarks>
     public IEnumerable<string> AllowedSharePaths
@@ -91,7 +92,8 @@ public sealed class CloudDrivePlugin
     /// <remarks>
     /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
     /// with trusted remote directory paths before any read operations will succeed.
-    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Paths are normalized with forward slashes and literal dot-segments are collapsed before comparison.
+    /// Encoded dot-segments are rejected because URI construction could otherwise reinterpret the checked path.
     /// Matching is case-insensitive (OneDrive paths are case-insensitive).
     /// </remarks>
     public IEnumerable<string> AllowedReadPaths
@@ -108,7 +110,8 @@ public sealed class CloudDrivePlugin
     /// <remarks>
     /// Defaults to an empty collection (no paths allowed). Must be explicitly populated
     /// with trusted remote directory paths before any upload-destination operations will succeed.
-    /// Paths are normalized with forward slashes and dot-segments are collapsed before comparison.
+    /// Paths are normalized with forward slashes and literal dot-segments are collapsed before comparison.
+    /// Encoded dot-segments are rejected because URI construction could otherwise reinterpret the checked path.
     /// Matching is case-insensitive (OneDrive paths are case-insensitive).
     /// </remarks>
     public IEnumerable<string> AllowedUploadDestinationPaths
@@ -132,12 +135,12 @@ public sealed class CloudDrivePlugin
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        if (!this.IsAllowedRemotePath(filePath, this._allowedReadPaths))
+        if (!this.TryGetAllowedRemotePath(filePath, this._allowedReadPaths, out var normalizedPath))
         {
             throw new InvalidOperationException("Reading from the provided path is not allowed. Configure 'AllowedReadPaths' with trusted remote paths to enable reading.");
         }
 
-        Stream? fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+        Stream? fileContentStream = await this._connector.GetFileContentStreamAsync(normalizedPath, cancellationToken).ConfigureAwait(false);
 
         if (fileContentStream is null)
         {
@@ -170,7 +173,7 @@ public sealed class CloudDrivePlugin
             throw new ArgumentException("Variable was null or whitespace", nameof(destinationPath));
         }
 
-        if (!this.IsAllowedRemotePath(destinationPath, this._allowedUploadDestinationPaths))
+        if (!this.TryGetAllowedRemotePath(destinationPath, this._allowedUploadDestinationPaths, out var normalizedDestinationPath))
         {
             throw new InvalidOperationException("Uploading to the provided remote destination is not allowed. Configure 'AllowedUploadDestinationPaths' with trusted remote paths to enable uploads.");
         }
@@ -187,7 +190,7 @@ public sealed class CloudDrivePlugin
         using var content = SecureFileSystem.OpenRead(canonicalPath, this._allowedUploadDirectories, out _);
 
         // TODO Add support for large file uploads (i.e. upload sessions)
-        await this._connector.UploadSmallFileAsync(content, destinationPath, cancellationToken).ConfigureAwait(false);
+        await this._connector.UploadSmallFileAsync(content, normalizedDestinationPath, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -207,12 +210,12 @@ public sealed class CloudDrivePlugin
 
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        if (!this.IsAllowedRemotePath(filePath, this._allowedSharePaths))
+        if (!this.TryGetAllowedRemotePath(filePath, this._allowedSharePaths, out var normalizedPath))
         {
             throw new InvalidOperationException("Creating a share link for the provided path is not allowed. Configure 'AllowedSharePaths' with trusted remote paths to enable sharing.");
         }
 
-        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
+        return await this._connector.CreateShareLinkAsync(normalizedPath, Type, Scope, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -224,25 +227,34 @@ public sealed class CloudDrivePlugin
 
     /// <summary>
     /// Checks whether the provided remote path falls within one of the allowed remote directory prefixes.
-    /// Paths are normalized with forward slashes, dot-segments are collapsed,
+    /// Paths are normalized with forward slashes, literal dot-segments are collapsed,
+    /// encoded dot-segments are rejected,
     /// and compared case-insensitively (OneDrive paths are case-insensitive).
     /// Subdirectories of allowed paths are permitted.
     /// </summary>
-    private bool IsAllowedRemotePath(string path, HashSet<string> allowedPaths)
+    private bool TryGetAllowedRemotePath(string path, HashSet<string> allowedPaths, out string normalizedPath)
     {
         Ensure.NotNullOrWhitespace(path, nameof(path));
+        normalizedPath = string.Empty;
 
         if (allowedPaths.Count == 0)
         {
             return false;
         }
 
-        // Normalize to forward slashes and collapse dot-segments to prevent traversal bypass.
-        var normalizedPath = NormalizeRemotePath(path);
+        if (!TryNormalizeRemotePath(path, out normalizedPath))
+        {
+            return false;
+        }
 
         foreach (var allowedPath in allowedPaths)
         {
-            var normalizedAllowed = NormalizeRemotePath(allowedPath);
+            if (!TryNormalizeRemotePath(allowedPath, out var normalizedAllowed))
+            {
+                throw new InvalidOperationException(
+                    $"Configured allowed remote path '{allowedPath}' contains an encoded dot-segment.");
+            }
+
             if (!normalizedAllowed.EndsWith("/", StringComparison.Ordinal))
             {
                 normalizedAllowed += "/";
@@ -267,14 +279,44 @@ public sealed class CloudDrivePlugin
 
     /// <summary>
     /// Normalizes a remote path by replacing backslashes with forward slashes
-    /// and collapsing "." and ".." segments to prevent traversal bypass.
+    /// and collapsing literal "." and ".." segments.
     /// </summary>
-    private static string NormalizeRemotePath(string path)
+    private static bool TryNormalizeRemotePath(string path, out string normalizedPath)
     {
-        var normalizedPath = path.Replace('\\', '/');
+        // URI construction can decode percent-encoded dots and separators after the
+        // allow-list check. Reject any encoding that can reveal a structural dot-segment,
+        // then reuse the returned path for the connector call.
+        foreach (var rawSegment in path.Split('/'))
+        {
+            var decoded = rawSegment;
+            for (int i = 0; i < 5; i++)
+            {
+                var unescaped = Uri.UnescapeDataString(decoded);
+                if (string.Equals(unescaped, decoded, StringComparison.Ordinal))
+                {
+                    break;
+                }
 
-        // Collapse ".." and "." segments to prevent traversal bypass.
-        var segments = normalizedPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                decoded = unescaped;
+            }
+
+            if (!string.Equals(decoded, rawSegment, StringComparison.Ordinal))
+            {
+                foreach (var segment in decoded.Split('/', '\\'))
+                {
+                    if (segment is "." or "..")
+                    {
+                        normalizedPath = string.Empty;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        var pathWithNormalizedSeparators = path.Replace('\\', '/');
+
+        // Collapse literal dot-segments so validation and connector use the same path.
+        var segments = pathWithNormalizedSeparators.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
         var stack = new List<string>();
         foreach (var segment in segments)
         {
@@ -288,7 +330,8 @@ public sealed class CloudDrivePlugin
             }
         }
 
-        return "/" + string.Join("/", stack);
+        normalizedPath = "/" + string.Join("/", stack);
+        return true;
     }
 
     /// <summary>

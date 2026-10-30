@@ -658,6 +658,112 @@ public sealed class CloudDrivePluginTests : IDisposable
         connector.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [MemberData(nameof(DangerousRemotePaths))]
+    public async Task RemoteOperationsRejectEncodedTraversalAsync(string operation, string remotePath)
+    {
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedReadPaths = ["/Uploads"],
+            AllowedSharePaths = ["/Uploads"],
+            AllowedUploadDestinationPaths = ["/Uploads"]
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => InvokeRemoteOperationAsync(plugin, operation, remotePath, Path.Combine(this._tempDirectory, "source.txt")));
+        connector.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [MemberData(nameof(AllowedNormalizedRemotePaths))]
+    public async Task RemoteOperationsUseTheCheckedNormalizedPathAsync(
+        string operation,
+        string suppliedPath,
+        string expectedPath)
+    {
+        var sourcePath = Path.Combine(this._tempDirectory, "source.txt");
+        await File.WriteAllTextAsync(sourcePath, "content");
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        switch (operation)
+        {
+            case "read":
+                connector.Setup(c => c.GetFileContentStreamAsync(expectedPath, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
+                break;
+            case "share":
+                connector.Setup(c => c.CreateShareLinkAsync(expectedPath, "view", "organization", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("https://example.com/share");
+                break;
+            case "upload":
+                connector.Setup(c => c.UploadSmallFileAsync(It.IsAny<Stream>(), expectedPath, It.IsAny<CancellationToken>()))
+                    .Returns(Task.CompletedTask);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown test operation '{operation}'.");
+        }
+
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedReadPaths = ["/Uploads"],
+            AllowedSharePaths = ["/Uploads"],
+            AllowedUploadDirectories = [this._tempDirectory],
+            AllowedUploadDestinationPaths = ["/Uploads"]
+        };
+
+        await InvokeRemoteOperationAsync(plugin, operation, suppliedPath, sourcePath);
+
+        connector.VerifyAll();
+    }
+
+    [Theory]
+    [InlineData("read")]
+    [InlineData("share")]
+    [InlineData("upload")]
+    public async Task InvalidRemoteAllowListConfigurationRemainsVisibleAsync(string operation)
+    {
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedReadPaths = ["/Uploads/%2e%2e"],
+            AllowedSharePaths = ["/Uploads/%2e%2e"],
+            AllowedUploadDestinationPaths = ["/Uploads/%2e%2e"]
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => InvokeRemoteOperationAsync(
+                plugin,
+                operation,
+                "/Uploads/report.txt",
+                Path.Combine(this._tempDirectory, "source.txt")));
+
+        Assert.Contains("Configured allowed remote path", exception.Message, StringComparison.Ordinal);
+        connector.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("read")]
+    [InlineData("share")]
+    [InlineData("upload")]
+    public async Task RemoteOperationsRejectMatchingNamePrefixOutsideAllowedFolderAsync(string operation)
+    {
+        var connector = new Mock<ICloudDriveConnector>(MockBehavior.Strict);
+        var plugin = new CloudDrivePlugin(connector.Object)
+        {
+            AllowedReadPaths = ["/Uploads"],
+            AllowedSharePaths = ["/Uploads"],
+            AllowedUploadDestinationPaths = ["/Uploads"]
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => InvokeRemoteOperationAsync(
+                plugin,
+                operation,
+                "/UploadsOther/report.txt",
+                Path.Combine(this._tempDirectory, "source.txt")));
+        connector.VerifyNoOtherCalls();
+    }
+
     [SymbolicLinkTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -750,5 +856,71 @@ public sealed class CloudDrivePluginTests : IDisposable
     {
         Directory.Delete(this._tempDirectory, recursive: true);
         GC.SuppressFinalize(this);
+    }
+
+    public static TheoryData<string, string> DangerousRemotePaths
+    {
+        get
+        {
+            string[] paths =
+            [
+                "/Uploads/%2e/Confidential/secret.txt",
+                "/Uploads/%2e%2e/Confidential/secret.txt",
+                "/Uploads/%2E%2E/Confidential/secret.txt",
+                "/Uploads/%2e./Confidential/secret.txt",
+                "/Uploads/.%2e/Confidential/secret.txt",
+                "/Uploads/%252e%252e/Confidential/secret.txt",
+                "/Uploads/%2e%2e%2fConfidential/secret.txt",
+                "/Uploads/%2e%2e%5cConfidential/secret.txt",
+                "/Uploads/%252f%252e%252e%252fConfidential/secret.txt"
+            ];
+            TheoryData<string, string> data = [];
+            foreach (var operation in new[] { "read", "share", "upload" })
+            {
+                foreach (var path in paths)
+                {
+                    data.Add(operation, path);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    public static TheoryData<string, string, string> AllowedNormalizedRemotePaths
+    {
+        get
+        {
+            TheoryData<string, string, string> data = [];
+            foreach (var operation in new[] { "read", "share", "upload" })
+            {
+                data.Add(operation, "/Uploads/Sub/../report.txt", "/Uploads/report.txt");
+                data.Add(operation, "/Uploads/a%20b.txt", "/Uploads/a%20b.txt");
+            }
+
+            return data;
+        }
+    }
+
+    private static async Task InvokeRemoteOperationAsync(
+        CloudDrivePlugin plugin,
+        string operation,
+        string remotePath,
+        string localPath)
+    {
+        switch (operation)
+        {
+            case "read":
+                await plugin.GetFileContentAsync(remotePath);
+                break;
+            case "share":
+                await plugin.CreateLinkAsync(remotePath);
+                break;
+            case "upload":
+                await plugin.UploadFileAsync(localPath, remotePath);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown test operation '{operation}'.");
+        }
     }
 }
