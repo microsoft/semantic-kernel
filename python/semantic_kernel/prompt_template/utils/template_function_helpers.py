@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import nest_asyncio
 
+from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
@@ -21,6 +22,26 @@ if TYPE_CHECKING:
 
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+# Parameters that the kernel injects when invoking a function. They cannot be supplied
+# positionally from a template because they are not part of the template-facing signature.
+_INJECTED_FUNCTION_PARAMETER_NAMES = frozenset({"kernel", "service", "execution_settings", "arguments"})
+
+
+def _map_positional_arguments(function: "KernelFunction", positional_args: tuple[Any, ...]) -> dict[str, Any]:
+    """Map positional template arguments to the function's template-facing parameters."""
+    parameter_names = [
+        parameter.name
+        for parameter in function.parameters
+        if parameter.name is not None
+        and (function.metadata.is_prompt or parameter.name not in _INJECTED_FUNCTION_PARAMETER_NAMES)
+    ]
+    if len(positional_args) > len(parameter_names):
+        raise FunctionExecutionException(
+            f"Function '{function.fully_qualified_name}' accepts at most {len(parameter_names)} positional "
+            f"argument(s), but {len(positional_args)} were provided."
+        )
+    return dict(zip(parameter_names, positional_args))
 
 
 def create_template_helper_from_function(
@@ -86,7 +107,6 @@ def _create_sync_template_helper_from_function(
         if base_arguments and base_arguments.execution_settings:
             arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
         arguments.update(base_arguments)
-        arguments.update(kwargs)
 
         if len(args) > 0 and template_format == HANDLEBARS_TEMPLATE_FORMAT_NAME:
             this = args[0]
@@ -99,6 +119,9 @@ def _create_sync_template_helper_from_function(
             logger.debug("Handlebars context with `this`.")
         else:
             logger.debug("Jinja2 context or Handlebars context without `this`")
+
+        arguments.update(_map_positional_arguments(function, actual_args))
+        arguments.update(kwargs)
 
         logger.debug(
             "Invoking function %s with positional argument count %d and keyword argument count %d.",
@@ -131,6 +154,7 @@ def _create_async_template_helper_from_function(
         if base_arguments and base_arguments.execution_settings:
             arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
         arguments.update(base_arguments)
+        arguments.update(_map_positional_arguments(function, args))
         arguments.update(kwargs)
         logger.debug(
             "Invoking function %s with positional argument count %d and keyword argument count %d.",

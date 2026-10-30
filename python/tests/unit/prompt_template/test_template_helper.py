@@ -4,6 +4,7 @@ import logging
 
 import pytest
 
+from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
@@ -95,3 +96,94 @@ async def test_create_helpers_fail(kernel: Kernel, template_format: str, enable_
         assert int(str(res)) == 2
     else:
         assert int(str(result(x=1))) == 2
+
+
+@pytest.mark.parametrize(
+    ("template_format", "prepend_context"),
+    [
+        pytest.param(JINJA2_TEMPLATE_FORMAT_NAME, False, id="jinja2"),
+        pytest.param(HANDLEBARS_TEMPLATE_FORMAT_NAME, True, id="handlebars"),
+    ],
+)
+def test_create_sync_helpers_with_positional_arguments(kernel: Kernel, template_format: str, prepend_context: bool):
+    function = KernelFunctionFromMethod(kernel_function(lambda a=1, b=2: a + b, name="test"), plugin_name="test")
+    helper = create_template_helper_from_function(
+        function, kernel, {}, template_format, allow_dangerously_set_content=True, enable_async=False
+    )
+
+    args = (None, 3, 4) if prepend_context else (3, 4)
+    result = helper(*args)
+
+    assert int(str(result)) == 7
+
+
+async def test_create_async_helper_with_positional_arguments(kernel: Kernel):
+    function = KernelFunctionFromMethod(kernel_function(lambda a=1, b=2: a + b, name="test"), plugin_name="test")
+    helper = create_template_helper_from_function(
+        function, kernel, {}, JINJA2_TEMPLATE_FORMAT_NAME, allow_dangerously_set_content=True, enable_async=True
+    )
+
+    result = await helper(3, 4)
+
+    assert int(str(result)) == 7
+
+
+def test_create_helper_rejects_too_many_positional_arguments(kernel: Kernel):
+    function = KernelFunctionFromMethod(kernel_function(lambda a=1, b=2: a + b, name="test"), plugin_name="test")
+    helper = create_template_helper_from_function(
+        function, kernel, {}, HANDLEBARS_TEMPLATE_FORMAT_NAME, allow_dangerously_set_content=True, enable_async=False
+    )
+
+    with pytest.raises(FunctionExecutionException, match="accepts at most 2 positional argument"):
+        helper(None, 1, 2, 3)
+
+
+def test_create_helper_skips_kernel_injected_parameters(kernel: Kernel):
+    def function_with_kernel(kernel: Kernel, value: str = "default") -> str:
+        return value
+
+    function = KernelFunctionFromMethod(kernel_function(function_with_kernel, name="test"), plugin_name="test")
+    helper = create_template_helper_from_function(
+        function, kernel, {}, JINJA2_TEMPLATE_FORMAT_NAME, allow_dangerously_set_content=True, enable_async=False
+    )
+
+    assert str(helper("passed")) == "passed"
+
+
+@pytest.mark.parametrize("input_name", ["service", "kernel", "execution_settings", "arguments"])
+@pytest.mark.parametrize("values", [("first",), ("first", "second")])
+@pytest.mark.parametrize("mode", ["jinja_sync", "jinja_async", "handlebars"])
+async def test_prompt_function_preserves_named_inputs_for_positional_binding(kernel, mocker, input_name, values, mode):
+    from unittest.mock import AsyncMock
+
+    from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+    from semantic_kernel.prompt_template.input_variable import InputVariable
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+    function = KernelFunctionFromPrompt(
+        function_name="prompt",
+        plugin_name="test",
+        prompt_template_config=PromptTemplateConfig(
+            template="prompt text",
+            input_variables=[InputVariable(name=input_name), InputVariable(name="value")],
+        ),
+    )
+    invoke = mocker.patch.object(KernelFunctionFromPrompt, "invoke", new=AsyncMock(return_value="result"))
+    helper = create_template_helper_from_function(
+        function,
+        kernel,
+        {},
+        HANDLEBARS_TEMPLATE_FORMAT_NAME if mode == "handlebars" else JINJA2_TEMPLATE_FORMAT_NAME,
+        enable_async=mode == "jinja_async",
+    )
+    if mode == "jinja_async":
+        await helper(*values)
+    elif mode == "handlebars":
+        helper(None, *values)
+    else:
+        helper(*values)
+
+    expected = {input_name: "first"}
+    if len(values) == 2:
+        expected["value"] = "second"
+    assert dict(invoke.await_args.kwargs["arguments"]) == expected
