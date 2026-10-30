@@ -595,15 +595,28 @@ class AzureAISearchCollection(
                 if values is None:
                     raise VectorStoreOperationException("No vector and/or keywords provided for search.")
                 vector_field = self.definition.try_get_vector_field(options.vector_property_name)
-                search_args["search_fields"] = (
-                    [options.additional_property_name]
-                    if options.additional_property_name is not None
-                    else [
-                        field.name
+                vector_field_name = vector_field.storage_name or vector_field.name if vector_field else None
+                if options.additional_property_name is not None:
+                    target_field = next(
+                        (
+                            field
+                            for field in self.definition.fields
+                            if field.name == options.additional_property_name
+                            or field.storage_name == options.additional_property_name
+                        ),
+                        None,
+                    )
+                    search_args["search_fields"] = [
+                        target_field.storage_name or target_field.name
+                        if target_field
+                        else options.additional_property_name
+                    ]
+                else:
+                    search_args["search_fields"] = [
+                        field.storage_name or field.name
                         for field in self.definition.fields
                         if field.field_type == FieldTypes.DATA and field.is_full_text_indexed
                     ]
-                )
                 if not search_args["search_fields"]:
                     raise VectorStoreOperationException("No searchable fields found for hybrid search.")
                 search_args["search_text"] = values
@@ -613,14 +626,14 @@ class AzureAISearchCollection(
                     search_args["vector_queries"] = [
                         VectorizedQuery(
                             vector=vector,  # type: ignore
-                            fields=vector_field.name if vector_field else None,
+                            fields=vector_field_name,
                         )
                     ]
                 else:
                     search_args["vector_queries"] = [
                         VectorizableTextQuery(
                             text=values,
-                            fields=vector_field.name if vector_field else None,
+                            fields=vector_field_name,
                         )
                     ]
         try:

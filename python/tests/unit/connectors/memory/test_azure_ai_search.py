@@ -18,6 +18,10 @@ from semantic_kernel.connectors.azure_ai_search import (
     _get_search_index_client,
     _resolve_credential,
 )
+from semantic_kernel.data.vector import (
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+)
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     VectorStoreInitializationException,
@@ -438,6 +442,80 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
         assert call[1]["search_text"] == "test" if keywords == "test" else "test1, test2"
         assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
         assert call[1]["vector_queries"][0].fields == "vector"
+
+
+@fixture
+def definition_with_storage_names() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", storage_name="doc_id", type="str"),
+            VectorStoreField("data", name="content", storage_name="body", type="str", is_full_text_indexed=True),
+            VectorStoreField(
+                "vector",
+                name="embedding",
+                storage_name="vec",
+                dimensions=3,
+                index_kind="hnsw",
+                distance_function="cosine_distance",
+                type="float",
+            ),
+        ]
+    )
+
+
+@fixture
+def collection_with_storage_names(azure_ai_search_unit_test_env, definition_with_storage_names):
+    return AzureAISearchCollection(record_type=dict, definition=definition_with_storage_names)
+
+
+@mark.parametrize(
+    "additional_prop, expected_search_fields",
+    [
+        ("content", ["body"]),
+        ("body", ["body"]),
+        (None, ["body"]),
+    ],
+    ids=["property_name", "storage_name", "default_all_indexed"],
+)
+async def test_search_keyword_hybrid_search_storage_names(
+    collection_with_storage_names, mock_search, additional_prop, expected_search_fields
+):
+    results = await collection_with_storage_names.hybrid_search(
+        values="test query",
+        vector=[0.1, 0.2, 0.3],
+        additional_property_name=additional_prop,
+    )
+    assert results is not None
+    call_args = mock_search.call_args[1]
+    assert call_args["search_fields"] == expected_search_fields
+    assert call_args["vector_queries"][0].fields == "vec"
+    assert call_args["vector_queries"][0].vector == [0.1, 0.2, 0.3]
+
+
+async def test_search_keyword_hybrid_search_text_query_storage_names(collection_with_storage_names, mock_search):
+    with patch.object(collection_with_storage_names, "_generate_vector_from_values", return_value=None):
+        results = await collection_with_storage_names.hybrid_search(
+            values="test query",
+        )
+        assert results is not None
+        call_args = mock_search.call_args[1]
+        assert call_args["search_fields"] == ["body"]
+        assert call_args["vector_queries"][0].fields == "vec"
+        assert call_args["vector_queries"][0].text == "test query"
+
+
+async def test_vector_and_hybrid_search_fields_agree_with_storage_names(collection_with_storage_names, mock_search):
+    await collection_with_storage_names.search(vector=[0.1, 0.2, 0.3])
+    vector_call_kwargs = mock_search.call_args[1]
+
+    mock_search.reset_mock()
+
+    await collection_with_storage_names.hybrid_search(values="test query", vector=[0.1, 0.2, 0.3])
+    hybrid_call_kwargs = mock_search.call_args[1]
+
+    assert vector_call_kwargs["vector_queries"][0].fields == "vec"
+    assert hybrid_call_kwargs["vector_queries"][0].fields == "vec"
+    assert vector_call_kwargs["vector_queries"][0].fields == hybrid_call_kwargs["vector_queries"][0].fields
 
 
 @mark.parametrize("filter, result", filter_lambda_list("ai_search"))
