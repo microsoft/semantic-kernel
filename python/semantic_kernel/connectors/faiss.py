@@ -249,9 +249,18 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         # first we create the vector to search with
         np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
         # then do the actual vector search
-        distances, indexes = self.indexes[field.name].search(
-            np_vector, min(options.top, self.indexes[field.name].ntotal)
-        )  # type: ignore[call-arg]
+        ntotal = self.indexes[field.name].ntotal
+        if ntotal == 0:
+            # An empty (or fully deleted) index has nothing to search: faiss
+            # asserts k > 0. Resolve the filter and build the empty result from
+            # the same helper as the populated path so an invalid filter still
+            # raises, as it does for a populated index and for InMemory.
+            filtered_records = self._get_filtered_records(options)
+            return KernelSearchResults(
+                results=self._get_vector_search_results_from_results(return_list, options),
+                total_count=0 if options and options.include_total_count else None,
+            )
+        distances, indexes = self.indexes[field.name].search(np_vector, min(options.top, ntotal))  # type: ignore[call-arg]
         # since Faiss indexes do not contain the full records,
         # we get the filtered records, this is a dict of the records that match the search filters
         # and use that to get the actual records

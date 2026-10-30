@@ -13,7 +13,7 @@ from semantic_kernel.data.vector import (
     VectorStoreField,
     vectorstoremodel,
 )
-from semantic_kernel.exceptions import VectorStoreInitializationException
+from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 
 @fixture(scope="function")
@@ -272,6 +272,37 @@ async def test_upsert(faiss_collection):
     key = await faiss_collection.upsert(record)
     assert key == "testid"
     assert faiss_collection.inner_storage == {"testid": record}
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_on_empty_collection_returns_no_results(faiss_collection):
+    """An empty index has nothing to search; faiss would otherwise assert k > 0."""
+    await faiss_collection.ensure_collection_exists()
+
+    results = await faiss_collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=3, include_total_count=True)
+    assert [result async for result in results.results] == []
+    assert results.total_count == 0
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_on_empty_collection_still_validates_the_filter(faiss_collection):
+    """An empty index returns early, but an invalid filter must still raise."""
+    await faiss_collection.ensure_collection_exists()
+
+    with raises(VectorStoreOperationException):
+        await faiss_collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=3, filter="not valid (")
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_after_deleting_every_record_returns_no_results(faiss_collection):
+    """Deleting the last record empties the index; a later search must not raise."""
+    await faiss_collection.ensure_collection_exists()
+    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await faiss_collection.upsert(record)
+    await faiss_collection.delete("testid")
+
+    results = await faiss_collection.search(vector=record["vector"], top=3)
+    assert [result async for result in results.results] == []
     await faiss_collection.ensure_collection_deleted()
 
 
