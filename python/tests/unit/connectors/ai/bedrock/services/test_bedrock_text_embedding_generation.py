@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import ANY, Mock, patch
 
 import boto3
@@ -233,3 +234,47 @@ async def test_bedrock_text_embedding_with_invalid_response(
 
         with pytest.raises(ServiceInvalidResponseError):
             await bedrock_text_embedding.generate_embeddings(["hello", "world"])
+
+
+@pytest.mark.parametrize(
+    "embeddings, expected",
+    [
+        ({"float": [[0.1, 0.2, 0.3]]}, [0.1, 0.2, 0.3]),
+        ({"int8": [[1, 2, 3]], "float": [[0.1, 0.2, 0.3]]}, [0.1, 0.2, 0.3]),
+        ({"int8": [[1, 2, 3]]}, [1, 2, 3]),
+        ([[0.1, 0.2, 0.3]], [0.1, 0.2, 0.3]),
+    ],
+)
+async def test_bedrock_cohere_text_embedding_with_embedding_types(embeddings, expected) -> None:
+    """Cohere returns the embeddings keyed by type when `embedding_types` is requested."""
+    body = Mock()
+    body.read.return_value = json.dumps({"embeddings": embeddings})
+
+    with patch.object(MockBedrockRuntimeClient, "invoke_model", return_value={"body": body}) as mock_model_invoke:
+        bedrock_text_embedding = BedrockTextEmbedding(
+            model_id="cohere.command",
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+        )
+
+        settings = BedrockEmbeddingPromptExecutionSettings(extension_data={"embedding_types": ["float", "int8"]})
+        response = await bedrock_text_embedding.generate_embeddings(["hello"], settings)
+
+        assert json.loads(mock_model_invoke.call_args.kwargs["body"])["embedding_types"] == ["float", "int8"]
+        assert response.tolist() == [expected]
+
+
+@pytest.mark.parametrize("embeddings", [{}, {"float": []}, {"float": 0.1}])
+async def test_bedrock_cohere_text_embedding_with_invalid_typed_response(embeddings) -> None:
+    body = Mock()
+    body.read.return_value = json.dumps({"embeddings": embeddings})
+
+    with patch.object(MockBedrockRuntimeClient, "invoke_model", return_value={"body": body}):
+        bedrock_text_embedding = BedrockTextEmbedding(
+            model_id="cohere.command",
+            runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
+        )
+
+        with pytest.raises(ServiceInvalidResponseError):
+            await bedrock_text_embedding.generate_embeddings(["hello"])
