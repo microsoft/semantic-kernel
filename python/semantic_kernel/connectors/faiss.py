@@ -64,6 +64,18 @@ def _create_index(field: VectorStoreField) -> faiss.Index:
             raise VectorStoreInitializationException(f"Index with {field.index_kind} is not supported.")
 
 
+def _vector_value(record: dict[str, Any], vector_field: VectorStoreField) -> Any:
+    """Read a vector from a serialized record under either its storage or logical name.
+
+    The dict path serializes with the field's storage_name, while a pydantic
+    model_dump() and a custom to_dict() may keep the logical name.
+    """
+    storage_name = vector_field.storage_name or vector_field.name
+    if storage_name in record:
+        return record[storage_name]
+    return record.get(vector_field.name)
+
+
 class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     """Create a Faiss collection.
 
@@ -168,7 +180,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         """Upsert records."""
         for vector_field in self.definition.vector_fields:
-            vectors_to_add = [record.get(vector_field.storage_name or vector_field.name) for record in records]
+            vectors_to_add = [_vector_value(record, vector_field) for record in records]
             vectors = np.array(vectors_to_add, dtype=np.float32)
             if not self.indexes[vector_field.name].is_trained:
                 raise VectorStoreOperationException(
@@ -180,7 +192,16 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             self.indexes[vector_field.name].add(vectors)  # type: ignore
             start = len(self.indexes_key_map[vector_field.name])
             for i, record in enumerate(records):
-                key = record[self.definition.key_field.name]
+                # Records are serialized in whichever shape the data model and
+                # definition produce: logical names from a pydantic model_dump(),
+                # storage names from the dict path, or a custom to_dict(). Use the
+                # key name the serialization actually recorded, like InMemory does.
+                key_field_name = getattr(record, "key_field_name", self._key_field_storage_name)
+                if key_field_name not in record:
+                    key_field_name = (
+                        self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
+                    )
+                key = record[key_field_name]
                 self.indexes_key_map[vector_field.name][key] = start + i
         return await super()._inner_upsert(records, **kwargs)
 
@@ -228,9 +249,18 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         # first we create the vector to search with
         np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
         # then do the actual vector search
-        distances, indexes = self.indexes[field.name].search(
-            np_vector, min(options.top, self.indexes[field.name].ntotal)
-        )  # type: ignore[call-arg]
+        ntotal = self.indexes[field.name].ntotal
+        if ntotal == 0:
+            # An empty (or fully deleted) index has nothing to search: faiss
+            # asserts k > 0. Resolve the filter and build the empty result from
+            # the same helper as the populated path so an invalid filter still
+            # raises, as it does for a populated index and for InMemory.
+            filtered_records = self._get_filtered_records(options)
+            return KernelSearchResults(
+                results=self._get_vector_search_results_from_results(return_list, options),
+                total_count=0 if options and options.include_total_count else None,
+            )
+        distances, indexes = self.indexes[field.name].search(np_vector, min(options.top, ntotal))  # type: ignore[call-arg]
         # since Faiss indexes do not contain the full records,
         # we get the filtered records, this is a dict of the records that match the search filters
         # and use that to get the actual records
