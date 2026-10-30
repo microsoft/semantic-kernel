@@ -76,7 +76,10 @@ class ChromaMemoryStore(MemoryStoreBase):
 
         except ImportError as exc:
             raise ServiceInitializationError(
-                "Could not import chromadb python package. Please install it with `pip install chromadb`."
+                (
+                    "Could not import chromadb python package. "
+                    "Please install it with `pip install semantic-kernel[chroma]`."
+                )
             ) from exc
 
         if client_settings:

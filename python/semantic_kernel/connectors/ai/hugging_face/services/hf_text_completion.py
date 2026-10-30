@@ -11,8 +11,13 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import torch
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Pipeline, TextIteratorStreamer, pipeline
+try:
+    import torch
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Pipeline, TextIteratorStreamer, pipeline
+
+    ready = True
+except (ImportError, ModuleNotFoundError):
+    ready = False
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -35,7 +40,7 @@ class _Seq2SeqGenerator:
         self,
         model: Any,
         tokenizer: Any,
-        device: torch.device,
+        device: Any,
         output_key: str,
         prefix: str,
         default_call_kwargs: dict[str, Any],
@@ -180,6 +185,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        if not ready:
+            raise ImportError(
+                "torch and transformers are not installed. "
+                "Please install them with `pip install semantic-kernel[hugging_face]`."
+            )
+
         generator: _Seq2SeqGenerator | Pipeline
         if task in {"summarization", "text2text-generation"}:
             generator = _create_seq2seq_generator(ai_model_id, task, device, model_kwargs, pipeline_kwargs)

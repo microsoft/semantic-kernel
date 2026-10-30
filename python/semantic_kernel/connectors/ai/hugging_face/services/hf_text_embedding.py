@@ -9,7 +9,12 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import torch
+try:
+    import torch
+
+    torch_installed = True
+except (ImportError, ModuleNotFoundError):
+    torch_installed = False
 from numpy import ndarray
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
@@ -48,6 +53,11 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        if not torch_installed:
+            raise ImportError(
+                "torch is not installed. Please install it with `pip install semantic-kernel[hugging_face]`."
+            )
+
         from sentence_transformers import SentenceTransformer
 
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
