@@ -19,6 +19,7 @@ from semantic_kernel.connectors.mcp import (
 )
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.functions import KernelFunction, KernelPlugin, kernel_function
+from semantic_kernel.prompt_template import InputVariable, KernelPromptTemplate, PromptTemplateConfig
 
 
 @pytest.fixture
@@ -830,6 +831,36 @@ async def test_mcp_server_from_functions_preserves_plugin_namespaces(caplog, use
             assert result.content == [types.TextContent(type="text", text=str(value))]
             assert calls[-1] == marker
     assert calls == [registration[-1] for registration in retained]
+
+
+async def test_mcp_server_get_prompt_with_settings_argument(kernel: "Kernel"):
+    prompt = KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(
+            name="theme",
+            template="Use the {{$settings}} theme.",
+            input_variables=[InputVariable(name="settings", is_required=True)],
+        )
+    )
+    server = create_mcp_server_from_kernel(kernel, prompts=[prompt])
+
+    async with create_connected_server_and_client_session(server) as client:
+        result = await client.get_prompt("theme", {"settings": "dark"})
+    assert result.messages[0].content.text == "Use the dark theme."
+
+
+async def test_mcp_server_call_tool_with_settings_argument(kernel: "Kernel"):
+    class ThemePlugin:
+        @kernel_function
+        def apply_theme(self, settings: str) -> str:
+            return f"applied {settings}"
+
+    kernel.add_plugin(ThemePlugin(), plugin_name="theme")
+    server = create_mcp_server_from_kernel(kernel)
+
+    async with create_connected_server_and_client_session(server) as client:
+        result = await client.call_tool("apply_theme", {"settings": "dark"})
+    assert not result.isError
+    assert result.content == [types.TextContent(type="text", text="applied dark")]
 
 
 @pytest.mark.parametrize("tool_name_length", [128, 129])

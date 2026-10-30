@@ -1230,11 +1230,11 @@ def create_mcp_server_from_kernel(
             if prompt is None:
                 return types.GetPromptResult(description="Prompt not found", messages=[])
 
-            # Call the prompt
-            rendered_prompt = await prompt.render(
-                kernel,
-                KernelArguments(**arguments) if arguments is not None else KernelArguments(),
-            )
+            # Call the prompt, an argument named `settings` stays an argument
+            prompt_arguments = KernelArguments()
+            if arguments is not None:
+                prompt_arguments.update(arguments)
+            rendered_prompt = await prompt.render(kernel, prompt_arguments)
             # since the return type of a get_prompts is a list of messages,
             # we need to convert the rendered prompt to a list of messages
             # by using the ChatHistory class
@@ -1271,7 +1271,10 @@ def create_mcp_server_from_kernel(
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
         function = functions_to_expose[function_name]
 
-        arguments["server"] = server
-        return await function.invoke(kernel=kernel, **arguments)
+        # Not function.invoke(**arguments), which would read an argument named `settings` as execution settings
+        kernel_arguments = KernelArguments()
+        kernel_arguments.update(arguments)
+        kernel_arguments["server"] = server
+        return await function.invoke(kernel=kernel, arguments=kernel_arguments)
 
     return server

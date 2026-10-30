@@ -354,6 +354,34 @@ async def test_invoke_function_call_does_not_log_exception_values(kernel: Kernel
     assert "Error invoking function test-fail. Error type: ValueError." in messages
 
 
+@pytest.mark.parametrize(
+    "arguments, expected_result",
+    [
+        ('{"settings": "dark"}', "applied dark"),
+        ('{"settings": {"mode": "dark"}}', "applied {'mode': 'dark'}"),
+        (
+            '"{\\"settings\\": \\"dark\\"}"',
+            "The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
+        ),
+    ],
+)
+async def test_invoke_function_call_with_settings_parameter(kernel: Kernel, arguments, expected_result):
+    class ThemePlugin:
+        @kernel_function
+        def apply_theme(self, settings: str | dict) -> str:
+            return f"applied {settings}"
+
+    kernel.add_plugin(ThemePlugin(), plugin_name="theme")
+    chat_history = ChatHistory()
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="theme-apply_theme", arguments=arguments),
+        chat_history=chat_history,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert chat_history.messages[-1].items[0].result == expected_result
+
+
 class LightsPlugin:
     lights = [
         {"id": 1, "name": "Table Lamp", "is_on": False},

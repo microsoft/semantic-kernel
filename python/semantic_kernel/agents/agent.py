@@ -484,7 +484,10 @@ class Agent(KernelBaseModel, ABC):
         merged_params = dict(self.arguments)
         merged_params.update(override_args)
 
-        return KernelArguments(settings=merged_execution_settings, **merged_params)
+        # A `settings` key in the arguments stays an argument
+        merged_arguments = KernelArguments(settings=merged_execution_settings)
+        merged_arguments.update(**merged_params)
+        return merged_arguments
 
     # endregion
 
