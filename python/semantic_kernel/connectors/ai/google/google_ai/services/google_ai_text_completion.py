@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
+from semantic_kernel.connectors.ai.google.google_ai.services.utils import get_completion_token_count
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents import TextContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -249,7 +250,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count if response.usage_metadata else None,
-                completion_tokens=response.usage_metadata.candidates_token_count if response.usage_metadata else None,
+                completion_tokens=get_completion_token_count(response.usage_metadata),
             ),
         }
 
