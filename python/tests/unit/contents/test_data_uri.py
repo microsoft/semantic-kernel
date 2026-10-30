@@ -337,3 +337,20 @@ def test_array():
 def test__data_str(data_bytes, data_str, data_array, data_format, expected_output):
     data_uri = DataUri(data_bytes=data_bytes, data_str=data_str, data_array=data_array, data_format=data_format)
     assert data_uri._data_str() == expected_output
+
+
+@pytest.mark.parametrize("media_type", ["text/plain", ""])
+@pytest.mark.parametrize("encoding,payload", [("", "Hello"), (";base64", "SGVsbG8=")])
+def test_data_uri_parameter_without_required_media_type(media_type, encoding, payload):
+    result = DataUri.from_data_uri(f"data:{media_type};charset=utf-8{encoding},{payload}")
+    assert result.data_bytes == b"Hello"
+    assert result.mime_type == "text/plain"
+    assert result.parameters == {"charset": "utf-8"}
+    assert result.data_format == ("base64" if encoding else None)
+
+
+@pytest.mark.parametrize("value", ["foo*bar", "foo'bar", "foo~bar", "foo%20bar", "foo%3Bbar"])
+def test_data_uri_parameter_uses_parameter_token_alphabet(value):
+    result = DataUri.from_data_uri(f"data:text/plain;name={value},Hello")
+    assert result.data_bytes == b"Hello"
+    assert result.parameters == {"name": value}

@@ -135,14 +135,14 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if not data or "," not in data:
             raise ContentInitializationError("Invalid data uri format. The data is missing.")
 
-        # Media types and parameters use the RFC 6838/RFC 2045 token character set, which
-        # includes characters such as "+" (image/svg+xml) and "-" (charset=utf-8). Keeping
-        # the data format as a token prevents unparsed parameters from being silently
-        # treated as part of the format (for example "charset=utf-8;base64").
+        # Parameters use the RFC 2045 token alphabet, which is broader than a
+        # media type's restricted-name alphabet. RFC 2397 allows parameters even
+        # when the default text/plain media type is omitted.
+        parameter_token = r"[a-zA-Z0-9!#$%&'*+.^_`|~-]+"
         pattern = (
-            r"(((?P<mime_type>[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+)"
-            r"(?P<parameters>(;[a-zA-Z0-9!#$&^_.+-]+=+[a-zA-Z0-9!#$&^_.+-]+)*))?"
-            r"(;+(?P<data_format>[a-zA-Z0-9!#$&^_.+-]*))?)?"
+            r"(?P<mime_type>[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+)?"
+            rf"(?P<parameters>(;{parameter_token}={parameter_token})*)"
+            r"(;+(?P<data_format>[a-zA-Z0-9!#$&^_.+-]*))?"
             r"(,(?P<data_str>.*))"
         )
         match = re.match(pattern, data)
