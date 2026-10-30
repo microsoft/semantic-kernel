@@ -180,7 +180,16 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             self.indexes[vector_field.name].add(vectors)  # type: ignore
             start = len(self.indexes_key_map[vector_field.name])
             for i, record in enumerate(records):
-                key = record[self.definition.key_field.name]
+                # Records are serialized in whichever shape the data model and
+                # definition produce: logical names from a pydantic model_dump(),
+                # storage names from the dict path, or a custom to_dict(). Use the
+                # key name the serialization actually recorded, like InMemory does.
+                key_field_name = getattr(record, "key_field_name", self._key_field_storage_name)
+                if key_field_name not in record:
+                    key_field_name = (
+                        self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
+                    )
+                key = record[key_field_name]
                 self.indexes_key_map[vector_field.name][key] = start + i
         return await super()._inner_upsert(records, **kwargs)
 
