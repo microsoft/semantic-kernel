@@ -64,6 +64,18 @@ def _create_index(field: VectorStoreField) -> faiss.Index:
             raise VectorStoreInitializationException(f"Index with {field.index_kind} is not supported.")
 
 
+def _vector_value(record: dict[str, Any], vector_field: VectorStoreField) -> Any:
+    """Read a vector from a serialized record under either its storage or logical name.
+
+    The dict path serializes with the field's storage_name, while a pydantic
+    model_dump() and a custom to_dict() may keep the logical name.
+    """
+    storage_name = vector_field.storage_name or vector_field.name
+    if storage_name in record:
+        return record[storage_name]
+    return record.get(vector_field.name)
+
+
 class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     """Create a Faiss collection.
 
@@ -168,7 +180,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         """Upsert records."""
         for vector_field in self.definition.vector_fields:
-            vectors_to_add = [record.get(vector_field.storage_name or vector_field.name) for record in records]
+            vectors_to_add = [_vector_value(record, vector_field) for record in records]
             vectors = np.array(vectors_to_add, dtype=np.float32)
             if not self.indexes[vector_field.name].is_trained:
                 raise VectorStoreOperationException(
