@@ -62,7 +62,6 @@ internal static class SecureFileSystem
             allowedPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, rejectReadOnly: true, out created);
     }
 
-#pragma warning disable CA2000 // The returned FileStream owns the handle; failures dispose it below.
     private static FileStream OpenRestrictedFile(
         AllowedPath allowedPath,
         FileMode mode,
@@ -71,44 +70,45 @@ internal static class SecureFileSystem
         bool rejectReadOnly,
         out bool created)
     {
-        SafeFileHandle fileHandle;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            fileHandle = WindowsFileSystem.Open(
-                allowedPath.AllowedDirectory, allowedPath.RelativeSegments, mode, access, share, rejectReadOnly, out created);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            fileHandle = UnixFileSystem.Open(
-                allowedPath.AllowedDirectory, allowedPath.RelativeSegments, mode, access, share, rejectReadOnly, out created);
-        }
-        else
-        {
-            throw new PlatformNotSupportedException(
-                "Secure local file access is supported only on Windows, Linux, and macOS.");
-        }
-
+        SafeFileHandle? fileHandle = null;
         FileStream? stream = null;
         try
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                fileHandle = WindowsFileSystem.Open(
+                    allowedPath.AllowedDirectory, allowedPath.RelativeSegments, mode, access, share, rejectReadOnly, out created);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                fileHandle = UnixFileSystem.Open(
+                    allowedPath.AllowedDirectory, allowedPath.RelativeSegments, mode, access, share, rejectReadOnly, out created);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException(
+                    "Secure local file access is supported only on Windows, Linux, and macOS.");
+            }
+
             stream = new FileStream(fileHandle, access);
+            fileHandle = null;
             if (mode == FileMode.Create)
             {
                 // Do not truncate an existing file until the securely opened handle has passed every check.
                 stream.SetLength(0);
             }
 
-            return stream;
+            var result = stream;
+            stream = null;
+            return result;
         }
-        catch
+        finally
         {
             stream?.Dispose();
-            fileHandle.Dispose();
-            throw;
+            fileHandle?.Dispose();
         }
     }
-#pragma warning restore CA2000
 
     internal static string NormalizePath(string path, bool expandEnvironmentVariables = false)
     {
@@ -223,7 +223,6 @@ internal static class SecureFileSystem
         private const uint DefaultPermissions = 0x1B6; // 0666, reduced by the process umask.
         private const int AlreadyExists = 17;
 
-#pragma warning disable CA2000 // Ownership of the verified file handle is returned; failed checks dispose it.
         internal static SafeFileHandle Open(
             string allowedDirectory,
             string[] relativeSegments,
@@ -235,31 +234,36 @@ internal static class SecureFileSystem
         {
             created = false;
             var directoryFlags = GetDirectoryFlags();
-            var currentHandle = OpenPath("/", directoryFlags);
+            SafeFileHandle? currentHandle = null;
+            SafeFileHandle? nextHandle = null;
+            SafeFileHandle? fileHandle = null;
 
             try
             {
+                currentHandle = OpenPath("/", directoryFlags);
+
                 // Start at the filesystem root and open each directory relative to its parent.
                 // This keeps every parent stable even if its name is replaced during the walk.
                 foreach (var segment in GetSegmentsAfterRoot(allowedDirectory))
                 {
-                    var nextHandle = OpenAt(currentHandle, segment, directoryFlags, 0);
+                    nextHandle = OpenAt(currentHandle, segment, directoryFlags, 0);
                     currentHandle.Dispose();
                     currentHandle = nextHandle;
+                    nextHandle = null;
                 }
 
                 for (var i = 0; i < relativeSegments.Length - 1; i++)
                 {
-                    var nextHandle = OpenAt(currentHandle, relativeSegments[i], directoryFlags, 0);
+                    nextHandle = OpenAt(currentHandle, relativeSegments[i], directoryFlags, 0);
                     currentHandle.Dispose();
                     currentHandle = nextHandle;
+                    nextHandle = null;
                 }
 
                 var name = relativeSegments[relativeSegments.Length - 1];
                 var fileFlags = (access == FileAccess.Read ? ReadOnly : access == FileAccess.Write ? WriteOnly : ReadWrite) |
                     GetNoFollowFlag() | GetCloseOnExecFlag() | GetNonBlockingFlag();
 
-                SafeFileHandle handle;
                 if (mode == FileMode.OpenOrCreate)
                 {
                     // Exclusive creation supplies reliable creation status. A conflicting file is
@@ -268,12 +272,12 @@ internal static class SecureFileSystem
                         fileFlags | GetCreateFlag() | GetExclusiveFlag(), DefaultPermissions);
                     if (descriptor >= 0)
                     {
-                        handle = new SafeFileHandle(new IntPtr(descriptor), ownsHandle: true);
+                        fileHandle = new SafeFileHandle(new IntPtr(descriptor), ownsHandle: true);
                         created = true;
                     }
                     else if (Marshal.GetLastWin32Error() == AlreadyExists)
                     {
-                        handle = OpenAt(currentHandle, name, fileFlags, 0);
+                        fileHandle = OpenAt(currentHandle, name, fileFlags, 0);
                     }
                     else
                     {
@@ -292,34 +296,29 @@ internal static class SecureFileSystem
                         fileFlags |= GetExclusiveFlag();
                     }
 
-                    handle = OpenAt(currentHandle, name, fileFlags, DefaultPermissions);
+                    fileHandle = OpenAt(currentHandle, name, fileFlags, DefaultPermissions);
                     created = mode == FileMode.CreateNew;
                 }
 
-                try
+                // Nonblocking open prevents a substituted pipe from hanging before we can
+                // inspect the handle. Only ordinary files may reach the returned FileStream.
+                CheckFile(fileHandle, rejectReadOnly);
+                if (Flock(fileHandle, (share == FileShare.None ? 2 : 1) | 4) != 0)
                 {
-                    // Nonblocking open prevents a substituted pipe from hanging before we can
-                    // inspect the handle. Only ordinary files may reach the returned FileStream.
-                    CheckFile(handle, rejectReadOnly);
-                    if (Flock(handle, (share == FileShare.None ? 2 : 1) | 4) != 0)
-                    {
-                        throw new IOException("The file is in use.");
-                    }
+                    throw new IOException("The file is in use.");
+                }
 
-                    return handle;
-                }
-                catch
-                {
-                    handle.Dispose();
-                    throw;
-                }
+                var result = fileHandle;
+                fileHandle = null;
+                return result;
             }
             finally
             {
-                currentHandle.Dispose();
+                fileHandle?.Dispose();
+                nextHandle?.Dispose();
+                currentHandle?.Dispose();
             }
         }
-#pragma warning restore CA2000
 
         private static int GetDirectoryFlags() =>
             // Traversal needs search permission, not permission to list each ancestor.
@@ -387,6 +386,8 @@ internal static class SecureFileSystem
                 // statx has the same layout on all Linux architectures, unlike struct stat.
                 if (StatX(handle, string.Empty, 0x1000, 0x3, out var information) != 0)
                 {
+                    // With SetLastError = true this returns the captured Unix errno despite its
+                    // name; GetLastPInvokeError is unavailable on the netstandard2.0 target.
                     throw new IOException($"Could not inspect the open file. Native error: {Marshal.GetLastWin32Error()}.");
                 }
 
