@@ -107,7 +107,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         from uuid import UUID
 
         # Check for primitive types
-        if isinstance(value, (int, float, bool, bytes)):
+        if isinstance(value, (int, float, bool)):
             return True
 
         # Check for date/time types

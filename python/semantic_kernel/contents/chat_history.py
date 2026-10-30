@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import re
 from collections.abc import Generator, Iterable
 from functools import singledispatchmethod
 from html import unescape
 from typing import Any, TypeVar
 from xml.etree.ElementTree import Element, tostring  # nosec
+from xml.sax.saxutils import escape  # nosec
 
 from defusedxml.ElementTree import XML, ParseError
 from pydantic import Field, field_validator, model_validator
@@ -21,6 +23,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="ChatHistory")
+
+_CDATA_SECTION = re.compile(r"<!\[CDATA\[(.*?)\]\]>", re.DOTALL)
 
 
 class ChatHistory(KernelBaseModel):
@@ -219,7 +223,7 @@ class ChatHistory(KernelBaseModel):
         """Prepare a message to be added to the history."""
         kwargs["role"] = role
 
-        if role == AuthorRole.TOOL and content and not items:
+        if role == AuthorRole.TOOL and content is not None and not items:
             tool_call_id = kwargs.pop("tool_call_id", None)
             function_name = kwargs.pop("function_name", "unknown")
             function_result_content = FunctionResultContent(
@@ -340,13 +344,17 @@ class ChatHistory(KernelBaseModel):
         prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
+        # The XML parser decodes entities in normal text but keeps a CDATA section literal, and the
+        # template engine escapes values wherever they land. Decode CDATA once here, so every text
+        # is decoded exactly once by the parser and not again afterwards.
+        xml_text = _CDATA_SECTION.sub(lambda match: escape(unescape(match.group(1))), prompt)
         try:
-            xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
+            xml_prompt = XML(text=f"<{prompt_tag}>{xml_text}</{prompt_tag}>")
         except ParseError as exc:
             logger.info(f"Could not parse prompt {prompt} as xml, treating as text, error was: {exc}")
             return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
+            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=xml_prompt.text.strip()))
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
@@ -368,10 +376,10 @@ class ChatHistory(KernelBaseModel):
                 # For unknown tags the tail is part of the surrounding text,
                 # so keep it in the same message instead of starting a new one.
                 if item.tail:
-                    messages[-1].content = (messages[-1].content or "") + unescape(item.tail)
+                    messages[-1].content = (messages[-1].content or "") + item.tail
                 continue
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
+                messages.append(ChatMessageContent(role=AuthorRole.USER, content=item.tail.strip()))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)
