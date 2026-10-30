@@ -148,3 +148,42 @@ def test_create_helper_skips_kernel_injected_parameters(kernel: Kernel):
     )
 
     assert str(helper("passed")) == "passed"
+
+
+@pytest.mark.parametrize("input_name", ["service", "kernel", "execution_settings", "arguments"])
+@pytest.mark.parametrize("values", [("first",), ("first", "second")])
+@pytest.mark.parametrize("mode", ["jinja_sync", "jinja_async", "handlebars"])
+async def test_prompt_function_preserves_named_inputs_for_positional_binding(kernel, mocker, input_name, values, mode):
+    from unittest.mock import AsyncMock
+
+    from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+    from semantic_kernel.prompt_template.input_variable import InputVariable
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+    function = KernelFunctionFromPrompt(
+        function_name="prompt",
+        plugin_name="test",
+        prompt_template_config=PromptTemplateConfig(
+            template="prompt text",
+            input_variables=[InputVariable(name=input_name), InputVariable(name="value")],
+        ),
+    )
+    invoke = mocker.patch.object(KernelFunctionFromPrompt, "invoke", new=AsyncMock(return_value="result"))
+    helper = create_template_helper_from_function(
+        function,
+        kernel,
+        {},
+        HANDLEBARS_TEMPLATE_FORMAT_NAME if mode == "handlebars" else JINJA2_TEMPLATE_FORMAT_NAME,
+        enable_async=mode == "jinja_async",
+    )
+    if mode == "jinja_async":
+        await helper(*values)
+    elif mode == "handlebars":
+        helper(None, *values)
+    else:
+        helper(*values)
+
+    expected = {input_name: "first"}
+    if len(values) == 2:
+        expected["value"] = "second"
+    assert dict(invoke.await_args.kwargs["arguments"]) == expected

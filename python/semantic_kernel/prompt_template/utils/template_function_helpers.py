@@ -33,7 +33,8 @@ def _map_positional_arguments(function: "KernelFunction", positional_args: tuple
     parameter_names = [
         parameter.name
         for parameter in function.parameters
-        if parameter.name is not None and parameter.name not in _INJECTED_FUNCTION_PARAMETER_NAMES
+        if parameter.name is not None
+        and (function.metadata.is_prompt or parameter.name not in _INJECTED_FUNCTION_PARAMETER_NAMES)
     ]
     if len(positional_args) > len(parameter_names):
         raise FunctionExecutionException(
