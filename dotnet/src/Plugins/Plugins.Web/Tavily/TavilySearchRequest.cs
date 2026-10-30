@@ -89,6 +89,60 @@ internal sealed class TavilySearchRequest
     public bool? IncludeImageDescriptions { get; set; }
 
     /// <summary>
+    /// Boost search results from a specific country. Available only when topic is general.
+    /// </summary>
+    [JsonPropertyName("country")]
+    public string? Country { get; set; }
+
+    /// <summary>
+    /// Return only results after this date. Format: YYYY-MM-DD.
+    /// </summary>
+    [JsonPropertyName("start_date")]
+    public string? StartDate { get; set; }
+
+    /// <summary>
+    /// Return only results before this date. Format: YYYY-MM-DD.
+    /// </summary>
+    [JsonPropertyName("end_date")]
+    public string? EndDate { get; set; }
+
+    /// <summary>
+    /// Whether to filter out adult or unsafe content from results.
+    /// </summary>
+    [JsonPropertyName("safe_search")]
+    public bool? SafeSearch { get; set; }
+
+    /// <summary>
+    /// How include_domains is applied. Available options: restrict, prefer.
+    /// </summary>
+    [JsonPropertyName("include_domains_mode")]
+    public string? IncludeDomainsMode { get; set; }
+
+    /// <summary>
+    /// Boost search results in a specific language (ISO 639-1 code or English language name).
+    /// </summary>
+    [JsonPropertyName("language")]
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// Strictly filter out results that do not match the language instead of only boosting them.
+    /// </summary>
+    [JsonPropertyName("filter_by_language")]
+    public bool? FilterByLanguage { get; set; }
+
+    /// <summary>
+    /// Only return results containing the exact quoted phrase(s) in the query.
+    /// </summary>
+    [JsonPropertyName("exact_match")]
+    public bool? ExactMatch { get; set; }
+
+    /// <summary>
+    /// Let Tavily configure search parameters automatically from the query.
+    /// </summary>
+    [JsonPropertyName("auto_parameters")]
+    public bool? AutoParameters { get; set; }
+
+    /// <summary>
     /// A list of domains to specifically include in the search results.
     /// </summary>
     [JsonPropertyName("include_domains")]
@@ -122,7 +176,16 @@ internal sealed class TavilySearchRequest
         bool? includeRawContent,
         int? maxResults,
         IList<string>? includeDomains,
-        IList<string>? excludeDomains)
+        IList<string>? excludeDomains,
+        string? country = null,
+        string? startDate = null,
+        string? endDate = null,
+        bool? safeSearch = null,
+        string? includeDomainsMode = null,
+        string? language = null,
+        bool? filterByLanguage = null,
+        bool? exactMatch = null,
+        bool? autoParameters = null)
     {
         this.Query = query ?? throw new ArgumentNullException(nameof(query));
         this.Topic = topic;
@@ -137,5 +200,14 @@ internal sealed class TavilySearchRequest
         this.MaxResults = maxResults;
         this.IncludeDomains = includeDomains;
         this.ExcludeDomains = excludeDomains;
+        this.Country = country;
+        this.StartDate = startDate;
+        this.EndDate = endDate;
+        this.SafeSearch = safeSearch;
+        this.IncludeDomainsMode = includeDomainsMode;
+        this.Language = language;
+        this.FilterByLanguage = filterByLanguage;
+        this.ExactMatch = exactMatch;
+        this.AutoParameters = autoParameters;
     }
 }
