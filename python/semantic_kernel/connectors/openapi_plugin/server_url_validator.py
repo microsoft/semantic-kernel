@@ -2,7 +2,7 @@
 
 import ipaddress
 from typing import Any
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult, unquote, urlparse
 
 from pydantic import Field
 
@@ -113,12 +113,53 @@ def _effective_port(url: ParseResult) -> int | None:
     return None
 
 
+def _normalize_path(path: str, decode_percent_encoded: bool = False) -> str:
+    """Normalize a URL path the same way httpx does before routing.
+
+    Applies RFC 3986 §5.2.4 remove_dot_segments. Empty segments are preserved.
+    Paths that would climb above the root are clamped at ``/``.
+    """
+    if decode_percent_encoded:
+        path = unquote(path)
+
+    # remove_dot_segments (RFC 3986 §5.2.4), preserving empty segments like httpx.
+    segments = path.split("/")
+    resolved: list[str] = []
+    for segment in segments:
+        if segment == ".":
+            continue
+        if segment == "..":
+            if resolved and resolved[-1] != "":
+                resolved.pop()
+            # else: clamp at root (leading empty from absolute path stays)
+            continue
+        resolved.append(segment)
+    if segments[-1] in (".", ".."):
+        resolved.append("")
+    # Absolute paths keep a leading empty segment from the initial "/".
+    if not resolved:
+        return "/"
+    normalized = "/".join(resolved)
+    if path.startswith("/") and not normalized.startswith("/"):
+        normalized = "/" + normalized
+    return normalized or "/"
+
+
 def _matches_path_prefix(url_path: str, base_path: str) -> bool:
     url_path = url_path or "/"
     base_path = base_path or "/"
 
-    if url_path.lower() == base_path.lower():
-        return True
+    for decode_percent_encoded in (False, True):
+        normalized_url_path = _normalize_path(url_path, decode_percent_encoded)
+        normalized_base_path = _normalize_path(base_path, decode_percent_encoded)
 
-    base_path_with_slash = base_path if base_path.endswith("/") else f"{base_path}/"
-    return url_path.lower().startswith(base_path_with_slash.lower())
+        if normalized_url_path.lower() == normalized_base_path.lower():
+            continue
+
+        base_path_with_slash = (
+            normalized_base_path if normalized_base_path.endswith("/") else f"{normalized_base_path}/"
+        )
+        if not normalized_url_path.lower().startswith(base_path_with_slash.lower()):
+            return False
+
+    return True
