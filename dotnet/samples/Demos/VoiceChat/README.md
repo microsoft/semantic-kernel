@@ -35,8 +35,8 @@ To reduce latency in real-world scenarios, you can integrate with streaming spee
 - **Speech-to-Text (STT)**
   - [OpenAI Realtime API (Whisper streaming)](https://platform.openai.com/docs/guides/realtime)  
   - [Azure Cognitive Services Speech-to-Text](https://learn.microsoft.com/azure/cognitive-services/speech-service/speech-to-text)  
-  - [Deepgram Streaming STT](https://developers.deepgram.com/docs/streaming)  
-  - [AssemblyAI Streaming STT](https://www.assemblyai.com/docs/real-time-speech-recognition)  
+  - [Deepgram Streaming STT](https://developers.deepgram.com/docs/live-streaming-audio)  
+  - [AssemblyAI Streaming STT](https://www.assemblyai.com/docs/streaming)  
 
 - **Text-to-Speech (TTS)**
   - [OpenAI Realtime API (TTS streaming)](https://platform.openai.com/docs/guides/realtime)  
