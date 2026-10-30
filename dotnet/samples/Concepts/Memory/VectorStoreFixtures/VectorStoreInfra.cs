@@ -11,6 +11,46 @@ namespace Memory.VectorStoreFixtures;
 internal static class VectorStoreInfra
 {
     /// <summary>
+    /// Setup the chroma container by pulling the image and running it.
+    /// </summary>
+    /// <param name="client">The docker client to create the container with.</param>
+    /// <returns>The id of the container.</returns>
+    public static async Task<string> SetupChromaContainerAsync(DockerClient client)
+    {
+        await client.Images.CreateImageAsync(
+            new ImagesCreateParameters
+            {
+                FromImage = "chromadb/chroma",
+                Tag = "latest",
+            },
+            null,
+            new Progress<JSONMessage>());
+
+        var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters()
+        {
+            Image = "chromadb/chroma",
+            HostConfig = new HostConfig()
+            {
+                PortBindings = new Dictionary<string, IList<PortBinding>>
+                {
+                    {"8000", new List<PortBinding> {new() {HostPort = "8000" } }},
+                },
+                PublishAllPorts = true
+            },
+            ExposedPorts = new Dictionary<string, EmptyStruct>
+            {
+                { "8000", default },
+            },
+        });
+
+        await client.Containers.StartContainerAsync(
+            container.ID,
+            new ContainerStartParameters());
+
+        return container.ID;
+    }
+
+    /// <summary>
     /// Setup the postgres pgvector container by pulling the image and running it.
     /// </summary>
     /// <param name="client">The docker client to create the container with.</param>
