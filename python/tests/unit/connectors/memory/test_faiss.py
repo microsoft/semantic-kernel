@@ -4,7 +4,7 @@ from typing import Annotated
 
 import faiss
 from pydantic import BaseModel
-from pytest import fixture, mark, raises
+from pytest import approx, fixture, mark, raises
 
 from semantic_kernel.connectors.faiss import FaissCollection, FaissStore
 from semantic_kernel.data.vector import (
@@ -191,6 +191,59 @@ async def test_upsert_with_key_storage_name(aliased_definition, model_kind):
     assert await collection.upsert(record) == "testid"
     assert collection.indexes_key_map["vector"] == {"testid": 0}
     assert set(collection.inner_storage) == {"testid"}
+
+    results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], top=1, include_vectors=True)
+    assert [result.record async for result in results.results] == [record]
+    await collection.ensure_collection_deleted()
+
+
+@vectorstoremodel
+class VectorAliasedModel(BaseModel):
+    id: Annotated[str, VectorStoreField("key", type="str")]
+    content: Annotated[str, VectorStoreField("data", type="str")] = "test content"
+    embedding: Annotated[
+        list[float] | None,
+        VectorStoreField(
+            "vector",
+            storage_name="vec",
+            dimensions=5,
+            index_kind="flat",
+            distance_function="dot_prod",
+            type="float",
+        ),
+    ] = None
+
+
+def vector_aliased_definition() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="content", type="str"),
+            VectorStoreField(
+                "vector",
+                name="embedding",
+                storage_name="vec",
+                dimensions=5,
+                index_kind="flat",
+                distance_function="dot_prod",
+                type="float",
+            ),
+        ]
+    )
+
+
+async def test_upsert_with_vector_storage_name_pydantic_model():
+    """A pydantic model_dump keeps the logical vector name; the vector must still resolve."""
+    collection = FaissCollection(
+        record_type=VectorAliasedModel, definition=vector_aliased_definition(), collection_name="test-vec-alias"
+    )
+    record = VectorAliasedModel(id="testid", embedding=[1.0, 0.0, 0.0, 0.0, 0.0])
+    await collection.ensure_collection_exists()
+
+    assert await collection.upsert(record) == "testid"
+    assert collection.indexes["embedding"].ntotal == 1
+    # Assert the indexed vector itself, so a wrong-but-valid vector cannot pass.
+    assert collection.indexes["embedding"].reconstruct(0) == approx([1.0, 0.0, 0.0, 0.0, 0.0])
 
     results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], top=1, include_vectors=True)
     assert [result.record async for result in results.results] == [record]
