@@ -65,6 +65,7 @@ var settings = new SessionsPythonSettings(
 // Uncomment the following lines to enable file upload operations (disabled by default for security)
 // settings.EnableDangerousFileUploads = true;
 // settings.AllowedUploadDirectories = new[] { @"C:\allowed\upload\directory" };
+// Local download saves also require an allowed directory; returning bytes does not.
 // settings.AllowedDownloadDirectories = new[] { @"C:\allowed\download\directory" };
 
 Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===\n");

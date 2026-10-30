@@ -96,7 +96,8 @@ public sealed class DocumentPlugin
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
+        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(
+            canonicalPath, this._allowedDirectories!, cancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
 
@@ -116,22 +117,17 @@ public sealed class DocumentPlugin
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
-        // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(canonicalPath, cancellationToken).ConfigureAwait(false))
-        {
-            this._logger.LogDebug("Writing text to file {0}", canonicalPath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
-            this._documentConnector.AppendText(stream, text);
-        }
-        else
+        var opened = await this._fileSystemConnector.OpenUpdateAsync(
+            canonicalPath, this._allowedDirectories!, cancellationToken).ConfigureAwait(false);
+        using var stream = opened.Stream;
+        if (opened.Created)
         {
             this._logger.LogDebug("File does not exist. Creating file at {0}", canonicalPath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.Initialize(stream);
-
-            this._logger.LogDebug("Writing text to {0}", canonicalPath);
-            this._documentConnector.AppendText(stream, text);
         }
+
+        this._logger.LogDebug("Writing text to {0}", canonicalPath);
+        this._documentConnector.AppendText(stream, text);
     }
 
     #region private
@@ -139,50 +135,13 @@ public sealed class DocumentPlugin
 
     /// <summary>
     /// Expands environment variables and resolves the path to its canonical form.
-    /// This must be called before validation to prevent validate/use mismatches.
+    /// The connector must still enforce the allowed directories when opening the file.
     /// </summary>
     private static string CanonicalizePath(string path)
     {
-        Verify.NotNullOrWhiteSpace(path);
-
-        if (IsUncOrExtendedPath(path))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        // Expand environment variables first, then canonicalize — so that
-        // validation and I/O operate on the same resolved path.
-        var expanded = Environment.ExpandEnvironmentVariables(path);
-
-        // Re-check after expansion: an env var could have expanded to a UNC
-        // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (IsUncOrExtendedPath(expanded))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        // Resolve the full path first (a pure string operation that does not touch the
-        // filesystem). A relative path can still resolve to a UNC path here, for example
-        // when the current directory is a UNC share, so re-check before GetSafeFullPath
-        // probes the filesystem while resolving symbolic links.
-        var fullPath = Path.GetFullPath(expanded);
-        if (IsUncOrExtendedPath(fullPath))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
+        var fullPath = SecureFileSystem.NormalizePath(path, expandEnvironmentVariables: true);
         return PathUtilities.GetSafeFullPath(fullPath);
     }
-
-    /// <summary>
-    /// Returns true if the path starts with any combination of two directory separators
-    /// (e.g. <c>\\</c>, <c>//</c>, <c>/\</c>, <c>\/</c>), all of which resolve to UNC or
-    /// extended-length/device paths on Windows.
-    /// </summary>
-    private static bool IsUncOrExtendedPath(string path) =>
-        path.Length >= 2 &&
-        (path[0] is '/' or '\\') &&
-        (path[1] is '/' or '\\');
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed directories.

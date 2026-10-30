@@ -74,21 +74,25 @@ public class OneDriveConnector : ICloudDriveConnector
     }
 
     /// <inheritdoc/>
-    public async Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default)
+    public async Task UploadSmallFileAsync(Stream content, string destinationPath, CancellationToken cancellationToken = default)
     {
-        Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
+        Verify.NotNull(content);
         Ensure.NotNullOrWhitespace(destinationPath, nameof(destinationPath));
 
-        filePath = Environment.ExpandEnvironmentVariables(filePath);
+        if (!content.CanRead || !content.CanSeek)
+        {
+            throw new ArgumentException("Upload content must be readable and seekable.", nameof(content));
+        }
 
-        long fileSize = new FileInfo(filePath).Length;
+        long fileSize = content.Length - content.Position;
         if (fileSize > 4 * 1024 * 1024)
         {
             throw new IOException("File is too large to upload - function currently only supports files up to 4MB.");
         }
 
-        using FileStream fileContentStream = new(filePath, FileMode.Open, FileAccess.Read);
-
+        // Graph disposes its request body. Borrow the stream so the caller still owns
+        // the securely opened file, including when a request fails.
+        using var uploadStream = new BorrowedReadStream(content);
         DriveItem? response = null;
 
         try
@@ -97,7 +101,7 @@ public class OneDriveConnector : ICloudDriveConnector
 
             response = await this._graphServiceClient
                 .Drives[myDrive!.Id].Root
-                .ItemWithPath(destinationPath).Content.PutAsync(fileContentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                .ItemWithPath(destinationPath).Content.PutAsync(uploadStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (ServiceException ex)
         {
@@ -111,6 +115,41 @@ public class OneDriveConnector : ICloudDriveConnector
             throw new HttpOperationException(null, responseContent: null, ex.Message, ex);
 #endif
         }
+    }
+
+    /// <summary>
+    /// Lets Graph read the upload without taking ownership of the caller's stream.
+    /// </summary>
+    /// <remarks>
+    /// Graph closes its request-body stream. Closing this wrapper leaves the underlying
+    /// stream open, so the caller remains responsible for closing the securely opened
+    /// file whether the upload succeeds or fails. Reads and seeks use that same stream;
+    /// the wrapper neither copies the file nor reopens its path.
+    /// </remarks>
+    private sealed class BorrowedReadStream(Stream source) : Stream
+    {
+        public override bool CanRead => source.CanRead;
+        public override bool CanSeek => source.CanSeek;
+        public override bool CanWrite => false;
+        public override long Length => source.Length;
+        public override long Position
+        {
+            get => source.Position;
+            set => source.Position = value;
+        }
+
+        public override void Flush() => source.Flush();
+
+        public override int Read(byte[] buffer, int offset, int count) => source.Read(buffer, offset, count);
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            source.ReadAsync(buffer, offset, count, cancellationToken);
+
+        public override long Seek(long offset, SeekOrigin origin) => source.Seek(offset, origin);
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
     /// <inheritdoc/>
