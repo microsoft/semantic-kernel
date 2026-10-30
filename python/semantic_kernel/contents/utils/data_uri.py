@@ -135,7 +135,16 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if not data or "," not in data:
             raise ContentInitializationError("Invalid data uri format. The data is missing.")
 
-        pattern = "(((?P<mime_type>[a-zA-Z]+/[a-zA-Z-]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*))?(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
+        # Parameters use the RFC 2045 token alphabet, which is broader than a
+        # media type's restricted-name alphabet. RFC 2397 allows parameters even
+        # when the default text/plain media type is omitted.
+        parameter_token = r"[a-zA-Z0-9!#$%&'*+.^_`|~-]+"
+        pattern = (
+            r"(?P<mime_type>[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+)?"
+            rf"(?P<parameters>(;{parameter_token}={parameter_token})*)"
+            r"(;+(?P<data_format>[a-zA-Z0-9!#$&^_.+-]*))?"
+            r"(,(?P<data_str>.*))"
+        )
         match = re.match(pattern, data)
         if not match:
             raise ContentInitializationError("Invalid data uri format.")
