@@ -56,7 +56,7 @@ class AnnotationContent(KernelContent):
         """Convert the annotation content to an Element."""
         element = Element(self.tag)
         if self.citation_type:
-            element.set("type", self.citation_type)
+            element.set("type", self.citation_type.value)
         if self.file_id:
             element.set("file_id", self.file_id)
         if self.quote:

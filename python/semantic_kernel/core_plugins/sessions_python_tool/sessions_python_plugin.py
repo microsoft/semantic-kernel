@@ -165,11 +165,17 @@ class SessionsPythonTool(KernelBaseModel):
         """Construct the remote file path.
 
         Args:
-            remote_file_path (str): The remote file path.
+            remote_file_path (str): The remote file path. Must not contain `.` or `..`
+                path segments.
 
         Returns:
             str: The remote file path.
+
+        Raises:
+            FunctionExecutionException: If remote_file_path contains `.` or `..` path segments.
         """
+        if any(segment in (".", "..") for segment in remote_file_path.split("/")):
+            raise FunctionExecutionException("The remote file path must not contain '.' or '..' path segments.")
         if not remote_file_path.startswith("/mnt/data/"):
             remote_file_path = f"/mnt/data/{remote_file_path}"
         return remote_file_path
@@ -340,6 +346,7 @@ class SessionsPythonTool(KernelBaseModel):
 
         Args:
             remote_file_path (str): The path to the file in the session.
+                Must not contain `.` or `..` path segments.
             local_file_path (str): The path to the file on the local machine.
                 Must be within allowed_upload_directories.
 
@@ -347,7 +354,8 @@ class SessionsPythonTool(KernelBaseModel):
             RemoteFileMetadata: The metadata of the uploaded file.
 
         Raises:
-            FunctionExecutionException: If local_file_path is not provided or not in allowed directories.
+            FunctionExecutionException: If remote_file_path contains `.` or `..` path segments,
+                or local_file_path is not provided or not in allowed directories.
         """
         if not local_file_path:
             raise FunctionExecutionException("Please provide a local file path to upload.")

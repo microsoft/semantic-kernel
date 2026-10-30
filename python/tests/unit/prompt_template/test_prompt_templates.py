@@ -2,6 +2,7 @@
 
 
 import json
+import logging
 
 import yaml
 from pytest import raises
@@ -70,6 +71,32 @@ def test_add_execution_settings_with_overwrite():
     new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value2")
     config.add_execution_settings(new_settings, overwrite=True)
     assert config.execution_settings["test"].extension_data["setting_value"] == "new_value2"
+
+
+def test_add_execution_settings_no_overwrite_default_service():
+    """overwrite=False protects the entry stored under DEFAULT_SERVICE_NAME (service_id is None)."""
+    config = PromptTemplateConfig(template="Example template")
+    first = PromptExecutionSettings(extension_data={"temperature": 0.1})
+    config.add_execution_settings(first)
+    assert config.execution_settings["default"] == first
+
+    second = PromptExecutionSettings(extension_data={"temperature": 0.9})
+    config.add_execution_settings(second, overwrite=False)
+    assert config.execution_settings["default"].extension_data["temperature"] == 0.1
+
+
+def test_add_execution_settings_warning_only_when_refused(caplog):
+    """The "already exists" warning is emitted only when an add is refused, not after every add."""
+    with caplog.at_level(logging.WARNING):
+        config = PromptTemplateConfig(template="Example template")
+        settings = PromptExecutionSettings(extension_data={"temperature": 0.1})
+        config.add_execution_settings(settings, overwrite=False)
+        assert "overwrite is set to False" not in caplog.text
+
+        caplog.clear()
+        other = PromptExecutionSettings(extension_data={"temperature": 0.9})
+        config.add_execution_settings(other, overwrite=False)
+        assert "overwrite is set to False" in caplog.text
 
 
 def test_get_kernel_parameter_metadata_empty():
