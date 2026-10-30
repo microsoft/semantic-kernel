@@ -132,6 +132,21 @@ async def test_validate_server_url_rejects_when_allowed_base_urls_do_not_match()
         await validate_server_url("https://api.example.com/v2/orders", options)
 
 
+@pytest.mark.parametrize("path", ["/api/safe", "/api/safe/orders"])
+async def test_validate_server_url_allows_matching_allowed_base_url_path_case(path):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://API.EXAMPLE.COM:443/api/safe"])
+
+    await validate_server_url(f"https://api.example.com{path}", options)
+
+
+@pytest.mark.parametrize("path", ["/api/SAFE", "/api/SAFE/orders", "/api/private", "/api/safeX"])
+async def test_validate_server_url_rejects_non_matching_allowed_base_url_path(path):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/safe"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url(f"https://api.example.com{path}", options)
+
+
 @pytest.mark.parametrize("url", ["https://10.0.0.5/", "https://[fec0::1]/"])
 async def test_validate_server_url_allows_private_network_access_after_scheme_gate(url):
     options = ServerUrlValidationOptions(allow_private_network_access=True)

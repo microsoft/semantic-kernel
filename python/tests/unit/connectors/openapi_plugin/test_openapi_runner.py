@@ -6,6 +6,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
+)
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenApiRunner
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
@@ -326,6 +330,61 @@ async def test_run_operation():
 
     result = await runner.run_operation(operation, arguments, options)
     assert result == "response text"
+
+
+@pytest.mark.parametrize(
+    ("method", "route", "is_allowed"),
+    [
+        ("GET", "safe", True),
+        ("POST", "safe", True),
+        ("GET", "SAFE", False),
+        ("POST", "SAFE", False),
+    ],
+)
+async def test_run_operation_enforces_allowed_base_url_path_case_before_authentication(method, route, is_allowed):
+    runner = OpenApiRunner(
+        {},
+        server_url_validation_options=ServerUrlValidationOptions(
+            allowed_base_urls=["https://api.example.com/api/safe"]
+        ),
+    )
+    operation = RestApiOperation(
+        id="caseSensitiveOperation",
+        method=method,
+        servers=[{"url": "https://api.example.com"}],
+        path="/api/{route}",
+        params=[
+            RestApiParameter(
+                name="route",
+                type="string",
+                location=RestApiParameterLocation.PATH,
+                is_required=True,
+            )
+        ],
+    )
+    response = MagicMock()
+    response.text = "response text"
+    runner.http_client = AsyncMock()
+    runner.http_client.headers = {}
+    runner.http_client.request = AsyncMock(return_value=response)
+    runner.auth_callback = AsyncMock(return_value={"Authorization": "******"})
+
+    if is_allowed:
+        result = await runner.run_operation(operation, {"route": route})
+
+        assert result == "response text"
+        runner.auth_callback.assert_awaited_once_with()
+        runner.http_client.request.assert_awaited_once()
+        request = runner.http_client.request.await_args.kwargs
+        assert request["method"] == method
+        assert request["url"] == "https://api.example.com/api/safe"
+        assert request["headers"]["Authorization"] == "******"
+    else:
+        with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+            await runner.run_operation(operation, {"route": route})
+
+        runner.auth_callback.assert_not_awaited()
+        runner.http_client.request.assert_not_awaited()
 
 
 async def test_run_operation_blocks_disallowed_url_before_request():

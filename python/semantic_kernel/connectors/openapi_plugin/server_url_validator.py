@@ -117,8 +117,8 @@ def _matches_path_prefix(url_path: str, base_path: str) -> bool:
     url_path = url_path or "/"
     base_path = base_path or "/"
 
-    if url_path.lower() == base_path.lower():
+    if url_path == base_path:
         return True
 
     base_path_with_slash = base_path if base_path.endswith("/") else f"{base_path}/"
-    return url_path.lower().startswith(base_path_with_slash.lower())
+    return url_path.startswith(base_path_with_slash)
