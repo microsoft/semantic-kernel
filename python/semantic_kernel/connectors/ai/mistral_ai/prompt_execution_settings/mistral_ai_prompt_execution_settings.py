@@ -56,3 +56,15 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
             "on the function choice configuration.",
         ),
     ] = None
+
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+
+        The Mistral SDK has no `seed` parameter, it takes `random_seed`, so `seed` is sent
+        as `random_seed` unless that one is set explicitly.
+        """
+        settings = super().prepare_settings_dict(**kwargs)
+        seed = settings.pop("seed", None)
+        if seed is not None:
+            settings.setdefault("random_seed", seed)
+        return settings
