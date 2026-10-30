@@ -570,7 +570,7 @@ class SqlServerCollection(
             cur.execute(*query.to_execute())
             col_names = [desc[0] for desc in cur.description]
             for row in cur:
-                record = {
+                yield {
                     col: (
                         json.loads(row.__getattribute__(col))
                         if col in self.definition.vector_field_names
@@ -578,7 +578,6 @@ class SqlServerCollection(
                     )
                     for col in col_names
                 }
-                yield record
                 await asyncio.sleep(0)
 
     @override
@@ -598,33 +597,43 @@ class SqlServerCollection(
                             op = node.ops[idx]
                             values.append(parse(ast.Compare(left=left, ops=[op], comparators=[right])))
                         return f"({' AND '.join(values)})"
-                    left = parse(node.left)  # type: ignore
+                    left_node = node.left
                     right_node = node.comparators[0]
                     op = node.ops[0]
+                    if isinstance(op, (ast.Eq, ast.NotEq, ast.Is, ast.IsNot)):
+                        if isinstance(left_node, ast.Constant) and left_node.value is None:
+                            left_node, right_node = right_node, left_node
+                        if isinstance(right_node, ast.Constant) and right_node.value is None:
+                            if isinstance(left_node, ast.Constant) and (
+                                left_node.value is None or isinstance(left_node.value, (str, int, float, bool, bytes))
+                            ):
+                                matches = (left_node.value is None) == isinstance(op, (ast.Eq, ast.Is))
+                                return "(1 = 1)" if matches else "(1 = 0)"
+                            return (
+                                f"{parse(left_node)} IS NULL"
+                                if isinstance(op, (ast.Eq, ast.Is))
+                                else f"{parse(left_node)} IS NOT NULL"
+                            )
+                        if isinstance(op, (ast.Is, ast.IsNot)):
+                            raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                    left = parse(left_node)  # type: ignore
+                    right = parse(right_node)  # type: ignore
                     match op:
                         case ast.In():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} IN {right}"
                         case ast.NotIn():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} NOT IN {right}"
                         case ast.Eq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} = {right}"
                         case ast.NotEq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <> {right}"
                         case ast.Gt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} > {right}"
                         case ast.GtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} >= {right}"
                         case ast.Lt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} < {right}"
                         case ast.LtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <= {right}"
                     raise NotImplementedError(f"Unsupported operator: {type(op)}")
                 case ast.BoolOp():
@@ -658,7 +667,10 @@ class SqlServerCollection(
                     return QueryBuilder.escape_identifier(node.id)
                 case ast.Constant():
                     value = node.value
-                    if isinstance(value, (str, int, float, bool, bytes)) or value is None:
+                    if isinstance(value, bool):
+                        command.add_parameter("1" if value else "0")
+                        return "?"
+                    if isinstance(value, (str, int, float, bytes)) or value is None:
                         command.add_parameter(str(value))
                         return "?"
                     raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
