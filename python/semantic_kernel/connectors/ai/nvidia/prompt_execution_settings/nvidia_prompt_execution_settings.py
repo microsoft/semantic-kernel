@@ -65,9 +65,17 @@ class NvidiaChatPromptExecutionSettings(NvidiaPromptExecutionSettings):
     nvext: dict[str, Any] | None = None
 
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
-        """Override only for embeddings to exclude input_type and truncate."""
-        return self.model_dump(
-            exclude={"service_id", "extension_data", "structured_json_response", "response_format"},
+        """Prepare the settings dict, moving nvext into extra_body.
+
+        The OpenAI client only sends nvext as part of extra_body. Keys already in extra_body["nvext"],
+        such as the guided_json set from response_format, take precedence over the same keys in nvext.
+        """
+        settings_dict = self.model_dump(
+            exclude={"service_id", "extension_data", "structured_json_response", "response_format", "nvext"},
             exclude_none=True,
             by_alias=True,
         )
+        if self.nvext:
+            extra_body = settings_dict.setdefault("extra_body", {})
+            extra_body["nvext"] = self.nvext | extra_body.get("nvext", {})
+        return settings_dict
