@@ -24,6 +24,7 @@ from semantic_kernel.connectors.sql_server import (
 from semantic_kernel.data.vector import DistanceFunction, IndexKind, VectorSearchOptions, VectorStoreField
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
+    VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
 
@@ -158,6 +159,32 @@ class TestQueryBuildFunctions:
         cmd_str = str(cmd.query)
         assert "[pk_id] nvarchar" in cmd_str
         assert "PRIMARY KEY ([pk_id])" in cmd_str
+
+    @mark.parametrize(
+        ("field_type", "unsupported_type"),
+        [
+            ("datetime.date", "datetime.date"),
+            ("Optional[str]", "Optional[str]"),
+            ("uuid.UUID", "uuid.UUID"),
+            ("list[datetime.date]", "datetime.date"),
+        ],
+    )
+    def test_build_create_table_query_unsupported_field_type(self, field_type, unsupported_type):
+        key_field = VectorStoreField("key", name="id", type="str")
+        data_fields = [VectorStoreField("data", name="created", type=field_type)]
+        with raises(VectorStoreModelValidationError) as exc_info:
+            _build_create_table_query("dbo", "Test", key_field, data_fields, [])
+        message = str(exc_info.value)
+        assert f"SQL Server field type {unsupported_type!r} for field 'created' is not supported" in message
+        assert "Use a supported Python type, or create the table before using the collection." in message
+
+    def test_build_create_table_query_unsupported_key_field_type(self):
+        key_field = VectorStoreField("key", name="id", type="uuid.UUID")
+        with raises(VectorStoreModelValidationError) as exc_info:
+            _build_create_table_query("dbo", "Test", key_field, [], [])
+        message = str(exc_info.value)
+        assert "SQL Server field type 'uuid.UUID' for field 'id' is not supported" in message
+        assert "Use a supported Python type, or create the table before using the collection." in message
 
     def test_build_merge_query_output_uses_storage_name(self):
         key_field = VectorStoreField("key", name="id", type="str", storage_name="pk_id")
