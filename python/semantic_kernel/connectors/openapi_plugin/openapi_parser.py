@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+# Keys of an OpenAPI path item that describe an operation; the others (summary, description, servers,
+# parameters, $ref, x-*) apply to the path as a whole.
+HTTP_METHODS: Final = frozenset({"get", "put", "post", "delete", "options", "head", "patch", "trace"})
+
 
 class OpenApiParser:
     """NOTE: SK Python only supports the OpenAPI Spec >=3.0.
@@ -250,8 +254,11 @@ class OpenApiParser:
             server_urls = [{"url": "/", "variables": {}, "description": ""}]
 
         for path, methods in paths.items():
+            path_parameters = methods.get("parameters", [])
             for method, details in methods.items():
                 request_method = method.lower()
+                if request_method not in HTTP_METHODS:
+                    continue
                 # Validate that operationId exists
                 if "operationId" not in details:
                     raise PluginInitializationError(f"operationId missing, path: '{path}', method: '{method}'")
@@ -290,7 +297,12 @@ class OpenApiParser:
                     logger.info(f"Skipping operation {operationId} as it is excluded.")
                     continue
 
-                parameters = details.get("parameters", [])
+                # Operation level parameters override path level ones with the same name and location.
+                operation_parameters = details.get("parameters", [])
+                overridden = {(p.get("name"), p.get("in")) for p in operation_parameters}
+                parameters = [
+                    p for p in path_parameters if (p.get("name"), p.get("in")) not in overridden
+                ] + operation_parameters
                 parsed_params = self._parse_parameters(parameters)
                 request_body = self._create_rest_api_operation_payload(operationId, details.get("requestBody", None))
                 responses = dict(self._create_response(details.get("responses", {})))

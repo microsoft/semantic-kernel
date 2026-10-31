@@ -257,7 +257,8 @@ class Agent(KernelBaseModel, ABC):
         description: The description of the agent
         id: The unique identifier of the agent  If no id is provided,
             a new UUID will be generated.
-        instructions: The instructions for the agent (optional)
+        instructions: The instructions for the agent (optional). Instructions are rendered as a prompt template and
+            may invoke functions registered in the kernel, so the template source must be trusted.
         kernel: The kernel instance for the agent
         name: The name of the agent
         prompt_template: The prompt template for the agent

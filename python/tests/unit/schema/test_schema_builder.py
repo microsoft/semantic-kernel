@@ -2,10 +2,11 @@
 
 import json
 from enum import Enum
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from unittest.mock import Mock
 
 import pytest
+from pydantic import Field
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -74,6 +75,14 @@ class PydanticStep(KernelBaseModel):
 class PydanticReasoning(KernelBaseModel):
     steps: list[PydanticStep]
     final_answer: str
+
+
+class PydanticModelWithConstrainedField(KernelBaseModel):
+    top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
+
+
+class PydanticModelWithAnnotatedDescription(KernelBaseModel):
+    name: Annotated[str, "display name"]
 
 
 class NonPydanticStep:
@@ -154,6 +163,20 @@ def test_build_model_schema():
     }
     result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
+
+
+def test_build_model_schema_uses_pydantic_description_with_constraints():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithConstrainedField)
+
+    assert schema["properties"]["top_p"] == {"type": "number", "description": "nucleus sampling"}
+    json.dumps(schema)
+
+
+def test_build_model_schema_uses_annotated_metadata_description():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithAnnotatedDescription)
+
+    assert schema["properties"]["name"] == {"type": "string", "description": "display name"}
+    json.dumps(schema)
 
 
 def test_build_from_type_name():
@@ -455,3 +478,47 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class LiteralModel(KernelBaseModel):
+    level: Literal["low", "high"]
+    maybe: Literal["a", "b"] | None = None
+
+
+@pytest.mark.parametrize(
+    ("literal_type", "expected"),
+    [
+        (Literal["fast", "slow"], {"type": "string", "enum": ["fast", "slow"]}),
+        (Literal[1, 2], {"type": "integer", "enum": [1, 2]}),
+        (Literal[True], {"type": "boolean", "enum": [True]}),
+        (Literal["a", 1], {"type": ["integer", "string"], "enum": ["a", 1]}),
+        (Optional[Literal["fast", "slow"]], {"type": ["string", "null"], "enum": ["fast", "slow", None]}),  # noqa: UP045
+        (Literal["fast", "slow"] | None, {"type": ["string", "null"], "enum": ["fast", "slow", None]}),
+        (Optional[Literal["a", None]], {"type": ["string", "null"], "enum": ["a", None]}),  # noqa: UP045
+        (list[Literal["a", "b"]], {"type": "array", "items": {"type": "string", "enum": ["a", "b"]}}),
+    ],
+)
+def test_build_literal(literal_type, expected):
+    assert KernelJsonSchemaBuilder.build(literal_type) == expected
+
+
+def test_build_literal_with_description():
+    schema = KernelJsonSchemaBuilder.build(Literal["fast", "slow"], "speed mode")
+    assert schema == {"type": "string", "enum": ["fast", "slow"], "description": "speed mode"}
+
+
+def test_build_literal_enum_member():
+    schema = KernelJsonSchemaBuilder.build(Literal[EnumTest.OPTION_A])
+    assert schema == {"type": "string", "enum": ["OptionA"]}
+
+
+def test_build_model_with_literal_fields():
+    schema = KernelJsonSchemaBuilder.build(LiteralModel)
+    assert schema == {
+        "type": "object",
+        "properties": {
+            "level": {"type": "string", "enum": ["low", "high"]},
+            "maybe": {"type": ["string", "null"], "enum": ["a", "b", None]},
+        },
+        "required": ["level"],
+    }

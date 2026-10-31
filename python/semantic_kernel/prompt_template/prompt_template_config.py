@@ -71,10 +71,14 @@ class PromptTemplateConfig(KernelBaseModel):
 
     def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
         """Add execution settings to the prompt template."""
-        if settings.service_id in self.execution_settings and not overwrite:
+        # Check existence with the same key that storage uses: when service_id is None the settings are
+        # stored under DEFAULT_SERVICE_NAME, so testing service_id (None) never matches and overwrite=False
+        # silently has no effect (see issue #14582).
+        key = settings.service_id or DEFAULT_SERVICE_NAME
+        if key in self.execution_settings and not overwrite:
+            logger.warning("Execution settings already exist and overwrite is set to False")
             return
-        self.execution_settings[settings.service_id or DEFAULT_SERVICE_NAME] = settings
-        logger.warning("Execution settings already exist and overwrite is set to False")
+        self.execution_settings[key] = settings
 
     def get_kernel_parameter_metadata(self) -> Sequence[KernelParameterMetadata]:
         """Get the kernel parameter metadata for the input variables."""
