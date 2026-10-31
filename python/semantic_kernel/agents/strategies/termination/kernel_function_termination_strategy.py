@@ -33,7 +33,9 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
     arguments: KernelArguments | None = None
     function: KernelFunction
     kernel: Kernel
-    result_parser: Callable[..., bool] = Field(default_factory=lambda: (lambda: True))
+    result_parser: Callable[..., bool] = Field(
+        default_factory=lambda: (lambda result: str(result).strip().lower() == "true")
+    )
     history_reducer: ChatHistoryReducer | None = None
 
     async def should_agent_terminate(

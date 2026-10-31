@@ -368,8 +368,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new ByteArrayContent(responseContent),
         };
 
-        // Downloads are permissive by default - no need for special settings
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt", downloadDiskPath);
@@ -378,6 +377,21 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(responseContent, result);
         Assert.True(File.Exists(downloadDiskPath));
         Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadDiskPath));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldDenyLocalDownloadsWithoutAllowedDirectoriesAsync(bool useNull)
+    {
+        this._defaultSettings.AllowedDownloadDirectories = useNull ? null : [];
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.DownloadFileAsync("test.txt", Path.Combine(Path.GetTempPath(), "denied.txt")));
+
+        Assert.Contains("AllowedDownloadDirectories", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
     }
 
     /// <summary>
@@ -548,7 +562,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
 
-        Assert.Contains("not within allowed upload directories", exception.Message);
+        Assert.Contains("not within allowed directories", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
     }
 
     [Fact]
@@ -617,6 +632,66 @@ public sealed class SessionsPythonPluginTests : IDisposable
                 () => plugin.DownloadFileAsync("test.txt", symlinkPath));
 
             Assert.Contains("not within allowed download directories", exception.Message);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldDenyDownloadWhenFileIsReplacedBySymlinkAfterValidationAsync()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), $"SessionsPythonPluginTests_{Guid.NewGuid():N}");
+        var allowedDir = Path.Combine(tempDir, "allowed");
+        var outsideDir = Path.Combine(tempDir, "outside");
+        Directory.CreateDirectory(allowedDir);
+        Directory.CreateDirectory(outsideDir);
+
+        try
+        {
+            var downloadPath = Path.Combine(allowedDir, "download.txt");
+            var outsideFile = Path.Combine(outsideDir, "outside.txt");
+            await File.WriteAllTextAsync(downloadPath, "safe");
+            await File.WriteAllTextAsync(outsideFile, "outside");
+
+            using var messageHandler = new BlockingHttpMessageHandler(new byte[] { 1, 2, 3 });
+            using var httpClient = new HttpClient(messageHandler, disposeHandler: false);
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(httpClient);
+
+            var settings = new SessionsPythonSettings(
+                sessionId: Guid.NewGuid().ToString(),
+                endpoint: new Uri("http://localhost:8888"))
+            {
+                AllowedDomains = ["localhost"],
+                AllowedDownloadDirectories = new[] { allowedDir }
+            };
+
+            var plugin = new SessionsPythonPlugin(settings, httpClientFactoryMock.Object);
+            var downloadTask = plugin.DownloadFileAsync("test.txt", downloadPath);
+            await messageHandler.RequestReceived;
+
+            File.Delete(downloadPath);
+            try
+            {
+                File.CreateSymbolicLink(downloadPath, outsideFile);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                messageHandler.ReleaseResponse();
+                await downloadTask;
+                return;
+            }
+
+            // Act
+            messageHandler.ReleaseResponse();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => downloadTask);
+
+            // Assert
+            Assert.Contains("Failed to write file to disk", exception.Message);
+            Assert.Equal("outside", await File.ReadAllTextAsync(outsideFile));
         }
         finally
         {
@@ -697,7 +772,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => plugin.UploadFileAsync("test.txt", disallowedFile));
 
-            Assert.Contains("not within allowed upload directories", exception.Message);
+            Assert.Contains("not within allowed directories", exception.Message);
+            Assert.Null(this._messageHandlerStub.RequestUri);
         }
         finally
         {
@@ -731,7 +807,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => plugin.UploadFileAsync("test.txt", traversalPath));
 
-        Assert.Contains("not within allowed upload directories", exception.Message);
+        Assert.Contains("not within allowed directories", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
     }
 
     public void Dispose()
@@ -751,6 +828,31 @@ public sealed class SessionsPythonPluginTests : IDisposable
         }
         catch (UnauthorizedAccessException)
         {
+        }
+    }
+
+    private sealed class BlockingHttpMessageHandler(byte[] responseContent) : HttpMessageHandler
+    {
+        private readonly TaskCompletionSource _requestReceived =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _releaseResponse =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal Task RequestReceived => this._requestReceived.Task;
+
+        internal void ReleaseResponse() => this._releaseResponse.TrySetResult();
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            this._requestReceived.TrySetResult();
+            await this._releaseResponse.Task.WaitAsync(cancellationToken);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(responseContent),
+            };
         }
     }
 }
