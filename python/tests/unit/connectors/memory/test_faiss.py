@@ -179,6 +179,37 @@ async def test_delete(faiss_collection):
     await faiss_collection.ensure_collection_deleted()
 
 
+async def test_delete_multiple_keeps_index_in_sync(faiss_collection):
+    await faiss_collection.ensure_collection_exists()
+    records = [
+        {"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "b", "content": "b", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]},
+        {"id": "c", "content": "c", "vector": [0.0, 0.0, 1.0, 0.0, 0.0]},
+    ]
+    await faiss_collection.upsert(records)
+    await faiss_collection.delete(["a", "b", "c"])
+    assert faiss_collection.indexes["vector"].ntotal == 0
+    assert faiss_collection.indexes_key_map["vector"] == {}
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_delete_updates_remaining_positions(faiss_collection):
+    await faiss_collection.ensure_collection_exists()
+    records = [
+        {"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "b", "content": "b", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]},
+        {"id": "c", "content": "c", "vector": [0.0, 0.0, 1.0, 0.0, 0.0]},
+    ]
+    await faiss_collection.upsert(records)
+    await faiss_collection.delete("a")
+    assert faiss_collection.indexes["vector"].ntotal == 2
+    assert faiss_collection.indexes_key_map["vector"] == {"b": 0, "c": 1}
+    await faiss_collection.delete("c")
+    assert faiss_collection.indexes["vector"].ntotal == 1
+    assert faiss_collection.indexes_key_map["vector"] == {"b": 0}
+    await faiss_collection.ensure_collection_deleted()
+
+
 async def test_collection_exists(faiss_collection):
     assert await faiss_collection.collection_exists() is False
     await faiss_collection.ensure_collection_exists()

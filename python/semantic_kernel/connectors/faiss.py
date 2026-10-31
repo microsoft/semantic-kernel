@@ -189,9 +189,13 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         for key in keys:
             for vector_field in self.definition.vector_field_names:
                 if key in self.indexes_key_map[vector_field]:
-                    vector_index = self.indexes_key_map[vector_field][key]
+                    key_map = self.indexes_key_map[vector_field]
+                    vector_index = key_map.pop(key)
                     self.indexes[vector_field].remove_ids(np.array([vector_index]))
-                    self.indexes_key_map[vector_field].pop(key, None)
+                    # removing a vector shifts every later vector down by one position
+                    for other_key, position in key_map.items():
+                        if position > vector_index:
+                            key_map[other_key] = position - 1
         await super()._inner_delete(keys, **kwargs)
 
     @override
