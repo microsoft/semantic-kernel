@@ -40,7 +40,6 @@ def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, 
                     pairs.append((call_index, j))
                     # Remove the call ID so we don't match it a second time
                     del call_ids_seen[call_id]
-                    break
 
     return pairs
 
