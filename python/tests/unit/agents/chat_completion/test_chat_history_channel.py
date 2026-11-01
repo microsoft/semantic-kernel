@@ -250,3 +250,27 @@ async def test_receive_skips_file_references(chat_history_channel):
     assert len(channel.messages[2].items) == 2
     assert channel.messages[2].items[0].result == "normal content 2"
     assert channel.messages[2].items[1].text == "Normal message"
+
+
+async def test_invoke_deduplicates_equal_set_results(chat_history_channel):
+    """Equivalent set results must not be appended twice by the channel."""
+    channel = chat_history_channel
+    channel.add_user_message("Look up the values")
+    stored = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call", name="lookup", result=set([0, 8]))],
+    )
+    returned = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call", name="lookup", result=set([8, 0]))],
+    )
+    assert stored == returned
+
+    class AgentWithHistoryMutation:
+        async def invoke(self, **kwargs):
+            channel.messages.append(stored)
+            yield AgentResponseItem(message=returned, thread=channel.thread)
+
+    received = [message async for _, message in channel.invoke(AgentWithHistoryMutation())]
+    assert received == [stored]
+    assert channel.messages == [channel.messages[0], stored]
