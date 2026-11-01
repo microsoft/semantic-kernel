@@ -23,6 +23,40 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions import KernelArguments
 
 
+@pytest.mark.parametrize("store_enabled", [False, True])
+def test_prepare_request_preserves_call_ids_after_xml_roundtrip(store_enabled):
+    from semantic_kernel.contents import ChatHistory, FunctionCallContent, FunctionResultContent
+
+    function_call = FunctionCallContent(
+        id="fc_item_123", call_id="call_correlation_456", name="weather", arguments='{"city":"Seattle"}'
+    )
+    history = ChatHistory(
+        messages=[
+            ChatMessageContent(role=AuthorRole.ASSISTANT, items=[function_call]),
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=[FunctionResultContent.from_function_call_content_and_result(function_call, "Sunny")],
+            ),
+        ]
+    )
+
+    restored = ChatHistory.from_rendered_prompt(history.to_prompt())
+    request = ResponsesAgentThreadActions._prepare_chat_history_for_request(restored, store_enabled=store_enabled)
+
+    expected = [{"type": "function_call_output", "call_id": "call_correlation_456", "output": "Sunny"}]
+    if not store_enabled:
+        expected.insert(
+            0,
+            {
+                "type": "function_call",
+                "call_id": "call_correlation_456",
+                "name": "weather",
+                "arguments": '{"city":"Seattle"}',
+            },
+        )
+    assert request == expected
+
+
 @pytest.fixture
 def mock_agent():
     agent = AsyncMock(spec=OpenAIResponsesAgent)
