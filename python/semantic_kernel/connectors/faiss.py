@@ -186,13 +186,23 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
+        for vector_field in self.definition.vector_field_names:
+            if not isinstance(self.indexes[vector_field], faiss.IndexFlat) and any(
+                key in self.indexes_key_map[vector_field] for key in keys
+            ):
+                raise VectorStoreOperationException(
+                    f"Deleting records is only supported for flat indexes, "
+                    f"not for {type(self.indexes[vector_field])} (vector field '{vector_field}')."
+                )
         for key in keys:
             for vector_field in self.definition.vector_field_names:
                 if key in self.indexes_key_map[vector_field]:
                     key_map = self.indexes_key_map[vector_field]
-                    vector_index = key_map.pop(key)
+                    vector_index = key_map[key]
+                    # remove from the index first, so the mapping is kept if the index fails
                     self.indexes[vector_field].remove_ids(np.array([vector_index]))
-                    # removing a vector shifts every later vector down by one position
+                    del key_map[key]
+                    # flat indexes shift every later vector down by one position
                     for other_key, position in key_map.items():
                         if position > vector_index:
                             key_map[other_key] = position - 1
