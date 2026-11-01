@@ -27,7 +27,9 @@ class KernelParameterMetadata(KernelBaseModel):
         """Create a schema for the parameter metadata."""
         if isinstance(data, dict) and data.get("schema_data") is None:
             type_object = data.get("type_object", None)
-            type_ = data.get("type_", None)
+            type_ = data.get("type_") or data.get("type")
+            if type_ is None and type_object is None and "type_" not in data and "type" not in data:
+                type_ = "str"
             default_value = data.get("default_value", None)
             description = data.get("description", None)
             inferred_schema = cls.infer_schema(type_object, type_, default_value, description)
