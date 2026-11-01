@@ -164,6 +164,19 @@ def test_initialize_with_reducer_chat_history():
     assert isinstance(thread._chat_history, ChatHistoryTruncationReducer)
 
 
+async def test_thread_with_reducer_auto_reduces_new_messages():
+    reducer = ChatHistoryTruncationReducer(target_count=1, auto_reduce=True)
+    thread = ChatHistoryAgentThread(chat_history=reducer, thread_id="reducer_test_thread")
+
+    await thread.on_new_message(ChatMessageContent(role=AuthorRole.USER, content="first"))
+    await thread.on_new_message(ChatMessageContent(role=AuthorRole.ASSISTANT, content="second"))
+
+    messages = [message async for message in thread.get_messages()]
+
+    assert len(messages) == 1
+    assert messages[0].content == "second"
+
+
 async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(
