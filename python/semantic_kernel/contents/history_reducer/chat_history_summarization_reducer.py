@@ -107,6 +107,9 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
         # 1. Identify where existing summary messages end
         insertion_point = locate_summarization_boundary(history)
+        if not self.use_single_summary and system_message_index == 0:
+            # Earlier reductions keep the system message in front of their summaries, so look past it
+            insertion_point = 1 + locate_summarization_boundary(history[1:])
         if insertion_point == len(history):
             # fallback fix: force boundary to something reasonable
             logger.warning("All messages are summaries, forcing boundary to 0.")

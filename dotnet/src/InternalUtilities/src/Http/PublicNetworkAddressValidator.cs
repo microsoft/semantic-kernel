@@ -11,15 +11,17 @@ namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// Resolves and rejects non-public request destinations before an HTTP request is sent.
-/// This check does not pin the validated addresses to the subsequent HTTP connection.
+/// The caller is responsible for binding the returned addresses to the subsequent HTTP connection.
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal static class PublicNetworkAddressValidator
 {
     /// <summary>
-    /// Validates all addresses of a request host, failing closed on DNS errors.
+    /// Validates all addresses of a request host, failing closed on DNS errors, and returns
+    /// the validated DNS addresses in resolver order.
     /// </summary>
-    public static async Task ValidateAsync(
+    /// <returns>The validated DNS addresses, or an empty array when the URL contains a literal IP address.</returns>
+    public static async Task<IPAddress[]> ValidateAsync(
         Uri url,
         CancellationToken cancellationToken = default,
         Func<string, CancellationToken, Task<IPAddress[]>>? dnsResolver = null,
@@ -39,7 +41,7 @@ internal static class PublicNetworkAddressValidator
             }
 
             EnsurePublicAddress(url, ip, configurationHint);
-            return;
+            return [];
         }
 
         // Resolve the ASCII host used by HttpClient. DnsSafeHost can contain Unicode IDN labels.
@@ -86,6 +88,8 @@ internal static class PublicNetworkAddressValidator
         {
             EnsurePublicAddress(url, address, configurationHint);
         }
+
+        return addresses;
     }
 
     /// <summary>

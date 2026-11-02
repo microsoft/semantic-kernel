@@ -900,3 +900,36 @@ async def test_mcp_server_tool_name_length_uses_registered_alias(
         result = await client.call_tool(expected_name, {})
         assert not result.isError
         assert result.content == [types.TextContent(type="text", text="hello")]
+
+
+async def test_mcp_prompt_optional_arguments_are_not_required():
+    plugin = MCPStdioPlugin(name="test", command="echo", load_tools=False)
+    plugin.session = AsyncMock(spec=ClientSession)
+    plugin.session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[
+            types.Prompt(
+                name="review",
+                arguments=[
+                    types.PromptArgument(name="code", required=True),
+                    types.PromptArgument(name="style", required=False),
+                    types.PromptArgument(name="language"),
+                ],
+            )
+        ]
+    )
+    plugin.session.get_prompt.return_value = types.GetPromptResult(
+        messages=[types.PromptMessage(role="user", content=types.TextContent(type="text", text="review this"))]
+    )
+    await plugin.load_prompts()
+    kernel = Kernel()
+    kernel.add_plugin(plugin, "test")
+    function = kernel.get_function("test", "review")
+
+    assert {p.name: p.is_required for p in function.metadata.parameters} == {
+        "code": True,
+        "style": False,
+        "language": False,
+    }
+    result = await kernel.invoke(function, code="x = 1")
+    assert str(result) == "review this"
+    plugin.session.get_prompt.assert_awaited_once_with("review", arguments={"code": "x = 1"})

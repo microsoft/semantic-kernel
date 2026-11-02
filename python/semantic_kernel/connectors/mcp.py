@@ -195,7 +195,7 @@ def _get_parameter_dict_from_mcp_prompt(prompt: types.Prompt) -> list[dict[str, 
         {
             "name": prompt_argument.name,
             "description": prompt_argument.description,
-            "is_required": True,
+            "is_required": bool(prompt_argument.required),
             "type_object": str,
         }
         for prompt_argument in prompt.arguments

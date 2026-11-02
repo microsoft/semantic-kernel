@@ -2,10 +2,12 @@
 
 
 from unittest.mock import Mock
+from xml.etree.ElementTree import XML, tostring  # nosec
 
 import pytest
 from pydantic import BaseModel, ConfigDict, Field
 
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -121,6 +123,21 @@ def test_to_cmc():
     cmc = frc.to_chat_message_content()
     assert cmc.role.value == "tool"
     assert cmc.items[0].result == "test-result"
+
+
+@pytest.mark.parametrize("result", ["", "test-result"], ids=["empty", "non_empty"])
+def test_element_round_trip_keeps_result(result: str):
+    frc = FunctionResultContent(id="call_1", name="my-plugin-do", result=result)
+    restored = FunctionResultContent.from_element(XML(tostring(frc.to_element(), encoding="unicode")))
+    assert restored.result == result
+    assert restored.to_dict() == {"tool_call_id": "call_1", "content": result}
+
+
+def test_chat_history_prompt_round_trip_keeps_empty_tool_result():
+    history = ChatHistory()
+    history.add_tool_message("", tool_call_id="call_1", function_name="my-plugin-do")
+    parsed = ChatHistory.from_rendered_prompt(history.to_prompt())
+    assert parsed.messages[0].to_dict() == {"role": "tool", "content": "", "tool_call_id": "call_1"}
 
 
 def test_serialize():
