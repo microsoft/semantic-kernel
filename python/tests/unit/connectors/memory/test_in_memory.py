@@ -3,8 +3,8 @@
 import ast
 from dataclasses import dataclass
 
-from pytest import fixture, mark, raises
 from pydantic import BaseModel
+from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data._shared import default_dynamic_filter_function
@@ -341,3 +341,28 @@ async def test_upsert_with_key_storage_name_pydantic(storage_name_definition):
     assert key == "first"
     result = await collection.get("first", include_vectors=True)
     assert result.id == "first"
+
+
+async def test_upsert_pydantic_key_storage_name_overlapping_data_field():
+    # The key field's storage name ("stored_id") is also the name of a data
+    # field. Pydantic records serialize with logical names, so the key must
+    # come from "id", not from the data field named "stored_id".
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str", storage_name="stored_id"),
+            VectorStoreField("data", name="stored_id", type="str", storage_name="payload"),
+            VectorStoreField("vector", name="vector", type="float", dimensions=2),
+        ]
+    )
+
+    class OverlappingRecord(BaseModel):
+        id: str
+        stored_id: str
+        vector: list[float]
+
+    collection = InMemoryCollection(collection_name="test", record_type=OverlappingRecord, definition=definition)
+    key = await collection.upsert(OverlappingRecord(id="actual-key", stored_id="payload-value", vector=[1.0, 0.0]))
+    assert key == "actual-key"
+    result = await collection.get("actual-key", include_vectors=True)
+    assert result.id == "actual-key"
+    assert result.stored_id == "payload-value"
