@@ -387,6 +387,47 @@ async def test_run_operation_enforces_allowed_base_url_path_case_before_authenti
         runner.http_client.request.assert_not_awaited()
 
 
+@pytest.mark.parametrize(
+    ("allowed_base_url", "url", "is_allowed"),
+    [
+        ("https://api.example.com/api", "https://api.example.com/api/.", True),
+        ("https://api.example.com/api", "https://api.example.com/api/users/..", True),
+        ("https://api.example.com/api/", "https://api.example.com/api/.", False),
+        ("https://api.example.com/api/", "https://api.example.com/api/users/..", False),
+        ("https://api.example.com/api/", "https://api.example.com/api//.", True),
+        ("https://api.example.com/api//", "https://api.example.com/api//.", False),
+    ],
+)
+async def test_run_operation_enforces_allowed_base_url_with_wire_targets(allowed_base_url, url, is_allowed):
+    runner = OpenApiRunner(
+        {},
+        server_url_validation_options=ServerUrlValidationOptions(allowed_base_urls=[allowed_base_url]),
+    )
+    operation = MagicMock()
+    operation.method = "GET"
+    operation.build_headers.return_value = {}
+    operation.responses = OrderedDict()
+    runner.build_operation_url = MagicMock(return_value=url)
+    runner.build_operation_payload = MagicMock(return_value=(None, None))
+    response = MagicMock()
+    response.text = "response text"
+    runner.http_client = AsyncMock()
+    runner.http_client.headers = {}
+    runner.http_client.request = AsyncMock(return_value=response)
+    runner.auth_callback = AsyncMock(return_value={"Authorization": "******"})
+
+    if is_allowed:
+        result = await runner.run_operation(operation)
+        assert result == "response text"
+        runner.auth_callback.assert_awaited_once_with()
+        runner.http_client.request.assert_awaited_once()
+    else:
+        with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+            await runner.run_operation(operation)
+        runner.auth_callback.assert_not_awaited()
+        runner.http_client.request.assert_not_awaited()
+
+
 async def test_run_operation_blocks_disallowed_url_before_request():
     runner = OpenApiRunner({})
     operation = MagicMock()

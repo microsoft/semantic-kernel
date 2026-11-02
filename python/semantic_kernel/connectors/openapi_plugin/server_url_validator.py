@@ -134,8 +134,6 @@ def _normalize_path(path: str, decode_percent_encoded: bool = False) -> str:
             # Protect only the leading root segment; internal empty segments can be popped.
             continue
         resolved.append(segment)
-    if segments[-1] in (".", ".."):
-        resolved.append("")
     # Absolute paths keep a leading empty segment from the initial "/".
     if not resolved:
         return "/"

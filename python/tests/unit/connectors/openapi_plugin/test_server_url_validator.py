@@ -3,6 +3,7 @@
 import ipaddress
 import socket
 
+import httpx
 import pytest
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
@@ -319,19 +320,59 @@ async def test_validate_server_url_rejects_path_that_only_matches_after_decoding
     [
         "https://api.example.com/api/.",
         "https://api.example.com/api/users/..",
+        "https://api.example.com/api//..",
     ],
 )
-async def test_validate_server_url_preserves_trailing_slash_after_normalization(url):
+async def test_validate_server_url_rejects_terminal_dot_segments_under_trailing_slash_allowlist(url):
+    """httpx sends terminal dot segments as bare paths, so an /api/ allowlist must reject them."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url(url, options)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://api.example.com/api//.",
+        "https://api.example.com/api//../",
+    ],
+)
+async def test_validate_server_url_allows_terminal_dot_segments_normalizing_to_trailing_slash(url):
+    """httpx sends /api//. and /api//../ as /api/, matching an /api/ allowlist."""
     options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/"])
 
     assert await validate_server_url(url, options) == []
 
 
 @pytest.mark.parametrize(
-    "allowed_base_url",
+    "url",
     [
         "https://api.example.com/api/.",
+        "https://api.example.com/api/users/..",
+        "https://api.example.com/api//.",
+        "https://api.example.com/api//..",
+    ],
+)
+async def test_validate_server_url_allows_terminal_dot_segments_under_bare_allowlist(url):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
+
+    assert await validate_server_url(url, options) == []
+
+
+async def test_validate_server_url_rejects_terminal_dot_segment_under_double_slash_allowlist():
+    """httpx sends /api//. as /api/, so an /api// allowlist must reject it."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api//"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api//.", options)
+
+
+@pytest.mark.parametrize(
+    "allowed_base_url",
+    [
         "https://api.example.com/api/",
+        "https://api.example.com/api//.",
     ],
 )
 async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_path(allowed_base_url):
@@ -341,15 +382,24 @@ async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_
         await validate_server_url("https://api.example.com/api", options)
 
 
+async def test_validate_server_url_terminal_dot_allowlist_allows_bare_path():
+    """An allowlist ending in /api/. normalizes to bare /api in httpx, so it allows bare /api."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/."])
+
+    assert await validate_server_url("https://api.example.com/api", options) == []
+
+
 @pytest.mark.parametrize("decode_percent_encoded", [False, True])
 @pytest.mark.parametrize(
     ("path", "expected"),
     [
         ("/api//../../admin", "/admin"),
         ("/api///../../../admin", "/admin"),
-        ("/api//..", "/api/"),
+        ("/api//..", "/api"),
         ("/api//../", "/api/"),
-        ("/api//.", "/api//"),
+        ("/api//.", "/api/"),
+        ("/api/.", "/api"),
+        ("/api/users/..", "/api"),
         ("/api//users", "/api//users"),
         ("/api///users/", "/api///users/"),
         ("/api//../../..", "/"),
@@ -359,6 +409,31 @@ async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_
 )
 def test_normalize_path_pops_internal_empty_segments_but_preserves_root(path, expected, decode_percent_encoded):
     assert _normalize_path(path, decode_percent_encoded) == expected
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/.",
+        "/api/users/..",
+        "/api//.",
+        "/api//..",
+        "/api//../",
+        "/api//users",
+        "/api///users/",
+        "/api//../../admin",
+        "/api///../../../admin",
+        "/api/../admin",
+        "/api/./users",
+        "/..",
+        "/../..",
+        "//../..",
+        "/api//../../..",
+    ],
+)
+def test_normalize_path_matches_httpx_wire_path(path):
+    httpx_wire_path = httpx.URL(f"https://api.example.com{path}").raw_path.decode("ascii").partition("?")[0]
+    assert _normalize_path(path, decode_percent_encoded=False) == httpx_wire_path
 
 
 async def test_validate_server_url_preserves_empty_segment_in_allowlist():
