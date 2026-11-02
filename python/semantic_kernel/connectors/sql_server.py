@@ -35,6 +35,7 @@ from semantic_kernel.data.vector import (
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
+    VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -799,15 +800,20 @@ class SqlServerStore(VectorStore):
 # region: Query Build Functions
 
 
-def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str | None:
+def _python_type_to_sql(python_type_str: str | None, is_key: bool = False, field_name: str | None = None) -> str:
     """Convert a string representation of a Python type to a SQL data type.
 
     Args:
         python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
         is_key: Whether the type is a key field.
+        field_name: Name of the field the type belongs to, used in error messages.
 
     Returns:
-        Corresponding SQL data type as a string, if found. If the type is not found, return None.
+        Corresponding SQL data type as a string.
+
+    Raises:
+        VectorStoreOperationException: If the type is None.
+        VectorStoreModelValidationError: If the type is not supported for automatic table creation.
     """
     if python_type_str is None:
         raise VectorStoreOperationException("property type cannot be None")
@@ -830,14 +836,18 @@ def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> st
     if match:
         # Extract the inner type of the list and convert it to a SQL array type
         element_type_str = match.group(1)
-        sql_element_type = _python_type_to_sql(element_type_str)
+        sql_element_type = _python_type_to_sql(element_type_str, field_name=field_name)
         return f"{sql_element_type}[]"
 
     # Handle basic types
     if python_type_str in type_mapping:
         return type_mapping[python_type_str]
 
-    return None
+    field_context = f" for field '{field_name}'" if field_name else ""
+    raise VectorStoreModelValidationError(
+        f"SQL Server field type {python_type_str!r}{field_context} is not supported for automatic table creation. "
+        "Use a supported Python type, or create the table before using the collection."
+    )
 
 
 def _cast_value(value: Any) -> str:
@@ -886,13 +896,13 @@ def _build_create_table_query(
             # add the key field
             command.query.append(
                 f"{QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} "
-                f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
+                f"{_python_type_to_sql(key_field.type_, is_key=True, field_name=key_field.name)} NOT NULL,\n"
             )
             # add the data fields
             for field in data_fields:
                 command.query.append(
                     f"{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
-                    f" {_python_type_to_sql(field.type_)} NULL,\n"
+                    f" {_python_type_to_sql(field.type_, field_name=field.name)} NULL,\n"
                 )
             # add the vector fields
             for field in vector_fields:
@@ -993,7 +1003,8 @@ def _build_merge_query(
     command = SqlCommand()
     # Declare a temp table to store the keys that are updated
     command.query.append(
-        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.type_ or 'str', is_key=True)});\n"
+        f"DECLARE @UpsertedKeys TABLE (KeyColumn "
+        f"{_python_type_to_sql(key_field.type_ or 'str', is_key=True, field_name=key_field.name)});\n"
     )
     # start the MERGE statement
     command.query.append_table_name(schema, table, prefix="MERGE INTO", suffix="AS t", newline=True)
