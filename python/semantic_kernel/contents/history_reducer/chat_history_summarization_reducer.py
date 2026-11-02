@@ -2,11 +2,8 @@
 
 import logging
 import sys
+from typing import Self
 
-if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
-else:
-    from typing import Self  # type: ignore # pragma: no cover
 if sys.version < "3.12":
     from typing_extensions import override  # pragma: no cover
 else:

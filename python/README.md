@@ -24,7 +24,7 @@ pip install --upgrade semantic-kernel[all]
 ```
 
 Supported Platforms:
-- Python: 3.10+
+- Python: 3.11 through 3.15
 - OS: Windows, macOS, Linux
 
 ## 1. Setup API Keys

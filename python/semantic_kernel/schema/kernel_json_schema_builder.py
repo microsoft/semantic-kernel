@@ -181,7 +181,7 @@ class KernelJsonSchemaBuilder:
             _, value_type = args
             additional_properties = cls.build(value_type, structured_output=structured_output)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
+                additional_properties["properties"] = {}
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description

@@ -2,11 +2,10 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Generic, Literal, TypedDict, TypeVar, Union
+from typing import Generic, Literal, NotRequired, TypedDict, TypeVar, Union
 
 from opentelemetry.trace import SpanKind
 from opentelemetry.util import types
-from typing_extensions import NotRequired
 
 from semantic_kernel.agents.runtime.core.agent_id import AgentId
 from semantic_kernel.agents.runtime.core.telemetry.constants import NAMESPACE

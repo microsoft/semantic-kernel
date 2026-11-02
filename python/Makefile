@@ -5,7 +5,7 @@ SHELL = /bin/bash
 all: install
 
 ifeq ($(PYTHON_VERSION),)
-    PYTHON_VERSION = 3.10
+    PYTHON_VERSION = 3.14
 endif
 
 # Detect uv on PATH
@@ -22,7 +22,7 @@ help:
 	echo -e "\033[1mTARGETS:\033[0m"
 	echo "  help                 - show this help message"
 	echo "  install              - install uv, python, Semantic Kernel, and all dependencies"
-	echo "                        This is the default and will use Python 3.10."
+	echo "                        This is the default and will use Python 3.14."
 	echo "  install-uv           - install uv"
 	echo "  install-python       - install multiple python distributions"
 	echo "  install-sk           - install Semantic Kernel and all dependencies"
@@ -31,8 +31,8 @@ help:
 	echo "  build                - build the project"
 	echo ""
 	echo -e "\033[1mVARIABLES:\033[0m"
-	echo "  PYTHON_VERSION       - Python version to use. Default is 3.10"
-	echo "                        By default, 3.10, 3.11, 3.12 and 3.13 are installed as well."
+	echo "  PYTHON_VERSION       - Python version to use. Default is 3.14"
+	echo "                        By default, 3.11, 3.12, 3.13, 3.14 and 3.15 are installed as well."
 
 ##############################
 #  INSTALL
@@ -75,7 +75,7 @@ endif
 .ONESHELL:
 install-python:
 	echo "Installing python versions"
-	uv python install 3.10 3.11 3.12 3.13
+	uv python install 3.11 3.12 3.13 3.14 3.15
 
 ##############################
 #  INSTALL-PRE-COMMIT

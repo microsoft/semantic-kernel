@@ -5,7 +5,7 @@ authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
@@ -16,9 +16,11 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Framework :: Pydantic :: 2",
   "Typing :: Typed",
 ]
@@ -116,11 +118,8 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-  # onnxruntime>=1.24.0 dropped Python 3.10 support; retain the last compatible runtime/genai pair for 3.10.
-  "onnxruntime==1.22.1; python_version == '3.10'",
-  "onnxruntime>=1.26.0; python_version > '3.10'",
-  "onnxruntime-genai==0.9.0; python_version == '3.10'",
-  "onnxruntime-genai==0.14.1; python_version > '3.10'"
+  "onnxruntime>=1.26.0",
+  "onnxruntime-genai==0.14.1"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
@@ -198,7 +197,7 @@ markers = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 preview = true
 

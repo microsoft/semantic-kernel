@@ -13,24 +13,15 @@ jobs:
   python-unit-tests:
     name: Python Unit Tests
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        experimental: [false]
         test-suite: ["unit-all-except-dapr", "dapr"]
         exclude:
-          - python-version: "3.10"
-            os: macos-latest
           - python-version: "3.11"
             os: macos-latest
-        include:
-          - python-version: "3.13"
-            os: "ubuntu-latest"
-            experimental: true
-            test-suite: "unit-all-except-dapr"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
@@ -40,6 +31,10 @@ jobs:
         working-directory: python
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Set up uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
@@ -64,7 +59,7 @@ jobs:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
-        if: ${{ !matrix.experimental && matrix.test-suite == 'unit-all-except-dapr' }}
+        if: matrix.test-suite == 'unit-all-except-dapr'
         uses: pmeier/pytest-results-action@fdc7f18d9934e38aca411ca9557e6577bd25ca9c # v0.9.0
         with:
           path: python/pytest.xml
