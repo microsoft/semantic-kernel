@@ -803,3 +803,27 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+async def test_invoke_function_with_var_keyword(kernel: Kernel):
+    @kernel_function
+    def flexible(input: str, **kwargs) -> str:
+        return f"{input}:{sorted(kwargs.items())}"
+
+    native_function = KernelFunction.from_method(method=flexible, plugin_name="MockPlugin")
+
+    assert [param.name for param in native_function.parameters] == ["input"]
+
+    result = await native_function.invoke(kernel=kernel, arguments=KernelArguments(input="a", extra=1))
+    assert result.value == "a:[('extra', 1)]"
+
+
+async def test_invoke_function_without_var_keyword_drops_extra_arguments(kernel: Kernel):
+    @kernel_function
+    def strict(input: str) -> str:
+        return input
+
+    native_function = KernelFunction.from_method(method=strict, plugin_name="MockPlugin")
+
+    result = await native_function.invoke(kernel=kernel, arguments=KernelArguments(input="a", extra=1))
+    assert result.value == "a"

@@ -51,6 +51,14 @@ class MiscClass:
         return input
 
     @kernel_function
+    def func_with_kwargs(self, input: str, **kwargs) -> str:
+        return input
+
+    @kernel_function
+    def func_with_args(self, input: str, *args) -> str:
+        return input
+
+    @kernel_function
     def func_return_type(self, input: str) -> str:
         return input
 
@@ -322,3 +330,15 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert description == annotation_dict.get("description")
     assert type_ == annotation_dict["type_"]
     assert is_required == annotation_dict["is_required"]
+
+
+def test_kernel_function_ignores_var_keyword():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_with_kwargs")
+    assert [param["name"] for param in my_func.__kernel_function_parameters__] == ["input"]
+
+
+def test_kernel_function_ignores_var_positional():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_with_args")
+    assert [param["name"] for param in my_func.__kernel_function_parameters__] == ["input"]
