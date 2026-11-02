@@ -6,7 +6,7 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
-from pydantic import Field
+from pydantic import BaseModel, Field
 from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
 from typing_extensions import override
 
@@ -633,18 +633,50 @@ class InMemoryCollection(
         updated_keys = []
         key_storage_name = self._key_field_storage_name
         key_name = self._key_field_name
+        # Which name indexes the key in a serialized record depends on the
+        # serializer's contract (see VectorStoreRecordHandler._serialize_data_model_to_dict):
+        # Pydantic models serialize with model_dump(), which keys fields by
+        # their Python name, while dict and dataclass records are keyed by
+        # storage name. Preferring one name over the other is wrong when a
+        # data field's name or storage name overlaps the key's other name,
+        # so choose based on the record type and only fall back to the
+        # other name when the expected one is absent.
+        is_pydantic = isinstance(self.record_type, type) and issubclass(self.record_type, BaseModel)
+        expected_key_name = key_name if is_pydantic else key_storage_name
+        fallback_key_name = key_storage_name if is_pydantic else key_name
         for record in records:
             record = AttributeDict(record)
-            # Serialized records index the key by its storage name (e.g. dict and
-            # dataclass records), while some record types (e.g. Pydantic models)
-            # serialize with the Python field name, so fall back to that.
-            key = record[key_storage_name] if key_storage_name in record else record[key_name]
+            key = record[expected_key_name] if expected_key_name in record else record[fallback_key_name]
             self.inner_storage[key] = record
             updated_keys.append(key)
         return updated_keys
 
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        return records
+        if not (isinstance(self.record_type, type) and issubclass(self.record_type, BaseModel)):
+            return records
+        # Pydantic records are stored under their Python field names (they are
+        # serialized with model_dump()), but the shared deserializer for
+        # Pydantic models expects store dicts keyed by storage name and maps
+        # them back to field names. Rename name -> storage name in one pass
+        # so a data field whose name overlaps the key's storage name (or vice
+        # versa) keeps its own value instead of overwriting the key's.
+        converted_records: list[dict[str, Any]] = []
+        for record in records:
+            renames = {
+                field.storage_name: record[field.name]
+                for field in self.definition.fields
+                if field.storage_name and field.storage_name != field.name and field.name in record
+            }
+            if not renames:
+                converted_records.append(record)
+                continue
+            # Drop every renamed field's original name, then apply all
+            # renames at once so overlapping names cannot overwrite each other.
+            renamed_names = {field.name for field in self.definition.fields if field.storage_name in renames}
+            converted = {key: value for key, value in record.items() if key not in renamed_names}
+            converted.update(renames)
+            converted_records.append(converted)
+        return converted_records
 
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         return records
