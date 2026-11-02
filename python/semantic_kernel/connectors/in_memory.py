@@ -6,7 +6,7 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar, cast
 
 from numpy import dot
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
 from typing_extensions import override
 
@@ -27,7 +27,7 @@ from semantic_kernel.data.vector import (
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrList, OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import empty_generator
 
@@ -79,6 +79,15 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
             del self[name]
         except KeyError:
             raise AttributeError(name)
+
+
+class _InMemoryRecord(dict[str, Any]):
+    """A serialized record with the name of its key field."""
+
+    def __init__(self, record: dict[str, Any], key_field_name: str):
+        """Keep the dumped fields and the name of their key field."""
+        super().__init__(record)
+        self.key_field_name = key_field_name
 
 
 class ReadOnlyAttributeDict(Mapping[TAKey, TAValue], Generic[TAKey, TAValue]):
@@ -631,22 +640,16 @@ class InMemoryCollection(
     @override
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
-        key_storage_name = self._key_field_storage_name
-        key_name = self._key_field_name
-        # Which name indexes the key in a serialized record depends on the
-        # serializer's contract (see VectorStoreRecordHandler._serialize_data_model_to_dict):
-        # Pydantic models serialize with model_dump(), which keys fields by
-        # their Python name, while dict and dataclass records are keyed by
-        # storage name. Preferring one name over the other is wrong when a
-        # data field's name or storage name overlaps the key's other name,
-        # so choose based on the record type and only fall back to the
-        # other name when the expected one is absent.
-        is_pydantic = isinstance(self.record_type, type) and issubclass(self.record_type, BaseModel)
-        expected_key_name = key_name if is_pydantic else key_storage_name
-        fallback_key_name = key_storage_name if is_pydantic else key_name
         for record in records:
+            key_field_name = (
+                record.key_field_name if isinstance(record, _InMemoryRecord) else self._key_field_storage_name
+            )
             record = AttributeDict(record)
-            key = record[expected_key_name] if expected_key_name in record else record[fallback_key_name]
+            if key_field_name not in record:
+                key_field_name = (
+                    self._key_field_storage_name if self._key_field_storage_name in record else self._key_field_name
+                )
+            key = record[key_field_name]
             self.inner_storage[key] = record
             updated_keys.append(key)
         return updated_keys
@@ -677,6 +680,25 @@ class InMemoryCollection(
             converted.update(renames)
             converted_records.append(converted)
         return converted_records
+
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrList[dict[str, Any]]:
+        """Keep track of key names before records lose their model type."""
+        serialized = super()._serialize_data_model_to_dict(record, **kwargs)
+        key_field_name = self._key_field_name
+        if not self.definition.to_dict:
+            if not isinstance(record, BaseModel):
+                key_field_name = self._key_field_storage_name
+            elif (
+                type(record).model_dump is BaseModel.model_dump
+                and not type(record).__pydantic_decorators__.model_serializers
+                and "serialize_by_alias" in ConfigDict.__annotations__
+                and type(record).model_config.get("serialize_by_alias")
+                and (key_field := type(record).model_fields.get(key_field_name))
+            ):
+                key_field_name = key_field.serialization_alias or key_field_name
+        if isinstance(serialized, list):
+            return [_InMemoryRecord(item, key_field_name) for item in serialized]
+        return _InMemoryRecord(serialized, key_field_name)
 
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         return records
@@ -773,9 +795,8 @@ class InMemoryCollection(
             raise VectorStoreOperationException(f"Error evaluating filter: {e}") from e
         filtered_records: dict[TKey, AttributeDict] = {}
         for key, record in self.inner_storage.items():
-            for filter in callable_filters:
-                if self._run_filter(filter, record):
-                    filtered_records[key] = record
+            if all(self._run_filter(filter, record) for filter in callable_filters):
+                filtered_records[key] = record
         return filtered_records
 
     def _parse_and_validate_filter(self, filter_str: str) -> Callable:
