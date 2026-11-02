@@ -153,13 +153,13 @@ def _matches_path_prefix(url_path: str, base_path: str) -> bool:
         normalized_url_path = _normalize_path(url_path, decode_percent_encoded)
         normalized_base_path = _normalize_path(base_path, decode_percent_encoded)
 
-        if normalized_url_path.lower() == normalized_base_path.lower():
+        if normalized_url_path == normalized_base_path:
             continue
 
         base_path_with_slash = (
             normalized_base_path if normalized_base_path.endswith("/") else f"{normalized_base_path}/"
         )
-        if not normalized_url_path.lower().startswith(base_path_with_slash.lower()):
+        if not normalized_url_path.startswith(base_path_with_slash):
             return False
 
     return True
