@@ -15,68 +15,12 @@ on:
 
 permissions:
   contents: read
-  id-token: "write"
 
 env:
   # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
   Python_Integration_Tests: Python_Integration_Tests
   INTEGRATION_TEST_SERVICE_SETUP_EXCEPTION: ${{ true }}
-  AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
-  AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
-  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-  AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
-  AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
-  AZURE_AI_AGENT_ENDPOINT: ${{ secrets.AZURE_AI_AGENT_ENDPOINT }}
-  AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME: ${{ secrets.AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME }}
-  AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME }}
-  BING_API_KEY: ${{ secrets.BING_API_KEY }}
-  OPENAI_RESPONSES_MODEL_ID: ${{ vars.OPENAI_RESPONSES_MODEL_ID }}
-  OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
-  OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
-  OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
-  OPENAI_AUDIO_TO_TEXT_MODEL_ID: ${{ vars.OPENAI_AUDIO_TO_TEXT_MODEL_ID }}
-  OPENAI_TEXT_TO_AUDIO_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_AUDIO_MODEL_ID }}
-  OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
-  POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
-  POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
-  AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
-  AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
-  MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
-  AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
-  AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
-  AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
-  ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
-  MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
-  MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
-  MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
-  ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
-  ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-  OLLAMA_CHAT_MODEL_ID: "${{ vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llama3.2:1b
-  OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # moondream
-  OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2:1b
-  OLLAMA_TEXT_MODEL_ID: "${{ vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llama3.2:1b
-  OLLAMA_EMBEDDING_MODEL_ID: "${{ vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
-  GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
-  GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
-  GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
-  GOOGLE_AI_CLOUD_PROJECT_ID: ${{ vars.GOOGLE_AI_CLOUD_PROJECT_ID }}
-  GOOGLE_AI_CLOUD_REGION: ${{ vars.GOOGLE_AI_CLOUD_REGION }}
-  VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
-  VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
-  VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
-  REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-  AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
-  AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
-  BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN: ${{ secrets.BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN }}
-  BEDROCK_AGENT_FOUNDATION_MODEL: ${{ vars.BEDROCK_AGENT_FOUNDATION_MODEL }}
 
 jobs:
   paths-filter:
@@ -103,7 +47,10 @@ jobs:
   python-merge-gate-ai-services:
     name: Python Pre-Merge Integration Tests - AI Services (incl samples using those)
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -146,7 +93,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -154,6 +100,62 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_ai_services
+        env: &integration-env
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_AUDIO_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
+          AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
+          AZURE_AI_AGENT_ENDPOINT: ${{ secrets.AZURE_AI_AGENT_ENDPOINT }}
+          AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME: ${{ secrets.AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_RESPONSES_MODEL_ID: ${{ vars.OPENAI_RESPONSES_MODEL_ID }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_AUDIO_TO_TEXT_MODEL_ID: ${{ vars.OPENAI_AUDIO_TO_TEXT_MODEL_ID }}
+          OPENAI_TEXT_TO_AUDIO_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_AUDIO_MODEL_ID }}
+          OPENAI_TEXT_TO_IMAGE_MODEL_ID: ${{ vars.OPENAI_TEXT_TO_IMAGE_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
+          MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
+          MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
+          ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
+          ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
+          OLLAMA_CHAT_MODEL_ID: "${{ vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llama3.2:1b
+          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # moondream
+          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2:1b
+          OLLAMA_TEXT_MODEL_ID: "${{ vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llama3.2:1b
+          OLLAMA_EMBEDDING_MODEL_ID: "${{ vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
+          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          GOOGLE_AI_CLOUD_PROJECT_ID: ${{ vars.GOOGLE_AI_CLOUD_PROJECT_ID }}
+          GOOGLE_AI_CLOUD_REGION: ${{ vars.GOOGLE_AI_CLOUD_REGION }}
+          VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
+          VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
+          REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+          AZURE_COSMOS_DB_NO_SQL_URL: ${{ vars.AZURE_COSMOS_DB_NO_SQL_URL }}
+          AZURE_COSMOS_DB_NO_SQL_KEY: ${{ secrets.AZURE_COSMOS_DB_NO_SQL_KEY }}
+          BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN: ${{ secrets.BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN }}
+          BEDROCK_AGENT_FOUNDATION_MODEL: ${{ vars.BEDROCK_AGENT_FOUNDATION_MODEL }}
         shell: bash
         run: |
           uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions ./tests/integration/embeddings ./tests/samples ./tests/integration/cross_language
@@ -161,7 +163,10 @@ jobs:
   python-merge-gate-multi-modality:
     name: Python Pre-Merge Integration Tests - Multi-Modality
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -187,7 +192,6 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -195,6 +199,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_multi_modality
+        env: *integration-env
         shell: bash
         run: |
           uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal ./tests/integration/audio_to_text ./tests/integration/text_to_audio ./tests/integration/text_to_image
@@ -202,7 +207,10 @@ jobs:
   python-merge-gate-agents:
     name: Python Pre-Merge Integration Tests - Agents
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -236,7 +244,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -244,6 +251,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_agents
+        env: *integration-env
         shell: bash
         run: |
           uv run pytest -v --log-cli-level=INFO --durations=20 -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
@@ -252,7 +260,7 @@ jobs:
     name: Python Pre-Merge Integration Tests - Ollama
     needs: paths-filter
     # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, this job is disabled for now.
-    if: false && github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: false && (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -297,13 +305,17 @@ jobs:
       - name: Run Integration Tests
         id: run_tests_ai_services
         shell: bash
+        env: *integration-env
         run: |
           uv run pytest -v --log-cli-level=INFO --durations=0 -n logical --dist loadfile --dist worksteal -m ollama --timeout=300 ./tests/integration/completions ./tests/integration/embeddings
 
   python-merge-gate-memory:
     name: Python Pre-Merge Integration Tests - Memory (incl samples using those)
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -345,7 +357,6 @@ jobs:
         run: |
           uv sync --all-extras --dev
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -353,6 +364,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_memory
+        env: *integration-env
         timeout-minutes: 15
         shell: bash
         run: |
@@ -362,6 +374,9 @@ jobs:
     name: Python Integration Tests - Scheduled run
     needs: paths-filter
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -440,7 +455,6 @@ jobs:
           Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
           Start-CosmosDbEmulator
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request'
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -448,6 +462,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests - Completions
         id: run_tests_completions
+        env: *integration-env
         timeout-minutes: 10
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
@@ -455,6 +470,7 @@ jobs:
           uv run pytest -v -n logical --dist loadfile --dist worksteal -m "not ollama" -k "not bedrock" ./tests/integration/completions
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
+        env: *integration-env
         timeout-minutes: 5
         shell: bash
         # Ollama tests are very unstable at the moment. It often fails to pull models from the Ollama server. Thus, Ollama is disabled for now.
@@ -463,23 +479,27 @@ jobs:
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         timeout-minutes: 5
+        env: *integration-env
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/memory
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
+        env: *integration-env
         timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language
       - name: Run Integration Tests - Planning
         id: run_tests_planning
+        env: *integration-env
         timeout-minutes: 5
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/planning
       - name: Run Integration Tests - Samples
         id: run_tests_samples
+        env: *integration-env
         timeout-minutes: 5
         shell: bash
         run: |
@@ -487,12 +507,14 @@ jobs:
       - name: Run Integration Tests - Agents
         id: run_tests_agents
         timeout-minutes: 10
+        env: *integration-env
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal -k "not bedrock" ./tests/integration/agents
       - name: Run Integration Tests - Multi-Modality
         id: run_tests_multi_modality
         timeout-minutes: 5
+        env: *integration-env
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/audio_to_text ./tests/integration/text_to_audio ./tests/integration/text_to_image
@@ -553,7 +575,7 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@216b8b28967e7e89b0b64b81dc94aeae90e642ab # v1.3.0
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}

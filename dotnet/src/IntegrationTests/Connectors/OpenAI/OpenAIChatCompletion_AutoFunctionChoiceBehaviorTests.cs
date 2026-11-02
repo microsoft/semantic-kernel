@@ -18,6 +18,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatCompletionService _chatCompletionService;
@@ -31,7 +33,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         this._chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -59,7 +61,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -94,7 +96,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -130,7 +132,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Equal("GetCurrentDate", functionCall.FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -163,7 +165,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -203,7 +205,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -239,7 +241,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -275,7 +277,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Equal("GetCurrentDate", functionCall.FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -311,7 +313,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionsAutomaticallyConcurrentlyAsync()
     {
         // Arrange
@@ -347,7 +349,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.True(requestIndexLog.All((item) => item == 0)); // Assert that all functions called by the AI model were executed within the same initial request.  
     }
 
-    [Theory]
+    [Theory(Skip = TempOAIKeySkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task SpecifiedInCodeInstructsAIModelToCallFunctionInParallelOrSequentiallyAsync(bool callInParallel)

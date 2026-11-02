@@ -116,7 +116,9 @@ class FunctionResultContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
-        return cls(id=element.get("id", ""), result=element.text, name=element.get("name", None))
+        # An empty result renders as a self-closing element, whose text parses back as None.
+        result = element.text if element.text is not None else ""
+        return cls(id=element.get("id", ""), result=result, name=element.get("name", None))
 
     @classmethod
     def from_function_call_content_and_result(

@@ -423,7 +423,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info("Calling %s function.", function_call.name)
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -475,7 +475,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.error(
+                "Error invoking function %s. Error type: %s.",
+                context.function.fully_qualified_name,
+                type(exc).__name__,
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value
@@ -584,6 +588,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
         excluded_functions: OptionalOneOrMany[str] = None,
+        *,
+        use_plugin_names: bool = False,
         **kwargs: Any,
     ) -> "Server":
         """Create a MCP server from this kernel.
@@ -591,9 +597,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-        By default, all functions are exposed as Tools, you can control this by
-        using use the `excluded_functions` argument.
-        These need to be set to the function name, without the plugin_name.
+        By default, functions are exposed as Tools using bare function names.
+        Duplicate names retain the first function and produce a warning.
+        Set `use_plugin_names=True` to expose `<registered_plugin_name>-<function_name>` tool names.
+        The `excluded_functions` argument always uses bare function names.
+        Tool names over MCP's recommended 128 characters are exposed with a warning.
 
         Args:
             kernel: The kernel instance to use.
@@ -604,6 +612,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             lifespan: The lifespan of the server.
             excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
+            use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
+                Defaults to False.
             kwargs: Any extra arguments to pass to the server creation.
 
         Returns:
@@ -621,5 +631,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             instructions=instructions,
             lifespan=lifespan,
             excluded_functions=excluded_functions,
+            use_plugin_names=use_plugin_names,
             **kwargs,
         )

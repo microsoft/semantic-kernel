@@ -3,7 +3,6 @@
 import re
 from pathlib import Path
 
-
 PYTHON_ROOT = Path(__file__).parents[2]
 PYPROJECT = PYTHON_ROOT / "pyproject.toml"
 CONNECTOR_DOC = PYTHON_ROOT / "CONNECTOR_DEPENDENCIES.md"

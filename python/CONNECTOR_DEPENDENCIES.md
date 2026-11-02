@@ -33,17 +33,17 @@ additional Semantic Kernel extra.
 | `azure` | Azure AI Inference, Azure AI Search, Azure Cosmos DB | `semantic_kernel.connectors.ai.azure_ai_inference`, `semantic_kernel.connectors.azure_ai_search`, `semantic_kernel.connectors.azure_cosmos_db` | `azure-ai-inference >= 1.0.0b6`; `azure-core-tracing-opentelemetry >= 1.0.0b11`; `azure-search-documents >= 11.6.0b4,<13.0.0`; `azure-cosmos ~= 4.7` |
 | `chroma` | Chroma vector store | `semantic_kernel.connectors.chroma` | `chromadb >= 0.5,<1.6` |
 | `faiss` | FAISS vector store | `semantic_kernel.connectors.faiss` | `faiss-cpu >= 1.10.0` |
-| `google` | Google AI / Vertex AI | `semantic_kernel.connectors.ai.google` | `google-cloud-aiplatform >= 1.114,<1.134`; `google-genai >= 1.51,<2.21` |
+| `google` | Google AI / Vertex AI | `semantic_kernel.connectors.ai.google` | `google-cloud-aiplatform >= 1.114,<1.134`; `google-genai >= 1.51,<2.23` |
 | `hugging_face` | Hugging Face | `semantic_kernel.connectors.ai.hugging_face` | `transformers[torch] >= 5.5.0,<6.0`; `sentence-transformers >= 2.2,<6.0`; `torch == 2.13.0` |
 | `milvus` | Milvus vector store | `semantic_kernel.connectors.memory_stores.milvus` | `pymilvus >= 2.3,<2.7`; `milvus >= 2.3,<2.3.8` (non-Windows) |
-| `mistralai` | Mistral AI | `semantic_kernel.connectors.ai.mistral_ai` | `mistralai >= 1.2,<2.7.3` |
+| `mistralai` | Mistral AI | `semantic_kernel.connectors.ai.mistral_ai` | `mistralai >= 1.2,<2.0` |
 | `mongo` | MongoDB / MongoDB Atlas vector stores | `semantic_kernel.connectors.mongodb`, `semantic_kernel.connectors.memory_stores.mongodb_atlas` | `pymongo >= 4.8.0,<4.17`; `motor >= 3.3.2,<3.8.0` |
 | `ollama` | Ollama | `semantic_kernel.connectors.ai.ollama` | `ollama ~= 0.4` |
-| `onnx` | ONNX | `semantic_kernel.connectors.ai.onnx` | Python 3.10: `onnxruntime == 1.22.1`, `onnxruntime-genai == 0.9.0`; Python >3.10: `onnxruntime >= 1.26.0`, `onnxruntime-genai == 0.14.1` |
+| `onnx` | ONNX | `semantic_kernel.connectors.ai.onnx` | Python 3.10: `onnxruntime == 1.22.1`, `onnxruntime-genai == 0.9.0`; Python >3.10: `onnxruntime >= 1.26.0`, `onnxruntime-genai == 0.15.2` |
 | `oracledb` | Oracle vector store | `semantic_kernel.connectors.oracle` | `oracledb >= 3.4.1` |
 | `pinecone` | Pinecone vector store | `semantic_kernel.connectors.pinecone` | macOS/Linux: `pinecone[asyncio, grpc] ~= 7.0`; Windows: `~= 7.3` |
 | `postgres` | PostgreSQL vector store | `semantic_kernel.connectors.postgres` | `psycopg[binary,pool] ~= 3.2` |
-| `qdrant` | Qdrant vector store | `semantic_kernel.connectors.qdrant` | `qdrant-client ~= 1.9` |
+| `qdrant` | Qdrant vector store | `semantic_kernel.connectors.qdrant` | `qdrant-client ~= 1.10` |
 | `redis` | Redis vector store | `semantic_kernel.connectors.redis` | `redis[hiredis] >= 6,<8`; `types-redis ~= 4.6.0.20240425`; `redisvl ~= 0.4` |
 | `sql` | SQL Server vector store | `semantic_kernel.connectors.sql_server` | `pyodbc >= 5.2` |
 | `usearch` | USearch vector store | `semantic_kernel.connectors.memory_stores.usearch` | `usearch >= 2.16,<2.25`; `pyarrow >= 12.0,<26.0` |
@@ -61,7 +61,7 @@ surface and are listed here so the documentation stays in sync with `pyproject.t
 | `mcp` | Explicit MCP extra / compatibility install | `mcp >= 1.8,<2.0` |
 | `notebooks` | Notebook development/runtime support | `ipykernel >= 6.29,<8.0` |
 | `pandas` | Pandas integration | `pandas ~= 2.2` |
-| `realtime` | Realtime audio/websocket support | `websockets >= 13,<16`; `aiortc >= 1.9.0` |
+| `realtime` | Realtime audio/websocket support | `websockets >= 13,<17`; `aiortc >= 1.9.0` |
 
 ## CI and maintenance
 
