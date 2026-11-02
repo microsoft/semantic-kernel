@@ -8,7 +8,8 @@ packages that extra declares. This test parses both files and fails when they dr
 * an extra named in the doc that does not exist in pyproject.toml,
 * a connector extra in pyproject.toml that no doc row mentions,
 * upstream package names for an extra that differ between the two files,
-* a version specifier in the doc that no longer matches pyproject.toml,
+* a version specifier in the doc that no longer matches pyproject.toml, or a documented
+  package whose declared constraint the row leaves out,
 * an import path in the doc that does not exist on disk,
 * a row claiming a package that its own connector never imports.
 
@@ -199,6 +200,18 @@ def test_version_constraints_match_pyproject():
                 f"{DOC.name} line {row['line']} ({row['connector']}): '{requirement}' does not match the "
                 f"constraint declared in pyproject.toml for {sorted(extras)}"
             )
+        # Reverse direction: a documented package must print the full constraint pyproject.toml
+        # declares for it, so dropping a specifier (bare `mistralai`) cannot pass on name equality.
+        printed = {_normalize(requirement) for requirement in row["upstream"]}
+        documented_names = {_canonical_name(requirement) for requirement in row["upstream"]}
+        for extra in sorted(extras):
+            for declared in optional[extra]:
+                if _canonical_name(declared) not in documented_names:
+                    continue  # another row documents this package
+                assert _normalize(declared) in printed, (
+                    f"{DOC.name} line {row['line']} ({row['connector']}): pyproject.toml declares "
+                    f"'{declared}' for extra '{extra}' but the row does not print that constraint"
+                )
 
 
 def test_documented_import_paths_exist():

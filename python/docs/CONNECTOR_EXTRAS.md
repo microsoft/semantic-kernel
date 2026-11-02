@@ -65,7 +65,7 @@ two packages and exists as an explicit opt-in name rather than as an additional 
 | Oracle 23ai | `semantic_kernel.connectors.oracle` | `oracledb` | `oracledb >= 3.4.1` |
 | Pinecone | `semantic_kernel.connectors.pinecone` | `pinecone` | `pinecone[asyncio, grpc] ~= 7.0`, `pinecone[asyncio, grpc] ~= 7.3` (selected by sys_platform marker) |
 | Postgres / pgvector | `semantic_kernel.connectors.postgres` | `postgres` | `psycopg[binary,pool] ~= 3.2` |
-| Qdrant | `semantic_kernel.connectors.qdrant` | `qdrant` | `qdrant-client ~= 1.9` |
+| Qdrant | `semantic_kernel.connectors.qdrant` | `qdrant` | `qdrant-client ~= 1.10` |
 | Redis | `semantic_kernel.connectors.redis` | `redis` | `redis[hiredis] >= 6,< 8`, `redisvl ~= 0.4`, `types-redis ~= 4.6.0.20240425` |
 | SQL Server | `semantic_kernel.connectors.sql_server` | `sql` | `pyodbc >= 5.2` |
 | Weaviate | `semantic_kernel.connectors.weaviate` | `weaviate` | `weaviate-client>=4.17.0,<5.0` |
@@ -87,7 +87,7 @@ They are listed here because some extras exist only for them.
 | MongoDB Atlas (deprecated) | `semantic_kernel.connectors.memory_stores.mongodb_atlas` | `mongo` | `pymongo >= 4.8.0, < 4.17` |
 | Pinecone (deprecated) | `semantic_kernel.connectors.memory_stores.pinecone` | `pinecone` | `pinecone[asyncio, grpc] ~= 7.0`, `pinecone[asyncio, grpc] ~= 7.3` |
 | Postgres (deprecated) | `semantic_kernel.connectors.memory_stores.postgres` | `postgres` | `psycopg[binary,pool] ~= 3.2` |
-| Qdrant (deprecated) | `semantic_kernel.connectors.memory_stores.qdrant` | `qdrant` | `qdrant-client ~= 1.9` |
+| Qdrant (deprecated) | `semantic_kernel.connectors.memory_stores.qdrant` | `qdrant` | `qdrant-client ~= 1.10` |
 | Redis (deprecated) | `semantic_kernel.connectors.memory_stores.redis` | `redis` | `redis[hiredis] >= 6,< 8` |
 | USearch (deprecated) | `semantic_kernel.connectors.memory_stores.usearch` | `usearch` | `usearch >= 2.16,< 2.25`, `pyarrow>=12.0,<26.0` |
 | Weaviate (deprecated) | `semantic_kernel.connectors.memory_stores.weaviate` | `weaviate` | `weaviate-client>=4.17.0,<5.0` |
