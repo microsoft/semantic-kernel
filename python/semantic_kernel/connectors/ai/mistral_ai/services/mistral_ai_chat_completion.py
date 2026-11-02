@@ -195,6 +195,23 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 
     # region content conversion to SK
 
+    @staticmethod
+    def _get_finish_reason(finish_reason: str | None) -> FinishReason | None:
+        """Map a Mistral finish reason to a FinishReason.
+
+        Mistral can return values that FinishReason does not define (e.g. `model_length`, which
+        means the model's context window was reached), so those are mapped or ignored instead of raising.
+        """
+        if not finish_reason:
+            return None
+        if finish_reason == "model_length":
+            return FinishReason.LENGTH
+        try:
+            return FinishReason(finish_reason)
+        except ValueError:
+            logger.debug(f"Unknown finish reason from Mistral AI: {finish_reason}")
+            return None
+
     def _create_chat_message_content(
         self, response: ChatCompletionResponse, choice: ChatCompletionChoice, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
@@ -213,7 +230,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             metadata=metadata,
             role=AuthorRole(choice.message.role),
             items=items,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            finish_reason=self._get_finish_reason(choice.finish_reason),
         )
 
     def _create_streaming_chat_message_content(
@@ -238,7 +255,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             ai_model_id=self.ai_model_id,
             metadata=metadata,
             role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            finish_reason=self._get_finish_reason(choice.finish_reason),
             items=items,
             function_invoke_attempt=function_invoke_attempt,
         )

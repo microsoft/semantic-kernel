@@ -155,7 +155,7 @@ public sealed class WebFileDownloadPlugin
         var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
 
         using Stream source = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
-        using FileStream destination = new(expandedFilePath, fileMode);
+        using FileStream destination = this.OpenDestination(expandedFilePath, fileMode);
 
         int bufferSize = 81920;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(81920);
@@ -193,6 +193,18 @@ public sealed class WebFileDownloadPlugin
     private HashSet<string>? _allowedDomains = [];
     private HashSet<string>? _allowedFolders = [];
 
+    private FileStream OpenDestination(string path, FileMode mode)
+    {
+        try
+        {
+            return SecureFileSystem.OpenWrite(path, this._allowedFolders, out _, mode, FileShare.None);
+        }
+        catch (SecureFileSystem.FileAlreadyExistsException ex)
+        {
+            throw new InvalidOperationException("Overwriting existing files is disabled.", ex);
+        }
+    }
+
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
     /// to verify it is in the allowed domain list.
@@ -208,29 +220,7 @@ public sealed class WebFileDownloadPlugin
 
     private static string CanonicalizePath(string path)
     {
-        Verify.NotNullOrWhiteSpace(path);
-
-        if (IsUncOrExtendedPath(path))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        var expanded = Environment.ExpandEnvironmentVariables(path);
-        if (IsUncOrExtendedPath(expanded))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
-        // Resolve the full path first (a pure string operation that does not touch the
-        // filesystem). A relative path can still resolve to a UNC path here, for example
-        // when the current directory is a UNC share, so re-check before GetSafeFullPath
-        // probes the filesystem while resolving symbolic links.
-        var fullPath = Path.GetFullPath(expanded);
-        if (IsUncOrExtendedPath(fullPath))
-        {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
-        }
-
+        var fullPath = SecureFileSystem.NormalizePath(path, expandEnvironmentVariables: true);
         return PathUtilities.GetSafeFullPath(fullPath);
     }
 
@@ -258,12 +248,6 @@ public sealed class WebFileDownloadPlugin
         if (string.IsNullOrEmpty(directoryPath))
         {
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
-        }
-
-        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
-        {
-            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
         if (this._allowedFolders is null || this._allowedFolders.Count == 0)
