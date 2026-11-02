@@ -213,13 +213,16 @@ class VolatileMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float]: The record and the relevance score.
         """
-        return self.get_nearest_matches(
+        results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
             min_relevance_score=min_relevance_score,
             with_embeddings=with_embedding,
         )
+        if len(results) == 0:
+            raise ServiceResourceNotFoundError("No match found")
+        return results[0]
 
     async def get_nearest_matches(
         self,
@@ -250,6 +253,9 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         # Get all the records in the collection
         memory_records = list(self._store[collection_name].values())
+
+        if not memory_records:
+            return []
 
         # Convert the collection of embeddings into a numpy array (stacked)
         embeddings = array([x._embedding for x in memory_records], dtype=float)

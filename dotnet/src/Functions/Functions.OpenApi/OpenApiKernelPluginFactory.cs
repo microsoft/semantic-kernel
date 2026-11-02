@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -195,10 +194,11 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Returns the supplied HTTP client or the non-redirecting OpenAPI default.
+    /// Returns the supplied HTTP client or a non-redirecting OpenAPI client that pins
+    /// validated DNS addresses to connections.
     /// </summary>
     internal static HttpClient GetHttpClient(HttpClient? httpClient = null) =>
-        httpClient ?? HttpClientProvider.GetNonRedirectingHttpClient();
+        httpClient ?? OpenApiHttpClientProvider.CreateHttpClient();
 
     /// <summary>
     /// Creates a plugin from an OpenAPI specification.

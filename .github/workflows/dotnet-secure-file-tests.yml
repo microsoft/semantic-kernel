@@ -1,0 +1,33 @@
+name: dotnet-secure-file-tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/dotnet-secure-file-tests.yml'
+      - 'dotnet/src/InternalUtilities/**'
+      - 'dotnet/src/Plugins/**'
+      - 'dotnet/Directory.*.props'
+      - 'dotnet/global.json'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          global-json-file: dotnet/global.json
+      - name: Test secure file operations
+        run: >-
+          dotnet test dotnet/src/Plugins/Plugins.UnitTests/Plugins.UnitTests.csproj
+          --filter "FullyQualifiedName~SecureFileSystemTests|FullyQualifiedName~FileIOPluginTests|FullyQualifiedName~SessionsPythonPluginTests|FullyQualifiedName~WebFileDownloadPluginTests|FullyQualifiedName~CloudDrivePluginTests|FullyQualifiedName~DocumentPluginTests|FullyQualifiedName~LocalFileSystemConnectorTests|FullyQualifiedName~OneDriveConnectorTests|FullyQualifiedName~PathUtilitiesTests"
