@@ -700,25 +700,6 @@ class InMemoryCollection(
             return [_InMemoryRecord(item, key_field_name) for item in serialized]
         return _InMemoryRecord(serialized, key_field_name)
 
-    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrList[dict[str, Any]]:
-        """Keep track of key names before records lose their model type."""
-        serialized = super()._serialize_data_model_to_dict(record, **kwargs)
-        key_field_name = self._key_field_name
-        if not self.definition.to_dict:
-            if not isinstance(record, BaseModel):
-                key_field_name = self._key_field_storage_name
-            elif (
-                type(record).model_dump is BaseModel.model_dump
-                and not type(record).__pydantic_decorators__.model_serializers
-                and "serialize_by_alias" in ConfigDict.__annotations__
-                and type(record).model_config.get("serialize_by_alias")
-                and (key_field := type(record).model_fields.get(key_field_name))
-            ):
-                key_field_name = key_field.serialization_alias or key_field_name
-        if isinstance(serialized, list):
-            return [_InMemoryRecord(item, key_field_name) for item in serialized]
-        return _InMemoryRecord(serialized, key_field_name)
-
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         return records
 
