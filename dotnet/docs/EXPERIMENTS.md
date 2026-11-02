@@ -47,10 +47,8 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0010 | OpenAI file service |
 | | | | | | | |
 | SKEXP0020 | Azure AI Search memory connector |
-| SKEXP0020 | Chroma memory connector |
 | SKEXP0020 | DuckDB memory connector |
 | SKEXP0020 | Kusto memory connector |
-| SKEXP0020 | Milvus memory connector |
 | SKEXP0020 | Qdrant memory connector |
 | SKEXP0020 | Redis memory connector |
 | SKEXP0020 | Sqlite memory connector |
