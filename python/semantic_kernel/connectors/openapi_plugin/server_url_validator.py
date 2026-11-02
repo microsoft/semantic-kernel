@@ -129,9 +129,9 @@ def _normalize_path(path: str, decode_percent_encoded: bool = False) -> str:
         if segment == ".":
             continue
         if segment == "..":
-            if resolved and resolved[-1] != "":
+            if resolved and (len(resolved) > 1 or resolved[0] != ""):
                 resolved.pop()
-            # else: clamp at root (leading empty from absolute path stays)
+            # Protect only the leading root segment; internal empty segments can be popped.
             continue
         resolved.append(segment)
     if segments[-1] in (".", ".."):

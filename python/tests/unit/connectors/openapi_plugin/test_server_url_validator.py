@@ -7,6 +7,7 @@ import pytest
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
+    _normalize_path,
     validate_server_url,
 )
 from semantic_kernel.exceptions import FunctionExecutionException
@@ -250,6 +251,12 @@ async def test_validate_server_url_returns_no_addresses_when_private_access_is_a
         "https://api.example.com/api/%2e%2e/admin",
         "https://api.example.com/api/%2E%2E/admin",
         "https://api.example.com/api/foo/../../admin",
+        "https://api.example.com/api//../../admin",
+        "https://api.example.com/api//%2e%2e/%2E%2E/admin",
+        "https://api.example.com/api//.%2e/%2E./admin",
+        "https://api.example.com/api///../../../admin",
+        "https://api.example.com/api//../../..",
+        "https://api.example.com/api/%2f../../admin",
     ],
 )
 async def test_validate_server_url_rejects_path_prefix_escape(url):
@@ -264,6 +271,9 @@ async def test_validate_server_url_rejects_path_prefix_escape(url):
     "url",
     [
         "https://api.example.com/api/./users",
+        "https://api.example.com/api//users",
+        "https://api.example.com/api//../users",
+        "https://api.example.com/api//%2e%2e/users",
         "https://api.example.com/api/users",
         "https://api.example.com/api/",
         "https://api.example.com/api",
@@ -314,3 +324,31 @@ async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_
 
     with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
         await validate_server_url("https://api.example.com/api", options)
+
+
+@pytest.mark.parametrize("decode_percent_encoded", [False, True])
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("/api//../../admin", "/admin"),
+        ("/api///../../../admin", "/admin"),
+        ("/api//..", "/api/"),
+        ("/api//../", "/api/"),
+        ("/api//.", "/api//"),
+        ("/api//users", "/api//users"),
+        ("/api///users/", "/api///users/"),
+        ("/api//../../..", "/"),
+        ("//../..", "/"),
+        ("/../../admin", "/admin"),
+    ],
+)
+def test_normalize_path_pops_internal_empty_segments_but_preserves_root(path, expected, decode_percent_encoded):
+    assert _normalize_path(path, decode_percent_encoded) == expected
+
+
+async def test_validate_server_url_preserves_empty_segment_in_allowlist():
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api//"])
+
+    assert await validate_server_url("https://api.example.com/api//users", options) == []
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api/users", options)
