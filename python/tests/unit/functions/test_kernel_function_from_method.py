@@ -716,3 +716,53 @@ async def test_function_invoke_accepts_valid_union_argument(kernel: Kernel, valu
     result = await function.invoke(kernel=kernel, arguments=KernelArguments(value=value))
 
     assert result.value == value
+
+
+class CustomArgument:
+    """Plain Python class used to verify arbitrary types survive union validation."""
+
+    def __init__(self, label: str) -> None:
+        self.label = label
+
+
+async def test_function_invoke_accepts_valid_primitive_in_custom_union(kernel: Kernel):
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value="plain"))
+
+    assert result.value == "plain"
+
+
+async def test_function_invoke_accepts_custom_instance_in_custom_union(kernel: Kernel):
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+    instance = CustomArgument("instance")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value=instance))
+
+    assert result.value == "instance"
+
+
+async def test_function_invoke_rejects_invalid_custom_union_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        nonlocal invoked
+        invoked = True
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(kernel=kernel, arguments=KernelArguments(value={"unexpected": "value"}))
+
+    assert not invoked
