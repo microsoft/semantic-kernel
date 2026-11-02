@@ -80,3 +80,15 @@ def test_kernel_parameter_metadata_infer_schema_with_default_type():
     metadata = KernelParameterMetadata(name="param_default")
     assert metadata.type_ == "str"
     assert metadata.schema_data == {"type": "string"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_explicit_empty_type_():
+    metadata = KernelParameterMetadata(name="param_empty", type_="")
+    assert metadata.type_ == ""
+    assert metadata.schema_data == {"type": "object"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_explicit_empty_type_alias():
+    metadata = KernelParameterMetadata(name="param_empty_alias", type="")
+    assert metadata.type_ == ""
+    assert metadata.schema_data == {"type": "object"}
