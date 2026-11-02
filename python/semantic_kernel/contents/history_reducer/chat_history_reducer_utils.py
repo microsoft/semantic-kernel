@@ -215,10 +215,15 @@ def extract_range(
             pair_map.setdefault(ridx, set()).add(cidx)
 
     extracted: list[ChatMessageContent] = []
+    dropped: set[int] = set()
     i = 0
     while i < len(sliced):
         idx = sliced[i]
         msg = history[idx]
+
+        if idx in dropped:
+            i += 1
+            continue
 
         # If filter_func excludes it, skip it
         if filter_func and filter_func(msg):
@@ -230,34 +235,26 @@ def extract_range(
             i += 1
             continue
 
-        # If preserve_pairs is on, and there's a paired index, skip or include them both
-        if preserve_pairs and idx in pair_map:
-            paired_indices = sorted(p for p in pair_map[idx] if start <= p < end)
-            # If the pair is within [start, end), we must keep or skip them together
-            if paired_indices:
-                # Check if any member of the pair or itself fails filter_func
-                if filter_func and (filter_func(msg) or any(filter_func(history[p]) for p in paired_indices)):
-                    # skip all
-                    i += 1
-                    # Also skip the paired indices if they're in our current slice
-                    for paired_idx in paired_indices:
-                        if paired_idx > idx and paired_idx in sliced:
-                            # remove it from the slice so we don't process it again
-                            sliced.remove(paired_idx)
-                    continue
-                # keep all: each paired message is appended when its own index is reached,
-                # so messages interleaved between a call and its results keep their order
-                extracted.append(msg)
+        # If preserve_pairs is on, keep or skip the whole connected call/result group together
+        if preserve_pairs and idx in pair_map and filter_func:
+            # A message can link several calls (one message holding multiple results) and vice versa,
+            # so walk the connected group within [start, end) rather than only direct neighbours.
+            group = {idx}
+            stack = [idx]
+            while stack:
+                for p in pair_map.get(stack.pop(), ()):
+                    if start <= p < end and p not in group:
+                        group.add(p)
+                        stack.append(p)
+            if any(filter_func(history[p]) for p in group):
+                # skip all members; later ones are dropped when their index is reached
+                dropped.update(group)
                 i += 1
                 continue
-            # If the paired_idx is outside [start, end), there's no conflict
-            # so we can just do normal logic
-            extracted.append(msg)
-            i += 1
-        else:
-            # keep it if filter_func not triggered
-            extracted.append(msg)
-            i += 1
+        # each kept message is appended when its own index is reached, so messages
+        # interleaved between a call and its results keep their original order
+        extracted.append(msg)
+        i += 1
 
     return extracted
 

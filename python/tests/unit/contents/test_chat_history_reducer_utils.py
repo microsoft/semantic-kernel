@@ -280,3 +280,32 @@ def test_extract_range_preserve_pairs_parallel_calls_filtered_result():
     history = [call, note, result_paris, result_tokyo]
     extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
     assert extracted == history
+
+
+def test_extract_range_preserve_pairs_shared_result_message_filtered_call():
+    """
+    One tool message holding the results of two calls links both calls together, so filtering
+    out either call must drop the shared result and the other call too.
+    """
+    call_a = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="a", function_name="f", arguments={})]
+    )
+    call_b = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="b", function_name="f", arguments={})]
+    )
+    results = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[
+            FunctionResultContent(id="a", function_name="f", result="1"),
+            FunctionResultContent(id="b", function_name="f", result="2"),
+        ],
+    )
+    history = [call_a, call_b, results]
+
+    assert get_call_result_pairs(history) == [(0, 2), (1, 2)]
+
+    extracted = extract_range(history, start=0, end=3, filter_func=lambda m: m is call_a, preserve_pairs=True)
+    assert extracted == []
+
+    extracted = extract_range(history, start=0, end=3, preserve_pairs=True)
+    assert extracted == history
