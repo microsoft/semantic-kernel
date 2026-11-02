@@ -3,10 +3,19 @@
 import inspect
 import logging
 from collections.abc import Callable
-from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
+from inspect import (
+    Parameter,
+    isasyncgen,
+    isasyncgenfunction,
+    isawaitable,
+    iscoroutinefunction,
+    isgenerator,
+    isgeneratorfunction,
+    signature,
+)
 from typing import Any
 
-from pydantic import Field, ValidationError
+from pydantic import Field, PrivateAttr, ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -23,6 +32,8 @@ class KernelFunctionFromMethod(KernelFunction):
 
     method: Callable[..., Any] = Field(exclude=True)
     stream_method: Callable[..., Any] | None = Field(default=None, exclude=True)
+
+    _accepts_var_keyword: bool = PrivateAttr(default=False)
 
     def __init__(
         self,
@@ -93,6 +104,13 @@ class KernelFunctionFromMethod(KernelFunction):
         }
 
         super().__init__(**args)
+
+        try:
+            self._accepts_var_keyword = any(
+                param.kind is Parameter.VAR_KEYWORD for param in signature(method).parameters.values()
+            )
+        except (TypeError, ValueError):  # pragma: no cover
+            self._accepts_var_keyword = False
 
     async def _invoke_internal(
         self,
@@ -196,4 +214,9 @@ class KernelFunctionFromMethod(KernelFunction):
                     f"Parameter {param.name} is required but not provided in the arguments."
                 )
             logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
+        if self._accepts_var_keyword:
+            # Pass any remaining kernel arguments on to **kwargs instead of silently dropping them.
+            function_arguments.update({
+                name: value for name, value in context.arguments.items() if name not in function_arguments
+            })
         return function_arguments

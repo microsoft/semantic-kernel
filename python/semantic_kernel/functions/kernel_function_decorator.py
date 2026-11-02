@@ -121,6 +121,12 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
     for arg in func_sig.parameters.values():
         if arg.name == "self":
             continue
+        if arg.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD):
+            # *args and **kwargs are implementation details of the function, not
+            # parameters the model should be asked for. KernelFunctionFromMethod
+            # passes kernel arguments that don't match a declared parameter on to
+            # **kwargs when the function accepts them.
+            continue
         annotation = arg.annotation
         # Parameter.empty means "no default"; a default of None is still a default.
         default = arg.default
