@@ -258,7 +258,9 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_chat_response(response),
-            finish_reason=self._get_finish_reason(response.done_reason, bool(response.message.tool_calls)),
+            finish_reason=self._get_finish_reason(
+                response.done_reason, bool(response.message.tool_calls) or tool_call_index > 0
+            ),
             function_invoke_attempt=function_invoke_attempt,
         )
 
@@ -377,7 +379,9 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             inner_content=part,
             ai_model_id=self.ai_model_id,
             metadata=self._get_metadata_from_response(part),
-            finish_reason=self._get_finish_reason(part.get("done_reason"), bool(message.get("tool_calls"))),
+            finish_reason=self._get_finish_reason(
+                part.get("done_reason"), bool(message.get("tool_calls")) or tool_call_index > 0
+            ),
             function_invoke_attempt=function_invoke_attempt,
         )
 

@@ -692,6 +692,52 @@ async def test_streaming_chat_completion_finish_reason_from_mapping(
 
 
 @patch("ollama.AsyncClient.chat")
+async def test_streaming_chat_completion_finish_reason_tool_calls_before_terminal_chunk(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
+    """Tool calls from an earlier chunk make an empty terminal chunk report TOOL_CALLS, not STOP."""
+
+    async def stream():
+        yield _chat_response(None, tool_calls=[_TOOL_CALL], content="")
+        yield _chat_response("stop", content="")
+
+    mock_chat_client.return_value = stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    chunks = [
+        chunk[0]
+        async for chunk in ollama.get_streaming_chat_message_contents(
+            chat_history,
+            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+    ]
+
+    assert [chunk.finish_reason for chunk in chunks] == [None, FinishReason.TOOL_CALLS]
+
+
+@patch("ollama.AsyncClient.chat")
+async def test_streaming_chat_completion_finish_reason_tool_calls_before_terminal_chunk_from_mapping(
+    mock_chat_client, model_id, service_id, chat_history, default_options
+):
+    async def stream():
+        yield {"message": {"content": "", "tool_calls": [{"function": {"name": "fn", "arguments": {"x": 1}}}]}}
+        yield {"message": {"content": ""}, "done_reason": "stop"}
+
+    mock_chat_client.return_value = stream()
+
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    chunks = [
+        chunk[0]
+        async for chunk in ollama.get_streaming_chat_message_contents(
+            chat_history,
+            OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+    ]
+
+    assert [chunk.finish_reason for chunk in chunks] == [None, FinishReason.TOOL_CALLS]
+
+
+@patch("ollama.AsyncClient.chat")
 async def test_chat_completion_usage_with_zero_prompt_tokens(
     mock_chat_client, model_id, service_id, chat_history, default_options
 ):
