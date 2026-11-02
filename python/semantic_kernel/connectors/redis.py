@@ -278,7 +278,7 @@ class RedisCollection(
             raise VectorStoreOperationException("Invalid index type supplied.")
         fields = _definition_to_redis_fields(self.definition, self.collection_type)
         index_definition = IndexDefinition(
-            prefix=f"{self.collection_name}:", index_type=INDEX_TYPE_MAP[self.collection_type]
+            prefix=[f"{self.collection_name}:"], index_type=INDEX_TYPE_MAP[self.collection_type]
         )
         await self.redis_database.ft(self.collection_name).create_index(fields, definition=index_definition, **kwargs)
 

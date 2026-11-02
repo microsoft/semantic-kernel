@@ -299,10 +299,40 @@ async def test_create_index_manual(collection_hash, mock_ensure_collection_exist
     from redis.commands.search.index_definition import IndexDefinition, IndexType
 
     fields = ["fields"]
-    index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
+    index_definition = IndexDefinition(prefix=["test:"], index_type=IndexType.HASH)
     await collection_hash.ensure_collection_exists(index_definition=index_definition, fields=fields)
 
 
 async def test_create_index_fail(collection_hash, mock_ensure_collection_exists):
     with raises(VectorStoreOperationException, match="Invalid index type supplied."):
         await collection_hash.ensure_collection_exists(index_definition="index_definition", fields="fields")
+
+
+@mark.parametrize(
+    ("fixture_name", "expected_index_type"),
+    [
+        ("collection_hash", "hash"),
+        ("collection_json", "json"),
+    ],
+)
+async def test_create_index_uses_single_collection_prefix(
+    request,
+    fixture_name,
+    expected_index_type,
+    mock_ensure_collection_exists,
+):
+    collection = request.getfixturevalue(fixture_name)
+    from redis.commands.search.index_definition import IndexType
+
+    with patch("semantic_kernel.connectors.redis.IndexDefinition") as mock_index_definition:
+        definition = object()
+        mock_index_definition.return_value = definition
+
+        await collection.ensure_collection_exists()
+
+        mock_index_definition.assert_called_once_with(
+            prefix=["test:"],
+            index_type=IndexType(expected_index_type),
+        )
+        mock_ensure_collection_exists.assert_awaited_once()
+        assert mock_ensure_collection_exists.await_args.kwargs["definition"] is definition
