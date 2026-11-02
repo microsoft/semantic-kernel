@@ -242,6 +242,9 @@ async def test_bedrock_text_embedding_with_invalid_response(
         ({"float": [[0.1, 0.2, 0.3]]}, [0.1, 0.2, 0.3]),
         ({"int8": [[1, 2, 3]], "float": [[0.1, 0.2, 0.3]]}, [0.1, 0.2, 0.3]),
         ({"int8": [[1, 2, 3]]}, [1, 2, 3]),
+        # Selection follows a fixed priority, not the JSON key order.
+        ({"binary": [[1]], "int8": [[1, 2]]}, [1, 2]),
+        ({"int8": [[1, 2]], "binary": [[1]]}, [1, 2]),
         ([[0.1, 0.2, 0.3]], [0.1, 0.2, 0.3]),
     ],
 )
@@ -264,7 +267,19 @@ async def test_bedrock_cohere_text_embedding_with_embedding_types(embeddings, ex
         assert response.tolist() == [expected]
 
 
-@pytest.mark.parametrize("embeddings", [{}, {"float": []}, {"float": 0.1}])
+@pytest.mark.parametrize(
+    "embeddings",
+    [
+        {},
+        {"float": []},
+        {"float": 0.1},
+        {"float": [0.1, 0.2]},
+        {"float": [[]]},
+        {"int8": [[1, 2]], "float": []},
+        {"float": [["a", "b"]]},
+        {"unknown": [[1, 2]]},
+    ],
+)
 async def test_bedrock_cohere_text_embedding_with_invalid_typed_response(embeddings) -> None:
     body = Mock()
     body.read.return_value = json.dumps({"embeddings": embeddings})
