@@ -12,6 +12,7 @@ The sample can be configured in various ways:
    1. AzureDocumentDB
    1. CosmosNoSql
    1. InMemory
+   1. Milvus
    1. Qdrant
    1. Redis
    1. Weaviate
@@ -128,6 +129,26 @@ the following secrets here:
 ```cli
 dotnet user-secrets set "VectorStores:CosmosNoSql:ConnectionString" "<yourconnectionstring>"
 dotnet user-secrets set "VectorStores:CosmosNoSql:DatabaseName" "<yourdbname>"
+```
+
+### Milvus
+
+To use Milvus, set `Rag:VectorStoreType` to `Milvus`. The provider requires Milvus 2.6 or later.
+
+Start a local standalone instance with embedded etcd and local storage using Docker:
+
+```cli
+docker run -d --name milvus -p 19530:19530 -e DEPLOY_MODE=STANDALONE -e ETCD_USE_EMBED=true -e COMMON_STORAGETYPE=local milvusdb/milvus:v2.6.25 milvus run standalone
+```
+
+The default sample settings connect to this local instance without TLS or authentication. For a remote TLS endpoint, configure the host, port, database, and API key as needed:
+
+```cli
+dotnet user-secrets set "VectorStores:Milvus:Host" "<yourservice>"
+dotnet user-secrets set "VectorStores:Milvus:Port" "19530"
+dotnet user-secrets set "VectorStores:Milvus:Https" "true"
+dotnet user-secrets set "VectorStores:Milvus:Database" "default"
+dotnet user-secrets set "VectorStores:Milvus:ApiKey" "<yoursecret>"
 ```
 
 ### Qdrant

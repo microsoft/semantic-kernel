@@ -54,6 +54,7 @@
     <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" />
     <PackageReference Include="CommunityToolkit.VectorData.AzureDocumentDB" />
     <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
+    <PackageReference Include="CommunityToolkit.VectorData.Milvus" />
     <PackageReference Include="CommunityToolkit.VectorData.Qdrant" />
     <PackageReference Include="CommunityToolkit.VectorData.PgVector" />
     <PackageReference Include="CommunityToolkit.VectorData.Redis" />

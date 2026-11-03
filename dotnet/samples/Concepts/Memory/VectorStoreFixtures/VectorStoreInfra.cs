@@ -11,6 +11,44 @@ namespace Memory.VectorStoreFixtures;
 internal static class VectorStoreInfra
 {
     /// <summary>
+    /// Set up a standalone Milvus container with embedded etcd and local storage.
+    /// </summary>
+    /// <param name="client">The docker client to create the container with.</param>
+    /// <returns>The id of the container.</returns>
+    public static async Task<string> SetupMilvusContainerAsync(DockerClient client)
+    {
+        await client.Images.CreateImageAsync(
+            new ImagesCreateParameters
+            {
+                FromImage = "milvusdb/milvus",
+                Tag = "v2.6.25",
+            },
+            null,
+            new Progress<JSONMessage>());
+
+        var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters()
+        {
+            Image = "milvusdb/milvus:v2.6.25",
+            Cmd = ["milvus", "run", "standalone"],
+            Env = ["DEPLOY_MODE=STANDALONE", "ETCD_USE_EMBED=true", "COMMON_STORAGETYPE=local"],
+            HostConfig = new HostConfig()
+            {
+                PortBindings = new Dictionary<string, IList<PortBinding>>
+                {
+                    { "19530", new List<PortBinding> { new() { HostPort = "19530" } } },
+                },
+            },
+            ExposedPorts = new Dictionary<string, EmptyStruct>
+            {
+                { "19530", default },
+            },
+        });
+
+        await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
+        return container.ID;
+    }
+
+    /// <summary>
     /// Setup the postgres pgvector container by pulling the image and running it.
     /// </summary>
     /// <param name="client">The docker client to create the container with.</param>
