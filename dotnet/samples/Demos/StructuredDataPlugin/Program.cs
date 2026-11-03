@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -30,9 +31,29 @@ internal sealed class Program
                 modelId: "gpt-4o",
                 apiKey: config["OpenAI:ApiKey"]!);
 
-        // Add the database plugin using the factory with default operations
-        var databasePlugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<ApplicationDbContext, Product>(
-            structuredDataService);
+        var selectFunction = structuredDataService.CreateSelectFunction<ApplicationDbContext, Product>();
+        var insertFunction = structuredDataService.CreateInsertFunction<ApplicationDbContext, Product, CreateProductRequest>(
+            input => new Product { Name = input.Name, Price = input.Price });
+        var updateFunction = structuredDataService.CreateUpdateFunction<ApplicationDbContext, Product, UpdateProductRequest>(
+            async (input, cancellationToken) =>
+            {
+                // This application-owned query is the row-scope boundary for the mutation.
+                return await structuredDataService.Context.Set<Product>()
+                    .SingleOrDefaultAsync(product => product.Name == input.Name, cancellationToken);
+            },
+            (input, product) => product.Price = input.Price);
+        var deleteFunction = structuredDataService.CreateDeleteFunction<ApplicationDbContext, Product, DeleteProductRequest>(
+            async (input, cancellationToken) =>
+            {
+                // This application-owned query is the row-scope boundary for the mutation.
+                return await structuredDataService.Context.Set<Product>()
+                    .SingleOrDefaultAsync(product => product.Name == input.Name, cancellationToken);
+            });
+
+        var databasePlugin = KernelPluginFactory.CreateFromFunctions(
+            "ProductDatabasePlugin",
+            "Allows approved operations against products in the database",
+            [selectFunction, insertFunction, updateFunction, deleteFunction]);
 
         kernelBuilder.Plugins.Add(databasePlugin);
 

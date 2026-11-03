@@ -37,3 +37,51 @@ public sealed class Product
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? DateCreated { get; set; }
 }
+
+/// <summary>
+/// Information the model may provide when creating a product.
+/// </summary>
+internal sealed class CreateProductRequest
+{
+    /// <summary>
+    /// Gets or sets the product name.
+    /// </summary>
+    [Description("The name of the product.")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the product price.
+    /// </summary>
+    [Description("The price of the product in USD.")]
+    public decimal? Price { get; set; }
+}
+
+/// <summary>
+/// Information the model may provide when updating a product.
+/// </summary>
+internal sealed class UpdateProductRequest
+{
+    /// <summary>
+    /// Gets or sets the name used by the application to find the product.
+    /// </summary>
+    [Description("The current name of the product to update.")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the replacement price.
+    /// </summary>
+    [Description("The new price of the product in USD.")]
+    public decimal? Price { get; set; }
+}
+
+/// <summary>
+/// Information the model may provide when deleting a product.
+/// </summary>
+internal sealed class DeleteProductRequest
+{
+    /// <summary>
+    /// Gets or sets the name used by the application to find the product.
+    /// </summary>
+    [Description("The name of the product to delete.")]
+    public string? Name { get; set; }
+}
