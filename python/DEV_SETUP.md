@@ -18,6 +18,11 @@ compatible wheels. These extras and tests remain enabled on Python 3.11 through
 uv sync --all-extras --no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch --dev
 ```
 
+On Windows, Python 3.15 also omits the FAISS extra and its tests because no
+compatible Windows wheel or source distribution is available. Add
+`--no-extra faiss` to the command above when using Python 3.15 on Windows.
+FAISS remains enabled on all other supported OS/Python combinations.
+
 On Python 3.15, the SQL extra builds `pyodbc` from source. Install the unixODBC
 headers first: `sudo apt-get install unixodbc-dev` on Ubuntu, or
 `brew install unixodbc` on macOS.
