@@ -9,7 +9,13 @@ import numpy as np
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
+from semantic_kernel.connectors.in_memory import (
+    IN_MEMORY_SCORE_KEY,
+    AttributeDict,
+    InMemoryCollection,
+    InMemoryStore,
+    TKey,
+)
 from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
@@ -245,7 +251,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
-        return_list = []
+        return_list: list[AttributeDict] = []
         # first we create the vector to search with
         np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
         # then do the actual vector search
