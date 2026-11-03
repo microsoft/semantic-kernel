@@ -286,7 +286,16 @@ class TestQueryBuildFunctions:
         assert cmd.parameters[0] == "test"
         assert str_cmd == "DELETE FROM [dbo].[Test] WHERE [id] IN (?) ;"
 
-    def test_build_search_query(self):
+    @mark.parametrize(
+        ("distance_function", "metric"),
+        [
+            (DistanceFunction.COSINE_DISTANCE, "cosine"),
+            (DistanceFunction.EUCLIDEAN_DISTANCE, "euclidean"),
+            (DistanceFunction.DOT_PROD, "dot"),
+            (DistanceFunction.DEFAULT, "cosine"),
+        ],
+    )
+    def test_build_search_query(self, distance_function, metric):
         schema = "dbo"
         table = "Test"
         key_field = VectorStoreField("key", name="id", type="str")
@@ -300,7 +309,7 @@ class TestQueryBuildFunctions:
                 name="embedding",
                 type="float",
                 dimensions=5,
-                distance_function=DistanceFunction.COSINE_DISTANCE,
+                distance_function=distance_function,
             ),
         ]
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -312,7 +321,7 @@ class TestQueryBuildFunctions:
         assert cmd.parameters[0] == json.dumps(vector)
         str_cmd = str(cmd)
         assert (
-            str_cmd == "SELECT [id], [name], [age], VECTOR_DISTANCE('cosine', [embedding], CAST(? AS VECTOR(5))) as "
+            str_cmd == f"SELECT [id], [name], [age], VECTOR_DISTANCE('{metric}', [embedding], CAST(? AS VECTOR(5))) as "
             "_vector_distance_value\n FROM [dbo].[Test] \nORDER BY "
             "_vector_distance_value ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
         )
@@ -571,6 +580,49 @@ class TestSqlServerCollection:
                 "ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
             ),
             (json.dumps(vector), "test"),
+        )
+
+    async def test_search_with_default_distance_function(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+    ):
+        @vectorstoremodel
+        @dataclass
+        class DefaultDistanceRecord:
+            id: Annotated[str, VectorStoreField("key")]
+            content: Annotated[str, VectorStoreField("data")]
+            vector: Annotated[list[float], VectorStoreField("vector", dimensions=5)] = None
+
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+        collection = SqlServerCollection(
+            collection_name="test",
+            record_type=DefaultDistanceRecord,
+            connection=mock_connection,
+        )
+        assert collection.definition.vector_fields[0].distance_function == DistanceFunction.DEFAULT
+        vector = [0.1, 0.2, 0.3, 0.4, 0.5]
+
+        @dataclass
+        class MockRow:
+            id: str
+            content: str
+            _vector_distance_value: float
+
+        mock_cursor.description = [["id"], ["content"], ["_vector_distance_value"]]
+        mock_cursor.__iter__.return_value = [MockRow("1", "test", 0.1)]
+        search_result = await collection.search(vector=vector)
+        records = [record async for record in search_result.results]
+        assert records[0].record.id == "1"
+        assert records[0].score == 0.1
+        mock_cursor.execute.assert_called_with(
+            (
+                "SELECT [id], [content], VECTOR_DISTANCE('cosine', [vector], CAST(? AS VECTOR(5))) as "
+                "_vector_distance_value\n FROM [dbo].[test] \nORDER BY _vector_distance_value ASC\n"
+                "OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
+            ),
+            (json.dumps(vector),),
         )
 
     async def test_ensure_collection_exists(
