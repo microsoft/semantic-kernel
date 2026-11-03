@@ -281,6 +281,77 @@ public sealed class HttpPluginTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task ItIgnoresConfiguredProxyForValidatedRequestsAsync()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var targetListener = new TcpListener(IPAddress.Parse("127.0.0.2"), 0);
+        var proxyListener = new TcpListener(IPAddress.Parse("127.0.0.3"), 0);
+        targetListener.Start();
+        proxyListener.Start();
+        Task<(string? RequestLine, string? HostHeader)>? targetTask = null;
+        Task<(string? RequestLine, string? HostHeader)>? proxyTask = null;
+
+        try
+        {
+            var targetEndpoint = Assert.IsType<IPEndPoint>(targetListener.LocalEndpoint);
+            var proxyEndpoint = Assert.IsType<IPEndPoint>(proxyListener.LocalEndpoint);
+            targetTask = ServeOneRequestAsync(targetListener, cancellationTokenSource.Token, "target");
+            proxyTask = ServeOneRequestAsync(proxyListener, cancellationTokenSource.Token, "proxy");
+            using var client = HttpClientProvider.GetValidatedNonRedirectingHttpClient(
+                new WebProxy($"http://{proxyEndpoint.Address}:{proxyEndpoint.Port}"));
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"http://example.test:{targetEndpoint.Port}/resource");
+            request.Options.Set(HttpClientProvider.ValidatedAddressesKey, [targetEndpoint.Address]);
+
+            using var response = await client.SendAsync(request, cancellationTokenSource.Token);
+
+            Assert.Equal("target", await response.Content.ReadAsStringAsync(cancellationTokenSource.Token));
+            Assert.True(targetTask.IsCompletedSuccessfully);
+            Assert.False(proxyTask.IsCompleted);
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            targetListener.Stop();
+            proxyListener.Stop();
+            await ObserveServerTaskAsync(targetTask);
+            await ObserveServerTaskAsync(proxyTask);
+        }
+    }
+
+    [Fact]
+    public async Task ItUsesConfiguredProxyForUncheckedRequestsAsync()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var proxyListener = new TcpListener(IPAddress.Parse("127.0.0.3"), 0);
+        proxyListener.Start();
+        Task<(string? RequestLine, string? HostHeader)>? proxyTask = null;
+
+        try
+        {
+            var proxyEndpoint = Assert.IsType<IPEndPoint>(proxyListener.LocalEndpoint);
+            proxyTask = ServeOneRequestAsync(proxyListener, cancellationTokenSource.Token, "proxy");
+            using var client = HttpClientProvider.GetValidatedNonRedirectingHttpClient(
+                new WebProxy($"http://{proxyEndpoint.Address}:{proxyEndpoint.Port}"));
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://example.test:8080/resource");
+
+            using var response = await client.SendAsync(request, cancellationTokenSource.Token);
+            var (requestLine, hostHeader) = await proxyTask;
+
+            Assert.Equal("proxy", await response.Content.ReadAsStringAsync(cancellationTokenSource.Token));
+            Assert.Equal("GET http://example.test:8080/resource HTTP/1.1", requestLine);
+            Assert.Equal("Host: example.test:8080", hostHeader);
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            proxyListener.Stop();
+            await ObserveServerTaskAsync(proxyTask);
+        }
+    }
+
     [Theory]
     [InlineData("GET", "127.0.0.1")]
     [InlineData("POST", "127.0.0.1")]
@@ -367,7 +438,8 @@ public sealed class HttpPluginTests : IDisposable
 
     private static async Task<(string? RequestLine, string? HostHeader)> ServeOneRequestAsync(
         TcpListener listener,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string responseBody = "")
     {
         using var connection = await listener.AcceptTcpClientAsync(cancellationToken);
         await using var stream = connection.GetStream();
@@ -383,9 +455,32 @@ public sealed class HttpPluginTests : IDisposable
             }
         }
 
-        var responseBytes = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+        var responseBytes = Encoding.ASCII.GetBytes(
+            $"HTTP/1.1 200 OK\r\nContent-Length: {Encoding.ASCII.GetByteCount(responseBody)}\r\nConnection: close\r\n\r\n{responseBody}");
         await stream.WriteAsync(responseBytes, cancellationToken);
         return (requestLine, hostHeader);
+    }
+
+    private static async Task ObserveServerTaskAsync(Task? serverTask)
+    {
+        if (serverTask is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await serverTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (SocketException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private Mock<HttpMessageHandler> CreateMock()

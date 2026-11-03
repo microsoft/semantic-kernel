@@ -63,6 +63,11 @@ internal static class HttpClientProvider
 #endif
     }
 
+#if NET
+    internal static HttpClient GetValidatedNonRedirectingHttpClient(IWebProxy proxy) =>
+        new(new ValidatedAddressHandler(proxy), disposeHandler: true);
+#endif
+
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
@@ -92,12 +97,13 @@ internal static class HttpClientProvider
         private readonly HttpMessageInvoker _validatedClient;
         private readonly HttpMessageInvoker _uncheckedClient;
 
-        private ValidatedAddressHandler()
+        internal ValidatedAddressHandler(IWebProxy? proxy = null)
         {
             // Share cookies, not sockets, so changing validation policy cannot reuse a connection from another policy.
             var cookies = new CookieContainer();
-            this._validatedClient = new HttpMessageInvoker(CreateHandler(cookies));
-            this._uncheckedClient = new HttpMessageInvoker(CreateHandler(cookies));
+            // A proxy owns destination resolution, so validated requests must connect directly to preserve address binding.
+            this._validatedClient = new HttpMessageInvoker(CreateHandler(cookies, proxy: null, useProxy: false));
+            this._uncheckedClient = new HttpMessageInvoker(CreateHandler(cookies, proxy, useProxy: true));
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -119,13 +125,15 @@ internal static class HttpClientProvider
             base.Dispose(disposing);
         }
 
-        private static SocketsHttpHandler CreateHandler(CookieContainer cookies)
+        private static SocketsHttpHandler CreateHandler(CookieContainer cookies, IWebProxy? proxy, bool useProxy)
         {
             return new SocketsHttpHandler
             {
                 AllowAutoRedirect = false,
                 CookieContainer = cookies,
+                Proxy = proxy,
                 PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+                UseProxy = useProxy,
                 SslOptions = new SslClientAuthenticationOptions
                 {
                     CertificateRevocationCheckMode = X509RevocationMode.Online,
