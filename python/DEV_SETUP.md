@@ -8,19 +8,28 @@ Supported Python versions are 3.11, 3.12, 3.13, 3.14, and 3.15. Python 3.11 is
 the minimum; Python 3.14 is the default for local setup. Unit-test CI covers
 these versions; integration-test CI uses Python 3.14.
 
-Python 3.15 unit-test jobs omit the Hugging Face, ONNX, Chroma, and USearch extras
+Python 3.14 and 3.15 unit-test jobs omit the legacy AutoGen extra and its tests.
+AutoGen requires NumPy below 2, which also forces older scientific and gRPC
+dependencies. Unit-test CI uses `uv pip install` to resolve only each job's
+selected extras and development dependencies, followed by `uv run --no-sync`.
+This avoids constraints from extras that the job does not install.
+
+Python 3.15 unit-test jobs also omit the Hugging Face, ONNX, Chroma, and USearch extras
 and their connector tests. The pinned PyTorch and ONNX Runtime GenAI releases,
 Chroma's ONNX Runtime dependency, and the allowed USearch releases do not provide
 compatible wheels. These extras and tests remain enabled on Python 3.11 through
-3.14. The same extra exclusions are needed when installing locally on Python 3.15:
+3.14. For a local Python 3.15 environment, select the supported extras you need.
+For example:
 
 ```bash
-uv sync --all-extras --no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch --dev
+uv venv --python 3.15
+uv pip install --editable ".[azure,pandas]" --group dev
+uv run --no-sync pytest tests/unit/agents/runtime
 ```
 
 On Windows, Python 3.15 also omits the FAISS extra and its tests because no
-compatible Windows wheel or source distribution is available. Add
-`--no-extra faiss` to the command above when using Python 3.15 on Windows.
+compatible Windows wheel or source distribution is available. Do not select
+the `faiss` extra when using Python 3.15 on Windows.
 FAISS remains enabled on all other supported OS/Python combinations.
 
 On Python 3.15, the SQL extra builds `pyodbc` from source. Install the unixODBC

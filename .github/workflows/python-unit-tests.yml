@@ -38,7 +38,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
-          version: "0.5.x"
+          version: "0.13.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
@@ -50,27 +50,45 @@ jobs:
         run: brew install unixodbc
       - name: Install the project (supported extras)
         if: matrix.test-suite == 'unit-all-except-dapr'
-        # These extras require native packages without compatible Python 3.15 wheels.
-        run: >-
-          uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
-          ${{ matrix.python-version == '3.15' && '--no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch' || '' }}
-          ${{ matrix.python-version == '3.15' && runner.os == 'Windows' && '--no-extra faiss' || '' }}
+        shell: bash
+        run: |
+          uv venv
+          extras=$(python - <<'PY'
+          import sys
+          import tomllib
+          from pathlib import Path
+
+          extras = set(tomllib.loads(Path("pyproject.toml").read_text())["project"]["optional-dependencies"])
+          if sys.version_info >= (3, 14):
+              extras.discard("autogen")
+          if sys.version_info[:2] == (3, 15):
+              extras.difference_update({"hugging_face", "onnx", "chroma", "usearch"})
+              if sys.platform == "win32":
+                  extras.discard("faiss")
+          print(",".join(sorted(extras)))
+          PY
+          )
+          uv pip install --editable ".[$extras]" --group dev --upgrade --prerelease=if-necessary-or-explicit
       - name: Install the project (dapr tests)
         if: matrix.test-suite == 'dapr'
-        run: uv sync --extra pandas --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
+        shell: bash
+        run: |
+          uv venv
+          uv pip install --editable ".[pandas]" --group dev --upgrade --prerelease=if-necessary-or-explicit "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
       - name: Test with pytest (all except dapr)
         if: matrix.test-suite == 'unit-all-except-dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
         run: >-
-          uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+          uv run --no-sync pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+          ${{ (matrix.python-version == '3.14' || matrix.python-version == '3.15') && '--ignore=tests/unit/agents/autogen_conversable_agent' || '' }}
           ${{ matrix.python-version == '3.15' && '--ignore=tests/unit/connectors/ai/hugging_face --ignore=tests/unit/connectors/ai/onnx --ignore=tests/unit/connectors/memory/test_chroma.py --ignore=tests/unit/data/test_vector_negative_filter_literals.py' || '' }}
           ${{ matrix.python-version == '3.15' && runner.os == 'Windows' && '--ignore=tests/unit/connectors/memory/test_faiss.py' || '' }}
       - name: Test dapr with pytest
         if: matrix.test-suite == 'dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
+        run: uv run --no-sync pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
         if: matrix.test-suite == 'unit-all-except-dapr'
         uses: pmeier/pytest-results-action@fdc7f18d9934e38aca411ca9557e6577bd25ca9c # v0.9.0

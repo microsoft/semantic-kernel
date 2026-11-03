@@ -82,6 +82,8 @@ class KernelJsonSchemaBuilder:
         properties = {}
         required = []
 
+        if not isinstance(model, type):
+            model = type(model)
         model_module_globals = vars(sys.modules[model.__module__])
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
