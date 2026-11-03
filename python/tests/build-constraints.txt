@@ -1,0 +1,2 @@
+# gRPC's MSVC flag filtering patches Compiler.spawn, which setuptools 84 bypasses.
+setuptools<84; sys_platform == "win32" and python_version == "3.15"

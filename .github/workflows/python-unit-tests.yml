@@ -24,6 +24,7 @@ jobs:
             os: macos-latest
     env:
       UV_PYTHON: ${{ matrix.python-version }}
+      UV_BUILD_CONSTRAINT: tests/build-constraints.txt
     permissions:
       contents: write
     defaults:

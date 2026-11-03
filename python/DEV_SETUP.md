@@ -13,6 +13,8 @@ AutoGen requires NumPy below 2, which also forces older scientific and gRPC
 dependencies. Unit-test CI uses `uv pip install` to resolve only each job's
 selected extras and development dependencies, followed by `uv run --no-sync`.
 This avoids constraints from extras that the job does not install.
+On Windows/Python 3.15, `tests/build-constraints.txt` also keeps setuptools
+below 84 so gRPC's source-build compiler hook can filter C/C++ flags correctly.
 
 Python 3.15 unit-test jobs also omit the Hugging Face, ONNX, Chroma, and USearch extras
 and their connector tests. The pinned PyTorch and ONNX Runtime GenAI releases,
