@@ -64,7 +64,9 @@ public sealed class FileIOPlugin
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var reader = File.OpenText(canonicalPath);
+        using var stream = SecureFileSystem.OpenRead(
+            canonicalPath, this._allowedFolders, out _, rejectReadOnly: true);
+        using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
@@ -87,14 +89,9 @@ public sealed class FileIOPlugin
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
-        if (this.DisableFileOverwrite && File.Exists(canonicalPath))
-        {
-            throw new InvalidOperationException("Overwriting existing files is disabled.");
-        }
-
         byte[] text = Encoding.UTF8.GetBytes(content);
         var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
-        using var writer = new FileStream(canonicalPath, fileMode, FileAccess.Write, FileShare.None);
+        using var writer = this.OpenWrite(canonicalPath, fileMode);
         await writer.WriteAsync(text
 #if !NET
             , 0, text.Length
@@ -104,6 +101,18 @@ public sealed class FileIOPlugin
 
     #region private
     private HashSet<string>? _allowedFolders = [];
+
+    private FileStream OpenWrite(string path, FileMode mode)
+    {
+        try
+        {
+            return SecureFileSystem.OpenWrite(path, this._allowedFolders, out _, mode, FileShare.None);
+        }
+        catch (SecureFileSystem.FileAlreadyExistsException ex)
+        {
+            throw new InvalidOperationException("Overwriting existing files is disabled.", ex);
+        }
+    }
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -171,12 +180,6 @@ public sealed class FileIOPlugin
             if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
                 || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
-                if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
-                {
-                    // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-                    throw new UnauthorizedAccessException("File is read-only.");
-                }
-
                 return true;
             }
         }

@@ -133,6 +133,20 @@ def test_add_tool_message_to_dict_succeeds(chat_history: ChatHistory):
     assert result["tool_call_id"] == "call_123"
 
 
+def test_add_tool_message_empty_content_to_dict_succeeds(chat_history: ChatHistory):
+    chat_history.add_tool_message("", tool_call_id="call_123")
+    msg = chat_history.messages[-1]
+    assert msg.role == AuthorRole.TOOL
+    assert len(msg.items) == 1
+    assert isinstance(msg.items[0], FunctionResultContent)
+    assert msg.items[0].result == ""
+    assert msg.items[0].id == "call_123"
+    result = msg.to_dict()
+    assert result["content"] == ""
+    assert result["role"] == AuthorRole.TOOL
+    assert result["tool_call_id"] == "call_123"
+
+
 def test_add_tool_message_list(chat_history: ChatHistory):
     content = [FunctionResultContent(id="test", result="Tool message")]
     chat_history.add_tool_message(content)

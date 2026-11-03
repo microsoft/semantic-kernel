@@ -3,10 +3,11 @@
 import json
 import sys
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 from unittest.mock import Mock
 
 import pytest
+from pydantic import Field
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -75,6 +76,14 @@ class PydanticStep(KernelBaseModel):
 class PydanticReasoning(KernelBaseModel):
     steps: list[PydanticStep]
     final_answer: str
+
+
+class PydanticModelWithConstrainedField(KernelBaseModel):
+    top_p: float = Field(default=0.9, ge=0.0, le=1.0, description="nucleus sampling")
+
+
+class PydanticModelWithAnnotatedDescription(KernelBaseModel):
+    name: Annotated[str, "display name"]
 
 
 class NonPydanticStep:
@@ -155,6 +164,20 @@ def test_build_model_schema():
     }
     result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
+
+
+def test_build_model_schema_uses_pydantic_description_with_constraints():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithConstrainedField)
+
+    assert schema["properties"]["top_p"] == {"type": "number", "description": "nucleus sampling"}
+    json.dumps(schema)
+
+
+def test_build_model_schema_uses_annotated_metadata_description():
+    schema = KernelJsonSchemaBuilder.build_model_schema(PydanticModelWithAnnotatedDescription)
+
+    assert schema["properties"]["name"] == {"type": "string", "description": "display name"}
+    json.dumps(schema)
 
 
 def test_build_from_type_name():
@@ -456,6 +479,107 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+
+
+class ModelWithClassVar(KernelBaseModel):
+    marker: ClassVar[str] = "constant"
+    value: int
+
+
+class ModelWithBareClassVar(KernelBaseModel):
+    marker: ClassVar = 0
+    value: str
+
+
+class ModelInheritingClassVar(ModelWithClassVar):
+    extra: float
+
+
+class PlainClassWithClassVar:
+    marker: ClassVar[dict] = {}
+    name: str
+
+
+class ModelWithClassVarAndOptional(KernelBaseModel):
+    counter: ClassVar[int] = 5
+    keep: str
+    drop: str | None = None
+
+
+def test_build_model_schema_excludes_class_var():
+    schema = KernelJsonSchemaBuilder.build(ModelWithClassVar)
+
+    assert schema == {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+
+
+def test_build_model_schema_excludes_bare_class_var():
+    schema = KernelJsonSchemaBuilder.build(ModelWithBareClassVar)
+
+    assert schema == {"type": "object", "properties": {"value": {"type": "string"}}, "required": ["value"]}
+
+
+def test_build_model_schema_excludes_inherited_class_var():
+    schema = KernelJsonSchemaBuilder.build(ModelInheritingClassVar)
+
+    assert schema == {
+        "type": "object",
+        "properties": {"value": {"type": "integer"}, "extra": {"type": "number"}},
+        "required": ["value", "extra"],
+    }
+
+
+def test_build_model_schema_excludes_class_var_on_plain_class():
+    schema = KernelJsonSchemaBuilder.build(PlainClassWithClassVar)
+
+    assert schema == {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}
+
+
+def test_build_model_schema_class_var_with_optional_fields():
+    schema = KernelJsonSchemaBuilder.build(ModelWithClassVarAndOptional)
+
+    assert schema == {
+        "type": "object",
+        "properties": {"keep": {"type": "string"}, "drop": {"type": ["string", "null"]}},
+        "required": ["keep"],
+    }
+
+
+def test_build_model_schema_class_var_structured_output():
+    schema = KernelJsonSchemaBuilder.build(ModelWithClassVar, structured_output=True)
+
+    assert schema == {
+        "type": "object",
+        "properties": {"value": {"type": "integer"}},
+        "required": ["value"],
+        "additionalProperties": False,
+    }
+
+
+def test_build_model_schema_class_var_with_description():
+    schema = KernelJsonSchemaBuilder.build(ModelWithClassVar, description="A payload")
+
+    assert schema == {
+        "type": "object",
+        "properties": {"value": {"type": "integer"}},
+        "required": ["value"],
+        "description": "A payload",
+    }
+
+
+def test_build_model_schema_class_var_via_instance():
+    instance = ModelWithClassVar(value=1)
+
+    schema = KernelJsonSchemaBuilder.build(instance)
+
+    assert schema == {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+
+
+def test_build_model_schema_allows_serialized_payload():
+    schema = KernelJsonSchemaBuilder.build(ModelWithClassVar)
+
+    serialized = ModelWithClassVar(value=1).model_dump()
+    for field in schema.get("required", []):
+        assert field in serialized
 
 
 class LiteralModel(KernelBaseModel):

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 import re
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -17,7 +18,7 @@ from semantic_kernel.connectors.mcp import (
     create_mcp_server_from_functions,
     create_mcp_server_from_kernel,
 )
-from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
+from semantic_kernel.exceptions import FunctionExecutionException, KernelPluginInvalidConfigurationError
 from semantic_kernel.functions import KernelFunction, KernelPlugin, kernel_function
 
 
@@ -253,6 +254,76 @@ async def test_mcp_plugin_failed_get_session():
                 args=["Hello"],
             ):
                 pass
+
+
+@pytest.mark.parametrize("supplied_session", [False, True])
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_streamable_http_initialization_failure_unblocks_connect(mock_session, mock_client, supplied_session):
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+    mock_callback = MagicMock()
+
+    mock_generator = MagicMock()
+    mock_generator.__aenter__.return_value = (mock_read, mock_write, mock_callback)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write, mock_callback)
+    mock_client.return_value = mock_generator
+
+    session = mock_session.return_value.__aenter__.return_value
+    session._request_id = 0
+    initialization_error = RuntimeError("Unauthorized")
+    session.initialize.side_effect = initialization_error
+
+    plugin = MCPStreamableHttpPlugin(
+        name="test",
+        url="http://localhost:8080/mcp",
+        session=session if supplied_session else None,
+        load_tools=False,
+        load_prompts=False,
+    )
+
+    with pytest.raises(KernelPluginInvalidConfigurationError, match="Failed to initialize session") as exc_info:
+        await asyncio.wait_for(plugin.connect(), timeout=1)
+
+    assert exc_info.value.__cause__ is initialization_error
+    assert plugin.session is None
+
+
+@pytest.mark.parametrize("failed_loader", ["load_tools", "load_prompts"])
+@patch("semantic_kernel.connectors.mcp.streamablehttp_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_loader_failure_closes_contexts_and_allows_reconnect(mock_session, mock_client, failed_loader):
+    transport = MagicMock()
+    transport.__aenter__.return_value = (MagicMock(), MagicMock(), MagicMock())
+    mock_client.return_value = transport
+    session_context = mock_session.return_value
+
+    async def exit_after_yield(*args):
+        await asyncio.sleep(0)
+        return False
+
+    session_context.__aexit__.side_effect = exit_after_yield
+    plugin = MCPStreamableHttpPlugin(
+        name="test",
+        url="http://localhost:8080/mcp",
+        load_tools=failed_loader == "load_tools",
+        load_prompts=failed_loader == "load_prompts",
+    )
+    setattr(plugin, failed_loader, AsyncMock(side_effect=RuntimeError("load failed")))
+
+    with pytest.raises(FunctionExecutionException, match="Failed to enter context manager"):
+        await asyncio.wait_for(plugin.connect(), timeout=1)
+
+    session_context.__aexit__.assert_awaited_once()
+    transport.__aexit__.assert_awaited_once()
+    assert plugin.session is None
+
+    setattr(plugin, failed_loader, AsyncMock())
+    await asyncio.wait_for(plugin.connect(), timeout=1)
+    assert plugin.session is session_context.__aenter__.return_value
+    await asyncio.wait_for(plugin.close(), timeout=1)
+    assert session_context.__aexit__.await_count == 2
+    assert transport.__aexit__.await_count == 2
 
 
 @patch("semantic_kernel.connectors.mcp.stdio_client")
@@ -900,3 +971,36 @@ async def test_mcp_server_tool_name_length_uses_registered_alias(
         result = await client.call_tool(expected_name, {})
         assert not result.isError
         assert result.content == [types.TextContent(type="text", text="hello")]
+
+
+async def test_mcp_prompt_optional_arguments_are_not_required():
+    plugin = MCPStdioPlugin(name="test", command="echo", load_tools=False)
+    plugin.session = AsyncMock(spec=ClientSession)
+    plugin.session.list_prompts.return_value = types.ListPromptsResult(
+        prompts=[
+            types.Prompt(
+                name="review",
+                arguments=[
+                    types.PromptArgument(name="code", required=True),
+                    types.PromptArgument(name="style", required=False),
+                    types.PromptArgument(name="language"),
+                ],
+            )
+        ]
+    )
+    plugin.session.get_prompt.return_value = types.GetPromptResult(
+        messages=[types.PromptMessage(role="user", content=types.TextContent(type="text", text="review this"))]
+    )
+    await plugin.load_prompts()
+    kernel = Kernel()
+    kernel.add_plugin(plugin, "test")
+    function = kernel.get_function("test", "review")
+
+    assert {p.name: p.is_required for p in function.metadata.parameters} == {
+        "code": True,
+        "style": False,
+        "language": False,
+    }
+    result = await kernel.invoke(function, code="x = 1")
+    assert str(result) == "review this"
+    plugin.session.get_prompt.assert_awaited_once_with("review", arguments={"code": "x = 1"})

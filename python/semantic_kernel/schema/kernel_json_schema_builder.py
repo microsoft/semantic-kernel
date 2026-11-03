@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Annotated, Any, ForwardRef, Literal, Union, get_args, get_origin, get_type_hints
+from typing import Annotated, Any, ClassVar, ForwardRef, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -86,16 +86,28 @@ class KernelJsonSchemaBuilder:
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            if field_type is ClassVar or get_origin(field_type) is ClassVar:
+                # ClassVar annotations are class-level constants: pydantic
+                # excludes them from model fields and serialized instances,
+                # so they must not become (required) schema properties.
+                continue
             field_type = cls.resolve_forward_refs(field_type, model_module_globals)
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
-                if isinstance(field_info.metadata, dict):
-                    field_description = field_info.metadata.get("description")
-                elif isinstance(field_info.metadata, list) and field_info.metadata:
-                    field_description = field_info.metadata[0]
-                elif hasattr(field_info, "description"):
-                    field_description = field_info.description
+                field_description = getattr(field_info, "description", None)
+                if field_description is None:
+                    metadata = getattr(field_info, "metadata", None)
+                    if isinstance(metadata, dict):
+                        field_description = metadata.get("description")
+                    elif isinstance(metadata, (list, tuple)):
+                        for item in metadata:
+                            if isinstance(item, str):
+                                field_description = item
+                                break
+                            if isinstance(item, dict) and isinstance(item.get("description"), str):
+                                field_description = item["description"]
+                                break
             if not cls._is_optional(field_type):
                 required.append(field_name)
             properties[field_name] = cls.build(field_type, field_description, structured_output)
