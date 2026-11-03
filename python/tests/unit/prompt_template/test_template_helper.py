@@ -153,7 +153,7 @@ def test_create_helper_skips_kernel_injected_parameters(kernel: Kernel):
 @pytest.mark.parametrize("input_name", ["service", "kernel", "execution_settings", "arguments"])
 @pytest.mark.parametrize("values", [("first",), ("first", "second")])
 @pytest.mark.parametrize("mode", ["jinja_sync", "jinja_async", "handlebars"])
-async def test_prompt_function_preserves_named_inputs_for_positional_binding(kernel, mocker, input_name, values, mode):
+async def test_prompt_function_preserves_named_inputs_for_positional_binding(kernel, monkeypatch, input_name, values, mode):
     from unittest.mock import AsyncMock
 
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
@@ -168,7 +168,8 @@ async def test_prompt_function_preserves_named_inputs_for_positional_binding(ker
             input_variables=[InputVariable(name=input_name), InputVariable(name="value")],
         ),
     )
-    invoke = mocker.patch.object(KernelFunctionFromPrompt, "invoke", new=AsyncMock(return_value="result"))
+    invoke = AsyncMock(return_value="result")
+    monkeypatch.setattr(KernelFunctionFromPrompt, "invoke", invoke)
     helper = create_template_helper_from_function(
         function,
         kernel,
