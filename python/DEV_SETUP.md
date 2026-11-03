@@ -18,6 +18,10 @@ compatible wheels. These extras and tests remain enabled on Python 3.11 through
 uv sync --all-extras --no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch --dev
 ```
 
+On Python 3.15, the SQL extra builds `pyodbc` from source. Install the unixODBC
+headers first: `sudo apt-get install unixodbc-dev` on Ubuntu, or
+`brew install unixodbc` on macOS.
+
 ## System setup
 
 ## If you're on WSL

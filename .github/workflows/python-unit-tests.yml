@@ -42,6 +42,12 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
+      - name: Install ODBC build dependencies (Linux)
+        if: runner.os == 'Linux' && matrix.python-version == '3.15' && matrix.test-suite == 'unit-all-except-dapr'
+        run: sudo apt-get update && sudo apt-get install -y unixodbc-dev
+      - name: Install ODBC build dependencies (macOS)
+        if: runner.os == 'macOS' && matrix.python-version == '3.15' && matrix.test-suite == 'unit-all-except-dapr'
+        run: brew install unixodbc
       - name: Install the project (supported extras)
         if: matrix.test-suite == 'unit-all-except-dapr'
         # These extras require native packages without compatible Python 3.15 wheels.
