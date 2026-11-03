@@ -4,3 +4,6 @@
 # Bash scripts
 *.sh  text eol=lf
 *.cmd text eol=crlf
+
+# Generated dependency lock files
+**/uv.lock linguist-generated=true

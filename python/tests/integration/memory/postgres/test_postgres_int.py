@@ -8,6 +8,7 @@ from typing import Annotated, Any
 import pandas as pd
 import pytest
 import pytest_asyncio
+from psycopg import sql
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.postgres import PostgresCollection, PostgresSettings, PostgresStore
@@ -19,6 +20,7 @@ from semantic_kernel.data.vector import (
     VectorStoreField,
     vectorstoremodel,
 )
+from semantic_kernel.exceptions import VectorStoreModelValidationError
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,
@@ -141,6 +143,62 @@ async def test_ensure_collection_exists_exists_and_delete(vector_store: Postgres
     await collection.ensure_collection_deleted()
     does_exist_3 = await collection.collection_exists()
     assert does_exist_3 is False
+
+
+async def test_ensure_collection_exists_rejects_unsupported_type_without_database_side_effects(
+    vector_store: PostgresStore,
+):
+    suffix = str(uuid.uuid4()).replace("-", "")[:8]
+    sentinel_name = f"sentinel_{suffix}"
+    collection_name = f"test_collection_{suffix}"
+    connection_pool = vector_store.connection_pool
+
+    async with connection_pool.connection() as conn, conn.cursor() as cur:
+        await cur.execute(
+            sql.SQL("CREATE TABLE {schema}.{table} (id INTEGER)").format(
+                schema=sql.Identifier(vector_store.db_schema),
+                table=sql.Identifier(sentinel_name),
+            )
+        )
+        await conn.commit()
+
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField(
+                "data",
+                name="content",
+                type=f"TEXT); DROP TABLE {sentinel_name}; --",
+            ),
+        ]
+    )
+    collection = vector_store.get_collection(
+        collection_name=collection_name,
+        record_type=dict,
+        definition=definition,
+    )
+
+    try:
+        with pytest.raises(VectorStoreModelValidationError, match="not supported for automatic collection creation"):
+            await collection.ensure_collection_exists()
+
+        async with connection_pool.connection() as conn, conn.cursor() as cur:
+            await cur.execute(
+                "SELECT to_regclass(%s)",
+                (f"{vector_store.db_schema}.{sentinel_name}",),
+            )
+            row = await cur.fetchone()
+            assert row is not None
+            assert row[0] == sentinel_name
+    finally:
+        async with connection_pool.connection() as conn, conn.cursor() as cur:
+            await cur.execute(
+                sql.SQL("DROP TABLE IF EXISTS {schema}.{table}").format(
+                    schema=sql.Identifier(vector_store.db_schema),
+                    table=sql.Identifier(sentinel_name),
+                )
+            )
+            await conn.commit()
 
 
 async def test_list_collection_names(vector_store):

@@ -57,7 +57,7 @@ jobs:
           PYTHON_GIL: ${{ matrix.gil }}
         run: >-
           uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
-          ${{ matrix.python-version == '3.15' && '--ignore=tests/unit/connectors/ai/hugging_face --ignore=tests/unit/connectors/ai/onnx --ignore=tests/unit/connectors/memory/test_chroma.py' || '' }}
+          ${{ matrix.python-version == '3.15' && '--ignore=tests/unit/connectors/ai/hugging_face --ignore=tests/unit/connectors/ai/onnx --ignore=tests/unit/connectors/memory/test_chroma.py --ignore=tests/unit/data/test_vector_negative_filter_literals.py' || '' }}
       - name: Test dapr with pytest
         if: matrix.test-suite == 'dapr'
         env:

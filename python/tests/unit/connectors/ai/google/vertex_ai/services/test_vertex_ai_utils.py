@@ -197,3 +197,27 @@ def test_vertex_ai_function_call_format_empty_parameters() -> None:
     )
     result = kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
     assert isinstance(result, FunctionDeclaration)
+
+
+def test_vertex_ai_function_call_format_skips_params_excluded_from_function_choices() -> None:
+    metadata = KernelFunctionMetadata(
+        name="lookup",
+        description="Look up a user",
+        is_prompt=False,
+        parameters=[
+            KernelParameterMetadata(
+                name="query", description="What to look up", schema_data={"type": "string"}, is_required=True
+            ),
+            KernelParameterMetadata(
+                name="token",
+                description="Internal",
+                schema_data={"type": "string"},
+                is_required=True,
+                include_in_function_choices=False,
+            ),
+        ],
+    )
+    result = kernel_function_metadata_to_vertex_ai_function_call_format(metadata)
+    schema = type(result).to_dict(result)["parameters"]
+    assert list(schema["properties"]) == ["query"]
+    assert schema["required"] == ["query"]

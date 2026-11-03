@@ -423,7 +423,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info("Calling %s function.", function_call.name)
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -475,7 +475,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.error(
+                "Error invoking function %s. Error type: %s.",
+                context.function.fully_qualified_name,
+                type(exc).__name__,
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value

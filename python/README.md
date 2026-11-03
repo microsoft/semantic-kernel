@@ -180,6 +180,48 @@ asyncio.run(main())
 
 You can explore additional getting started agent samples [here](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents).
 
+### Tool invocation and authorization
+
+Treat model-generated function calls and arguments as untrusted input. Prompts, function descriptions,
+and a model's decision to call a tool are not authorization controls. The application must authorize
+the caller, target resource, and arguments before performing a sensitive operation.
+
+`FunctionChoiceBehavior.Auto()` without filters makes all functions registered in the kernel available
+for automatic invocation. Register only the functions needed for the task, or use an explicit, nonempty
+allowlist:
+
+```python
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
+
+settings = OpenAIChatPromptExecutionSettings(
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["MenuPlugin-get_specials"]}
+    )
+)
+```
+
+Function names in `included_functions` use the `PluginName-function_name` format. Use the plugin name
+and function name actually registered in your kernel. With filters configured, the chat completion
+automatic invocation path checks the requested function against the filtered kernel metadata before
+invoking it. Keep the kernel's registered functions and the behavior's filters unchanged during a request;
+this check is not a snapshot of the tools sent to the model. An empty inclusion list is not a deny-all
+policy: empty lists do not restrict function selection.
+
+Function-choice filters restrict which functions can be selected; they do not authorize access to
+data or validate whether an operation is permitted for a particular user. Enforce those checks in the
+function or in a [function invocation filter](samples/concepts/filtering/function_invocation_filters.py).
+An [automatic function invocation filter](samples/concepts/filtering/auto_function_invoke_filters.py)
+can also inspect a proposed call and decline to invoke it by not calling `next(context)`. Setting
+`context.terminate` after `await next(context)` stops subsequent processing; it does not undo the call.
+
+For application approval before execution, use `FunctionChoiceBehavior.Auto(auto_invoke=False, filters=...)`,
+then inspect and authorize each returned call before invoking it. If you manually call
+`Kernel.invoke_function_call`, pass the same `FunctionChoiceBehavior` as its `function_behavior` argument
+to retain function-name filtering. Omitting that argument skips that filtering, and passing
+`execution_settings` alone does not enable it. Direct calls such as `Kernel.invoke` also require the
+application's own authorization; function-choice filters are not a kernel-wide access-control policy.
+
 ## 5. Multi-Agent Orchestration
 
 Coordinate a group of agents to iteratively solve a problem or refine content together:

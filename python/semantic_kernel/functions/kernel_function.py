@@ -401,11 +401,15 @@ class KernelFunction(KernelBaseModel):
             exception (Exception): The exception.
             attributes (Attributes): The attributes to be modified.
         """
-        attributes[ERROR_TYPE] = type(exception).__name__
+        error_type = type(exception).__name__
+        attributes[ERROR_TYPE] = error_type
 
-        current_span.record_exception(exception)
-        current_span.set_attribute(ERROR_TYPE, type(exception).__name__)
-        current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        current_span.set_attribute(ERROR_TYPE, error_type)
+        if function_tracer.are_sensitive_events_enabled():
+            current_span.record_exception(exception)
+            current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        else:
+            current_span.set_status(trace.StatusCode.ERROR)
 
         KernelFunctionLogMessages.log_function_error(logger, exception)
 
