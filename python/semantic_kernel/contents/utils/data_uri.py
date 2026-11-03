@@ -138,10 +138,10 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         # Parameters use the RFC 2045 token alphabet, which is broader than a
         # media type's restricted-name alphabet. RFC 2397 allows parameters even
         # when the default text/plain media type is omitted.
-        parameter_token = r"[a-zA-Z0-9!#$%&'*+.^_`|~-]+"
+        parameter_pattern = r"[a-zA-Z0-9!#$%&'*+.^_`|~-]+"
         pattern = (
             r"(?P<mime_type>[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+)?"
-            rf"(?P<parameters>(;{parameter_token}={parameter_token})*)"
+            rf"(?P<parameters>(;{parameter_pattern}={parameter_pattern})*)"
             r"(;+(?P<data_format>[a-zA-Z0-9!#$&^_.+-]*))?"
             r"(,(?P<data_str>.*))"
         )
