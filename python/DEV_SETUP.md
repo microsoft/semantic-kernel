@@ -4,41 +4,17 @@ This document describes how to setup your environment with Python and uv,
 if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
-Supported Python versions are 3.11, 3.12, 3.13, 3.14, and 3.15. Python 3.11 is
+Supported Python versions are 3.11, 3.12, 3.13, and 3.14. Python 3.11 is
 the minimum; Python 3.14 is the default for local setup. Unit-test CI covers
 these versions; integration-test CI uses Python 3.14.
 
-Python 3.14 and 3.15 unit-test jobs omit the legacy AutoGen extra and its tests,
+Python 3.14 unit-test jobs omit the legacy AutoGen extra and its tests,
 as does Windows/Python 3.13. AutoGen requires NumPy below 2, which crashes during
 import on Windows/Python 3.13 and also forces older scientific and gRPC
 dependencies. AutoGen coverage remains enabled on Python 3.11 and 3.12, plus
 Linux/macOS Python 3.13. Unit-test CI uses `uv pip install` to resolve only each job's
 selected extras and development dependencies, followed by `uv run --no-sync`.
 This avoids constraints from extras that the job does not install.
-On Windows/Python 3.15, `tests/build-constraints.txt` also keeps setuptools
-below 84 so gRPC's source-build compiler hook can filter C/C++ flags correctly.
-
-Python 3.15 unit-test jobs also omit the Hugging Face, ONNX, Chroma, and USearch extras
-and their connector tests. The pinned PyTorch and ONNX Runtime GenAI releases,
-Chroma's ONNX Runtime dependency, and the allowed USearch releases do not provide
-compatible wheels. These extras and tests remain enabled on Python 3.11 through
-3.14. For a local Python 3.15 environment, select the supported extras you need.
-For example:
-
-```bash
-uv venv --python 3.15
-uv pip install --editable ".[azure,pandas]" --group dev
-uv run --no-sync pytest tests/unit/agents/runtime
-```
-
-On Windows, Python 3.15 also omits the FAISS extra and its tests because no
-compatible Windows wheel or source distribution is available. Do not select
-the `faiss` extra when using Python 3.15 on Windows.
-FAISS remains enabled on all other supported OS/Python combinations.
-
-On Python 3.15, the SQL extra builds `pyodbc` from source. Install the unixODBC
-headers first: `sudo apt-get install unixodbc-dev` on Ubuntu, or
-`brew install unixodbc` on macOS.
 
 ## System setup
 
@@ -68,8 +44,8 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 You can then run the following commands manually:
 
 ```powershell
-# Install Python 3.11 through 3.15
-uv python install 3.11 3.12 3.13 3.14 3.15
+# Install Python 3.11 through 3.14
+uv python install 3.11 3.12 3.13 3.14
 # Create a virtual environment with Python 3.14 (you can choose any supported version)
 $PYTHON_VERSION = "3.14"
 uv venv --python $PYTHON_VERSION
@@ -89,7 +65,7 @@ It is super simple to get started, run the following commands:
 make install
 ```
 
-This installs uv, Python 3.11 through 3.15, Semantic Kernel, all dependencies, and
+This installs uv, Python 3.11 through 3.14, Semantic Kernel, all dependencies, and
 the pre-commit config. It uses Python 3.14 by default. To use another supported
 version, set `PYTHON_VERSION`. For example, to use Python 3.13:
 

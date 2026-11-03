@@ -194,8 +194,7 @@
                 "3.11",
                 "3.12",
                 "3.13",
-                "3.14",
-                "3.15"
+                "3.14"
             ],
             "id": "py_version",
             "description": "Python version",

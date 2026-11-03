@@ -4,7 +4,7 @@ This sample provides a practical demonstration of how to leverage features from 
 
 ## Prerequisites
 
-- Python 3.11 through 3.15.
+- Python 3.11 through 3.14.
 - [Microsoft 365 Business License](https://www.microsoft.com/en-us/microsoft-365/business/compare-all-microsoft-365-business-products) to use [Business Schedule and Booking API](https://www.microsoft.com/en-us/microsoft-365/business/scheduling-and-booking-app).
 - [Azure Entra Id](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id) administrator account to register an application and set the necessary credentials and permissions.
 
