@@ -175,7 +175,9 @@ def test_time_zone_offset():
 
     with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
         dt.now.return_value = test_mock_now
-        assert plugin.time_zone_offset() == "+0000"
+        # The plugin reports the local zone, so the mocked UTC instant is
+        # converted to local time before formatting.
+        assert plugin.time_zone_offset() == test_mock_now.astimezone().strftime("%z")
 
 
 def test_time_zone_name():
@@ -183,4 +185,28 @@ def test_time_zone_name():
 
     with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
         dt.now.return_value = test_mock_now
-        assert plugin.time_zone_name() == "UTC"
+        # The plugin reports the local zone, so the mocked UTC instant is
+        # converted to local time before formatting.
+        assert plugin.time_zone_name() == test_mock_now.astimezone().strftime("%Z")
+
+
+def test_time_zone_offset_without_mock():
+    # Regression test: without mocking datetime.now to an aware value, the
+    # offset must still be the local zone offset, not an empty string.
+    plugin = TimePlugin()
+
+    expected = datetime.datetime.now().astimezone().strftime("%z")
+    result = plugin.time_zone_offset()
+    assert result != ""
+    assert result == expected
+
+
+def test_time_zone_name_without_mock():
+    # Regression test: without mocking datetime.now to an aware value, the
+    # zone name must still be the local zone name, not an empty string.
+    plugin = TimePlugin()
+
+    expected = datetime.datetime.now().astimezone().strftime("%Z")
+    result = plugin.time_zone_name()
+    assert result != ""
+    assert result == expected
