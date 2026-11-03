@@ -235,3 +235,23 @@ async def test_embedding_with_custom_client(google_ai_unit_test_env, prompt) -> 
 
     # Verify that the custom client's method was called
     mock_embed_content.assert_called_once()
+
+
+@patch.object(AsyncModels, "embed_content", new_callable=AsyncMock)
+async def test_raw_embedding_batches_large_inputs(mock_google_model_embed_content, google_ai_unit_test_env):
+    """Inputs above the 100-per-request limit are split into several requests and returned in order."""
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
+    texts = [f"text {i}" for i in range(250)]
+
+    async def _fake_embed(*, model, contents, config):
+        assert len(contents) <= 100
+        return EmbedContentResponse(embeddings=[ContentEmbedding(values=[float(t.split()[1])]) for t in contents])
+
+    mock_google_model_embed_content.side_effect = _fake_embed
+    settings = GoogleAIEmbeddingPromptExecutionSettings()
+
+    response = await GoogleAITextEmbedding().generate_raw_embeddings(texts, settings=settings)
+
+    assert [len(call.kwargs["contents"]) for call in mock_google_model_embed_content.call_args_list] == [100, 100, 50]
+    assert all(call.kwargs["model"] == model_id for call in mock_google_model_embed_content.call_args_list)
+    assert response == [[float(i)] for i in range(250)]
