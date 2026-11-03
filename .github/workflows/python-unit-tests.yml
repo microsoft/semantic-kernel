@@ -60,7 +60,7 @@ jobs:
           from pathlib import Path
 
           extras = set(tomllib.loads(Path("pyproject.toml").read_text())["project"]["optional-dependencies"])
-          if sys.version_info >= (3, 14):
+          if sys.version_info >= (3, 14) or (sys.platform == "win32" and sys.version_info[:2] == (3, 13)):
               extras.discard("autogen")
           if sys.version_info[:2] == (3, 15):
               extras.difference_update({"hugging_face", "onnx", "chroma", "usearch"})
@@ -82,8 +82,7 @@ jobs:
           PYTHON_GIL: ${{ matrix.gil }}
         run: >-
           uv run --no-sync python -u -X faulthandler -m pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
-          ${{ matrix.python-version == '3.13' && runner.os == 'Windows' && '--capture=sys' || '' }}
-          ${{ (matrix.python-version == '3.14' || matrix.python-version == '3.15') && '--ignore=tests/unit/agents/autogen_conversable_agent' || '' }}
+          ${{ (matrix.python-version == '3.14' || matrix.python-version == '3.15' || (matrix.python-version == '3.13' && runner.os == 'Windows')) && '--ignore=tests/unit/agents/autogen_conversable_agent' || '' }}
           ${{ matrix.python-version == '3.15' && '--ignore=tests/unit/connectors/ai/hugging_face --ignore=tests/unit/connectors/ai/onnx --ignore=tests/unit/connectors/memory/test_chroma.py --ignore=tests/unit/data/test_vector_negative_filter_literals.py' || '' }}
           ${{ matrix.python-version == '3.15' && runner.os == 'Windows' && '--ignore=tests/unit/connectors/memory/test_faiss.py' || '' }}
       - name: Test dapr with pytest

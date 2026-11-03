@@ -8,9 +8,11 @@ Supported Python versions are 3.11, 3.12, 3.13, 3.14, and 3.15. Python 3.11 is
 the minimum; Python 3.14 is the default for local setup. Unit-test CI covers
 these versions; integration-test CI uses Python 3.14.
 
-Python 3.14 and 3.15 unit-test jobs omit the legacy AutoGen extra and its tests.
-AutoGen requires NumPy below 2, which also forces older scientific and gRPC
-dependencies. Unit-test CI uses `uv pip install` to resolve only each job's
+Python 3.14 and 3.15 unit-test jobs omit the legacy AutoGen extra and its tests,
+as does Windows/Python 3.13. AutoGen requires NumPy below 2, which crashes during
+import on Windows/Python 3.13 and also forces older scientific and gRPC
+dependencies. AutoGen coverage remains enabled on Python 3.11 and 3.12, plus
+Linux/macOS Python 3.13. Unit-test CI uses `uv pip install` to resolve only each job's
 selected extras and development dependencies, followed by `uv run --no-sync`.
 This avoids constraints from extras that the job does not install.
 On Windows/Python 3.15, `tests/build-constraints.txt` also keeps setuptools
