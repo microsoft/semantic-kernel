@@ -62,10 +62,10 @@ internal sealed class CreateProductRequest
 internal sealed class UpdateProductRequest
 {
     /// <summary>
-    /// Gets or sets the name used by the application to find the product.
+    /// Gets or sets the unique product identifier.
     /// </summary>
-    [Description("The current name of the product to update.")]
-    public string? Name { get; set; }
+    [Description("The unique identifier of the product to update.")]
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Gets or sets the replacement price.
@@ -80,8 +80,8 @@ internal sealed class UpdateProductRequest
 internal sealed class DeleteProductRequest
 {
     /// <summary>
-    /// Gets or sets the name used by the application to find the product.
+    /// Gets or sets the unique product identifier.
     /// </summary>
-    [Description("The name of the product to delete.")]
-    public string? Name { get; set; }
+    [Description("The unique identifier of the product to delete.")]
+    public Guid Id { get; set; }
 }
