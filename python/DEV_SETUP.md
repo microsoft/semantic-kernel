@@ -8,6 +8,16 @@ Supported Python versions are 3.11, 3.12, 3.13, 3.14, and 3.15. Python 3.11 is
 the minimum; Python 3.14 is the default for local setup. Unit-test CI covers
 these versions; integration-test CI uses Python 3.14.
 
+Python 3.15 unit-test jobs omit the Hugging Face, ONNX, Chroma, and USearch extras
+and their connector tests. The pinned PyTorch and ONNX Runtime GenAI releases,
+Chroma's ONNX Runtime dependency, and the allowed USearch releases do not provide
+compatible wheels. These extras and tests remain enabled on Python 3.11 through
+3.14. The same extra exclusions are needed when installing locally on Python 3.15:
+
+```bash
+uv sync --all-extras --no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch --dev
+```
+
 ## System setup
 
 ## If you're on WSL
@@ -59,16 +69,16 @@ make install
 
 This installs uv, Python 3.11 through 3.15, Semantic Kernel, all dependencies, and
 the pre-commit config. It uses Python 3.14 by default. To use another supported
-version, set `PYTHON_VERSION`. For example, to use Python 3.15:
+version, set `PYTHON_VERSION`. For example, to use Python 3.13:
 
 ```bash
-make install PYTHON_VERSION=3.15
+make install PYTHON_VERSION=3.13
 ```
 
 If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
 
 ```bash
-make install-sk PYTHON_VERSION=3.15
+make install-sk PYTHON_VERSION=3.13
 ```
 
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.

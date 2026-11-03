@@ -42,9 +42,12 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
-      - name: Install the project (all extras)
+      - name: Install the project (supported extras)
         if: matrix.test-suite == 'unit-all-except-dapr'
-        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+        # These extras require native packages without compatible Python 3.15 wheels.
+        run: >-
+          uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+          ${{ matrix.python-version == '3.15' && '--no-extra hugging_face --no-extra onnx --no-extra chroma --no-extra usearch' || '' }}
       - name: Install the project (dapr tests)
         if: matrix.test-suite == 'dapr'
         run: uv sync --extra pandas --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
@@ -52,7 +55,9 @@ jobs:
         if: matrix.test-suite == 'unit-all-except-dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+        run: >-
+          uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+          ${{ matrix.python-version == '3.15' && '--ignore=tests/unit/connectors/ai/hugging_face --ignore=tests/unit/connectors/ai/onnx --ignore=tests/unit/connectors/memory/test_chroma.py' || '' }}
       - name: Test dapr with pytest
         if: matrix.test-suite == 'dapr'
         env:
