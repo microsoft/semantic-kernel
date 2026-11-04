@@ -241,6 +241,16 @@ def test_build_tuple():
     }
 
 
+def test_build_variadic_tuple():
+    schema = KernelJsonSchemaBuilder.build(tuple[int, ...], "ids")
+    assert schema == {"type": "array", "items": {"type": "integer"}, "description": "ids"}
+
+
+def test_build_optional_variadic_tuple():
+    schema = KernelJsonSchemaBuilder.build(Optional[tuple[str, ...]])
+    assert schema == {"type": ["array", "null"], "items": {"type": "string"}}
+
+
 def test_build_union():
     schema = KernelJsonSchemaBuilder.build(Union[int, str])
     assert schema == {"anyOf": [{"type": "integer"}, {"type": "string"}]}
