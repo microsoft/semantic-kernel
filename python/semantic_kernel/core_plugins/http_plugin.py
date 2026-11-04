@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ipaddress
 import json
 import logging
+import socket
+from collections.abc import Sequence
 from typing import Annotated, Any, ClassVar
 from urllib.parse import urlparse
 
@@ -14,6 +17,56 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.public_network_address_validator import ensure_public_host
 
 logger = logging.getLogger(__name__)
+
+_NetworkAddress = ipaddress.IPv4Address | ipaddress.IPv6Address
+
+
+class _ValidatedAddressResolver(aiohttp.abc.AbstractResolver):
+    """Resolve one validated host only to addresses that were already vetted."""
+
+    def __init__(self, host: str, addresses: Sequence[_NetworkAddress]) -> None:
+        self._host = host
+        self._addresses = addresses
+
+    async def resolve(
+        self,
+        host: str,
+        port: int = 0,
+        family: socket.AddressFamily = socket.AF_INET,
+    ) -> list[Any]:
+        """Return vetted addresses without performing another DNS lookup."""
+        if host != self._host:
+            raise OSError(f"Refusing to resolve host '{host}'; only '{self._host}' was validated.")
+
+        results: list[Any] = []
+        for address in self._addresses:
+            address_family = socket.AF_INET6 if isinstance(address, ipaddress.IPv6Address) else socket.AF_INET
+            if family not in (socket.AF_UNSPEC, address_family):
+                continue
+            results.append({
+                "hostname": host,
+                "host": str(address),
+                "port": port,
+                "family": address_family,
+                "proto": socket.IPPROTO_TCP,
+                "flags": socket.AI_NUMERICHOST,
+            })
+        return results
+
+    async def close(self) -> None:
+        """Release resolver resources."""
+
+
+def _create_client_session(request_url: URL, validated_addresses: Sequence[_NetworkAddress]) -> aiohttp.ClientSession:
+    if not validated_addresses:
+        return aiohttp.ClientSession()
+
+    host = request_url.raw_host
+    if host is None:
+        raise FunctionExecutionException("The request URL does not contain a valid host.")
+
+    resolver = _ValidatedAddressResolver(host, validated_addresses)
+    return aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver))
 
 
 class HttpPlugin(KernelBaseModel):
@@ -45,11 +98,11 @@ class HttpPlugin(KernelBaseModel):
           to permit additional ports. Port validation is skipped when
           ``allow_all_domains`` is True.
         - Allowed hosts are normalized using aiohttp's IDNA rules before DNS validation,
-          and the same normalized URL is used for the request. Non-public addresses and
-          DNS failures are blocked unless ``allow_private_network_access`` is True.
-          ``allow_all_domains=True`` also bypasses this check.
-        - This pre-request check does not pin the connection's IP address and does not
-          protect against DNS changing between validation and connection.
+          and the same normalized URL is used for the request. Connections are pinned to
+          the validated DNS addresses so the host cannot resolve to a different address
+          when the connection is opened. Non-public addresses and DNS failures are blocked
+          unless ``allow_private_network_access`` is True. ``allow_all_domains=True`` also
+          bypasses this check.
     """
 
     allowed_domains: set[str] | None = None
@@ -141,7 +194,7 @@ class HttpPlugin(KernelBaseModel):
         # Default: deny all
         return False
 
-    async def _validate_url(self, url: str) -> URL:
+    async def _validate_url(self, url: str) -> tuple[URL, list[_NetworkAddress]]:
         """Validate and normalize the URL before sending a request.
 
         Always checks that the URL is non-empty, uses an allowed scheme, and has a
@@ -153,7 +206,7 @@ class HttpPlugin(KernelBaseModel):
             url: The URL to validate.
 
         Returns:
-            The normalized URL to use for the request.
+            The normalized URL and any DNS addresses that must be pinned for the request.
 
         Raises:
             FunctionExecutionException: If the URL is empty, uses a disallowed scheme,
@@ -167,13 +220,14 @@ class HttpPlugin(KernelBaseModel):
             raise FunctionExecutionException("Sending requests to the provided location is not allowed.")
 
         request_url = URL(url)
+        validated_addresses: list[_NetworkAddress] = []
         if not self.allow_all_domains and not self.allow_private_network_access:
-            await ensure_public_host(
+            validated_addresses = await ensure_public_host(
                 urlparse(str(request_url)),
                 configuration_hint="To allow trusted internal endpoints, set allow_private_network_access=True.",
             )
 
-        return request_url
+        return request_url, validated_addresses
 
     @kernel_function(description="Makes a GET request to a url", name="getAsync")
     async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
@@ -185,10 +239,10 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        request_url = await self._validate_url(url)
+        request_url, validated_addresses = await self._validate_url(url)
 
         async with (
-            aiohttp.ClientSession() as session,
+            _create_client_session(request_url, validated_addresses) as session,
             session.get(request_url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()
@@ -207,12 +261,12 @@ class HttpPlugin(KernelBaseModel):
         returns:
             The response body as a string.
         """
-        request_url = await self._validate_url(url)
+        request_url, validated_addresses = await self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
         async with (
-            aiohttp.ClientSession() as session,
+            _create_client_session(request_url, validated_addresses) as session,
             session.post(
                 request_url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
             ) as response,
@@ -234,12 +288,12 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        request_url = await self._validate_url(url)
+        request_url, validated_addresses = await self._validate_url(url)
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body) if body is not None else None
         async with (
-            aiohttp.ClientSession() as session,
+            _create_client_session(request_url, validated_addresses) as session,
             session.put(
                 request_url, headers=headers, data=data, raise_for_status=True, allow_redirects=self._allow_redirects
             ) as response,
@@ -256,10 +310,10 @@ class HttpPlugin(KernelBaseModel):
         Returns:
             The response body as a string.
         """
-        request_url = await self._validate_url(url)
+        request_url, validated_addresses = await self._validate_url(url)
 
         async with (
-            aiohttp.ClientSession() as session,
+            _create_client_session(request_url, validated_addresses) as session,
             session.delete(request_url, raise_for_status=True, allow_redirects=self._allow_redirects) as response,
         ):
             return await response.text()

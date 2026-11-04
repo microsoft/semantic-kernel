@@ -427,3 +427,19 @@ async def test_weaviate_collection_deserialize_data(
         await collection.get(key=data.id)
 
         mock_inner_get.assert_called_once_with([data.id], include_vectors=False, options=None)
+
+
+def test_weaviate_collection_build_filter_keeps_apostrophes(clear_weaviate_env, record_type, definition) -> None:
+    """Weaviate filters are objects, not query strings, so the value must be passed through unchanged."""
+    collection = WeaviateCollection(
+        record_type=record_type,
+        definition=definition,
+        collection_name="TestCollection",
+        async_client=AsyncMock(spec=WeaviateAsyncClient),
+        env_file_path="fake_env_file_path.env",
+    )
+
+    result = collection._build_filter('lambda x: x.content == "O\'Brien"')
+
+    assert result.target == "content"
+    assert result.value == "O'Brien"

@@ -2,6 +2,7 @@
 import logging
 import sys
 import types
+from asyncio import CancelledError
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -14,7 +15,7 @@ from opentelemetry.trace import StatusCode
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError, KernelInvokeException
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
@@ -29,6 +30,85 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 kernel_function_module = import_module("semantic_kernel.functions.kernel_function")
 
 
+@pytest.mark.parametrize("asynchronous", [False, True])
+@pytest.mark.parametrize("via_kernel", [False, True])
+@pytest.mark.parametrize("termination", ["close", "cancel", "exhaust", "error"])
+async def test_invoke_stream_closes_native_generator(
+    kernel: Kernel, asynchronous: bool, via_kernel: bool, termination: str
+):
+    closed = []
+    failure = ValueError("native stream failed")
+
+    @kernel_function
+    def sync_stream() -> Iterable[str]:
+        try:
+            yield "first"
+            if termination == "error":
+                raise failure
+            yield "second"
+        finally:
+            closed.append(True)
+
+    @kernel_function
+    async def async_stream() -> AsyncGenerator[str, None]:
+        try:
+            yield "first"
+            if termination == "error":
+                raise failure
+            yield "second"
+        finally:
+            closed.append(True)
+
+    # Retain the source so garbage collection cannot stand in for explicit cleanup.
+    method = async_stream if asynchronous else sync_stream
+    source = method()
+    function = KernelFunctionFromMethod(method=method, stream_method=lambda: source)
+    stream = kernel.invoke_stream(function) if via_kernel else function.invoke_stream(kernel)
+    try:
+        assert await anext(stream) == "first"
+        assert not closed
+        if termination == "close":
+            await stream.aclose()
+        elif termination == "cancel":
+            with pytest.raises(CancelledError):
+                await stream.athrow(CancelledError())
+        elif termination == "error":
+            with pytest.raises(ValueError) as exc_info:
+                await anext(stream)
+            assert exc_info.value is failure
+        else:
+            assert [part async for part in stream] == ["second"]
+        assert closed == [True]
+    finally:
+        await stream.aclose()
+        if asynchronous:
+            await source.aclose()
+        else:
+            source.close()
+
+
+@pytest.mark.parametrize("via_kernel", [False, True])
+async def test_invoke_stream_does_not_close_ordinary_result(kernel: Kernel, via_kernel: bool):
+    closed = []
+
+    class ResultList(list):
+        def close(self):
+            closed.append(True)
+
+    @kernel_function
+    def native() -> str:
+        return "non-streaming result"
+
+    result = ResultList(["ordinary result"])
+    function = KernelFunctionFromMethod(method=native, stream_method=lambda: result)
+    stream = kernel.invoke_stream(function) if via_kernel else function.invoke_stream(kernel)
+    parts = [part async for part in stream]
+    assert len(parts) == 1
+    assert parts[0].value is result
+    assert result == ["ordinary result"]
+    assert not closed
+
+
 class CustomType(KernelBaseModel):
     id: str
     name: str
@@ -41,6 +121,30 @@ class CustomTypeNonPydantic:
     def __init__(self, id: str, name: str):
         self.id = id
         self.name = name
+
+
+@dataclass
+class CustomTypeDataclass:
+    id: str
+    name: str
+
+
+class DerivedCustomType(CustomTypeNonPydantic):
+    pass
+
+
+@dataclass
+class DerivedDataclass(CustomTypeDataclass):
+    pass
+
+
+@dataclass
+class SingleFieldDataclass:
+    name: str
+
+
+class RevalidatedCustomType(CustomType):
+    model_config = {"revalidate_instances": "always", "validate_assignment": False}
 
 
 @pytest.fixture
@@ -465,6 +569,20 @@ async def test_function_invoke_return_list_type(kernel: Kernel):
     assert str(result) == "test1,test2"
 
 
+async def test_function_invoke_with_none_default_argument(kernel: Kernel):
+    @kernel_function(name="greet")
+    def greet(name: str, punctuation=None) -> str:
+        return f"Hello {name}{punctuation if punctuation else '!'}"
+
+    func = KernelFunction.from_method(greet, "test")
+
+    assert func.parameters[1].name == "punctuation"
+    assert func.parameters[1].is_required is False
+
+    result = await kernel.invoke(function=func, arguments=KernelArguments(name="Ada"))
+    assert result.value == "Hello Ada!"
+
+
 async def test_function_invocation_filters(kernel: Kernel):
     func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
     kernel.add_function(plugin_name="math", function=func)
@@ -587,6 +705,89 @@ async def test_default_handling_2(kernel: Kernel):
 
     res = await kernel.invoke(func, base="base")
     assert str(res) == "test"
+
+
+@pytest.mark.parametrize(
+    ("param_type", "value"),
+    [
+        (CustomTypeNonPydantic, CustomTypeNonPydantic("1", "Ada")),
+        (CustomTypeDataclass, CustomTypeDataclass("1", "Ada")),
+        (SingleFieldDataclass, SingleFieldDataclass("Ada")),
+        (CustomTypeNonPydantic, DerivedCustomType("1", "Ada")),
+        (CustomTypeDataclass, DerivedDataclass("1", "Ada")),
+    ],
+)
+async def test_invoke_preserves_typed_instance(kernel, param_type, value):
+    @kernel_function
+    def identity(param: param_type) -> Any:
+        return param
+
+    func = kernel.add_function(plugin_name="test", function=identity)
+    for _ in range(2):
+        result = await kernel.invoke(func, arguments=KernelArguments(param=value))
+        assert result.value is value
+
+
+@pytest.mark.parametrize("input_kind", ["dicts", "instances", "mixed"])
+async def test_invoke_list_of_typed_instances(kernel, input_kind):
+    @kernel_function
+    def identity(param: list[CustomTypeDataclass]) -> Any:
+        return param
+
+    values = [CustomTypeDataclass("1", "Ada"), CustomTypeDataclass("2", "Grace")]
+    arguments = [
+        {"id": value.id, "name": value.name}
+        if input_kind == "dicts" or (input_kind == "mixed" and index == 1)
+        else value
+        for index, value in enumerate(values)
+    ]
+    func = kernel.add_function(plugin_name="test", function=identity)
+    result = await kernel.invoke(func, arguments=KernelArguments(param=arguments))
+    assert result.value == values
+    if input_kind != "dicts":
+        assert result.value[0] is values[0]
+
+
+async def test_invoke_typed_instance_returned_by_function(kernel):
+    value = CustomTypeDataclass("1", "Ada")
+
+    @kernel_function
+    def produce() -> CustomTypeDataclass:
+        return value
+
+    @kernel_function
+    def consume(param: CustomTypeDataclass) -> str:
+        assert param is value
+        return param.name
+
+    producer = kernel.add_function(plugin_name="test", function=produce)
+    consumer = kernel.add_function(plugin_name="test", function=consume)
+    produced = await kernel.invoke(producer)
+    result = await kernel.invoke(consumer, arguments=KernelArguments(param=produced.value))
+    assert result.value == "Ada"
+
+
+async def test_invoke_pydantic_instance_still_revalidated(kernel):
+    @kernel_function
+    def identity(param: RevalidatedCustomType) -> Any:
+        return param
+
+    func = kernel.add_function(plugin_name="test", function=identity)
+    value = RevalidatedCustomType(id="1", name="Ada")
+    result = await kernel.invoke(func, arguments=KernelArguments(param=value))
+    assert result.value == value
+    assert result.value is not value
+
+    value.id = 123
+    with pytest.raises(KernelInvokeException):
+        await kernel.invoke(func, arguments=KernelArguments(param=value))
+
+
+@pytest.mark.parametrize("value", [True, "7", 7])
+def test_parse_integer_still_coerces_values(get_custom_type_function_nonpydantic, value):
+    result = get_custom_type_function_nonpydantic._parse_parameter(value, int)
+    assert type(result) is int
+    assert result == int(value)
 
 
 def test_parse_list_of_objects(get_custom_type_function_pydantic):
@@ -837,8 +1038,7 @@ def test_as_agent_framework_tool_optional_annotation_without_default_stays_requi
 def test_as_agent_framework_tool_multi_member_union(stub_agent_framework):
     """A union of several non-None types is flattened to the string "str, int" in the
     parameter metadata, with no type object, so the bridge reads the annotation from
-    the callable's signature instead. The signature also decides what is required: the
-    metadata reads the None default of `z: str = None` as no default at all.
+    the callable's signature instead, along with what is required and each default.
     """
 
     @kernel_function(name="probe", description="probe things")
