@@ -8,13 +8,16 @@ Supported Python versions are 3.11, 3.12, 3.13, and 3.14. Python 3.11 is
 the minimum; Python 3.14 is the default for local setup. Unit-test CI covers
 these versions; integration-test CI uses Python 3.14.
 
-Python 3.14 unit-test jobs omit the legacy AutoGen extra and its tests,
-as does Windows/Python 3.13. AutoGen requires NumPy below 2, which crashes during
+The AutoGen dependency marker omits the legacy AutoGen dependency on Python 3.14
+and Windows/Python 3.13, including all-extras installs. Pytest collection also omits
+its tests on those combinations, locally and in CI. AutoGen requires NumPy below 2, which crashes during
 import on Windows/Python 3.13 and also forces older scientific and gRPC
 dependencies. AutoGen coverage remains enabled on Python 3.11 and 3.12, plus
-Linux/macOS Python 3.13. Unit-test CI uses `uv pip install` to resolve only each job's
-selected extras and development dependencies, followed by `uv run --no-sync`.
-This avoids constraints from extras that the job does not install.
+Linux/macOS Python 3.13. Unit-test CI, integration-test CI, and local setup use
+uv 0.13 or later and `uv pip install` to resolve the current environment's
+extras and development dependencies, followed by `uv run --no-sync`.
+This avoids the shared lockfile's NumPy 1.x selection. Always use `--no-sync`
+when running tools in this environment so uv does not restore locked dependencies.
 
 ## System setup
 
@@ -50,9 +53,9 @@ uv python install 3.11 3.12 3.13 3.14
 $PYTHON_VERSION = "3.14"
 uv venv --python $PYTHON_VERSION
 # Install SK and all dependencies
-uv sync --all-extras --dev
+uv pip install --editable . --requirements pyproject.toml --all-extras --group dev --upgrade --prerelease=if-necessary-or-explicit
 # Install pre-commit hooks
-uv run pre-commit install -c python/.pre-commit-config.yaml
+uv run --no-sync pre-commit install -c python/.pre-commit-config.yaml
 ```
 
 Or you can then either install [`make`](https://gnuwin32.sourceforge.net/packages/make.htm) and then follow the guide for Mac and Linux, or run the following commands, the commands are shown as bash but should work in powershell as well.
@@ -94,7 +97,7 @@ Open any of the `.py` files in the project and run the `Python: Select Interpret
 command from the command palette. Make sure the virtual env (default path is `.venv`) created by
 `uv` is selected.
 
-If prompted, install `ruff`. (It should have been installed as part of `uv sync --dev`).
+If prompted, install `ruff`. (It should have been installed with the `dev` dependency group).
 
 You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
@@ -155,7 +158,7 @@ chat_completion = OpenAIChatCompletion(service_id="test", env_file_path="openai.
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
-    uv run pytest tests/unit
+    uv run --no-sync pytest tests/unit
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -164,13 +167,13 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
 ```bash
-    uv run pytest tests/integration
+    uv run --no-sync pytest tests/integration
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
-    uv run pytest tests
+    uv run --no-sync pytest tests
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -310,7 +313,7 @@ class A(KernelBaseModel, Generic[T1, T2]):
 To run the same checks that run during a commit and the GitHub Action `Python Code Quality Checks`, you can use this command, from the [python](../python) folder:
 
 ```bash
-    uv run pre-commit run -a
+    uv run --no-sync pre-commit run -a
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
@@ -325,7 +328,7 @@ Ideally you should run these checks before committing any changes, when you inst
 We try to maintain a high code coverage for the project. To run the code coverage on the unit tests, you can use the following command:
 
 ```bash
-    uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
+    uv run --no-sync pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
 
 or use the following task (using `Ctrl+Shift+P`):

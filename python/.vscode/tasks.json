@@ -9,6 +9,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pre-commit",
                 "run",
                 "-a"
@@ -37,6 +38,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pre-commit",
                 "run",
             ],
@@ -64,6 +66,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "mypy",
                 "-p",
                 "semantic_kernel",
@@ -104,6 +107,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pytest",
                 "tests/unit/"
             ],
@@ -120,6 +124,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pytest",
                 "tests/unit/",
                 "--last-failed",
@@ -138,6 +143,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pytest",
                 "--cov=semantic_kernel",
                 "--cov-report=term-missing:skip-covered",
@@ -156,6 +162,7 @@
             "command": "uv",
             "args": [
                 "run",
+                "--no-sync",
                 "pytest",
                 "tests/",
                 "-n",

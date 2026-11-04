@@ -66,7 +66,7 @@ anthropic = [
     "anthropic ~= 0.32"
 ]
 autogen = [
-    "autogen-agentchat >= 0.2, <0.4"
+    "autogen-agentchat >= 0.2, <0.4; python_version < '3.14' and (sys_platform != 'win32' or python_version < '3.13')"
 ]
 aws = [
     "boto3>=1.36.4,<1.43.0",
