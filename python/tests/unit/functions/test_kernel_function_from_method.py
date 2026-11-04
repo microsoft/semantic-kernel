@@ -832,3 +832,30 @@ def test_as_agent_framework_tool_optional_annotation_without_default_stays_requi
     # None, so an explicit null must validate rather than be rejected as the wrong type.
     instance_explicit_none = tool.input_model(x=None)
     assert instance_explicit_none.x is None
+
+
+def test_as_agent_framework_tool_multi_member_union(stub_agent_framework):
+    """A union of several non-None types is flattened to the string "str, int" in the
+    parameter metadata, with no type object, so the bridge reads the annotation from
+    the callable's signature instead. The signature also decides what is required: the
+    metadata reads the None default of `z: str = None` as no default at all.
+    """
+
+    @kernel_function(name="probe", description="probe things")
+    def probe(x: str | int | None, y: Annotated[str | int | None, "y"] = None, z: str = None) -> str:  # type: ignore[assignment]
+        return f"{x}:{y}:{z}"
+
+    func = KernelFunction.from_method(probe, "test")
+    assert func.parameters[0].type_ == "str, int"
+
+    tool = func.as_agent_framework_tool()
+    schema = tool.input_model.model_json_schema()
+
+    assert schema.get("required") == ["x"]
+    assert schema["properties"]["y"]["default"] is None
+    assert tool.input_model(x="a", y=1).y == 1
+    assert tool.input_model(x=2).x == 2
+    assert tool.input_model(x=2).z is None
+    assert tool.input_model(x=None).x is None
+    with pytest.raises(ValidationError):
+        tool.input_model(x=1.5j)

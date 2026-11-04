@@ -450,36 +450,36 @@ class KernelFunction(KernelBaseModel):
         name = name or self.name
         description = description or self.description
 
-        # `param.is_required` is False for any annotation that contains None (e.g. both
-        # `x: str | None` and `x: str | None = None`), even though only the second one
-        # actually has a default. Without correcting for that, a parameter that Python
-        # itself still requires would be built as optional here, and invoking the tool
-        # with it omitted would raise a raw TypeError from the underlying call instead of
-        # failing input validation the way a missing required field should. When the
-        # function has a real Python callable, recover the distinction from its signature.
+        # When the function has a real Python callable, its signature is the source of truth
+        # for each field. The parameter metadata loses information both ways: `is_required`
+        # is False for `x: str | None` with no default and True for `x: str = None`, and a
+        # union such as `str | int | None` is flattened to the string "str, int" with no
+        # type object, which pydantic cannot evaluate.
         method = getattr(self, "method", None)
-        signature = inspect.signature(method) if method is not None else None
+        signature = inspect.signature(method, eval_str=True) if method is not None else None
 
         fields = {}
         for param in self.parameters:
             if param.include_in_function_choices:
                 sig_param = signature.parameters.get(param.name) if signature is not None and param.name else None
-                is_required = param.is_required or (
-                    sig_param is not None and sig_param.default is inspect.Parameter.empty
-                )
+                if sig_param is not None:
+                    annotation: Any = Any if sig_param.annotation is inspect.Parameter.empty else sig_param.annotation
+                    if sig_param.default is inspect.Parameter.empty:
+                        fields[param.name] = (annotation, Field(description=param.description))
+                    else:
+                        fields[param.name] = (
+                            annotation,
+                            Field(description=param.description, default=sig_param.default),
+                        )
+                    continue
                 # _process_signature stores inspect.Parameter.empty as type_object for an
                 # unannotated parameter, and pydantic cannot build a schema from that, so it
                 # counts the same as "no usable type object" alongside None.
                 type_object = param.type_object
                 if type_object is inspect.Parameter.empty:
                     type_object = None
-                annotation: Any = param.type_
-                if is_required:
-                    if not param.is_required and type_object is not None:
-                        # Only the signature makes it required: the annotation itself includes
-                        # None (e.g. `x: str | None` with no default), so an explicit None
-                        # should still validate, and the schema should say so.
-                        annotation = type_object | None
+                annotation = param.type_
+                if param.is_required:
                     fields[param.name] = (annotation, Field(description=param.description))
                 else:
                     # A parameter that isn't required may still carry an actual default of None
