@@ -19,6 +19,10 @@ extras and development dependencies, followed by `uv run --no-sync`.
 This avoids the shared lockfile's NumPy 1.x selection. Always use `--no-sync`
 when running tools in this environment so uv does not restore locked dependencies.
 
+The SDK uses Azure Projects 1.x because its Azure AI agent integration requires
+the classic agent APIs. It uses `nest-asyncio2` for nested event loops so template
+helpers preserve async task context on Python 3.14.
+
 ## System setup
 
 ## If you're on WSL
