@@ -351,11 +351,14 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         Returns:
             A dictionary containing metadata.
         """
+        # Vertex AI reports the thinking tokens apart from the candidates tokens, but bills them as output tokens.
         return {
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                completion_tokens=(
+                    response.usage_metadata.candidates_token_count + response.usage_metadata.thoughts_token_count
+                ),
             ),
         }
 

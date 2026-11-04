@@ -120,6 +120,30 @@ async def test_vertex_ai_chat_completion(
     assert responses[0].inner_content == mock_vertex_ai_chat_completion_response
 
 
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_chat_completion_usage_includes_thinking_tokens(
+    mock_vertex_ai_model_generate_content_async,
+    vertex_ai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_vertex_ai_chat_completion_response,
+) -> None:
+    """The completion tokens include the thinking tokens, which Vertex AI reports apart from the candidates."""
+    usage_metadata = mock_vertex_ai_chat_completion_response._raw_response.usage_metadata
+    usage_metadata.prompt_token_count = 5
+    usage_metadata.candidates_token_count = 10
+    usage_metadata.thoughts_token_count = 40
+    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response
+
+    vertex_ai_chat_completion = VertexAIChatCompletion()
+    responses = await vertex_ai_chat_completion.get_chat_message_contents(
+        chat_history, VertexAIChatPromptExecutionSettings()
+    )
+
+    usage = responses[0].metadata["usage"]
+    assert usage.prompt_tokens == 5
+    assert usage.completion_tokens == 50
+
+
 async def test_vertex_ai_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     vertex_ai_unit_test_env,
