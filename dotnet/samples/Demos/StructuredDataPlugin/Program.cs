@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -30,9 +31,29 @@ internal sealed class Program
                 modelId: "gpt-4o",
                 apiKey: config["OpenAI:ApiKey"]!);
 
-        // Add the database plugin using the factory with default operations
-        var databasePlugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<ApplicationDbContext, Product>(
-            structuredDataService);
+        var selectFunction = structuredDataService.CreateSelectFunction<ApplicationDbContext, Product>();
+        var insertFunction = structuredDataService.CreateInsertFunction<ApplicationDbContext, Product, CreateProductRequest>(
+            input => new Product { Name = input.Name, Price = input.Price });
+        var updateFunction = structuredDataService.CreateUpdateFunction<ApplicationDbContext, Product, UpdateProductRequest>(
+            async (input, cancellationToken) =>
+            {
+                // This application-owned query is the row-scope boundary; real applications can add tenant or owner filters.
+                return await structuredDataService.Context.Set<Product>()
+                    .SingleOrDefaultAsync(product => product.Id == input.Id, cancellationToken);
+            },
+            (input, product) => product.Price = input.Price);
+        var deleteFunction = structuredDataService.CreateDeleteFunction<ApplicationDbContext, Product, DeleteProductRequest>(
+            async (input, cancellationToken) =>
+            {
+                // This application-owned query is the row-scope boundary; real applications can add tenant or owner filters.
+                return await structuredDataService.Context.Set<Product>()
+                    .SingleOrDefaultAsync(product => product.Id == input.Id, cancellationToken);
+            });
+
+        var databasePlugin = KernelPluginFactory.CreateFromFunctions(
+            "ProductDatabasePlugin",
+            "Allows approved operations against products in the database",
+            [selectFunction, insertFunction, updateFunction, deleteFunction]);
 
         kernelBuilder.Plugins.Add(databasePlugin);
 
@@ -59,13 +80,13 @@ internal sealed class Program
 
         // Example 3: Updating records
         Console.WriteLine("\nUpdating a record...");
-        var updatePrompt = "Update the price of 'Book' to 39.99 and keep its name";
+        var updatePrompt = "Find the product named 'Book', then update its price to 39.99 using its ID";
         var updateResult = await kernel.InvokePromptAsync(updatePrompt, new(settings));
         Console.WriteLine($"Update Result: {updateResult}");
 
         // Example 3: Updating records
         Console.WriteLine("\nDeleting a record...");
-        var deletePrompt = "Delete the product 'Book'";
+        var deletePrompt = "Find the product named 'Book', then delete it using its ID";
         var deleteResult = await kernel.InvokePromptAsync(deletePrompt, new(settings));
         Console.WriteLine($"Delete Result: {deleteResult}");
 
@@ -74,7 +95,7 @@ internal sealed class Program
         Console.WriteLine("You can try queries like:");
         Console.WriteLine("- Find all products under $50");
         Console.WriteLine("- Insert a new product with name 'Table' and price 19.99");
-        Console.WriteLine("- Update the price of 'Table' to 25.99");
+        Console.WriteLine("- Find 'Table', then update its price to 25.99 using its ID");
 
         while (true)
         {

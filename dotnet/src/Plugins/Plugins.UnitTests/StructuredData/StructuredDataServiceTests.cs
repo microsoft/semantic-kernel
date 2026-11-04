@@ -4,6 +4,7 @@ using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Moq;
@@ -29,6 +30,228 @@ public class StructuredDataServiceTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new StructuredDataService<TestDbContext>(dbContext: null!));
+    }
+
+    [Fact]
+    public void CreateStructuredDataPluginWithoutOperationsIncludesOnlySelect()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act
+        var plugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<TestDbContext, TestEntity>(service);
+
+        // Assert
+        Assert.Equal(1, plugin.FunctionCount);
+        Assert.True(plugin.TryGetFunction("SelectTestEntityRecords", out _));
+    }
+
+    [Fact]
+    public void CreateInsertFunctionWithoutInputMapperThrowsNotSupportedException()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(
+            () => service.CreateInsertFunction<TestDbContext, TestEntity>());
+    }
+
+    [Fact]
+    public void CreateUpdateFunctionWithoutScopedResolverThrowsNotSupportedException()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(
+            () => service.CreateUpdateFunction<TestDbContext, TestEntity>());
+    }
+
+    [Fact]
+    public void CreateDeleteFunctionWithoutScopedResolverThrowsNotSupportedException()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(
+            () => service.CreateDeleteFunction<TestDbContext, TestEntity>());
+    }
+
+    [Fact]
+    public void CreateStructuredDataPluginWithMutationThrowsNotSupportedException()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(
+            () => StructuredDataPluginFactory.CreateStructuredDataPlugin<TestDbContext, TestEntity>(
+                service,
+                [StructuredDataOperation.Insert]));
+    }
+
+    [Fact]
+    public async Task CreateInsertFunctionUsesApplicationMapperAsync()
+    {
+        // Arrange
+        TestEntity? insertedEntity = null;
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        var mockSet = new Mock<DbSet<TestEntity>>();
+        mockSet
+            .Setup(set => set.Add(It.IsAny<TestEntity>()))
+            .Callback<TestEntity>(entity => insertedEntity = entity)
+            .Returns<TestEntity>(entity => entity);
+        mockContext.Setup(context => context.Set<TestEntity>()).Returns(mockSet.Object);
+        mockContext.Setup(context => context.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+        var function = service.CreateInsertFunction<TestDbContext, TestEntity, InsertTestRequest>(
+            input => new TestEntity
+            {
+                Name = input.Name,
+                ServerManagedValue = "server"
+            });
+
+        // Act
+        var result = await function.InvokeAsync(
+            new Kernel(),
+            new() { ["input"] = """{"Name":"client","ServerManagedValue":"client"}""" });
+
+        // Assert
+        Assert.NotNull(insertedEntity);
+        Assert.Equal("client", insertedEntity.Name);
+        Assert.Equal("server", insertedEntity.ServerManagedValue);
+        Assert.Same(insertedEntity, result.GetValue<TestEntity>());
+        Assert.DoesNotContain(
+            nameof(TestEntity.ServerManagedValue),
+            function.Metadata.Parameters.Single().Schema!.ToString(),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateInsertFunctionRejectsPersistenceEntityInput()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(
+            () => service.CreateInsertFunction<TestDbContext, TestEntity, TestEntity>(input => input));
+    }
+
+    [Fact]
+    public async Task CreateUpdateFunctionRejectsEntityOutsideApplicationScopeAsync()
+    {
+        // Arrange
+        var updatesApplied = false;
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+        var function = service.CreateUpdateFunction<TestDbContext, TestEntity, UpdateTestRequest>(
+            (_, _) => Task.FromResult<TestEntity?>(null),
+            (_, _) => updatesApplied = true);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => function.InvokeAsync(new Kernel(), new() { ["input"] = """{"Name":"missing"}""" }));
+
+        // Assert
+        Assert.Equal("The requested entity is not available for update.", exception.Message);
+        Assert.False(updatesApplied);
+        mockContext.Verify(context => context.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateUpdateFunctionUsesScopedTrackedEntityAndExplicitMapperAsync()
+    {
+        // Arrange
+        using var context = new TrackingTestDbContext();
+        var entity = new TestEntity
+        {
+            Id = 1,
+            Name = "original",
+            ServerManagedValue = "server"
+        };
+        context.Set<TestEntity>().Attach(entity);
+        using var service = new StructuredDataService<TrackingTestDbContext>(context);
+        var function = service.CreateUpdateFunction<TrackingTestDbContext, TestEntity, UpdateTestRequest>(
+            (input, _) => Task.FromResult<TestEntity?>(input.Name == "updated" ? entity : null),
+            (input, existingEntity) => existingEntity.Name = input.Name);
+
+        // Act
+        var result = await function.InvokeAsync(
+            new Kernel(),
+            new() { ["input"] = """{"Name":"updated","ServerManagedValue":"client"}""" });
+
+        // Assert
+        Assert.Equal(1, result.GetValue<int>());
+        Assert.Equal("updated", entity.Name);
+        Assert.Equal("server", entity.ServerManagedValue);
+    }
+
+    [Fact]
+    public async Task CreateUpdateFunctionRejectsDetachedResolverResultAsync()
+    {
+        // Arrange
+        using var context = new TrackingTestDbContext();
+        using var service = new StructuredDataService<TrackingTestDbContext>(context);
+        var function = service.CreateUpdateFunction<TrackingTestDbContext, TestEntity, UpdateTestRequest>(
+            (_, _) => Task.FromResult<TestEntity?>(new TestEntity()),
+            (input, entity) => entity.Name = input.Name);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => function.InvokeAsync(new Kernel(), new() { ["input"] = """{"Name":"updated"}""" }));
+
+        // Assert
+        Assert.Equal("The update resolver must return an entity tracked by the structured data service.", exception.Message);
+        Assert.Equal(0, context.SaveChangesCallCount);
+    }
+
+    [Fact]
+    public async Task CreateDeleteFunctionRejectsEntityOutsideApplicationScopeAsync()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+        var function = service.CreateDeleteFunction<TestDbContext, TestEntity, DeleteTestRequest>(
+            (_, _) => Task.FromResult<TestEntity?>(null));
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => function.InvokeAsync(new Kernel(), new() { ["input"] = """{"Name":"missing"}""" }));
+
+        // Assert
+        Assert.Equal("The requested entity is not available for deletion.", exception.Message);
+        mockContext.Verify(context => context.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateDeleteFunctionUsesScopedTrackedEntityAsync()
+    {
+        // Arrange
+        using var context = new TrackingTestDbContext();
+        var entity = new TestEntity { Id = 1, Name = "delete" };
+        context.Set<TestEntity>().Attach(entity);
+        using var service = new StructuredDataService<TrackingTestDbContext>(context);
+        var function = service.CreateDeleteFunction<TrackingTestDbContext, TestEntity, DeleteTestRequest>(
+            (input, _) => Task.FromResult<TestEntity?>(input.Name == "delete" ? entity : null));
+
+        // Act
+        var result = await function.InvokeAsync(
+            new Kernel(),
+            new() { ["input"] = """{"Name":"delete"}""" });
+
+        // Assert
+        Assert.Equal(1, result.GetValue<int>());
+        Assert.Equal(EntityState.Deleted, context.Entry(entity).State);
+        Assert.Equal(1, context.SaveChangesCallCount);
     }
 
     [Fact]
@@ -469,11 +692,27 @@ public class StructuredDataServiceTests
     {
         public int Id { get; set; }
         public string? Name { get; set; }
+        public string? ServerManagedValue { get; set; }
 
         public DateTimeOffset? NullableDate { get; set; }
         public int? NullableInt { get; set; }
         public double? NullableDouble { get; set; }
         public bool? NullableBool { get; set; }
+    }
+
+    public sealed class InsertTestRequest
+    {
+        public string? Name { get; set; }
+    }
+
+    public sealed class UpdateTestRequest
+    {
+        public string? Name { get; set; }
+    }
+
+    public sealed class DeleteTestRequest
+    {
+        public string? Name { get; set; }
     }
 
     public class TestDbContext : DbContext
@@ -501,5 +740,23 @@ public class StructuredDataServiceTests
         }
 
         public DbSet<TestEntity>? TestEntities { get; set; }
+    }
+
+    public sealed class TrackingTestDbContext : DbContext
+    {
+        public TrackingTestDbContext() : base("TestConnection")
+        {
+            Database.SetInitializer<TrackingTestDbContext>(null);
+        }
+
+        public int SaveChangesCallCount { get; private set; }
+
+        public DbSet<TestEntity>? TestEntities { get; set; }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            this.SaveChangesCallCount++;
+            return Task.FromResult(1);
+        }
     }
 }
