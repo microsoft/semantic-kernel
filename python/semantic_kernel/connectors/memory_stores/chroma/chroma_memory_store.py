@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     import chromadb.config
     from chromadb.api.models.Collection import Collection
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 13):
     from warnings import deprecated
 else:
     from typing_extensions import deprecated
@@ -76,7 +76,8 @@ class ChromaMemoryStore(MemoryStoreBase):
 
         except ImportError as exc:
             raise ServiceInitializationError(
-                "Could not import chromadb python package. Please install it with `pip install chromadb`."
+                "Could not import chromadb python package. "
+                "Please install it with `pip install semantic-kernel[chroma]`."
             ) from exc
 
         if client_settings:
