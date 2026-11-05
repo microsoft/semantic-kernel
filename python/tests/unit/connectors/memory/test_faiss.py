@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import faiss
+import numpy as np
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.faiss import FaissCollection, FaissStore
 from semantic_kernel.data.vector import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.exceptions import VectorStoreInitializationException
+from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 
 @fixture(scope="function")
@@ -179,6 +180,37 @@ async def test_delete(faiss_collection):
     await faiss_collection.ensure_collection_deleted()
 
 
+async def test_delete_multiple_keeps_index_in_sync(faiss_collection):
+    await faiss_collection.ensure_collection_exists()
+    records = [
+        {"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "b", "content": "b", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]},
+        {"id": "c", "content": "c", "vector": [0.0, 0.0, 1.0, 0.0, 0.0]},
+    ]
+    await faiss_collection.upsert(records)
+    await faiss_collection.delete(["a", "b", "c"])
+    assert faiss_collection.indexes["vector"].ntotal == 0
+    assert faiss_collection.indexes_key_map["vector"] == {}
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_delete_updates_remaining_positions(faiss_collection):
+    await faiss_collection.ensure_collection_exists()
+    records = [
+        {"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "b", "content": "b", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]},
+        {"id": "c", "content": "c", "vector": [0.0, 0.0, 1.0, 0.0, 0.0]},
+    ]
+    await faiss_collection.upsert(records)
+    await faiss_collection.delete("a")
+    assert faiss_collection.indexes["vector"].ntotal == 2
+    assert faiss_collection.indexes_key_map["vector"] == {"b": 0, "c": 1}
+    await faiss_collection.delete("c")
+    assert faiss_collection.indexes["vector"].ntotal == 1
+    assert faiss_collection.indexes_key_map["vector"] == {"b": 0}
+    await faiss_collection.ensure_collection_deleted()
+
+
 async def test_collection_exists(faiss_collection):
     assert await faiss_collection.collection_exists() is False
     await faiss_collection.ensure_collection_exists()
@@ -216,3 +248,32 @@ async def test_ensure_collection_exists_and_search(faiss_collection, dist):
         assert res.record == record1 if idx == 0 else record2
         idx += 1
     await faiss_collection.ensure_collection_deleted()
+
+
+async def test_delete_keeps_key_map_when_index_cannot_remove(store, data_model_def):
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
+    await collection.ensure_collection_exists(index=faiss.IndexHNSWFlat(5, 4))
+    await collection.upsert({"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]})
+    with raises(VectorStoreOperationException):
+        await collection.delete("a")
+    assert collection.indexes_key_map["vector"] == {"a": 0}
+    assert collection.indexes["vector"].ntotal == 1
+    await collection.ensure_collection_deleted()
+
+
+async def test_delete_rejected_for_index_that_preserves_ids(store, data_model_def):
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
+    index = faiss.IndexIVFFlat(faiss.IndexFlatL2(5), 5, 1)
+    index.train(np.random.default_rng(0).random((10, 5), dtype=np.float32))
+    await collection.ensure_collection_exists(index=index)
+    records = [
+        {"id": "a", "content": "a", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "b", "content": "b", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]},
+    ]
+    await collection.upsert(records)
+    with raises(VectorStoreOperationException, match="flat indexes"):
+        await collection.delete("a")
+    assert index.ntotal == 2
+    assert collection.indexes_key_map["vector"] == {"a": 0, "b": 1}
+    assert await collection.get("a") is not None
+    await collection.ensure_collection_deleted()
