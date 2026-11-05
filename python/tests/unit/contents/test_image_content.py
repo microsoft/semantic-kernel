@@ -48,6 +48,17 @@ def test_to_str_data():
     assert str(image) == "data:image/jpeg;base64,dGVzdF9kYXRh"
 
 
+def test_replace_image_data_uri():
+    image = ImageContent(data=b"old_image", mime_type="image/jpeg", data_format="base64")
+    replacement = "data:image/png;base64,bmV3X2ltYWdl"
+
+    image.data_uri = replacement
+
+    assert image.data == b"new_image"
+    assert image.mime_type == "image/png"
+    assert image.to_dict() == {"type": "image_url", "image_url": {"url": replacement}}
+
+
 @pytest.mark.parametrize("image", test_cases)
 def test_element_roundtrip(image):
     element = image.to_element()
