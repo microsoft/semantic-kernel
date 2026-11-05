@@ -82,6 +82,11 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.AzureDocumentDBConfig.ConnectionString,
             appConfig.AzureDocumentDBConfig.DatabaseName);
         break;
+    case "Chroma":
+        kernelBuilder.Services.AddChromaCollection<string, TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName,
+            appConfig.ChromaConfig.ConnectionString);
+        break;
     case "CosmosNoSql":
         kernelBuilder.Services.AddCosmosCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
@@ -121,6 +126,7 @@ switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
     case "AzureDocumentDB":
+    case "Chroma":
     case "CosmosNoSql":
     case "InMemory":
     case "Redis":

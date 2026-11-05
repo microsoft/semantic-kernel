@@ -22,6 +22,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Chroma"/></para>
 ///
 /// To run this sample, you need a local instance of Docker running, since the associated fixture will try and start a Qdrant container in the local docker instance.
 /// </summary>
