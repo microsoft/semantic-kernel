@@ -45,11 +45,44 @@ CUT_OFF_TOOL_CALL_MESSAGE = (
 
 
 def _arguments_never_written(finish_reason: "FinishReason | None", function_call: FunctionCallContent) -> bool:
-    """A cut-off reply that stopped before writing any argument: the tool would run on its defaults."""
+    """A cut-off reply that stopped before writing any argument: the tool would run on its defaults.
+
+    Nothing written counts as never written: an empty string, or no argument text at all, which is how the
+    Anthropic connector reports a tool without input. A mapping is a complete argument object and is left to
+    the existing parsing.
+    """
     if finish_reason != FinishReason.LENGTH:
         return False
     raw = function_call.arguments
-    return raw is None or (isinstance(raw, str) and not raw.strip())
+    if isinstance(raw, str):
+        return not raw.strip()
+    return raw is None
+
+
+def _fragment_key(function_call: FunctionCallContent) -> str:
+    """Stable key for tracking one call's argument fragments across streamed chunks."""
+    return function_call.id or f"index-{function_call.index}"
+
+
+def _streamed_arguments_never_written(
+    finish_reason: "FinishReason | None",
+    function_call: FunctionCallContent,
+    fragments: tuple[bool, bool],
+) -> bool:
+    """Same question for a streamed reply, where empty fragments are combined into "{}" by the aggregation.
+
+    `fragments` is `(wrote_text, saw_empty)` collected before aggregation: a model that really wrote `{}`
+    produces non-empty fragments, a cut-off reply produces only empty ones.
+    """
+    if finish_reason != FinishReason.LENGTH:
+        return False
+    wrote_text, saw_empty = fragments
+    if wrote_text:
+        return False
+    raw = function_call.arguments
+    if raw is not None and not isinstance(raw, str):
+        return False
+    return saw_empty or str(raw).strip() in ("", "{}")
 
 
 def _record_refused_calls(chat_history: "ChatHistory", function_calls: list[FunctionCallContent]) -> None:
@@ -305,6 +338,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
                 # Hold the messages, if there are more than one response, it will not be used, so we flatten
                 all_messages: list["StreamingChatMessageContent"] = []
+                argument_fragments: dict[str, tuple[bool, bool]] = {}
                 function_call_returned = False
                 async for messages in self._inner_get_streaming_chat_message_contents(
                     chat_history, settings, request_index
@@ -312,6 +346,19 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
+                            for item in msg.items:
+                                if isinstance(item, FunctionCallContent):
+                                    key = _fragment_key(item)
+                                    wrote_text, saw_empty = argument_fragments.get(key, (False, False))
+                                    raw_arguments = item.arguments
+                                    if isinstance(raw_arguments, str):
+                                        if raw_arguments.strip():
+                                            wrote_text = True
+                                        else:
+                                            saw_empty = True
+                                    elif raw_arguments is not None:
+                                        wrote_text = True
+                                    argument_fragments[key] = (wrote_text, saw_empty)
                             if not function_call_returned and any(
                                 isinstance(item, FunctionCallContent) for item in msg.items
                             ):
@@ -329,10 +376,24 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 chat_history.add_message(message=full_completion)
 
                 if refused := [
-                    call for call in function_calls if _arguments_never_written(full_completion.finish_reason, call)
+                    call
+                    for call in function_calls
+                    if _streamed_arguments_never_written(
+                        full_completion.finish_reason,
+                        call,
+                        argument_fragments.get(_fragment_key(call), (False, False)),
+                    )
                 ]:
                     _record_refused_calls(chat_history, refused)
                     function_calls = [call for call in function_calls if call not in refused]
+                    # The results of refused calls reach the caller like any other tool result
+                    refused_messages = merge_streaming_function_results(
+                        messages=chat_history.messages[-len(refused) :],
+                        ai_model_id=self._get_ai_model_id(settings),  # type: ignore
+                        function_invoke_attempt=request_index,
+                    )
+                    if self._yield_function_result_messages(refused_messages):
+                        yield refused_messages
                 if (fc_count := len(function_calls)) == 0:
                     continue
                 logger.info(f"processing {fc_count} tool calls in parallel.")

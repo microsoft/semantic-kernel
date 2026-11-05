@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -53,20 +54,29 @@ def _chunk(delta: dict, finish: str | None = None) -> str:
     )
 
 
-def _tool_delta(arguments: str, name: str = TOOL) -> dict:
+def _tool_delta(arguments: str | None = None, name: str | None = TOOL) -> dict:
+    function: dict = {}
+    if name is not None:
+        function["name"] = name
+    if arguments is not None:
+        function["arguments"] = arguments
     return {
         "role": "assistant",
-        "tool_calls": [
-            {"index": 0, "id": "call_1", "type": "function", "function": {"name": name, "arguments": arguments}}
-        ],
+        "tool_calls": [{"index": 0, "id": "call_1", "type": "function", "function": function}],
     }
 
 
-def _stream_body(arguments: str, finish: str, name: str = TOOL) -> bytes:
-    return (_chunk(_tool_delta(arguments, name)) + _chunk({}, finish) + "data: [DONE]\n\n").encode()
+def _stream_body(fragments: list[str], finish: str, name: str | None = TOOL) -> bytes:
+    """One tool call streamed as several argument fragments, then a chunk carrying the finish reason."""
+    body = _chunk(_tool_delta(name=name))
+    body += "".join(_chunk(_tool_delta(fragment)) for fragment in fragments)
+    return (body + _chunk({}, finish) + "data: [DONE]\n\n").encode()
 
 
-def _body(arguments: str, finish: str, name: str = TOOL) -> bytes:
+def _body(arguments: str | None, finish: str, name: str = TOOL) -> bytes:
+    function: dict = {"name": name}
+    if arguments is not None:
+        function["arguments"] = arguments
     return json.dumps({
         "id": "chatcmpl-mock",
         "object": "chat.completion",
@@ -78,9 +88,7 @@ def _body(arguments: str, finish: str, name: str = TOOL) -> bytes:
                 "message": {
                     "role": "assistant",
                     "content": None,
-                    "tool_calls": [
-                        {"id": "call_1", "type": "function", "function": {"name": name, "arguments": arguments}}
-                    ],
+                    "tool_calls": [{"id": "call_1", "type": "function", "function": function}],
                 },
                 "finish_reason": finish,
             }
@@ -117,14 +125,16 @@ def _kernel(plugin: RecordingPlugin) -> Kernel:
     return kernel
 
 
-async def _invoke(plugin: RecordingPlugin, service: OpenAIChatCompletion, stream: bool) -> None:
+async def _invoke(plugin: RecordingPlugin, service: OpenAIChatCompletion, stream: bool) -> list:
     history = ChatHistory()
     history.add_user_message("do it")
-    if stream:
-        async for _ in service.get_streaming_chat_message_content(history, _settings(), kernel=_kernel(plugin)):
-            pass
-    else:
+    if not stream:
         await service.get_chat_message_contents(history, _settings(), kernel=_kernel(plugin))
+        return []
+    yielded = []
+    async for message in service.get_streaming_chat_message_content(history, _settings(), kernel=_kernel(plugin)):
+        yielded.append(message)
+    return yielded
 
 
 @pytest.mark.asyncio
@@ -132,17 +142,35 @@ async def _invoke(plugin: RecordingPlugin, service: OpenAIChatCompletion, stream
 async def test_cut_off_reply_with_empty_arguments_does_not_run_the_tool(stream: bool) -> None:
     """max_tokens stopped the model right after the tool name, so no parameter was ever written."""
     plugin = RecordingPlugin()
-    body = _stream_body("", "length") if stream else _body("", "length")
+    body = _stream_body([""], "length") if stream else _body("", "length")
     await _invoke(plugin, _service(body, stream), stream)
 
     assert plugin.calls == [], f"tool ran with defaults: {plugin.calls!r}"
 
 
 @pytest.mark.asyncio
+async def test_cut_off_reply_with_several_empty_fragments_does_not_run_the_tool() -> None:
+    """Empty fragments are combined into "{}" by the aggregation, which must not look like real arguments."""
+    plugin = RecordingPlugin()
+    await _invoke(plugin, _service(_stream_body(["", "", ""], "length"), True), True)
+
+    assert plugin.calls == [], f"tool ran with defaults: {plugin.calls!r}"
+
+
+@pytest.mark.asyncio
+async def test_cut_off_reply_with_an_explicit_empty_object_still_runs_the_tool() -> None:
+    """The model really wrote {}, so the call is complete even though the reply was cut off afterwards."""
+    plugin = RecordingPlugin()
+    await _invoke(plugin, _service(_stream_body(["{", "}"], "length"), True), True)
+
+    assert plugin.calls == ["set_mode(mode='default')"]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("stream", [False, True])
 async def test_cut_off_reply_with_empty_arguments_does_not_run_a_tool_needing_one(stream: bool) -> None:
     plugin = RecordingPlugin()
-    body = _stream_body("", "length", "do_action") if stream else _body("", "length", "do_action")
+    body = _stream_body([""], "length", "do_action") if stream else _body("", "length", "do_action")
     await _invoke(plugin, _service(body, stream), stream)
 
     assert plugin.calls == []
@@ -153,7 +181,7 @@ async def test_cut_off_reply_with_empty_arguments_does_not_run_a_tool_needing_on
 async def test_cut_off_reply_with_complete_arguments_still_runs_the_tool(stream: bool) -> None:
     """Compatibility: the model finished writing its arguments and only then hit the limit."""
     plugin = RecordingPlugin()
-    body = _stream_body('{"mode": "silent"}', "length") if stream else _body('{"mode": "silent"}', "length")
+    body = _stream_body(['{"mode": "silent"}'], "length") if stream else _body('{"mode": "silent"}', "length")
     await _invoke(plugin, _service(body, stream), stream)
 
     assert plugin.calls == ["set_mode(mode='silent')"]
@@ -164,7 +192,68 @@ async def test_cut_off_reply_with_complete_arguments_still_runs_the_tool(stream:
 async def test_zero_argument_call_in_a_complete_reply_still_runs(stream: bool) -> None:
     """Compatibility: an empty argument string is normal for a tool without parameters."""
     plugin = RecordingPlugin()
-    body = _stream_body("", "tool_calls") if stream else _body("", "tool_calls")
+    body = _stream_body([""], "tool_calls") if stream else _body("", "tool_calls")
     await _invoke(plugin, _service(body, stream), stream)
 
     assert plugin.calls == ["set_mode(mode='default')"]
+
+
+@pytest.mark.asyncio
+async def test_missing_arguments_from_the_connector_are_not_run_either() -> None:
+    """Anthropic reports a tool without input as no argument text; a cut-off reply still must not run it."""
+    plugin = RecordingPlugin()
+    await _invoke(plugin, _service(_body(None, "length"), False), False)
+
+    assert plugin.calls == []
+
+
+@pytest.mark.asyncio
+async def test_refused_streamed_call_reports_its_result_to_the_caller() -> None:
+    """A refused call must reach the caller like any other tool result, not disappear."""
+    plugin = RecordingPlugin()
+    yielded = await _invoke(plugin, _service(_stream_body([""], "length"), True), True)
+
+    results = [
+        item for message in yielded if message for item in message.items if isinstance(item, FunctionResultContent)
+    ]
+    assert plugin.calls == []
+    assert [r.name for r in results] == [TOOL]
+    assert "cut off" in str(results[0].result)
+
+
+@pytest.mark.asyncio
+async def test_agent_stream_sends_the_refusal_back_to_the_model() -> None:
+    """The agent filters tool results from the caller stream, so what matters is that the model sees the refusal."""
+    from semantic_kernel.agents import ChatCompletionAgent
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+
+    requests: list[bytes] = []
+    cut_off = _stream_body([""], "length")
+    follow_up = (_chunk({"role": "assistant", "content": "ok"}) + _chunk({}, "stop") + "data: [DONE]\n\n").encode()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request.content)
+        return httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            content=cut_off if len(requests) == 1 else follow_up,
+        )
+
+    client = AsyncOpenAI(
+        api_key="sk-" + "a" * 48,
+        base_url="http://mock/v1",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+    )
+    plugin = RecordingPlugin()
+    agent = ChatCompletionAgent(
+        kernel=_kernel(plugin),
+        service=OpenAIChatCompletion(ai_model_id="gpt-4o-mini", async_client=client),
+        name="probe",
+    )
+
+    async for _ in agent.invoke_stream(messages=ChatHistory(), arguments=KernelArguments()):
+        pass
+
+    assert plugin.calls == []
+    assert len(requests) == 2, "the cut-off reply should have been followed by another attempt"
+    assert "cut off at the token limit" in requests[1].decode()
