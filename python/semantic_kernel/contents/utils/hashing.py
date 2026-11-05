@@ -41,8 +41,15 @@ def make_hashable(input: Any, visited=None) -> Any:
         visited[unique_obj_id] = items
         return items
 
-    # Convert lists, sets, and tuples to tuples
-    if isinstance(input, (list, set, tuple)):
+    # Preserve unordered equality for sets, including equality with frozensets.
+    if isinstance(input, (set, frozenset)):
+        visited[unique_obj_id] = None
+        set_items = frozenset(make_hashable(item, visited) for item in input)
+        visited[unique_obj_id] = set_items
+        return set_items
+
+    # Convert ordered sequences to tuples.
+    if isinstance(input, (list, tuple)):
         visited[unique_obj_id] = None
         items = tuple(make_hashable(item, visited) for item in input)
         visited[unique_obj_id] = items
