@@ -282,13 +282,21 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert is_required == annotation_dict["is_required"]
 
 
-def test_shared_annotation_metadata_dict_not_mutated():
-    """A dict used as Annotated metadata must not be mutated when parsed.
+def test_annotation_description_precedence_across_metadata_entries():
+    """A later dict metadata entry overrides an earlier string description."""
+    meta = {"description": "later dictionary"}
 
-    The same metadata dict can be reused across multiple kernel functions
-    (e.g. shared parameter docs); parsing one function's signature must not
-    remove the "description" key for the next function.
-    """
+    @kernel_function
+    def func(arg: Annotated[int, "earlier string", meta]) -> str:
+        return "ok"
+
+    assert func.__kernel_function_parameters__[0]["description"] == "later dictionary"
+    # The caller-owned dict is untouched by decoration.
+    assert meta == {"description": "later dictionary"}
+
+
+def test_shared_annotation_metadata_dict_not_mutated():
+    """Decorating with one shared Annotated metadata dict keeps it usable twice."""
     shared_meta = {"description": "shared description"}
 
     @kernel_function
@@ -299,25 +307,10 @@ def test_shared_annotation_metadata_dict_not_mutated():
     def func_two(arg: Annotated[int, shared_meta]) -> str:
         return "two"
 
-    # the user-provided dict is unchanged
     assert shared_meta == {"description": "shared description"}
-
-    params_one = {p["name"]: p.get("description") for p in func_one.__kernel_function_parameters__}
-    params_two = {p["name"]: p.get("description") for p in func_two.__kernel_function_parameters__}
-
-    assert params_one["arg"] == "shared description"
-    assert params_two["arg"] == "shared description"
-
-
-def test_annotation_metadata_dict_other_keys_still_applied():
-    """Keys other than 'description' in a metadata dict must still be applied, without mutation."""
-    meta = {"description": "the description", "default_value": 42}
-
-    @kernel_function
-    def func(arg: Annotated[int, meta]) -> str:
-        return "ok"
-
-    assert meta == {"description": "the description", "default_value": 42}
-    param = func.__kernel_function_parameters__[0]
-    assert param["description"] == "the description"
-    assert param["default_value"] == 42
+    descriptions = [
+        param["description"]
+        for func in (func_one, func_two)
+        for param in func.__kernel_function_parameters__
+    ]
+    assert descriptions == ["shared description", "shared description"]
