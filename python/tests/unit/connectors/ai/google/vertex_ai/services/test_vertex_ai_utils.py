@@ -30,6 +30,21 @@ def test_finish_reason_from_vertex_ai_to_semantic_kernel():
     assert finish_reason_from_vertex_ai_to_semantic_kernel(Candidate.FinishReason.OTHER) is None
 
 
+@pytest.mark.parametrize(
+    "vertex_reason",
+    [
+        Candidate.FinishReason.SAFETY,
+        Candidate.FinishReason.RECITATION,
+        Candidate.FinishReason.BLOCKLIST,
+        Candidate.FinishReason.PROHIBITED_CONTENT,
+        Candidate.FinishReason.SPII,
+    ],
+)
+def test_finish_reason_from_vertex_ai_content_filter_reasons(vertex_reason):
+    """Responses Gemini stopped for their content map to CONTENT_FILTER."""
+    assert finish_reason_from_vertex_ai_to_semantic_kernel(vertex_reason) == FinishReason.CONTENT_FILTER
+
+
 def test_format_user_message():
     """Test format_user_message."""
     user_message = ChatMessageContent(role=AuthorRole.USER, content="User message")
