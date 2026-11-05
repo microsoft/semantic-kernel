@@ -331,3 +331,37 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert description == annotation_dict.get("description")
     assert type_ == annotation_dict["type_"]
     assert is_required == annotation_dict["is_required"]
+
+
+def test_annotation_description_precedence_across_metadata_entries():
+    """A later dict metadata entry overrides an earlier string description."""
+    meta = {"description": "later dictionary"}
+
+    @kernel_function
+    def func(arg: Annotated[int, "earlier string", meta]) -> str:
+        return "ok"
+
+    assert func.__kernel_function_parameters__[0]["description"] == "later dictionary"
+    # The caller-owned dict is untouched by decoration.
+    assert meta == {"description": "later dictionary"}
+
+
+def test_shared_annotation_metadata_dict_not_mutated():
+    """Decorating with one shared Annotated metadata dict keeps it usable twice."""
+    shared_meta = {"description": "shared description"}
+
+    @kernel_function
+    def func_one(arg: Annotated[int, shared_meta]) -> str:
+        return "one"
+
+    @kernel_function
+    def func_two(arg: Annotated[int, shared_meta]) -> str:
+        return "two"
+
+    assert shared_meta == {"description": "shared description"}
+    descriptions = [
+        param["description"]
+        for func in (func_one, func_two)
+        for param in func.__kernel_function_parameters__
+    ]
+    assert descriptions == ["shared description", "shared description"]
