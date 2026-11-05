@@ -45,7 +45,8 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole?>
 
         if (value == AuthorRole.Tool)
         {
-            writer.WriteStringValue("function");
+            // Gemini function responses are carried by user messages.
+            writer.WriteStringValue("user");
         }
         else if (value == AuthorRole.Assistant)
         {
