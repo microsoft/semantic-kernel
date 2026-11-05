@@ -16,6 +16,7 @@ from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import AVAILABLE_FUNCTIONS
@@ -139,7 +140,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 completions = await self._inner_get_chat_message_contents(chat_history, settings)
                 # Get the function call contents from the chat message. There is only one chat message,
                 # which should be checked in the `_verify_function_choice_settings` method.
-                function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+                function_calls = self._drop_unwritten_function_calls(completions[0])
                 if (fc_count := len(function_calls)) == 0:
                     return completions
 
@@ -172,6 +173,25 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 # Do a final call, without function calling when the max has been reached.
                 self._reset_function_choice_settings(settings)
                 return await self._inner_get_chat_message_contents(chat_history, settings)
+
+    @staticmethod
+    def _drop_unwritten_function_calls(
+        message: "ChatMessageContent | StreamingChatMessageContent",
+    ) -> list[FunctionCallContent]:
+        """Return the function calls of a message that should be invoked.
+
+        When the model stopped because it hit the token limit, a function call whose arguments
+        were never written would otherwise run with its defaults, so it is removed from the message.
+        Calls with any arguments, and all calls of a reply that was not cut off, are kept as before.
+        """
+        function_calls = [item for item in message.items if isinstance(item, FunctionCallContent)]
+        if message.finish_reason != FinishReason.LENGTH:
+            return function_calls
+        unwritten = [call for call in function_calls if not call.arguments]
+        if unwritten:
+            logger.warning("Skipping tool calls with no arguments because the reply was cut off by the length limit.")
+            message.items = [item for item in message.items if not any(item is call for call in unwritten)]
+        return [call for call in function_calls if call.arguments]
 
     async def get_chat_message_content(
         self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
@@ -277,7 +297,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 # the full completion depending on the prompt, the message may contain both function call
                 # content and others
                 full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-                function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+                function_calls = self._drop_unwritten_function_calls(full_completion)
+                if not function_calls:
+                    return
                 chat_history.add_message(message=full_completion)
 
                 fc_count = len(function_calls)
