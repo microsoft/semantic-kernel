@@ -929,7 +929,7 @@ internal sealed class MistralClient
         // This allows consumers to work with functions in an LLM-agnostic way.
         Exception? exception = null;
         KernelArguments? arguments = null;
-        if (toolCall.Function.Arguments is not null)
+        if (!string.IsNullOrWhiteSpace(toolCall.Function.Arguments))
         {
             try
             {

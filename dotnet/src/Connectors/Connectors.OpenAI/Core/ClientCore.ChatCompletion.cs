@@ -1053,7 +1053,11 @@ internal partial class ClientCore
                 KernelArguments? arguments = null;
                 try
                 {
-                    arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.FunctionArguments);
+                    if (!string.IsNullOrWhiteSpace(toolCall.FunctionArguments?.ToString()))
+                    {
+                        arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.FunctionArguments!);
+                    }
+
                     if (arguments is { Count: > 0 } && !retainArgumentTypes)
                     {
                         // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
