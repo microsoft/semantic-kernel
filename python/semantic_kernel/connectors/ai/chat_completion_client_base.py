@@ -14,8 +14,12 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import AVAILABLE_FUNCTIONS
@@ -24,12 +28,48 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 tracer: Tracer = get_tracer(__name__)
+
+# A reply that stops right after the tool name leaves an empty argument string. A function whose parameters
+# are all optional is then invoked with its defaults, although the model was cut off before writing the
+# arguments that decide what the tool does. Arguments that are present, complete or not, are left to the
+# existing parsing; only the empty case is a call the model never started.
+CUT_OFF_TOOL_CALL_MESSAGE = (
+    "The model's reply was cut off at the token limit before this tool call had complete arguments, "
+    "so it was not executed. Retry with a smaller request or a larger token budget."
+)
+
+
+def _arguments_never_written(finish_reason: "FinishReason | None", function_call: FunctionCallContent) -> bool:
+    """A cut-off reply that stopped before writing any argument: the tool would run on its defaults."""
+    if finish_reason != FinishReason.LENGTH:
+        return False
+    raw = function_call.arguments
+    return raw is None or (isinstance(raw, str) and not raw.strip())
+
+
+def _record_refused_calls(chat_history: "ChatHistory", function_calls: list[FunctionCallContent]) -> None:
+    """Record a result per refused call so the model learns why nothing ran, instead of seeing silence."""
+    logger.warning(
+        "The model's reply was cut off at the token limit; %d tool call(s) with incomplete arguments "
+        "were not executed.",
+        len(function_calls),
+    )
+    for function_call in function_calls:
+        chat_history.add_message(
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=[
+                    FunctionResultContent(
+                        id=function_call.id, name=function_call.name, result=CUT_OFF_TOOL_CALL_MESSAGE
+                    )
+                ],
+            )
+        )
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -145,6 +185,14 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
                 # Since we have a function call, add the assistant's tool call message to the history
                 chat_history.add_message(message=completions[0])
+
+                if refused := [
+                    call for call in function_calls if _arguments_never_written(completions[0].finish_reason, call)
+                ]:
+                    _record_refused_calls(chat_history, refused)
+                    function_calls = [call for call in function_calls if call not in refused]
+                if (fc_count := len(function_calls)) == 0:
+                    continue
 
                 logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -280,7 +328,13 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
                 chat_history.add_message(message=full_completion)
 
-                fc_count = len(function_calls)
+                if refused := [
+                    call for call in function_calls if _arguments_never_written(full_completion.finish_reason, call)
+                ]:
+                    _record_refused_calls(chat_history, refused)
+                    function_calls = [call for call in function_calls if call not in refused]
+                if (fc_count := len(function_calls)) == 0:
+                    continue
                 logger.info(f"processing {fc_count} tool calls in parallel.")
 
                 # This function either updates the chat history with the function call results
