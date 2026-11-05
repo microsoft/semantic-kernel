@@ -6,8 +6,8 @@ import time
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
 from copy import copy, deepcopy
-from inspect import isasyncgen, isgenerator
-from typing import TYPE_CHECKING, Any
+from inspect import Parameter, isasyncgen, isgenerator, signature
+from typing import TYPE_CHECKING, Annotated, Any
 
 from opentelemetry import metrics, trace
 from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
@@ -449,17 +449,39 @@ class KernelFunction(KernelBaseModel):
         name = name or self.name
         description = description or self.description
         fields = {}
+        # Prefer the underlying callable signature when present so nullable
+        # annotations (str | None) stay distinct from optional defaults (= None),
+        # and so Field annotations remain nullable when None is allowed.
+        method = getattr(self, "method", None)
+        sig_params = signature(method).parameters if callable(method) else {}
         for param in self.parameters:
-            if param.include_in_function_choices:
-                # Requiredness is explicit metadata: None can be a legitimate
-                # default for optional parameters and must remain a Pydantic default.
-                if param.is_required:
-                    fields[param.name] = (param.type_, Field(description=param.description))
-                else:
+            if not param.include_in_function_choices:
+                continue
+            sp = sig_params.get(param.name) if param.name else None
+            if sp is not None:
+                annotation: Any = (
+                    sp.annotation if sp.annotation is not Parameter.empty else (param.type_object or Any)
+                )
+                origin = getattr(annotation, "__origin__", None)
+                if origin is Annotated:
+                    annotation = annotation.__args__[0]
+                if sp.default is not Parameter.empty:
                     fields[param.name] = (
-                        param.type_,
-                        Field(description=param.description, default=param.default_value),
+                        annotation,
+                        Field(description=param.description, default=sp.default),
                     )
+                else:
+                    fields[param.name] = (annotation, Field(description=param.description))
+                continue
+
+            annotation = param.type_object or param.type_ or Any
+            if param.is_required:
+                fields[param.name] = (annotation, Field(description=param.description))
+            else:
+                fields[param.name] = (
+                    annotation,
+                    Field(description=param.description, default=param.default_value),
+                )
         input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
