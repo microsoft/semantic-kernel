@@ -3,7 +3,6 @@
 import json
 import logging
 import operator
-import sys
 from abc import abstractmethod
 from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UnaryOp, USub, copy_location, expr, parse
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
@@ -12,7 +11,19 @@ from dataclasses import dataclass
 from enum import Enum
 from inspect import Parameter, _empty, getsource, signature
 from types import MappingProxyType, NoneType
-from typing import Annotated, Any, ClassVar, Final, Generic, Literal, Protocol, TypeVar, overload, runtime_checkable
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Final,
+    Generic,
+    Literal,
+    Protocol,
+    Self,
+    TypeVar,
+    overload,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from pydantic.dataclasses import dataclass as pyd_dataclass
@@ -48,11 +59,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrList, OneOrMany, OptionalOneOrList, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import desync_list
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 

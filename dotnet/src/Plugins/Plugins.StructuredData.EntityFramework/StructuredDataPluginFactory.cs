@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Reflection;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,10 +17,13 @@ public static class StructuredDataPluginFactory
     /// <typeparam name="TContext">The type of DbContext to use for database operations.</typeparam>
     /// <typeparam name="TEntity">The entity type to perform operations on.</typeparam>
     /// <param name="service">The structured data service instance to use.</param>
-    /// <param name="operations">Optional collection of operations to support. Defaults to StructuredDataOperations.Default if not specified.</param>
+    /// <param name="operations">Optional collection of operations to support. Defaults to query-only operations if not specified.</param>
     /// <param name="description">Optional description for the plugin. If not provided, a default description will be generated.</param>
     /// <returns>A KernelPlugin instance configured for the specified entity type and operations.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the specified operation is not supported by the service.</exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown if a mutation operation is requested without the explicit mapping and scoped resolution required by the safe mutation APIs.
+    /// </exception>
     public static KernelPlugin CreateStructuredDataPlugin<TContext, TEntity>(
         StructuredDataService<TContext> service,
         IEnumerable<StructuredDataOperation>? operations = null,
@@ -30,34 +32,29 @@ public static class StructuredDataPluginFactory
         where TEntity : class
     {
         operations ??= StructuredDataOperation.Default;
-        description ??= $"Allows CRUD operations against the {typeof(TEntity).Name} entity in the database";
+        description ??= $"Allows queries against the {typeof(TEntity).Name} entity in the database";
 
         var functions = new List<KernelFunction>();
-        var extensionsType = typeof(StructuredDataServiceExtensions);
 
         foreach (var operation in operations)
         {
-            // Look for Create{Operation}Function method in the extensions
-            var methodName = $"Create{operation}Function";
-            var method = extensionsType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
-
-            if (method == null)
+            if (operation == StructuredDataOperation.Select)
             {
-                throw new InvalidOperationException(
-                    $"Operation '{operation}' is not supported. Extension method '{methodName}' not found.");
+                functions.Add(service.CreateSelectFunction<TContext, TEntity>());
+                continue;
             }
 
-            try
+            if (operation == StructuredDataOperation.Insert ||
+                operation == StructuredDataOperation.Update ||
+                operation == StructuredDataOperation.Delete)
             {
-                var genericMethod = method.MakeGenericMethod(typeof(TContext), typeof(TEntity));
-                var function = (KernelFunction)genericMethod.Invoke(null, new object?[] { service, null })!;
-                functions.Add(function);
+                // Mutation functions need application-owned request mapping and row scope, which this convenience factory cannot infer.
+                throw new NotSupportedException(
+                    $"Operation '{operation}' requires an explicitly created safe mutation function. " +
+                    $"Create it with a separate request type, then compose the plugin with {nameof(KernelPluginFactory)}.");
             }
-            catch (Exception ex) when (ex is not InvalidOperationException)
-            {
-                throw new InvalidOperationException(
-                    $"Failed to create function for operation '{operation}': {ex.Message}", ex);
-            }
+
+            throw new InvalidOperationException($"Operation '{operation}' is not supported.");
         }
 
         return KernelPluginFactory.CreateFromFunctions(
