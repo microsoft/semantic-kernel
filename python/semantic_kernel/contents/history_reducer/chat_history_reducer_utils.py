@@ -205,20 +205,25 @@ def extract_range(
     sliced = list(range(start, end))
 
     # If we need to preserve call->result pairs, gather them
-    pair_map = {}
+    pair_map: dict[int, set[int]] = {}
     if preserve_pairs:
         pairs = get_call_result_pairs(history)
         # store in a dict for quick membership checking
-        # call_idx -> result_idx, and also result_idx -> call_idx
+        # call_idx -> result_idxs (several for parallel calls), and also result_idx -> {call_idx}
         for cidx, ridx in pairs:
-            pair_map[cidx] = ridx
-            pair_map[ridx] = cidx
+            pair_map.setdefault(cidx, set()).add(ridx)
+            pair_map.setdefault(ridx, set()).add(cidx)
 
     extracted: list[ChatMessageContent] = []
+    dropped: set[int] = set()
     i = 0
     while i < len(sliced):
         idx = sliced[i]
         msg = history[idx]
+
+        if idx in dropped:
+            i += 1
+            continue
 
         # If filter_func excludes it, skip it
         if filter_func and filter_func(msg):
@@ -230,43 +235,26 @@ def extract_range(
             i += 1
             continue
 
-        # If preserve_pairs is on, and there's a paired index, skip or include them both
-        if preserve_pairs and idx in pair_map:
-            paired_idx = pair_map[idx]
-            # If the pair is within [start, end), we must keep or skip them together
-            if start <= paired_idx < end:
-                # Check if the pair or itself fails filter_func
-                if filter_func and (filter_func(history[paired_idx]) or filter_func(msg)):
-                    # skip both
-                    i += 1
-                    # Also skip the paired index if it's in our current slice
-                    if paired_idx in sliced:
-                        # remove it from the slice so we don't process it again
-                        sliced.remove(paired_idx)
-                    continue
-                # keep both
-                extracted.append(msg)
-                if paired_idx > idx:
-                    # We'll skip the pair in the normal iteration by removing from slice
-                    # but add it to extracted right now
-                    extracted.append(history[paired_idx])
-                    if paired_idx in sliced:
-                        sliced.remove(paired_idx)
-                else:
-                    # if paired_idx < idx, it might appear later, so skip for now
-                    # but we may have already processed it if i was the 2nd item
-                    # either way, do not add duplicates
-                    pass
+        # If preserve_pairs is on, keep or skip the whole connected call/result group together
+        if preserve_pairs and idx in pair_map and filter_func:
+            # A message can link several calls (one message holding multiple results) and vice versa,
+            # so walk the connected group within [start, end) rather than only direct neighbours.
+            group = {idx}
+            stack = [idx]
+            while stack:
+                for p in pair_map.get(stack.pop(), ()):
+                    if start <= p < end and p not in group:
+                        group.add(p)
+                        stack.append(p)
+            if any(filter_func(history[p]) for p in group):
+                # skip all members; later ones are dropped when their index is reached
+                dropped.update(group)
                 i += 1
                 continue
-            # If the paired_idx is outside [start, end), there's no conflict
-            # so we can just do normal logic
-            extracted.append(msg)
-            i += 1
-        else:
-            # keep it if filter_func not triggered
-            extracted.append(msg)
-            i += 1
+        # each kept message is appended when its own index is reached, so messages
+        # interleaved between a call and its results keep their original order
+        extracted.append(msg)
+        i += 1
 
     return extracted
 
