@@ -4,7 +4,7 @@ import asyncio
 import copy
 import logging
 from abc import ABC
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Mapping
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -34,55 +34,43 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 tracer: Tracer = get_tracer(__name__)
 
-# A reply that stops right after the tool name leaves an empty argument string. A function whose parameters
-# are all optional is then invoked with its defaults, although the model was cut off before writing the
-# arguments that decide what the tool does. Arguments that are present, complete or not, are left to the
-# existing parsing; only the empty case is a call the model never started.
+# A reply cut off right after the tool name leaves an empty argument string, and a function whose parameters
+# are all optional then runs on its defaults. Only that case is refused; whatever the model did write is
+# left to the existing parsing.
 CUT_OFF_TOOL_CALL_MESSAGE = (
-    "The model's reply was cut off at the token limit before this tool call had complete arguments, "
-    "so it was not executed. Retry with a smaller request or a larger token budget."
+    "The model's reply was cut off at the token limit before this tool call had complete arguments, so it was "
+    "not executed. Retry with a smaller request or a larger token budget."
 )
 
 
-def _arguments_never_written(finish_reason: "FinishReason | None", function_call: FunctionCallContent) -> bool:
+def _arguments_never_written(
+    finish_reason: "FinishReason | None", function_call: FunctionCallContent, arguments_written: bool | None = None
+) -> bool:
     """A cut-off reply that stopped before writing any argument: the tool would run on its defaults.
 
-    Nothing written counts as never written: an empty string, or no argument text at all, which is how the
-    Anthropic connector reports a tool without input. A mapping is a complete argument object and is left to
-    the existing parsing.
+    `arguments_written` is the streamed evidence, collected before the aggregation turns empty fragments into
+    `"{}"`; without it the finished arguments are judged directly. A mapping is left to the existing parsing.
     """
     if finish_reason != FinishReason.LENGTH:
         return False
     raw = function_call.arguments
+    if arguments_written is not None:
+        return not arguments_written and not isinstance(raw, Mapping)
     if isinstance(raw, str):
         return not raw.strip()
     return raw is None
 
 
 def _fragment_key(function_call: FunctionCallContent) -> str:
-    """Stable key for tracking one call's argument fragments across streamed chunks."""
-    return function_call.id or f"index-{function_call.index}"
+    """Which call a streamed chunk belongs to: the index, because only the first chunk carries the call id."""
+    return f"index-{function_call.index}" if function_call.index is not None else (function_call.id or "")
 
 
-def _streamed_arguments_never_written(
-    finish_reason: "FinishReason | None",
-    function_call: FunctionCallContent,
-    fragments: tuple[bool, bool],
-) -> bool:
-    """Same question for a streamed reply, where empty fragments are combined into "{}" by the aggregation.
-
-    `fragments` is `(wrote_text, saw_empty)` collected before aggregation: a model that really wrote `{}`
-    produces non-empty fragments, a cut-off reply produces only empty ones.
-    """
-    if finish_reason != FinishReason.LENGTH:
-        return False
-    wrote_text, saw_empty = fragments
-    if wrote_text:
-        return False
-    raw = function_call.arguments
-    if raw is not None and not isinstance(raw, str):
-        return False
-    return saw_empty or str(raw).strip() in ("", "{}")
+def _note_written_arguments(arguments_written: set[str], message: "StreamingChatMessageContent | None") -> None:
+    """Remember the streamed calls that already carried argument text, before the aggregation runs."""
+    for item in message.items if message is not None else ():
+        if isinstance(item, FunctionCallContent) and item.arguments:
+            arguments_written.add(_fragment_key(item))
 
 
 def _record_refused_calls(chat_history: "ChatHistory", function_calls: list[FunctionCallContent]) -> None:
@@ -338,34 +326,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
                 # Hold the messages, if there are more than one response, it will not be used, so we flatten
                 all_messages: list["StreamingChatMessageContent"] = []
-                argument_fragments: dict[str, tuple[bool, bool]] = {}
-                function_call_returned = False
+                arguments_written: set[str] = set()
                 async for messages in self._inner_get_streaming_chat_message_contents(
                     chat_history, settings, request_index
                 ):
                     for msg in messages:
                         if msg is not None:
                             all_messages.append(msg)
-                            for item in msg.items:
-                                if isinstance(item, FunctionCallContent):
-                                    key = _fragment_key(item)
-                                    wrote_text, saw_empty = argument_fragments.get(key, (False, False))
-                                    raw_arguments = item.arguments
-                                    if isinstance(raw_arguments, str):
-                                        if raw_arguments.strip():
-                                            wrote_text = True
-                                        else:
-                                            saw_empty = True
-                                    elif raw_arguments is not None:
-                                        wrote_text = True
-                                    argument_fragments[key] = (wrote_text, saw_empty)
-                            if not function_call_returned and any(
-                                isinstance(item, FunctionCallContent) for item in msg.items
-                            ):
-                                function_call_returned = True
+                            _note_written_arguments(arguments_written, msg)
                     yield messages
 
-                if not function_call_returned:
+                if not any(isinstance(item, FunctionCallContent) for msg in all_messages for item in msg.items):
                     return
 
                 # There is one FunctionCallContent response stream in the messages, combining now to create
@@ -378,10 +349,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 if refused := [
                     call
                     for call in function_calls
-                    if _streamed_arguments_never_written(
+                    if _arguments_never_written(
                         full_completion.finish_reason,
                         call,
-                        argument_fragments.get(_fragment_key(call), (False, False)),
+                        _fragment_key(call) in arguments_written,
                     )
                 ]:
                     _record_refused_calls(chat_history, refused)

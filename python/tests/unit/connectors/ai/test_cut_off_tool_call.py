@@ -54,7 +54,7 @@ def _chunk(delta: dict, finish: str | None = None) -> str:
     )
 
 
-def _tool_delta(arguments: str | None = None, name: str | None = TOOL) -> dict:
+def _tool_delta(arguments: str | None = None, name: str | None = None, call_id: str = "") -> dict:
     function: dict = {}
     if name is not None:
         function["name"] = name
@@ -62,13 +62,19 @@ def _tool_delta(arguments: str | None = None, name: str | None = TOOL) -> dict:
         function["arguments"] = arguments
     return {
         "role": "assistant",
-        "tool_calls": [{"index": 0, "id": "call_1", "type": "function", "function": function}],
+        "tool_calls": [{"index": 0, "id": call_id, "type": "function", "function": function}],
     }
 
 
 def _stream_body(fragments: list[str], finish: str, name: str | None = TOOL) -> bytes:
-    """One tool call streamed as several argument fragments, then a chunk carrying the finish reason."""
-    body = _chunk(_tool_delta(name=name))
+    """One tool call streamed the way the API streams it.
+
+    The first delta carries the call id, the function name and an empty argument string; every later
+    delta carries an empty id and no name, so only the index identifies it. Captured from qwen-plus:
+    `{"index": 0, "id": "call_...", "function": {"name": "set_mode", "arguments": ""}}` then
+    `{"index": 0, "id": "", "function": {"arguments": "{\\""}}`.
+    """
+    body = _chunk(_tool_delta(arguments="", name=name, call_id="call_1"))
     body += "".join(_chunk(_tool_delta(fragment)) for fragment in fragments)
     return (body + _chunk({}, finish) + "data: [DONE]\n\n").encode()
 
@@ -179,9 +185,13 @@ async def test_cut_off_reply_with_empty_arguments_does_not_run_a_tool_needing_on
 @pytest.mark.asyncio
 @pytest.mark.parametrize("stream", [False, True])
 async def test_cut_off_reply_with_complete_arguments_still_runs_the_tool(stream: bool) -> None:
-    """Compatibility: the model finished writing its arguments and only then hit the limit."""
+    """Compatibility: the model finished writing its arguments and only then hit the limit.
+
+    Streamed, the arguments arrive in several chunks that carry no call id (captured from qwen-plus at
+    `max_tokens=9`), so the pieces must be recognised as one call that did write its arguments.
+    """
     plugin = RecordingPlugin()
-    body = _stream_body(['{"mode": "silent"}'], "length") if stream else _body('{"mode": "silent"}', "length")
+    body = _stream_body(['{"', 'mode": "', 'silent"}'], "length") if stream else _body('{"mode": "silent"}', "length")
     await _invoke(plugin, _service(body, stream), stream)
 
     assert plugin.calls == ["set_mode(mode='silent')"]
