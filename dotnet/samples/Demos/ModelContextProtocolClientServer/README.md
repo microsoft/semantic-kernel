@@ -114,7 +114,7 @@ The MCP specification supports remote MCP servers. You can find more information
  [Server-Side Events (SSE)](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse) and [HTTP with SSE](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse).
    
 The [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk) provides all the necessary components to easily create a remote MCP server.
-To get started, follow this sample: [AspNetCoreSseServer](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/AspNetCoreSseServer).
+To get started, follow this sample: [AspNetCoreMcpServer](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/AspNetCoreMcpServer).
 
 ## Authentication
 
