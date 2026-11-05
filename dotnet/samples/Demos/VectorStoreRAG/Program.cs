@@ -92,6 +92,27 @@ switch (appConfig.RagConfig.VectorStoreType)
         kernelBuilder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName);
         break;
+    case "Milvus":
+        if (string.IsNullOrWhiteSpace(appConfig.MilvusConfig.ApiKey))
+        {
+            kernelBuilder.Services.AddMilvusCollection<string, TextSnippet<string>>(
+                appConfig.RagConfig.CollectionName,
+                appConfig.MilvusConfig.Host,
+                port: appConfig.MilvusConfig.Port,
+                https: appConfig.MilvusConfig.Https,
+                database: appConfig.MilvusConfig.Database);
+        }
+        else
+        {
+            kernelBuilder.Services.AddMilvusCollection<string, TextSnippet<string>>(
+                appConfig.RagConfig.CollectionName,
+                appConfig.MilvusConfig.Host,
+                apiKey: appConfig.MilvusConfig.ApiKey,
+                port: appConfig.MilvusConfig.Port,
+                https: appConfig.MilvusConfig.Https,
+                database: appConfig.MilvusConfig.Database);
+        }
+        break;
     case "Qdrant":
         kernelBuilder.Services.AddQdrantCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
@@ -123,6 +144,7 @@ switch (appConfig.RagConfig.VectorStoreType)
     case "AzureDocumentDB":
     case "CosmosNoSql":
     case "InMemory":
+    case "Milvus":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);
         break;
