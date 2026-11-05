@@ -69,7 +69,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4; python_version < '3.14' and (sys_platform != 'win32' or python_version < '3.13')"
 ]
 aws = [
-    "boto3>=1.36.4,<1.43.0",
+    "boto3>=1.36.4,<1.44.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -89,7 +89,7 @@ faiss = [
 ]
 google = [
     "google-cloud-aiplatform>=1.114,<1.134",
-    "google-genai >= 1.51,< 2.23"
+    "google-genai >= 1.51,< 2.30"
 ]
 hugging_face = [
     "transformers[torch] >= 5.5.0,< 6.0",
@@ -118,7 +118,7 @@ ollama = [
 ]
 onnx = [
   "onnxruntime>=1.26.0",
-  "onnxruntime-genai==0.15.2"
+  "onnxruntime-genai==0.18.0"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
@@ -137,7 +137,7 @@ qdrant = [
     "qdrant-client ~= 1.10"
 ]
 redis = [
-    "redis[hiredis] >= 6,< 8",
+    "redis[hiredis] >= 6,< 9",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -253,5 +253,5 @@ exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 name = "semantic_kernel"
 
 [build-system]
-requires = ["flit-core >= 3.9,<4.0"]
+requires = ["flit-core >= 3.9,< 5.0"]
 build-backend = "flit_core.buildapi"
