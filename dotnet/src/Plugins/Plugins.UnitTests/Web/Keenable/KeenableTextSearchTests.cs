@@ -236,13 +236,39 @@ public sealed class KeenableTextSearchTests : IDisposable
 
     [Theory]
     [InlineData("http://search.example.com")]
+    [InlineData("http://127.0.0.1:8080")]
     [InlineData("ftp://search.example.com/")]
-    public void NonHttpsEndpointThrowsArgumentException(string endpoint)
+    public void NonHttpsEndpointWithApiKeyThrowsArgumentException(string endpoint)
     {
         // Act & Assert - the API key is sent as a header, so a clear-text endpoint is refused up front
         var e = Assert.Throws<ArgumentException>(() => new KeenableTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, Endpoint = new Uri(endpoint) }));
         Assert.Contains("must use HTTPS", e.Message);
         Assert.Equal("options", e.ParamName);
+    }
+
+    [Theory]
+    [InlineData("http://search.example.com")]
+    [InlineData("ftp://search.example.com/")]
+    public void NonHttpsNonLoopbackEndpointWithoutApiKeyThrowsArgumentException(string endpoint)
+    {
+        var e = Assert.Throws<ArgumentException>(() => new KeenableTextSearch(options: new() { HttpClient = this._httpClient, Endpoint = new Uri(endpoint) }));
+        Assert.Contains("must use HTTPS", e.Message);
+        Assert.Equal("options", e.ParamName);
+    }
+
+    [Fact]
+    public async Task LoopbackHttpEndpointWithoutApiKeyIsAllowedAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+        var textSearch = new KeenableTextSearch(options: new() { HttpClient = this._httpClient, Endpoint = new Uri("http://127.0.0.1:8080") });
+
+        // Act
+        await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4 });
+
+        // Assert
+        Assert.Equal("http://127.0.0.1:8080/v1/search/public", this._messageHandlerStub.RequestUris[0]!.AbsoluteUri);
+        Assert.False(this._messageHandlerStub.RequestHeaders[0]!.Contains("X-API-Key"));
     }
 
     [Fact]

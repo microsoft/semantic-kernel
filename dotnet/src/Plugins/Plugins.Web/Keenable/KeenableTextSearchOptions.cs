@@ -13,7 +13,8 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Keenable;
 public sealed class KeenableTextSearchOptions
 {
     /// <summary>
-    /// The base URI of the Keenable search service. The URI must use HTTPS; any other scheme is rejected when the search instance is created.
+    /// The base URI of the Keenable search service. The URI must use HTTPS when an API key is configured, because the key is sent as a request header.
+    /// Keyless usage also accepts plain HTTP on loopback hosts (for example <c>http://127.0.0.1:8080</c>) for local testing; any other non-HTTPS scheme is rejected when the search instance is created.
     /// The connector appends <c>/v1/search</c> when an API key is configured and <c>/v1/search/public</c> otherwise.
     /// Defaults to <c>https://api.keenable.ai</c>.
     /// </summary>

@@ -38,13 +38,10 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     /// <param name="options">Options used when creating this instance of <see cref="KeenableTextSearch"/>.</param>
     public KeenableTextSearch(string? apiKey = null, KeenableTextSearchOptions? options = null)
     {
-        var endpoint = options?.Endpoint ?? new Uri(DefaultUri);
-        if (!string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException($"The Keenable endpoint must use HTTPS, got '{endpoint}'. The API key is sent as a request header and must not travel in clear text.", nameof(options));
-        }
-
         this._apiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
+
+        var endpoint = options?.Endpoint ?? new Uri(DefaultUri);
+        ValidateEndpoint(endpoint, this._apiKey is not null);
         this._uri = BuildSearchUri(endpoint, this._apiKey is null);
         this._searchOptions = options;
         this._logger = options?.LoggerFactory?.CreateLogger(typeof(KeenableTextSearch)) ?? NullLogger.Instance;
@@ -426,6 +423,31 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
     private static readonly string[] s_validFieldNames = [Site, PublishedAfter, PublishedBefore];
 
     /// <summary>
+    /// Validates the configured endpoint. HTTPS is always allowed. Plain HTTP is allowed on loopback hosts
+    /// only when no API key is configured, so local mock servers can be used without sending secrets in clear text.
+    /// </summary>
+    private static void ValidateEndpoint(Uri endpoint, bool hasApiKey)
+    {
+        if (string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (!hasApiKey
+            && string.Equals(endpoint.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && endpoint.IsLoopback)
+        {
+            return;
+        }
+
+        var message = hasApiKey
+            ? $"The Keenable endpoint must use HTTPS when an API key is configured, got '{endpoint}'. The API key is sent as a request header and must not travel in clear text."
+            : $"The Keenable endpoint must use HTTPS, got '{endpoint}'. Only loopback HTTP is permitted for keyless local testing.";
+
+        throw new ArgumentException(message, "options");
+    }
+
+    /// <summary>
     /// Build the full search URI from the base endpoint. The public path is used when no API key is configured.
     /// </summary>
     private static Uri BuildSearchUri(Uri endpoint, bool isPublic)
@@ -498,6 +520,11 @@ public sealed class KeenableTextSearch : ITextSearch, ITextSearch<KeenableWebPag
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {
+            if (!string.Equals(this._uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The Keenable API key cannot be sent over a non-HTTPS request.");
+            }
+
             httpRequestMessage.Headers.Add(ApiKeyHeaderName, this._apiKey);
         }
 
