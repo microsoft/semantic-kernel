@@ -18,7 +18,6 @@ from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.vector import (
-    DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     GetFilteredRecordOptions,
     IndexKind,
@@ -1145,8 +1144,10 @@ def _build_search_query(
             f"Distance function '{vector_field.distance_function}' is not supported for field '{vector_field.name}'"
         )
     distance_function = DISTANCE_FUNCTION_MAP[vector_field.distance_function]
-    asc: bool = True
-    asc = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
+    # VECTOR_DISTANCE returns a distance for every supported metric (the dot
+    # metric is the negative dot product), so the nearest rows are the
+    # smallest values.
+    asc = True
 
     command.query.append(
         f", VECTOR_DISTANCE('{distance_function}', {QueryBuilder.escape_identifier(vector_field.storage_name or vector_field.name)}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
