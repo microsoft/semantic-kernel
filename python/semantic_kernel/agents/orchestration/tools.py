@@ -42,15 +42,13 @@ def structured_outputs_transform(
         raise ValueError("The service must support structured output.")
     settings.response_format = target_structure
 
-    chat_history = ChatHistory(
-        system_message=(
-            "Try your best to summarize the conversation into structured format:\n"
-            f"{target_structure.model_json_schema()}."
-        ),
+    system_message = (
+        f"Try your best to summarize the conversation into structured format:\n{target_structure.model_json_schema()}."
     )
 
     async def output_transform(output: DefaultTypeAlias) -> BaseModel:
         """Transform the output of the chat completion service into the target structure."""
+        chat_history = ChatHistory(system_message=system_message)
         if isinstance(output, ChatMessageContent):
             chat_history.add_message(output)
         elif isinstance(output, list) and all(isinstance(item, ChatMessageContent) for item in output):
