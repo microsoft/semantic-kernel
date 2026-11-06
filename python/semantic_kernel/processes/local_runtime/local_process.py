@@ -207,15 +207,21 @@ class LocalProcess(LocalStep):
                 if not messages_to_process and (not keep_alive or self.external_event_queue.empty()):
                     break
 
+                end_message_sent = False
                 message_tasks = []
                 for message in messages_to_process:
                     if message.destination_id == END_PROCESS_ID:
-                        break
+                        end_message_sent = True
+                        continue
 
                     destination_step = next(step for step in self.steps if step.id == message.destination_id)
                     message_tasks.append(destination_step.handle_message(message))
 
                 await asyncio.gather(*message_tasks)
+
+                if end_message_sent:
+                    # A step asked to stop the process: finish this superstep, then stop.
+                    break
 
         except Exception as ex:
             logger.error(f"An error occurred while running the process: {ex}.")
