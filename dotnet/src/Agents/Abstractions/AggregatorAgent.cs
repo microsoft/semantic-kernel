@@ -25,6 +25,11 @@ public enum AggregatorMode
     /// A nested embedding the aggregated chat within another chat.
     /// </summary>
     Nested,
+
+    /// <summary>
+    /// A custom selection of the aggregated chat messages.
+    /// </summary>
+    Custom,
 }
 
 /// <summary>
@@ -43,6 +48,12 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     /// with which <see cref="AggregatorAgent"/> is participating. The default value is <see cref="AggregatorMode.Flat"/>.
     /// </value>
     public AggregatorMode Mode { get; init; } = AggregatorMode.Flat;
+
+    /// <summary>
+    /// Gets the callback used to select the message exposed to the owning chat when <see cref="Mode"/> is <see cref="AggregatorMode.Custom"/>.
+    /// The messages are ordered newest first, matching the aggregated chat history.
+    /// </summary>
+    public Func<IReadOnlyList<ChatMessageContent>, ChatMessageContent?>? MessageSelector { get; init; }
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
@@ -82,7 +93,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
-        AggregatorChannel channel = new(chat);
+        AggregatorChannel channel = new(chat, this.MessageSelector);
 
         this.Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
 
@@ -100,7 +111,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
             throw new KernelException("Unable to restore channel: invalid state.");
 
         await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
-        AggregatorChannel channel = new(chat);
+        AggregatorChannel channel = new(chat, this.MessageSelector);
 
         this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
