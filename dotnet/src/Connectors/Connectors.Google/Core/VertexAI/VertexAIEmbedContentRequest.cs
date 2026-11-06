@@ -1,47 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal sealed class VertexAIEmbedContentRequest
 {
-    [JsonPropertyName("requests")]
-    public IList<EmbedContentRequestItem> Requests { get; set; } = null!;
+    [JsonPropertyName("content")]
+    public RequestContent Content { get; set; } = null!;
 
-    public static VertexAIEmbedContentRequest FromData(IEnumerable<string> data, string model, int? dimensions = null) => new()
+    [JsonPropertyName("outputDimensionality")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? OutputDimensionality { get; set; }
+
+    public static VertexAIEmbedContentRequest FromText(string text, int? dimensions = null) => new()
     {
-        Requests = data.Select(text => new EmbedContentRequestItem
+        Content = new RequestContent
         {
-            Model = model,
-            Content = new RequestContent
-            {
-                Parts =
-                [
-                    new RequestPart
-                    {
-                        Text = text
-                    }
-                ]
-            },
-            OutputDimensionality = dimensions
-        }).ToList()
+            Parts = [new RequestPart { Text = text }]
+        },
+        OutputDimensionality = dimensions
     };
-
-    internal sealed class EmbedContentRequestItem
-    {
-        [JsonPropertyName("model")]
-        public string Model { get; set; } = null!;
-
-        [JsonPropertyName("content")]
-        public RequestContent Content { get; set; } = null!;
-
-        [JsonPropertyName("outputDimensionality")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public int? OutputDimensionality { get; set; }
-    }
 
     internal sealed class RequestContent
     {

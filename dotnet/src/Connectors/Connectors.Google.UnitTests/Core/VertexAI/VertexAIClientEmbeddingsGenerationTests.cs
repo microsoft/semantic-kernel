@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
@@ -206,76 +209,113 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         Assert.Null(exception);
     }
 
-    [Fact]
-    public async Task ShouldUseBatchEmbedContentsEndpointForGeminiEmbeddingModelAsync()
+    [Theory]
+    [InlineData("gemini-embedding-2")]
+    [InlineData("gemini-embedding-2-preview")]
+    public async Task ShouldUseVertexEmbedContentContractAsync(string modelId)
     {
-        // Arrange
-        string modelId = "gemini-embedding-2";
-        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        var client = this.CreateEmbeddingsClient(modelId: modelId, location: "global");
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             File.ReadAllText("./TestData/vertex_embed_content_response.json"));
-        IList<string> data = ["sample data"];
 
-        // Act
-        await client.GenerateEmbeddingsAsync(data);
+        var embeddings = await client.GenerateEmbeddingsAsync(["sample data"]);
 
-        // Assert
-        Assert.NotNull(this._messageHandlerStub.RequestUri);
-        Assert.EndsWith(":batchEmbedContents", this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
-        Assert.NotNull(this._messageHandlerStub.RequestContent);
-        string requestBody = System.Text.Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        using var requestJson = JsonDocument.Parse(requestBody);
-        Assert.Equal(JsonValueKind.Array, requestJson.RootElement.GetProperty("requests").ValueKind);
-        var firstRequest = requestJson.RootElement.GetProperty("requests")[0];
-        Assert.Equal($"projects/fake-project-id/locations/us-central1/publishers/google/models/{modelId}", firstRequest.GetProperty("model").GetString());
-        Assert.Equal("sample data", firstRequest.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString());
-        Assert.False(requestJson.RootElement.TryGetProperty("instances", out _));
+        Assert.Equal($"https://aiplatform.googleapis.com/v1/projects/fake-project-id/locations/global/publishers/google/models/{modelId}:embedContent",
+            this._messageHandlerStub.RequestUri!.ToString());
+        using var body = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        Assert.Equal("sample data", body.RootElement.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString());
+        Assert.False(body.RootElement.TryGetProperty("requests", out _));
+        Assert.False(body.RootElement.TryGetProperty("instances", out _));
+        Assert.False(body.RootElement.TryGetProperty("model", out _));
+        Assert.Single(embeddings);
+        Assert.Equal(new float[] { 0.1f, 0.2f, 0.3f }, embeddings[0].ToArray());
+    }
+
+    [Theory]
+    [InlineData("text-embedding-004")]
+    [InlineData("gemini-embedding-001")]
+    public async Task ShouldUsePredictEndpointForLegacyEmbeddingModelAsync(string modelId)
+    {
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+
+        await client.GenerateEmbeddingsAsync(["sample data"]);
+
+        Assert.EndsWith(":predict", this._messageHandlerStub.RequestUri!.ToString(), StringComparison.Ordinal);
+        using var body = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        Assert.Equal(JsonValueKind.Array, body.RootElement.GetProperty("instances").ValueKind);
     }
 
     [Fact]
-    public async Task ShouldUsePredictEndpointForLegacyEmbeddingModelAsync()
+    public async Task ShouldEmbedEachInputSeparatelyAndPreserveOrderAsync()
     {
-        // Arrange
-        string modelId = "text-embedding-004";
-        var client = this.CreateEmbeddingsClient(modelId: modelId);
-        IList<string> data = ["sample data"];
+        using var handler = new MultipleHttpMessageHandlerStub();
+        handler.AddJsonResponse("{\"embedding\":{\"values\":[0.1,0.2]}}");
+        handler.AddJsonResponse("{\"embedding\":{\"values\":[0.3,0.4]}}");
+        using var httpClient = handler.CreateHttpClient();
+        var client = this.CreateEmbeddingsClient(modelId: "gemini-embedding-2", httpClient: httpClient);
 
-        // Act
-        await client.GenerateEmbeddingsAsync(data);
+        var embeddings = await client.GenerateEmbeddingsAsync(["first input", "second input"]);
 
-        // Assert
-        Assert.NotNull(this._messageHandlerStub.RequestUri);
-        Assert.EndsWith(":predict", this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
-        Assert.NotNull(this._messageHandlerStub.RequestContent);
-        string requestBody = System.Text.Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        using var requestJson = JsonDocument.Parse(requestBody);
-        Assert.Equal(JsonValueKind.Array, requestJson.RootElement.GetProperty("instances").ValueKind);
-    }
-
-    [Fact]
-    public async Task ShouldReturnValidEmbeddingsResponseForGeminiEmbeddingModelAsync()
-    {
-        // Arrange
-        string modelId = "gemini-embedding-2";
-        var client = this.CreateEmbeddingsClient(modelId: modelId);
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            File.ReadAllText("./TestData/vertex_embed_content_response.json"));
-        var dataToEmbed = new List<string>()
+        Assert.Equal(2, handler.RequestContents.Count);
+        for (int i = 0; i < 2; i++)
         {
-            "Write a story about a magic backpack.",
-            "Print color of backpack."
-        };
+            using var body = JsonDocument.Parse(handler.RequestContents[i]!);
+            Assert.Equal(i == 0 ? "first input" : "second input", body.RootElement.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString());
+        }
 
-        // Act
-        var embeddings = await client.GenerateEmbeddingsAsync(dataToEmbed);
-
-        // Assert
-        VertexAIEmbedContentResponse testDataResponse = JsonSerializer.Deserialize<VertexAIEmbedContentResponse>(
-            await File.ReadAllTextAsync("./TestData/vertex_embed_content_response.json"))!;
-        Assert.NotNull(embeddings);
         Assert.Collection(embeddings,
-            values => Assert.Equal(testDataResponse.Embeddings[0].Values, values),
-            values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
+            values => Assert.Equal(new float[] { 0.1f, 0.2f }, values.ToArray()),
+            values => Assert.Equal(new float[] { 0.3f, 0.4f }, values.ToArray()));
+    }
+
+    [Theory]
+    [InlineData(null, null, null)]
+    [InlineData(1024, null, 1024)]
+    [InlineData(null, 768, 768)]
+    [InlineData(1024, 768, 768)]
+    public async Task ShouldRespectEmbedContentDimensionsAsync(int? defaultDimensions, int? requestDimensions, int? expectedDimensions)
+    {
+        var client = this.CreateEmbeddingsClient(modelId: "gemini-embedding-2", dimensions: defaultDimensions);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
+            File.ReadAllText("./TestData/vertex_embed_content_response.json"));
+
+        await client.GenerateEmbeddingsAsync(["sample data"], new EmbeddingGenerationOptions { Dimensions = requestDimensions });
+
+        using var body = JsonDocument.Parse(this._messageHandlerStub.RequestContent!);
+        if (expectedDimensions.HasValue)
+        {
+            Assert.Equal(expectedDimensions.Value, body.RootElement.GetProperty("outputDimensionality").GetInt32());
+        }
+        else
+        {
+            Assert.False(body.RootElement.TryGetProperty("outputDimensionality", out _));
+        }
+    }
+
+    [Fact]
+    public async Task ShouldCancelBeforeSendingEmbedContentAsync()
+    {
+        var client = this.CreateEmbeddingsClient(modelId: "gemini-embedding-2");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GenerateEmbeddingsAsync(["sample data"], cancellationToken: cancellation.Token));
+
+        Assert.Null(this._messageHandlerStub.RequestUri);
+    }
+
+    [Fact]
+    public async Task ShouldStopEmbedContentBatchAfterHttpFailureAsync()
+    {
+        using var handler = new MultipleHttpMessageHandlerStub();
+        handler.AddJsonResponse("{\"embedding\":{\"values\":[0.1,0.2]}}");
+        handler.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        using var httpClient = handler.CreateHttpClient();
+        var client = this.CreateEmbeddingsClient(modelId: "gemini-embedding-2", httpClient: httpClient);
+
+        await Assert.ThrowsAsync<Microsoft.SemanticKernel.HttpOperationException>(() => client.GenerateEmbeddingsAsync(["first", "second", "third"]));
+
+        Assert.Equal(2, handler.RequestContents.Count);
     }
 
     [Fact]
@@ -326,15 +366,19 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
 
     private VertexAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
-        string? bearerKey = "fake-key")
+        string? bearerKey = "fake-key",
+        HttpClient? httpClient = null,
+        int? dimensions = null,
+        string location = "us-central1")
     {
         var client = new VertexAIEmbeddingClient(
-            httpClient: this._httpClient,
+            httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
             bearerTokenProvider: () => ValueTask.FromResult(bearerKey ?? "fake-key"),
             apiVersion: VertexAIVersion.V1,
-            location: "us-central1",
-            projectId: "fake-project-id");
+            location: location,
+            projectId: "fake-project-id",
+            dimensions: dimensions);
         return client;
     }
 
