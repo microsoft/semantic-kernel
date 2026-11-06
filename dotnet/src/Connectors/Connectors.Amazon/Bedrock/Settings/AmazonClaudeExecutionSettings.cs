@@ -18,6 +18,10 @@ public sealed class AmazonClaudeExecutionSettings : PromptExecutionSettings
     private float? _temperature;
     private float? _topP;
     private int? _topK;
+    private bool _enableSystemCaching;
+    private bool _enableMessageCaching;
+    private int? _systemCacheBreakpoint;
+    private List<int>? _messageCacheBreakpoints;
 
     /// <summary>
     /// Default max tokens for a text generation.
@@ -91,6 +95,68 @@ public sealed class AmazonClaudeExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._topK = value;
+        }
+    }
+
+    /// <summary>
+    /// (Optional) Enables prompt caching for system messages. When true, system messages will be cached for reuse across requests.
+    /// Requires at least 1,024 tokens in system content for Claude 3.7 Sonnet, 2,048 tokens for Claude 3.5 Haiku.
+    /// Cache expires after 5 minutes of inactivity.
+    /// </summary>
+    [JsonPropertyName("enable_system_caching")]
+    public bool EnableSystemCaching
+    {
+        get => this._enableSystemCaching;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._enableSystemCaching = value;
+        }
+    }
+
+    /// <summary>
+    /// (Optional) Enables prompt caching for message content. When true, messages up to specified breakpoints will be cached.
+    /// Use with MessageCacheBreakpoints to control where cache boundaries are placed.
+    /// </summary>
+    [JsonPropertyName("enable_message_caching")]
+    public bool EnableMessageCaching
+    {
+        get => this._enableMessageCaching;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._enableMessageCaching = value;
+        }
+    }
+
+    /// <summary>
+    /// (Optional) Specifies the message index where system cache breakpoint should be placed.
+    /// Only used when EnableSystemCaching is true. If not specified, cache breakpoint will be placed after all system content.
+    /// </summary>
+    [JsonPropertyName("system_cache_breakpoint")]
+    public int? SystemCacheBreakpoint
+    {
+        get => this._systemCacheBreakpoint;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._systemCacheBreakpoint = value;
+        }
+    }
+
+    /// <summary>
+    /// (Optional) List of message indices where cache breakpoints should be placed.
+    /// Only used when EnableMessageCaching is true. Maximum of 2 cache breakpoints allowed for messages.
+    /// Each breakpoint must meet minimum token requirements (1,024+ tokens for Sonnet, 2,048+ for Haiku).
+    /// </summary>
+    [JsonPropertyName("message_cache_breakpoints")]
+    public List<int>? MessageCacheBreakpoints
+    {
+        get => this._messageCacheBreakpoints;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._messageCacheBreakpoints = value;
         }
     }
 

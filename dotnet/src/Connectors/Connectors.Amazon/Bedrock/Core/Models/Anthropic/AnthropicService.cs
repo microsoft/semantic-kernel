@@ -49,10 +49,22 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
     /// <inheritdoc/>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-
         var executionSettings = AmazonClaudeExecutionSettings.FromExecutionSettings(settings);
+        
+        // Get cache settings from execution settings
+        var enableSystemCaching = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "enable_system_caching") ?? executionSettings.EnableSystemCaching;
+        var enableMessageCaching = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "enable_message_caching") ?? executionSettings.EnableMessageCaching;
+        var systemCacheBreakpoint = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "system_cache_breakpoint") ?? executionSettings.SystemCacheBreakpoint;
+        var messageCacheBreakpoints = BedrockModelUtilities.GetExtensionDataValue<List<int>?>(settings?.ExtensionData, "message_cache_breakpoints") ?? executionSettings.MessageCacheBreakpoints;
+
+        // Build messages and system messages with optional caching
+        var messages = enableMessageCaching 
+            ? BedrockModelUtilities.BuildMessageListWithCaching(chatHistory, enableMessageCaching, messageCacheBreakpoints)
+            : BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = enableSystemCaching 
+            ? BedrockModelUtilities.GetSystemMessagesWithCaching(chatHistory, enableSystemCaching, systemCacheBreakpoint)
+            : BedrockModelUtilities.GetSystemMessages(chatHistory);
+
         var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? executionSettings.Temperature;
         var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? executionSettings.TopP;
         var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens_to_sample") ?? executionSettings.MaxTokensToSample;
@@ -132,10 +144,22 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
     /// <inheritdoc/>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-
         var executionSettings = AmazonClaudeExecutionSettings.FromExecutionSettings(settings);
+        
+        // Get cache settings from execution settings
+        var enableSystemCaching = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "enable_system_caching") ?? executionSettings.EnableSystemCaching;
+        var enableMessageCaching = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "enable_message_caching") ?? executionSettings.EnableMessageCaching;
+        var systemCacheBreakpoint = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "system_cache_breakpoint") ?? executionSettings.SystemCacheBreakpoint;
+        var messageCacheBreakpoints = BedrockModelUtilities.GetExtensionDataValue<List<int>?>(settings?.ExtensionData, "message_cache_breakpoints") ?? executionSettings.MessageCacheBreakpoints;
+
+        // Build messages and system messages with optional caching
+        var messages = enableMessageCaching 
+            ? BedrockModelUtilities.BuildMessageListWithCaching(chatHistory, enableMessageCaching, messageCacheBreakpoints)
+            : BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = enableSystemCaching 
+            ? BedrockModelUtilities.GetSystemMessagesWithCaching(chatHistory, enableSystemCaching, systemCacheBreakpoint)
+            : BedrockModelUtilities.GetSystemMessages(chatHistory);
+
         var temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? executionSettings.Temperature;
         var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? executionSettings.TopP;
         var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens_to_sample") ?? executionSettings.MaxTokensToSample;
