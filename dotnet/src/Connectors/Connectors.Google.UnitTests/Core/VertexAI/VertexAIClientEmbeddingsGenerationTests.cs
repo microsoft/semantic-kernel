@@ -227,6 +227,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         using var requestJson = JsonDocument.Parse(requestBody);
         Assert.Equal(JsonValueKind.Array, requestJson.RootElement.GetProperty("requests").ValueKind);
         var firstRequest = requestJson.RootElement.GetProperty("requests")[0];
+        Assert.Equal($"projects/fake-project-id/locations/us-central1/publishers/google/models/{modelId}", firstRequest.GetProperty("model").GetString());
         Assert.Equal("sample data", firstRequest.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString());
         Assert.False(requestJson.RootElement.TryGetProperty("instances", out _));
     }
