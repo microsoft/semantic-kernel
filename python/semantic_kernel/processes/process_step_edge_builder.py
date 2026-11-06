@@ -62,7 +62,7 @@ class ProcessStepEdgeBuilder:
             )
         output_target = ProcessFunctionTargetBuilder(EndStep.get_instance())
         self.target = output_target
-        self.source.link_to("END", self)
+        self.source.link_to(self.event_id, self)
 
     def build(self) -> KernelProcessEdge:
         """Builds the KernelProcessEdge."""
