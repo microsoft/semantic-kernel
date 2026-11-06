@@ -5,7 +5,7 @@ import logging
 import sys
 from collections.abc import MutableSequence, Sequence
 from importlib import metadata
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from typing import Any, ClassVar, Final, Generic, Self, TypeVar
 
 from pydantic import SecretStr, ValidationError
 from pymongo import AsyncMongoClient, ReplaceOne
@@ -39,11 +39,6 @@ from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelE
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover

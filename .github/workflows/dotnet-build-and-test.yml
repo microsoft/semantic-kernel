@@ -21,7 +21,6 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: "write"
 
 jobs:
   paths-filter:
@@ -60,14 +59,11 @@ jobs:
               dotnet: "10.0",
               os: "ubuntu-latest",
               configuration: Release,
-              integration-tests: true,
-              environment: "integration",
             }
           - { dotnet: "10.0", os: "windows-latest", configuration: Debug }
           - { dotnet: "9.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
-    environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -124,8 +120,43 @@ jobs:
         shell: pwsh
         run: .github/workflows/test-aot-compatibility.ps1 ${{ matrix.dotnet }}
 
+      # Generate test reports and check coverage
+      - name: Generate test reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@18e0cd4c1bebd0c8b3978b380a6a4ea61c51178e # 5.4.15
+        with:
+          reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
+          targetdir: "./TestResults/Reports"
+          reporttypes: "HtmlInline;JsonSummary"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
+          path: ./TestResults/Reports # Directory containing files to upload
+
+      - name: Check coverage
+        shell: pwsh
+        run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD
+
+  dotnet-integration-tests:
+    needs: paths-filter
+    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && needs.paths-filter.outputs.dotnetChanges == 'true'
+    runs-on: ubuntu-latest
+    environment: "integration"
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          global-json-file: ${{ github.workspace }}/dotnet/global.json
+
       - name: Azure CLI Login
-        if: github.event_name != 'pull_request' && matrix.integration-tests
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -134,11 +165,10 @@ jobs:
 
       - name: Run Integration Tests
         shell: bash
-        if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
           export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | grep -v "VectorDataIntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
-            dotnet test -f net10.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -f net10.0 -c Release $project -v Normal --logger trx
           done
         env:
           # Azure OpenAI Deployments
@@ -182,29 +212,11 @@ jobs:
           AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
           AzureAI__ChatModelId: ${{ vars.AZUREAI__CHATMODELID }}
 
-      # Generate test reports and check coverage
-      - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@18e0cd4c1bebd0c8b3978b380a6a4ea61c51178e # 5.4.15
-        with:
-          reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
-          targetdir: "./TestResults/Reports"
-          reporttypes: "HtmlInline;JsonSummary"
-
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
-          path: ./TestResults/Reports # Directory containing files to upload
-
-      - name: Check coverage
-        shell: pwsh
-        run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD
-
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   dotnet-build-and-test-check:
     if: always()
     runs-on: ubuntu-latest
-    needs: [dotnet-build-and-test]
+    needs: [dotnet-build-and-test, dotnet-integration-tests]
     steps:
       - name: Get Date
         shell: bash

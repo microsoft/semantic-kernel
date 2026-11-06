@@ -3,7 +3,7 @@ name = "mcp-simple-auth"
 version = "0.1.0"
 description = "A simple MCP server demonstrating OAuth authentication: source: https://github.com/modelcontextprotocol/python-sdk/tree/main/examples/servers/simple-auth"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{ name = "Anthropic, PBC." }]
 license = { text = "MIT" }
 dependencies = [

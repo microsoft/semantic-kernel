@@ -27,7 +27,8 @@ internal static class ServerUrlValidator
     /// <param name="cancellationToken">Cancellation token for the asynchronous DNS resolution.</param>
     /// <param name="dnsResolver">Optional DNS resolver for testing. When <see langword="null"/>,
     /// <see cref="Dns.GetHostAddressesAsync(string)"/> is used.</param>
-    public static async Task ValidateAsync(
+    /// <returns>The validated DNS addresses to bind to the connection, or an empty array when DNS validation is bypassed.</returns>
+    public static async Task<IPAddress[]> ValidateAsync(
         Uri url,
         RestApiOperationServerUrlValidationOptions? options,
         CancellationToken cancellationToken = default,
@@ -44,7 +45,7 @@ internal static class ServerUrlValidator
         // 1. Explicit allow: a matching AllowedBaseUrls entry bypasses the implicit gates.
         if (TryMatchAllowedBaseUrl(url, options.AllowedBaseUrls))
         {
-            return;
+            return [];
         }
 
         // If the caller set AllowedBaseUrls and the URL didn't match, reject before further
@@ -68,10 +69,10 @@ internal static class ServerUrlValidator
         // 3. Implicit private-IP gate.
         if (options.AllowPrivateNetworkAccess)
         {
-            return;
+            return [];
         }
 
-        await PublicNetworkAddressValidator.ValidateAsync(
+        return await PublicNetworkAddressValidator.ValidateAsync(
             url, cancellationToken, dnsResolver,
             "To allow this URL, add it to " +
             $"{nameof(RestApiOperationServerUrlValidationOptions)}.{nameof(RestApiOperationServerUrlValidationOptions.AllowedBaseUrls)} " +

@@ -31,8 +31,9 @@ public interface ICloudDriveConnector
     /// <summary>
     /// Upload a small file (less than 4MB).
     /// </summary>
-    /// <param name="filePath">Path of the local file to upload.</param>
+    /// <param name="content">Readable, seekable content stream positioned at the start of the upload.
+    /// The caller owns the stream and must keep it open until the upload completes.</param>
     /// <param name="destinationPath">Remote path to store the file, which is relative to the root of the OneDrive folder and should begin with the '/' character.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default);
+    Task UploadSmallFileAsync(Stream content, string destinationPath, CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -75,6 +76,85 @@ public class XmlPromptParserTests
         {
             this.AssertPromptNode(expectedNodes[i], actualNodes[i]);
         }
+    }
+
+    [Fact]
+    public void ItParsesPromptAtMaximumElementDepth()
+    {
+        // Arrange
+        var prompt = CreateNestedPrompt(XmlPromptParser.MaxElementDepth) + CreateNestedPrompt(XmlPromptParser.MaxElementDepth);
+
+        // Act
+        var result = XmlPromptParser.TryParse(prompt, out var nodes);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(nodes);
+        Assert.Equal(2, nodes.Count);
+
+        foreach (var node in nodes)
+        {
+            var current = node;
+            var depth = 1;
+            while (current.ChildNodes.Count > 0)
+            {
+                current = Assert.Single(current.ChildNodes);
+                depth++;
+            }
+
+            Assert.Equal(XmlPromptParser.MaxElementDepth, depth);
+            Assert.Equal("content", current.Content);
+        }
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1000)]
+    public void ItReturnsFalseWhenPromptExceedsMaximumElementDepth(int extraDepth)
+    {
+        // Arrange
+        var prompt = CreateNestedPrompt(XmlPromptParser.MaxElementDepth + extraDepth);
+
+        // Act
+        var result = XmlPromptParser.TryParse(prompt, out var nodes);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(nodes);
+    }
+
+    [Fact]
+    public void ItReturnsFalseWhenLaterPromptNodeExceedsMaximumElementDepth()
+    {
+        // Arrange
+        var prompt = CreateNestedPrompt(XmlPromptParser.MaxElementDepth) + CreateNestedPrompt(XmlPromptParser.MaxElementDepth + 1);
+
+        // Act
+        var result = XmlPromptParser.TryParse(prompt, out var nodes);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(nodes);
+    }
+
+    /// <summary>
+    /// Creates a message element whose total element nesting depth, including the message itself, is <paramref name="depth"/>.
+    /// </summary>
+    private static string CreateNestedPrompt(int depth)
+    {
+        var builder = new StringBuilder("<message role=\"user\">");
+        for (var i = 1; i < depth; i++)
+        {
+            builder.Append("<element>");
+        }
+
+        builder.Append("content");
+        for (var i = 1; i < depth; i++)
+        {
+            builder.Append("</element>");
+        }
+
+        return builder.Append("</message>").ToString();
     }
 
     private void AssertPromptNode(PromptNode expectedNode, PromptNode actualNode)

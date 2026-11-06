@@ -6,7 +6,7 @@ from collections.abc import Callable
 from html import escape
 from typing import TYPE_CHECKING, Any
 
-import nest_asyncio
+import nest_asyncio2
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import (
@@ -79,7 +79,7 @@ def _create_sync_template_helper_from_function(
         raise ValueError(f"Invalid template format: {template_format}")
 
     if not getattr(asyncio, "_nest_patched", False):
-        nest_asyncio.apply()
+        nest_asyncio2.apply()
 
     def func(*args, **kwargs):
         arguments = KernelArguments()
@@ -96,13 +96,15 @@ def _create_sync_template_helper_from_function(
             actual_args = args
 
         if this is not None:
-            logger.debug(f"Handlebars context with `this`: {this}")
+            logger.debug("Handlebars context with `this`.")
         else:
             logger.debug("Jinja2 context or Handlebars context without `this`")
 
         logger.debug(
-            f"Invoking function {function.metadata.fully_qualified_name} "
-            f"with args: {actual_args} and kwargs: {kwargs} and this: {this}."
+            "Invoking function %s with positional argument count %d and keyword argument count %d.",
+            function.metadata.fully_qualified_name,
+            len(actual_args),
+            len(kwargs),
         )
 
         result = asyncio.run(function.invoke(kernel=kernel, arguments=arguments))
@@ -131,7 +133,10 @@ def _create_async_template_helper_from_function(
         arguments.update(base_arguments)
         arguments.update(kwargs)
         logger.debug(
-            f"Invoking function {function.metadata.fully_qualified_name} with args: {arguments} and kwargs: {kwargs}."
+            "Invoking function %s with positional argument count %d and keyword argument count %d.",
+            function.metadata.fully_qualified_name,
+            len(args),
+            len(kwargs),
         )
         result = await function.invoke(kernel=kernel, arguments=arguments)
         if allow_dangerously_set_content:
