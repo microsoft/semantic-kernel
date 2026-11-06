@@ -66,13 +66,6 @@ class NvidiaHandler(KernelBaseModel, ABC):
         """Send a request to the NVIDIA chat completion endpoint."""
         try:
             settings_dict = settings.prepare_settings_dict()
-
-            # Handle structured output if nvext is present in extra_body
-            if settings.extra_body and "nvext" in settings.extra_body:
-                if "extra_body" not in settings_dict:
-                    settings_dict["extra_body"] = {}
-                settings_dict["extra_body"]["nvext"] = settings.extra_body["nvext"]
-
             response = await self.client.chat.completions.create(**settings_dict)
             self.store_usage(response)
             return response

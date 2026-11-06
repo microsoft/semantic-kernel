@@ -25,6 +25,32 @@ public sealed class ChatPromptParserTests
     }
 
     [Fact]
+    public void ItReturnsNullChatHistoryWhenMessageContentExceedsMaximumElementDepth()
+    {
+        // Arrange
+        var nestedContent = new StringBuilder();
+        for (var i = 1; i < XmlPromptParser.MaxElementDepth + 1; i++)
+        {
+            nestedContent.Append("<element>");
+        }
+
+        nestedContent.Append("content");
+        for (var i = 1; i < XmlPromptParser.MaxElementDepth + 1; i++)
+        {
+            nestedContent.Append("</element>");
+        }
+
+        var prompt = $"<message role='system'>System message.</message><message role='user'>{nestedContent}</message>";
+
+        // Act
+        var result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(chatHistory);
+    }
+
+    [Fact]
     public void ItReturnsChatHistoryWithValidRolesWhenPromptIsValid()
     {
         // Arrange
