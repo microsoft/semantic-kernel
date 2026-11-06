@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -202,6 +202,7 @@ internal partial class ClientCore
         options.Endpoint ??= endpoint ?? httpClient?.BaseAddress;
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
+        options.AddPolicy(DeduplicateJsonKeysPipelinePolicy.Instance, PipelinePosition.PerCall);
 
         if (orgId is not null)
         {
@@ -269,5 +270,123 @@ internal partial class ClientCore
                 message.Request.Headers.Set(headerName, headerValue);
             }
         });
+    }
+
+    private sealed class DeduplicateJsonKeysPipelinePolicy : PipelinePolicy
+    {
+        public static DeduplicateJsonKeysPipelinePolicy Instance { get; } = new();
+
+        public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+        {
+            SanitizeMessageContent(message);
+            ProcessNext(message, pipeline, currentIndex);
+        }
+
+        public override async ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+        {
+            SanitizeMessageContent(message);
+            await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
+        }
+
+        private static void SanitizeMessageContent(PipelineMessage message)
+        {
+#pragma warning disable CA1031 // Do not let sanitization failures break request pipeline
+            try
+            {
+                if (message.Request.Content is null)
+                {
+                    return;
+                }
+
+                if (message.Request.Headers.TryGetValue("Content-Type", out string? contentType) &&
+                    contentType is not null &&
+                    !contentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                using var memoryStream = new System.IO.MemoryStream();
+                message.Request.Content.WriteTo(memoryStream, default);
+                if (memoryStream.Length == 0)
+                {
+                    return;
+                }
+
+                byte[] bytes = memoryStream.TryGetBuffer(out ArraySegment<byte> buffer)
+                    ? buffer.Array!
+                    : memoryStream.ToArray();
+                int offset = memoryStream.TryGetBuffer(out buffer) ? buffer.Offset : 0;
+                int count = (int)memoryStream.Length;
+
+                string rawJson = System.Text.Encoding.UTF8.GetString(bytes, offset, count).TrimStart('\uFEFF', ' ', '\t', '\r', '\n');
+                if (!rawJson.StartsWith('{'))
+                {
+                    return;
+                }
+
+                string cleanJson = DeduplicateTopLevelJsonKeys(rawJson);
+                if (!string.Equals(rawJson, cleanJson, StringComparison.Ordinal))
+                {
+                    message.Request.Content = System.ClientModel.BinaryContent.Create(BinaryData.FromString(cleanJson));
+                }
+            }
+            catch
+            {
+                return;
+            }
+#pragma warning restore CA1031
+        }
+
+        private static string DeduplicateTopLevelJsonKeys(string rawJson)
+        {
+#pragma warning disable CA1031 // Catch all exceptions to prevent request pipeline failure
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(rawJson);
+                var root = doc.RootElement;
+                if (root.ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    return rawJson;
+                }
+
+                var dictionary = new Dictionary<string, System.Text.Json.JsonElement>(StringComparer.Ordinal);
+                bool hadDuplicates = false;
+                foreach (var prop in root.EnumerateObject())
+                {
+                    hadDuplicates |= dictionary.ContainsKey(prop.Name);
+                    dictionary[prop.Name] = prop.Value.Clone();
+                }
+
+                if (!hadDuplicates)
+                {
+                    return rawJson;
+                }
+
+                using var stream = new System.IO.MemoryStream();
+                using (var writer = new System.Text.Json.Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    foreach (var kvp in dictionary)
+                    {
+                        writer.WritePropertyName(kvp.Key);
+                        kvp.Value.WriteTo(writer);
+                    }
+                    writer.WriteEndObject();
+                }
+
+                byte[] streamBytes = stream.TryGetBuffer(out ArraySegment<byte> streamBuffer)
+                    ? streamBuffer.Array!
+                    : stream.ToArray();
+                int streamOffset = stream.TryGetBuffer(out streamBuffer) ? streamBuffer.Offset : 0;
+                int streamCount = (int)stream.Length;
+
+                return System.Text.Encoding.UTF8.GetString(streamBytes, streamOffset, streamCount);
+            }
+            catch
+            {
+                return rawJson;
+            }
+#pragma warning restore CA1031
+        }
     }
 }
