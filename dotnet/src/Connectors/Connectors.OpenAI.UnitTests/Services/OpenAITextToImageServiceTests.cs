@@ -37,16 +37,18 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
-    [Fact]
-    public void ConstructorWorksCorrectly()
+    [Theory]
+    [InlineData(null, "gpt-image-2")]
+    [InlineData("model", "model")]
+    public void ConstructorWorksCorrectly(string? modelId, string expectedModelId)
     {
         // Arrange & Act
-        var sut = new OpenAITextToImageService("apiKey", "organization", "model");
+        var sut = new OpenAITextToImageService("apiKey", "organization", modelId);
 
         // Assert
         Assert.NotNull(sut);
         Assert.Equal("organization", sut.Attributes[ClientCore.OrganizationKey]);
-        Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.Equal(expectedModelId, sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
     [Theory]
