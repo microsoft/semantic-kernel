@@ -697,8 +697,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         object? parameterFunc(KernelFunction _, Kernel kernel, KernelArguments arguments, CancellationToken __)
         {
-            // 1. Use the value of the variable if it exists.
-            if (arguments.TryGetValue(name, out object? value))
+            // 1. Use the value of the variable if it exists. A null value can't be assigned to a non-nullable value type,
+            // so skip it if the parameter has a default value, e.g. when the AI model sends null for an optional parameter.
+            if (arguments.TryGetValue(name, out object? value) &&
+                (value is not null || !parameter.HasDefaultValue || !type.IsValueType || Nullable.GetUnderlyingType(type) is not null))
             {
                 return Process(value);
             }

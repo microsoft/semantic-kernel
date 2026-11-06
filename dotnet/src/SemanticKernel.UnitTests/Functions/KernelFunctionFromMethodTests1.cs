@@ -990,6 +990,20 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
+    public async Task ItShouldUseDefaultValueWhenNullIsPassedForValueTypeParameterWithDefaultValueAsync()
+    {
+        // Arrange
+        object? actual = null;
+        var sut = KernelFunctionFactory.CreateFromMethod((int val = 5) => { actual = val; });
+
+        // Act
+        await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
+
+        // Assert
+        Assert.Equal(5, actual);
+    }
+
+    [Fact]
     public async Task ItShouldMarshalArgumentsOfReferenceTypeAsync()
     {
         //Scenario #1 - passing string argument to a method that accepts string
