@@ -245,6 +245,27 @@ public class ChatHistorySummarizationReducerTests
         Assert.Contains(messages, m => m.Role == AuthorRole.System);
     }
 
+    /// <summary>
+    /// Validate history summarized and the latest message retained when the target count is one and a system message is present.
+    /// </summary>
+    [Fact]
+    public async Task VerifySystemMessageWithSingleTargetCountAsync()
+    {
+        // Arrange
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20, includeSystemMessage: true).ToArray();
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 1);
+
+        // Act
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        // Assert
+        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 3);
+        Assert.Equal(AuthorRole.System, messages[0].Role);
+        VerifySummarization(messages[1]);
+        Assert.Same(sourceHistory[^1], messages[2]);
+    }
+
     private static ChatMessageContent[] VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
     {
         Assert.NotNull(reducedHistory);
