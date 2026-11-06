@@ -3,6 +3,7 @@
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.const import END_PROCESS_ID
+from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEventVisibility
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
@@ -76,3 +77,49 @@ async def test_process_without_stop_process_keeps_looping_until_the_superstep_li
     )
 
     assert CALLS == ["run", "work", "run", "work", "run", "work"]
+
+
+NESTED_SEEN: list[str] = []
+
+
+class _NestedStartStep(KernelProcessStep):
+    @kernel_function
+    async def run(self, value: str, context: KernelProcessStepContext) -> None:
+        await context.emit_event("Work", data=value)
+        await context.emit_event("Exit", data=None)
+
+
+class _NestedWorkerStep(KernelProcessStep):
+    @kernel_function
+    async def work(self, value: str, context: KernelProcessStepContext) -> None:
+        # Emitted in the same superstep as the end message is processed.
+        await context.emit_event("Result", data=value, visibility=KernelProcessEventVisibility.Public)
+
+
+class _OuterSinkStep(KernelProcessStep):
+    @kernel_function
+    async def take(self, value: str) -> str:
+        NESTED_SEEN.append(value)
+        return value
+
+
+async def test_stop_process_forwards_nested_public_events_from_final_superstep():
+    """A nested process that stops still forwards public events from its final superstep."""
+    NESTED_SEEN.clear()
+
+    inner = ProcessBuilder(name="Inner")
+    start_step = inner.add_step(_NestedStartStep)
+    worker = inner.add_step(_NestedWorkerStep)
+    inner.on_input_event("go").send_event_to(start_step, function_name="run", parameter_name="value")
+    start_step.on_event("Work").send_event_to(worker, function_name="work", parameter_name="value")
+    start_step.on_event("Exit").stop_process()
+
+    outer = ProcessBuilder(name="Outer")
+    nested = outer.add_step_from_process(inner)
+    sink = outer.add_step(_OuterSinkStep)
+    outer.on_input_event("go").send_event_to(nested.where_input_event_is("go"))
+    nested.on_event("Result").send_event_to(sink, function_name="take", parameter_name="value")
+
+    await start(process=outer.build(), kernel=Kernel(), initial_event=KernelProcessEvent(id="go", data="hello"))
+
+    assert NESTED_SEEN == ["hello"]

@@ -220,7 +220,10 @@ class LocalProcess(LocalStep):
                 await asyncio.gather(*message_tasks)
 
                 if end_message_sent:
-                    # A step asked to stop the process: finish this superstep, then stop.
+                    # Handlers in this superstep may have emitted events. Drain them so public
+                    # events reach a parent nested process, but do not run another superstep.
+                    for step in self.steps:
+                        await self.enqueue_step_messages(step, message_channel)
                     break
 
         except Exception as ex:
