@@ -21,7 +21,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
 {
-    [Fact]
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
         // Arrange
@@ -47,7 +49,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Get_Weather_For_City([cityName, Boston])", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
     {
         // Arrange
@@ -78,7 +80,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Get_Weather_For_City([cityName, Boston])", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
@@ -106,7 +108,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
@@ -122,7 +124,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionsWithEnumTypeParametersAsync()
     {
         // Arrange
@@ -138,7 +140,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("rain", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
         // Arrange
@@ -164,7 +166,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
     {
         // Arrange
@@ -199,7 +201,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorSpecificChatMessageContentClassesCanBeUsedForManualFunctionCallingAsync()
     {
         // Arrange
@@ -246,7 +248,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("rain", result.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingAsync()
     {
         // Arrange
@@ -286,7 +288,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("rain", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorAsync()
     {
         // Arrange
@@ -330,7 +332,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         TestHelpers.AssertChatErrorExcuseMessage(messageContent.Content);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesSupportSimulatedFunctionCallsAsync()
     {
         // Arrange
@@ -379,7 +381,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("tornado", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItFailsIfNoFunctionResultProvidedAsync()
     {
         // Arrange
@@ -403,7 +405,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("'tool_calls' must be followed by tool", exception.Message, StringComparison.InvariantCulture);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingAsync()
     {
         // Arrange
@@ -496,7 +498,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
     {
         // Arrange
@@ -552,7 +554,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("rain", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingForStreamingAsync()
     {
         // Arrange
@@ -650,7 +652,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorForStreamingAsync()
     {
         // Arrange
@@ -708,7 +710,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         TestHelpers.AssertChatErrorExcuseMessage(result);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ConnectorAgnosticFunctionCallingModelClassesSupportSimulatedFunctionCallsForStreamingAsync()
     {
         // Arrange
@@ -773,7 +775,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("tornado", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItShouldSupportOldFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
     {
         // Arrange
@@ -813,7 +815,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("61", emailBody);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task ItShouldSupportNewFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
     {
         // Arrange
@@ -853,7 +855,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
     /// This test verifies that the connector can handle the scenario where the assistant response message is added to the chat history.
     /// The assistant response message with no function calls added to chat history caused the error: HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
     /// </summary>
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task AssistantResponseAddedToChatHistoryShouldBeHandledCorrectlyAsync()
     {
         // Arrange
@@ -875,7 +877,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
     {
         // Arrange
@@ -899,7 +901,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task RequiredFunctionShouldBeCalledAsync()
     {
         // Arrange

@@ -1096,7 +1096,7 @@ class AgentThreadActions:
                 cls._poll_loop(agent=agent, run=run, thread_id=thread_id, polling_options=polling_options),
                 timeout=polling_options.run_polling_timeout.total_seconds(),
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             timeout_duration = polling_options.run_polling_timeout
             error_message = (
                 f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` "

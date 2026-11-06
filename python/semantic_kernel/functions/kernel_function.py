@@ -5,6 +5,7 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
+from contextlib import aclosing, closing
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
@@ -352,13 +353,15 @@ class KernelFunction(KernelBaseModel):
                 function_results: list[Any] = []
                 if function_context.result is not None:
                     if isasyncgen(function_context.result.value):
-                        async for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        async with aclosing(function_context.result.value) as async_stream:
+                            async for partial in async_stream:
+                                function_results.append(partial)
+                                yield partial
                     elif isgenerator(function_context.result.value):
-                        for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        with closing(function_context.result.value) as stream:
+                            for partial in stream:
+                                function_results.append(partial)
+                                yield partial
                     else:
                         function_results.append(function_context.result.value)
                         yield function_context.result
@@ -401,11 +404,15 @@ class KernelFunction(KernelBaseModel):
             exception (Exception): The exception.
             attributes (Attributes): The attributes to be modified.
         """
-        attributes[ERROR_TYPE] = type(exception).__name__
+        error_type = type(exception).__name__
+        attributes[ERROR_TYPE] = error_type
 
-        current_span.record_exception(exception)
-        current_span.set_attribute(ERROR_TYPE, type(exception).__name__)
-        current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        current_span.set_attribute(ERROR_TYPE, error_type)
+        if function_tracer.are_sensitive_events_enabled():
+            current_span.record_exception(exception)
+            current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        else:
+            current_span.set_status(trace.StatusCode.ERROR)
 
         KernelFunctionLogMessages.log_function_error(logger, exception)
 

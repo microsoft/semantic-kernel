@@ -196,8 +196,14 @@ def update_settings_from_function_choice_configuration(
                     "inputSchema": {
                         "json": {
                             "type": "object",
-                            "properties": {param.name: param.schema_data for param in function.parameters},
-                            "required": [p.name for p in function.parameters if p.is_required],
+                            "properties": {
+                                param.name: param.schema_data
+                                for param in function.parameters
+                                if param.include_in_function_choices
+                            },
+                            "required": [
+                                p.name for p in function.parameters if p.is_required and p.include_in_function_choices
+                            ],
                         }
                     },
                 }
@@ -213,5 +219,7 @@ def finish_reason_from_bedrock_to_semantic_kernel(finish_reason: str) -> FinishR
         "end_turn": FinishReason.STOP,
         "max_tokens": FinishReason.LENGTH,
         "content_filtered": FinishReason.CONTENT_FILTER,
+        "guardrail_intervened": FinishReason.CONTENT_FILTER,
+        "model_context_window_exceeded": FinishReason.LENGTH,
         "tool_use": FinishReason.TOOL_CALLS,
     }.get(finish_reason)
