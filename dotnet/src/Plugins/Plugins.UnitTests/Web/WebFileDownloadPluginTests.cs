@@ -2,8 +2,10 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -35,7 +37,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var filePath = Path.Combine(folderPath, "sk_logo.png");
         Directory.CreateDirectory(folderPath);
 
-        var webFileDownload = new WebFileDownloadPlugin()
+        var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
             AllowedDomains = ["raw.githubusercontent.com"],
             AllowedFolders = [folderPath]
@@ -82,38 +84,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
     public async Task DownloadToFileDoesNotFollowRedirectsAsync()
     {
         // Arrange - start a local server that returns a 302 redirect
-        using var listener = new System.Net.HttpListener();
-        var port = new Random().Next(49152, 65535);
-        listener.Prefixes.Add($"http://localhost:{port}/");
-        listener.Start();
-        bool redirectTargetContacted = false;
-
-        _ = Task.Run(async () =>
-        {
-            while (listener.IsListening)
-            {
-                try
-                {
-                    var ctx = await listener.GetContextAsync();
-                    if (ctx.Request.Url!.AbsolutePath == "/start")
-                    {
-                        ctx.Response.StatusCode = 302;
-                        ctx.Response.RedirectLocation = $"http://localhost:{port}/secret.png";
-                        ctx.Response.Close();
-                    }
-                    else if (ctx.Request.Url.AbsolutePath == "/secret.png")
-                    {
-                        redirectTargetContacted = true;
-                        ctx.Response.StatusCode = 200;
-                        ctx.Response.ContentType = "image/png";
-                        ctx.Response.OutputStream.Write(new byte[] { 0x89, 0x50, 0x4E, 0x47 });
-                        ctx.Response.Close();
-                    }
-                }
-                catch (ObjectDisposedException) { break; }
-                catch (System.Net.HttpListenerException) { break; }
-            }
-        });
+        await using var server = new RedirectLoopbackServer("secret.png", "image/png", [0x89, 0x50, 0x4E, 0x47]);
 
         var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var filePath = Path.Combine(folderPath, "file.png");
@@ -121,20 +92,19 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin()
         {
-            AllowedDomains = ["localhost"],
+            AllowedDomains = [server.BaseUri.Host],
             AllowedFolders = [folderPath]
         };
 
         try
         {
             // Act & Assert - the plugin should throw because 302 is a non-success status
-            await Assert.ThrowsAsync<HttpOperationException>(() => webFileDownload.DownloadToFileAsync(new Uri($"http://localhost:{port}/start"), filePath));
-            Assert.False(redirectTargetContacted, "The redirect target should not have been contacted.");
+            await Assert.ThrowsAsync<HttpOperationException>(() => webFileDownload.DownloadToFileAsync(new Uri(server.BaseUri, "start"), filePath));
+            Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
             Assert.False(Path.Exists(filePath));
         }
         finally
         {
-            listener.Stop();
             if (Path.Exists(folderPath))
             {
                 Directory.Delete(folderPath, true);
@@ -210,7 +180,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var invalidFilePath = Path.Combine(Path.GetTempPath(), "sk_logo.png");
         Directory.CreateDirectory(folderPath);
 
-        var webFileDownload = new WebFileDownloadPlugin()
+        var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
             AllowedDomains = ["raw.githubusercontent.com"],
             AllowedFolders = [folderPath],
@@ -287,6 +257,127 @@ public sealed class WebFileDownloadPluginTests : IDisposable
                 Directory.Delete(tempDir, true);
             }
         }
+    }
+
+    [SymbolicLinkTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DownloadRejectsLinksReplacedDuringRequestAsync(bool replaceParent)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"WebFileDownloadPluginTests_{Guid.NewGuid():N}");
+        var allowed = Path.Combine(directory, "allowed");
+        var parent = Path.Combine(allowed, "parent");
+        var outsideDirectory = Path.Combine(directory, "outside");
+        Directory.CreateDirectory(parent);
+        Directory.CreateDirectory(outsideDirectory);
+        var path = Path.Combine(parent, "file.txt");
+        var outside = Path.Combine(outsideDirectory, "file.txt");
+        await File.WriteAllTextAsync(path, "allowed");
+        await File.WriteAllTextAsync(outside, "outside");
+        try
+        {
+            using var handler = new CallbackHandler(() =>
+            {
+                if (replaceParent)
+                {
+                    Directory.Move(parent, parent + "-original");
+                    Directory.CreateSymbolicLink(parent, outsideDirectory);
+                }
+                else
+                {
+                    File.Delete(path);
+                    File.CreateSymbolicLink(path, outside);
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("replacement") };
+            });
+            using var client = new HttpClient(handler);
+            var plugin = new WebFileDownloadPlugin(client)
+            {
+                AllowedDomains = ["localhost"],
+                AllowedFolders = [allowed],
+                DisableFileOverwrite = false
+            };
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => plugin.DownloadToFileAsync(new Uri("http://localhost/file"), path));
+            Assert.Equal("outside", await File.ReadAllTextAsync(outside));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DownloadDoesNotOverwriteFileCreatedDuringRequestAsync()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"WebFileDownloadPluginTests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "file.txt");
+        try
+        {
+            using var handler = new CallbackHandler(() =>
+            {
+                File.WriteAllText(path, "created during request");
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("replacement") };
+            });
+            using var client = new HttpClient(handler);
+            var plugin = new WebFileDownloadPlugin(client)
+            {
+                AllowedDomains = ["localhost"],
+                AllowedFolders = [directory]
+            };
+
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => plugin.DownloadToFileAsync(new Uri("http://localhost/file"), path));
+            Assert.Contains("Overwriting", error.Message);
+            Assert.Equal("created during request", await File.ReadAllTextAsync(path));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden, 10)]
+    [InlineData(HttpStatusCode.OK, 1)]
+    public async Task RejectedResponseDoesNotTruncateDestinationAsync(HttpStatusCode status, int maximumSize)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"WebFileDownloadPluginTests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "file.txt");
+        await File.WriteAllTextAsync(path, "unchanged");
+        try
+        {
+            using var handler = new CallbackHandler(() => new HttpResponseMessage(status)
+            {
+                Content = new StringContent("oversize")
+            });
+            using var client = new HttpClient(handler);
+            var plugin = new WebFileDownloadPlugin(client)
+            {
+                AllowedDomains = ["localhost"],
+                AllowedFolders = [directory],
+                DisableFileOverwrite = false,
+                MaximumDownloadSize = maximumSize
+            };
+
+            await Assert.ThrowsAnyAsync<Exception>(
+                () => plugin.DownloadToFileAsync(new Uri("http://localhost/file"), path));
+            Assert.Equal("unchanged", await File.ReadAllTextAsync(path));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private sealed class CallbackHandler(Func<HttpResponseMessage> responseFactory) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(responseFactory());
     }
 
     /// <inheritdoc/>

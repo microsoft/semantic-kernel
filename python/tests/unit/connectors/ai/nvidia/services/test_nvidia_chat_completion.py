@@ -138,6 +138,46 @@ class TestNvidiaChatCompletion:
 
     @pytest.mark.asyncio
     @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
+    async def test_nvext_is_sent_in_extra_body(self, mock_create, nvidia_unit_test_env):
+        """Test that the nvext setting is sent in extra_body, not as a create() argument."""
+        mock_create.return_value = _create_mock_chat_completion()
+
+        service = NvidiaChatCompletion()
+        chat_history = ChatHistory()
+        chat_history.add_user_message("Hello")
+        settings = NvidiaChatPromptExecutionSettings(nvext={"guided_choice": ["yes", "no"]})
+
+        await service.get_chat_message_contents(chat_history, settings)
+
+        call_args = mock_create.call_args[1]
+        assert "nvext" not in call_args
+        assert call_args["extra_body"]["nvext"] == {"guided_choice": ["yes", "no"]}
+
+    @pytest.mark.asyncio
+    @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
+    async def test_nvext_is_merged_with_structured_output(self, mock_create, nvidia_unit_test_env):
+        """Test that nvext keys are kept next to the guided_json set from response_format."""
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_create.return_value = _create_mock_chat_completion('{"name": "test"}')
+
+        service = NvidiaChatCompletion()
+        chat_history = ChatHistory()
+        chat_history.add_user_message("Give me structured data")
+        settings = NvidiaChatPromptExecutionSettings(nvext={"repetition_penalty": 1.1}, response_format=TestModel)
+
+        await service.get_chat_message_contents(chat_history, settings)
+
+        call_args = mock_create.call_args[1]
+        assert call_args["extra_body"]["nvext"] == {
+            "repetition_penalty": 1.1,
+            "guided_json": TestModel.model_json_schema(),
+        }
+
+    @pytest.mark.asyncio
+    @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
     async def test_error_handling(self, mock_create, nvidia_unit_test_env):
         """Test error handling."""
         mock_create.side_effect = Exception("API Error")

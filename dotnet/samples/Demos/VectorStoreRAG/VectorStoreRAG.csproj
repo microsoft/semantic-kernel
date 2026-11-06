@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010</NoWarn>
-    <!-- CommunityToolkit.VectorData.CosmosNoSql pulls Microsoft.Azure.Cosmos which added a mandatory Newtonsoft.Json explicit-reference check; disable it since we don't use Newtonsoft.Json directly -->
+    <!-- CommunityToolkit.VectorData.AzureCosmosDB pulls Microsoft.Azure.Cosmos which added a mandatory Newtonsoft.Json explicit-reference check; disable it since we don't use Newtonsoft.Json directly -->
     <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     <UserSecretsId>c4203b00-7179-47c1-8701-ee352e381412</UserSecretsId>
   </PropertyGroup>
@@ -18,8 +18,8 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="PdfPig" />
     <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" />
-    <PackageReference Include="CommunityToolkit.VectorData.CosmosMongoDB" />
-    <PackageReference Include="CommunityToolkit.VectorData.CosmosNoSql" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureDocumentDB" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureCosmosDB" />
     <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
     <PackageReference Include="CommunityToolkit.VectorData.Qdrant" />
     <PackageReference Include="CommunityToolkit.VectorData.Redis" />

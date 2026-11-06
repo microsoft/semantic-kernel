@@ -12,7 +12,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 import torch
-from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Pipeline, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -26,6 +26,117 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 )
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class _Seq2SeqGenerator:
+    """Compatibility adapter for sequence-to-sequence pipelines removed in Transformers 5."""
+
+    def __init__(
+        self,
+        model: Any,
+        tokenizer: Any,
+        device: torch.device,
+        output_key: str,
+        prefix: str,
+        default_call_kwargs: dict[str, Any],
+    ) -> None:
+        self.model = model
+        self.tokenizer = tokenizer
+        self.device = device
+        self.output_key = output_key
+        self.prefix = prefix
+        self.default_call_kwargs = default_call_kwargs
+
+    def __call__(self, inputs: str, **kwargs: Any) -> list[dict[str, str]]:
+        call_kwargs = {**self.default_call_kwargs, **kwargs}
+        truncation = call_kwargs.pop("truncation", False)
+        clean_up_tokenization_spaces = call_kwargs.pop("clean_up_tokenization_spaces", False)
+        model_inputs = self.tokenizer(self.prefix + inputs, truncation=truncation, return_tensors="pt")
+        model_inputs.pop("token_type_ids", None)
+        model_inputs = {name: value.to(self.device) for name, value in model_inputs.items()}
+        output_ids = self.model.generate(**model_inputs, **call_kwargs)
+        return [
+            {
+                self.output_key: self.tokenizer.decode(
+                    result,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=clean_up_tokenization_spaces,
+                )
+            }
+            for result in output_ids
+        ]
+
+
+def _create_seq2seq_generator(
+    ai_model_id: str,
+    task: str,
+    device: int,
+    model_kwargs: dict[str, Any] | None,
+    pipeline_kwargs: dict[str, Any] | None,
+) -> _Seq2SeqGenerator:
+    pipeline_options = dict(pipeline_kwargs or {})
+    model_load_kwargs = dict(model_kwargs or {})
+    # `pipeline()` used to share `model_kwargs` with the tokenizer, minus the model-only entries.
+    tokenizer_load_kwargs = {
+        name: value
+        for name, value in model_load_kwargs.items()
+        if name not in ("config", "device_map", "dtype", "quantization_config", "torch_dtype")
+    }
+    for option in ("cache_dir", "force_download", "local_files_only", "revision", "token", "trust_remote_code"):
+        if option in pipeline_options:
+            value = pipeline_options.pop(option)
+            model_load_kwargs.setdefault(option, value)
+            tokenizer_load_kwargs[option] = value
+    if "use_fast" in pipeline_options:
+        tokenizer_load_kwargs["use_fast"] = pipeline_options.pop("use_fast")
+    if "torch_dtype" in pipeline_options:
+        model_load_kwargs.setdefault("dtype", pipeline_options.pop("torch_dtype"))
+    for option in ("config", "device_map", "dtype"):
+        if option in pipeline_options:
+            model_load_kwargs.setdefault(option, pipeline_options.pop(option))
+    ignored_options = {
+        option: pipeline_options.pop(option)
+        for option in (
+            "batch_size",
+            "binary_output",
+            "feature_extractor",
+            "framework",
+            "image_processor",
+            "num_workers",
+            "pipeline_class",
+            "processor",
+        )
+        if option in pipeline_options
+    }
+    if ignored_options:
+        logger.warning(
+            "Ignoring pipeline options that do not apply to sequence-to-sequence generation: %s",
+            ", ".join(sorted(ignored_options)),
+        )
+
+    model = AutoModelForSeq2SeqLM.from_pretrained(ai_model_id, **model_load_kwargs)
+    tokenizer_id = pipeline_options.pop("tokenizer", ai_model_id)
+    tokenizer = (
+        AutoTokenizer.from_pretrained(tokenizer_id, **tokenizer_load_kwargs)
+        if isinstance(tokenizer_id, str)
+        else tokenizer_id
+    )
+    resolved_device = torch.device(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu")
+    if getattr(model, "hf_device_map", None) is None:
+        model.to(resolved_device)
+    model_device = getattr(model, "device", resolved_device)
+    output_key = "summary_text" if task == "summarization" else "generated_text"
+    # The removed pipelines prepended the model's task-specific prefix (e.g. "summarize: ") to the input.
+    task_specific_params = getattr(model.config, "task_specific_params", None) or {}
+    prefix = task_specific_params.get(task, {}).get("prefix") or ""
+    return _Seq2SeqGenerator(
+        model=model,
+        tokenizer=tokenizer,
+        device=model_device,
+        output_key=output_key,
+        prefix=prefix,
+        default_call_kwargs=pipeline_options,
+    )
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
@@ -69,13 +180,17 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        generator = pipeline(
-            task=task,  # type: ignore[arg-type]
-            model=ai_model_id,
-            device=device,
-            model_kwargs=model_kwargs,
-            **pipeline_kwargs or {},
-        )
+        generator: _Seq2SeqGenerator | Pipeline
+        if task in {"summarization", "text2text-generation"}:
+            generator = _create_seq2seq_generator(ai_model_id, task, device, model_kwargs, pipeline_kwargs)
+        else:
+            generator = pipeline(
+                task=task,  # type: ignore[arg-type]
+                model=ai_model_id,
+                device=device,
+                model_kwargs=model_kwargs,
+                **pipeline_kwargs or {},
+            )
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             service_id=service_id or ai_model_id,

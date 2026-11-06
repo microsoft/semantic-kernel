@@ -19,7 +19,7 @@ Prefix|Description
 ---|---
 OpenAIAssistant|How to use agents based on the [Open AI Assistant API](https://platform.openai.com/docs/assistants).
 MixedChat|How to combine different agent types.
-ComplexChat|How to deveop complex agent chat solutions.
+ComplexChat|How to develop complex agent chat solutions.
 Legacy|How to use the legacy _Experimental Agent API_.
 
 ## Legacy Agents

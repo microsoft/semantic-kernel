@@ -7,7 +7,7 @@ from microsoft_agents.copilotstudio.client import (
     AgentType,
     PowerPlatformCloud,
 )
-from pydantic import Field, SecretStr
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -17,8 +17,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 class CopilotStudioAgentAuthMode(str, Enum):
     """The Copilot Studio agent authentication mode."""
 
-    INTERACTIVE = "interactive"  # user authentication
-    SERVICE = "service"  # client-credentials (app secret/cert)
+    INTERACTIVE = "interactive"
 
 
 @experimental
@@ -34,7 +33,5 @@ class CopilotStudioAgentSettings(KernelBaseSettings):
     cloud: PowerPlatformCloud = Field(default=PowerPlatformCloud.UNKNOWN)
     copilot_agent_type: AgentType = Field(default=AgentType.PUBLISHED)
     custom_power_platform_cloud: str | None = None
-    client_secret: SecretStr | None = None
-    client_certificate: str | None = None
     user_assertion: str | None = None
     auth_mode: CopilotStudioAgentAuthMode = Field(default=CopilotStudioAgentAuthMode.INTERACTIVE)

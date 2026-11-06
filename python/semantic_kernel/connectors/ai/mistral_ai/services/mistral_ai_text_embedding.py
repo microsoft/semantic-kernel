@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import sys
+from typing import Any
 
 if sys.version_info >= (3, 12):
-    from typing import Any, override  # pragma: no cover
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import Any, override  # pragma: no cover
-
-import logging
+    from typing_extensions import override  # pragma: no cover
 
 from mistralai import Mistral
 from mistralai.models import EmbeddingResponse

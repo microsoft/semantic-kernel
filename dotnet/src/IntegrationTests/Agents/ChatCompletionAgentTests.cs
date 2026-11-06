@@ -26,7 +26,7 @@ public sealed class ChatCompletionAgentTests()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAssistantAgentTests>()
+            .AddUserSecrets<ChatCompletionAgentTests>()
             .Build();
 
     /// <summary>
