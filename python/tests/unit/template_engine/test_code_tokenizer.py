@@ -57,7 +57,7 @@ def test_it_parses_val_blocks(template, content):
         ("f", "f"),
         (" x ", "x"),
         ("foo", "foo"),
-        ("fo.o ", "fo.o"),
+        ("foo.o ", "foo.o"),
         (" f.oo", "f.oo"),
         (" bar ", "bar"),
     ],
