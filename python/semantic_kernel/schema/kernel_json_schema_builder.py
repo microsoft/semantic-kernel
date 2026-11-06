@@ -18,6 +18,7 @@ TYPE_MAPPING = {
     dict: "object",
     set: "array",
     tuple: "array",
+    type(None): "null",
     "int": "integer",
     "str": "string",
     "bool": "boolean",
