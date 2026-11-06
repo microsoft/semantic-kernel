@@ -773,12 +773,25 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
+        List<GeminiChatMessageContent>? lastChatMessageContentsWithUsage = null;
+
         await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct).ConfigureAwait(false))
         {
-            foreach (var messageContent in this.ProcessChatResponse(response))
+            var chatMessageContents = this.CreateChatMessageContents(response);
+            if (HasTokenUsage(chatMessageContents))
+            {
+                lastChatMessageContentsWithUsage = chatMessageContents;
+            }
+
+            foreach (var messageContent in chatMessageContents)
             {
                 yield return messageContent;
             }
+        }
+
+        if (lastChatMessageContentsWithUsage is { } chatMessageContentsWithUsage)
+        {
+            this.LogUsage(chatMessageContentsWithUsage);
         }
     }
 
@@ -794,12 +807,20 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
     {
-        ValidateGeminiResponse(geminiResponse);
-
-        var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
+        var chatMessageContents = this.CreateChatMessageContents(geminiResponse);
         this.LogUsage(chatMessageContents);
         return chatMessageContents;
     }
+
+    private List<GeminiChatMessageContent> CreateChatMessageContents(GeminiResponse geminiResponse)
+    {
+        ValidateGeminiResponse(geminiResponse);
+
+        return this.GetChatMessageContentsFromResponse(geminiResponse);
+    }
+
+    private static bool HasTokenUsage(List<GeminiChatMessageContent> chatMessageContents)
+        => chatMessageContents.FirstOrDefault()?.Metadata is { TotalTokenCount: > 0 };
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
@@ -812,7 +833,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private void LogUsage(List<GeminiChatMessageContent> chatMessageContents)
     {
-        GeminiMetadata? metadata = chatMessageContents[0].Metadata;
+        GeminiMetadata? metadata = chatMessageContents.FirstOrDefault()?.Metadata;
 
         if (metadata is null || metadata.TotalTokenCount <= 0)
         {
