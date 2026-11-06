@@ -655,7 +655,31 @@ class InMemoryCollection(
         return updated_keys
 
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        return records
+        if not (isinstance(self.record_type, type) and issubclass(self.record_type, BaseModel)):
+            return records
+        # Pydantic records are stored under their Python field names (they are
+        # serialized with model_dump()), but the shared deserializer for
+        # Pydantic models expects store dicts keyed by storage name and maps
+        # them back to field names. Rename name -> storage name in one pass
+        # so a data field whose name overlaps the key's storage name (or vice
+        # versa) keeps its own value instead of overwriting the key's.
+        converted_records: list[dict[str, Any]] = []
+        for record in records:
+            renames = {
+                field.storage_name: record[field.name]
+                for field in self.definition.fields
+                if field.storage_name and field.storage_name != field.name and field.name in record
+            }
+            if not renames:
+                converted_records.append(record)
+                continue
+            # Drop every renamed field's original name, then apply all
+            # renames at once so overlapping names cannot overwrite each other.
+            renamed_names = {field.name for field in self.definition.fields if field.storage_name in renames}
+            converted = {key: value for key, value in record.items() if key not in renamed_names}
+            converted.update(renames)
+            converted_records.append(converted)
+        return converted_records
 
     def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrList[dict[str, Any]]:
         """Keep track of key names before records lose their model type."""
