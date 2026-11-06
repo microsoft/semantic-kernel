@@ -296,4 +296,99 @@ public static class OpenAIServiceCollectionExtensions
         });
     }
     #endregion
+
+    #region Image Generation
+
+    /// <summary>
+    /// Adds the <see cref="IImageGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">Model identifier, for example, 'gpt-image-1'.</param>
+    /// <param name="apiKey">OpenAI API key</param>
+    /// <param name="organizationId">OpenAI organization ID (optional)</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAIImageGenerator(
+        this IServiceCollection services,
+        string modelId,
+        string apiKey,
+        string? organizationId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        return services.AddKeyedSingleton<IImageGenerator>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = new OpenAIClient(
+                    credential: new ApiKeyCredential(apiKey),
+                    options: ClientCore.GetOpenAIClientOptions(
+                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        orgId: organizationId))
+                .GetImageClient(modelId)
+                .AsIImageGenerator()
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        });
+    }
+
+    /// <summary>
+    /// Adds the <see cref="IImageGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">Model identifier, for example, 'gpt-image-1'.</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryImageGenerator"/> instance.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAIImageGenerator(
+        this IServiceCollection services,
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryImageGenerator>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        return services.AddKeyedSingleton<IImageGenerator>(serviceId, (serviceProvider, _) =>
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            var client = openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>();
+
+            var builder = client.GetImageClient(modelId)
+                .AsIImageGenerator()
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        });
+    }
+
+    #endregion
 }

@@ -2,8 +2,17 @@
 
 using System;
 using System.ClientModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,7 +23,10 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
+using OpenAI.Images;
 using Xunit;
+
+#pragma warning disable MEAI001 // Image generation APIs are experimental.
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
 
@@ -184,6 +196,129 @@ public class ServiceCollectionExtensionsTests
             .BuildServiceProvider()
             .GetRequiredService<OpenAIFileService>();
     }
+
+    #region Image Generation
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey, null)]
+    [InlineData(InitializationType.ApiKey, "images")]
+    [InlineData(InitializationType.ClientInline, null)]
+    [InlineData(InitializationType.ClientInline, "images")]
+    [InlineData(InitializationType.ClientInServiceProvider, null)]
+    [InlineData(InitializationType.ClientInServiceProvider, "images")]
+    public async Task ItCanAddImageGeneratorServiceAsync(InitializationType type, string? serviceId)
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+        using var messageHandler = new HttpMessageHandlerStub { ResponseToReturn = responseMessage };
+        using var httpClient = new HttpClient(messageHandler, false);
+        var client = new OpenAIClient(new ApiKeyCredential("key"), ClientCore.GetOpenAIClientOptions(httpClient));
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(client);
+        builder.Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        bool telemetryConfigured = false;
+        void configureTelemetry(OpenTelemetryImageGenerator _) => telemetryConfigured = true;
+        string sourceName = $"OpenAIImages.{Guid.NewGuid():N}";
+        Activity? imageActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => imageActivity = activity
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddOpenAIImageGenerator("gpt-image-1", "api-key", organizationId: "organization", serviceId: serviceId, httpClient: httpClient, openTelemetrySourceName: sourceName, openTelemetryConfig: configureTelemetry),
+            InitializationType.ClientInline => builder.Services.AddOpenAIImageGenerator("gpt-image-1", client, serviceId, sourceName, configureTelemetry),
+            InitializationType.ClientInServiceProvider => builder.Services.AddOpenAIImageGenerator("gpt-image-1", serviceId: serviceId, openTelemetrySourceName: sourceName, openTelemetryConfig: configureTelemetry),
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+        using var provider = collection.BuildServiceProvider();
+        var service = provider.GetRequiredKeyedService<IImageGenerator>(serviceId);
+        var response = await service.GenerateImagesAsync("A sea otter", new Microsoft.Extensions.AI.ImageGenerationOptions
+        {
+            ImageSize = new System.Drawing.Size(1024, 1024)
+        });
+
+        // Assert
+        Assert.Same(builder.Services, collection);
+        Assert.Equal("gpt-image-1", service.GetService<ImageGeneratorMetadata>()!.DefaultModelId);
+        Assert.Same(service, provider.GetRequiredKeyedService<IImageGenerator>(serviceId));
+        var image = Assert.IsType<DataContent>(Assert.Single(response.Contents));
+        Assert.Equal(Convert.FromBase64String("iVBORw0KGgoAAA=="), image.Data.ToArray());
+        Assert.Equal("image/png", image.MediaType);
+        Assert.True(telemetryConfigured);
+        Assert.NotNull(imageActivity);
+        Assert.Equal(sourceName, imageActivity.Source.Name);
+
+        using var request = JsonDocument.Parse(messageHandler.RequestContent!);
+        Assert.Equal("gpt-image-1", request.RootElement.GetProperty("model").GetString());
+        Assert.Equal("A sea otter", request.RootElement.GetProperty("prompt").GetString());
+        Assert.Equal("1024x1024", request.RootElement.GetProperty("size").GetString());
+        Assert.Equal(1, request.RootElement.GetProperty("n").GetInt32());
+        if (type == InitializationType.ApiKey)
+        {
+            Assert.Equal("organization", Assert.Single(messageHandler.RequestHeaders!.GetValues("OpenAI-Organization")));
+        }
+    }
+
+    [Fact]
+    public async Task ImageGeneratorCanEditImagesAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{"created":1726234481,"output_format":"jpeg","data":[{"b64_json":"AQID"}]}""")
+        };
+        using var messageHandler = new HttpMessageHandlerStub { ResponseToReturn = responseMessage };
+        using var httpClient = new HttpClient(messageHandler, false);
+        using var provider = new ServiceCollection()
+            .AddOpenAIImageGenerator("gpt-image-1", "api-key", httpClient: httpClient)
+            .BuildServiceProvider();
+        var service = provider.GetRequiredService<IImageGenerator>();
+
+        // Act
+        var response = await service.EditImageAsync(
+            new DataContent(new byte[] { 1, 2, 3 }, "image/png") { Name = "input.png" },
+            "Make the background red",
+            new Microsoft.Extensions.AI.ImageGenerationOptions
+            {
+                MediaType = "image/jpeg",
+                RawRepresentationFactory = _ => new ImageEditOptions { Quality = GeneratedImageQuality.LowQuality }
+            });
+
+        // Assert
+        var image = Assert.IsType<DataContent>(Assert.Single(response.Contents));
+        Assert.Equal(new byte[] { 1, 2, 3 }, image.Data.ToArray());
+        Assert.Equal("image/jpeg", image.MediaType);
+        Assert.EndsWith("/images/edits", messageHandler.RequestUri!.AbsolutePath);
+        Assert.Equal("multipart/form-data", messageHandler.ContentHeaders!.ContentType!.MediaType);
+        var request = Encoding.UTF8.GetString(messageHandler.RequestContent!);
+        Assert.Contains("input.png", request);
+        Assert.Contains("Make the background red", request);
+        Assert.Matches("name=\"?quality\"?\\r\\n(?:[^\\r\\n]+\\r\\n)*\\r\\nlow\\r\\n", request);
+        Assert.Matches("name=\"?output_format\"?\\r\\n(?:[^\\r\\n]+\\r\\n)*\\r\\njpeg\\r\\n", request);
+    }
+
+    [Fact]
+    public void ImageGeneratorRequiresRegisteredOpenAIClient()
+    {
+        // Arrange
+        using var provider = new ServiceCollection()
+            .AddOpenAIImageGenerator("gpt-image-1")
+            .BuildServiceProvider();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => provider.GetRequiredService<IImageGenerator>());
+    }
+
+    #endregion
 
     public enum InitializationType
     {

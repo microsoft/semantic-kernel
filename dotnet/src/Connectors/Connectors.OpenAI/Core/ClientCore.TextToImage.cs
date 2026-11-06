@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using OpenAI.Images;
+using OpenAIImageGenerationOptions = OpenAI.Images.ImageGenerationOptions;
+
+#pragma warning disable MEAI001 // Image generation APIs are experimental.
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -14,51 +17,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    /// <summary>
-    /// Generates an image with the provided configuration.
-    /// </summary>
-    /// <param name="targetModel">Model identifier</param>
-    /// <param name="prompt">Prompt to generate the image</param>
-    /// <param name="width">Width of the image</param>
-    /// <param name="height">Height of the image</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Url of the generated image</returns>
-    internal async Task<string> GenerateImageAsync(
-        string? targetModel,
-        string prompt,
-        int width,
-        int height,
-        CancellationToken cancellationToken)
-    {
-        Verify.NotNullOrWhiteSpace(prompt);
-
-        var size = new GeneratedImageSize(width, height);
-
-        var imageOptions = new ImageGenerationOptions()
-        {
-            Size = size,
-        };
-
-        // The model is not required by the OpenAI API and defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
-        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to gpt-image-1 in the line below.
-        targetModel = string.IsNullOrEmpty(targetModel) ? "gpt-image-1" : targetModel!;
-
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
-        var generatedImage = response.Value;
-
-        if (generatedImage.ImageUri is not null)
-        {
-            return generatedImage.ImageUri.ToString();
-        }
-
-        if (generatedImage.ImageBytes is not null)
-        {
-            return $"data:image/png;base64,{Convert.ToBase64String(generatedImage.ImageBytes.ToArray())}";
-        }
-
-        throw new KernelException("The generated image has no valid content.");
-    }
-
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
@@ -75,13 +33,13 @@ internal partial class ClientCore
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        // Ensure the input is valid
         Verify.NotNull(input);
+        string? prompt = input.Text;
+        Verify.NotNull(prompt);
 
-        // Convert the generic execution settings to OpenAI-specific settings
         var imageSettings = OpenAITextToImageExecutionSettings.FromExecutionSettings(executionSettings);
 
-        var imageGenerationOptions = new ImageGenerationOptions()
+        var imageGenerationOptions = new OpenAIImageGenerationOptions()
         {
             Size = GetGeneratedImageSize(imageSettings.Size),
             ResponseFormat = GetResponseFormat(imageSettings.ResponseFormat),
@@ -90,17 +48,34 @@ internal partial class ClientCore
             EndUserId = imageSettings.EndUserId,
         };
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(input.Text, imageGenerationOptions, cancellationToken)).ConfigureAwait(false);
-        var generatedImage = response.Value;
+        var options = new Microsoft.Extensions.AI.ImageGenerationOptions
+        {
+            Count = 1,
+            RawRepresentationFactory = _ => imageGenerationOptions
+        };
 
-        List<ImageContent> result = [];
-        if (generatedImage.ImageUri is not null)
+        using var generator = this.Client!.GetImageClient(targetModel).AsIImageGenerator();
+        var response = await RunRequestAsync(() => generator.GenerateAsync(new ImageGenerationRequest(prompt), options, cancellationToken)).ConfigureAwait(false);
+        if (response.Contents.Count == 0)
         {
-            result.Add(new ImageContent(uri: generatedImage.ImageUri) { InnerContent = generatedImage });
+            throw new KernelException("The generated image has no valid content.");
         }
-        else
+
+        var generatedImages = response.RawRepresentation as GeneratedImageCollection;
+
+        List<ImageContent> result = new(response.Contents.Count);
+        for (int i = 0; i < response.Contents.Count; i++)
         {
-            result.Add(new ImageContent(generatedImage.ImageBytes, "image/png") { InnerContent = generatedImage });
+            var content = response.Contents[i];
+            ImageContent image = content switch
+            {
+                DataContent data => new(data.Data, data.MediaType),
+                UriContent uri => new(uri.Uri) { MimeType = uri.MediaType },
+                _ => throw new KernelException("The generated image has no valid content.")
+            };
+
+            image.InnerContent = generatedImages is not null ? generatedImages[i] : content.RawRepresentation;
+            result.Add(image);
         }
 
         return result;

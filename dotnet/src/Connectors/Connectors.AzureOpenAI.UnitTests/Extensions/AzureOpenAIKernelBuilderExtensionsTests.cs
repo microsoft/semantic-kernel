@@ -15,6 +15,8 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 
+#pragma warning disable MEAI001 // Image generation APIs are experimental.
+
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 /// <summary>
@@ -181,6 +183,50 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         var service = builder.Build().GetRequiredService<ITextToImageService>();
 
         Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    #endregion
+
+    #region Image Generation
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey, null)]
+    [InlineData(InitializationType.ApiKey, "images")]
+    [InlineData(InitializationType.TokenCredential, null)]
+    [InlineData(InitializationType.TokenCredential, "images")]
+    [InlineData(InitializationType.ClientInline, null)]
+    [InlineData(InitializationType.ClientInline, "images")]
+    [InlineData(InitializationType.ClientInServiceProvider, null)]
+    [InlineData(InitializationType.ClientInServiceProvider, "images")]
+    [InlineData(InitializationType.ApiVersion, null)]
+    [InlineData(InitializationType.ApiVersion, "images")]
+    public void KernelBuilderAddAzureOpenAIImageGeneratorAddsValidService(InitializationType type, string? serviceId)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var builder = Kernel.CreateBuilder();
+        bool telemetryConfigured = false;
+        void configureTelemetry(OpenTelemetryImageGenerator _) => telemetryConfigured = true;
+        builder.Services.AddSingleton(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", "api-key", serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", credentials, serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ClientInline => builder.AddAzureOpenAIImageGenerator("deployment-name", client, serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIImageGenerator("deployment-name", serviceId: serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.ApiVersion => builder.AddAzureOpenAIImageGenerator("deployment-name", "https://endpoint", "api-key", serviceId, apiVersion: "2025-04-01-preview", openTelemetryConfig: configureTelemetry),
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+
+        // Assert
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<IImageGenerator>(serviceId);
+        Assert.Equal("deployment-name", service.GetService<ImageGeneratorMetadata>()!.DefaultModelId);
+        Assert.Same(service, kernel.GetRequiredService<IImageGenerator>(serviceId));
+        Assert.True(telemetryConfigured);
     }
 
     #endregion

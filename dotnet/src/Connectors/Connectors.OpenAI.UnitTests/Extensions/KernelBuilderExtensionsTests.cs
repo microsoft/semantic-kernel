@@ -16,6 +16,8 @@ using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
 using Xunit;
 
+#pragma warning disable MEAI001 // Image generation APIs are experimental.
+
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
 
 public class KernelBuilderExtensionsTests
@@ -97,6 +99,39 @@ public class KernelBuilderExtensionsTests
 
         // Assert
         Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey, null)]
+    [InlineData(InitializationType.ApiKey, "images")]
+    [InlineData(InitializationType.OpenAIClientInline, null)]
+    [InlineData(InitializationType.OpenAIClientInline, "images")]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider, null)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider, "images")]
+    public void KernelBuilderAddOpenAIImageGeneratorAddsValidService(InitializationType initializationType, string? serviceId)
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var client = new OpenAIClient(new ApiKeyCredential("api-key"));
+        bool telemetryConfigured = false;
+        void configureTelemetry(OpenTelemetryImageGenerator _) => telemetryConfigured = true;
+        builder.Services.AddSingleton(client);
+
+        // Act
+        builder = initializationType switch
+        {
+            InitializationType.ApiKey => builder.AddOpenAIImageGenerator("gpt-image-1", "api-key", serviceId: serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.OpenAIClientInline => builder.AddOpenAIImageGenerator("gpt-image-1", client, serviceId, openTelemetryConfig: configureTelemetry),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIImageGenerator("gpt-image-1", serviceId: serviceId, openTelemetryConfig: configureTelemetry),
+            _ => throw new ArgumentOutOfRangeException(nameof(initializationType))
+        };
+
+        // Assert
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<IImageGenerator>(serviceId);
+        Assert.Equal("gpt-image-1", service.GetService<ImageGeneratorMetadata>()!.DefaultModelId);
+        Assert.Same(service, kernel.GetRequiredService<IImageGenerator>(serviceId));
+        Assert.True(telemetryConfigured);
     }
 
     [Fact]
