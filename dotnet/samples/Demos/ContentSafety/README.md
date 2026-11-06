@@ -4,7 +4,7 @@ This sample provides a practical demonstration of how to leverage [Semantic Kern
 
 [Azure AI Content Safety](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview) detects harmful user-generated and AI-generated content in applications and services. Azure AI Content Safety includes text and image APIs that allow to detect material that is harmful.
 
-[Prompt Shields](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak) service allows to check your large language model (LLM) inputs for both User Prompt and Document attacks.
+[Prompt Shields](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak) service allows you to check your large language model (LLM) inputs for both User Prompt and Document attacks.
 
 Together with Semantic Kernel Prompt Filters, it's possible to define detection logic in dedicated place and avoid mixing it with business logic in applications.
 
