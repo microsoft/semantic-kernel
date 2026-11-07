@@ -191,7 +191,9 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                completion_tokens=(
+                    response.usage_metadata.candidates_token_count + response.usage_metadata.thoughts_token_count
+                ),
             ),
         }
 
