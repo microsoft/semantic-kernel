@@ -1760,7 +1760,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         self,
         values: Any,
         *,
-        vector_field_name: str | None = None,
+        vector_property_name: str | None = None,
         filter: OptionalOneOrList[Callable | str] = None,
         top: int = 3,
         skip: int = 0,
@@ -1773,7 +1773,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         Args:
             values: The values to search for. These will be vectorized,
                 either by the store or using the provided generator.
-            vector_field_name: The name of the vector field to use for the search.
+            vector_property_name: The name of the vector field to use for the search.
             filter: The filter to apply to the search.
             top: The number of results to return.
             skip: The number of results to skip.
@@ -1796,7 +1796,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         self,
         *,
         vector: Sequence[float | int],
-        vector_field_name: str | None = None,
+        vector_property_name: str | None = None,
         filter: OptionalOneOrList[Callable | str] = None,
         top: int = 3,
         skip: int = 0,
@@ -1808,7 +1808,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         Args:
             vector: The vector to search for
-            vector_field_name: The name of the vector field to use for the search.
+            vector_property_name: The name of the vector field to use for the search.
             filter: The filter to apply to the search.
             top: The number of results to return.
             skip: The number of results to skip.
