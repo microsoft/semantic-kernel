@@ -9,7 +9,7 @@ This agent allows you to interact with Microsoft Copilot Studio agents through p
 
 ## 🔧 Prerequisites
 
-1. Python 3.10+
+1. Python 3.11+
 2. Install Semantic Kernel with Copilot Studio dependencies:
      ```bash
      pip install semantic-kernel

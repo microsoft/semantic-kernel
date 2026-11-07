@@ -139,6 +139,22 @@ def test_kernel_function_param_annotated():
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
+def test_kernel_function_does_not_mutate_shared_annotated_metadata():
+    shared_metadata = {"description": "the answer count"}
+
+    @kernel_function
+    def first(value: Annotated[int, shared_metadata]) -> int:
+        return value
+
+    @kernel_function
+    def second(value: Annotated[int, shared_metadata]) -> int:
+        return value
+
+    assert first.__kernel_function_parameters__[0]["description"] == "the answer count"
+    assert second.__kernel_function_parameters__[0]["description"] == "the answer count"
+    assert shared_metadata == {"description": "the answer count"}
+
+
 def test_kernel_function_param_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_optional")
@@ -284,9 +300,18 @@ def test_kernel_function_param_annotated_none_default():
         ("opt_str", str | None, None, "str", False),
         ("list_str", list[str], None, "list[str]", True),
         ("dict_str", dict[str, str], None, "dict[str, str]", True),
+        ("opt_dict_any", dict[str, Any] | None, None, "dict[str, Any]", False),
+        ("typing_opt_dict_any", Union[dict[str, Any], None], None, "dict[str, Any]", False),
         ("list_str_opt", list[str] | None, None, "list[str]", False),
         ("anno_dict_str", Annotated[dict[str, str], "description"], "description", "dict[str, str]", True),
         ("anno_opt_dict_str", Annotated[dict | str | None, "description"], "description", "dict, str", False),
+        (
+            "anno_opt_dict_any",
+            Annotated[dict[str, Any] | None, "description"],
+            "description",
+            "dict[str, Any]",
+            False,
+        ),
     ],
 )
 def test_annotation_parsing(name, annotation, description, type_, is_required):

@@ -31,6 +31,18 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+# Finish reasons where Gemini stopped the response for the content, not for length or a natural end.
+_GOOGLE_AI_CONTENT_FILTER_REASONS = frozenset({
+    FinishReason.SAFETY,
+    FinishReason.RECITATION,
+    FinishReason.BLOCKLIST,
+    FinishReason.PROHIBITED_CONTENT,
+    FinishReason.SPII,
+    FinishReason.IMAGE_SAFETY,
+    FinishReason.IMAGE_PROHIBITED_CONTENT,
+})
+
+
 def finish_reason_from_google_ai_to_semantic_kernel(
     finish_reason: FinishReason | None,
 ) -> SemanticKernelFinishReason | None:
@@ -47,7 +59,7 @@ def finish_reason_from_google_ai_to_semantic_kernel(
     if finish_reason == FinishReason.MAX_TOKENS:
         return SemanticKernelFinishReason.LENGTH
 
-    if finish_reason == FinishReason.SAFETY:
+    if finish_reason in _GOOGLE_AI_CONTENT_FILTER_REASONS:
         return SemanticKernelFinishReason.CONTENT_FILTER
 
     return None
@@ -202,3 +214,24 @@ def _create_image_part(image_content: ImageContent) -> Part:
     raise ServiceInvalidRequestError(
         "ImageContent without data_uri in User message while formatting chat history for Google AI"
     )
+
+
+def get_completion_token_count(usage_metadata: Any) -> int | None:
+    """Get the number of tokens the model generated, including its thinking tokens.
+
+    Gemini reports the thinking tokens in ``thoughts_token_count``, apart from ``candidates_token_count``,
+    but bills them as output tokens, so both count toward the completion tokens.
+
+    Args:
+        usage_metadata: The usage metadata of a response, if it has one.
+
+    Returns:
+        The completion token count, or None if the response reports neither count.
+    """
+    if not usage_metadata:
+        return None
+    candidates_tokens = usage_metadata.candidates_token_count
+    thoughts_tokens = usage_metadata.thoughts_token_count
+    if candidates_tokens is None and thoughts_tokens is None:
+        return None
+    return (candidates_tokens or 0) + (thoughts_tokens or 0)
