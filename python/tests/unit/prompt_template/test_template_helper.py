@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 
 import pytest
+import sniffio
 
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions import kernel_function
@@ -27,6 +29,25 @@ def test_create_helpers(kernel: Kernel):
 
     # Assert
     assert int(str(result(x=1))) == 2
+
+
+@pytest.mark.parametrize("template_format", [JINJA2_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME])
+async def test_sync_template_helpers_preserve_async_task_context(kernel: Kernel, template_format: str):
+    @kernel_function
+    async def probe() -> str:
+        assert asyncio.current_task() is not None
+        assert sniffio.current_async_library() == "asyncio"
+        async with asyncio.timeout(1):
+            await asyncio.sleep(0)
+        return "nested"
+
+    outer_task = asyncio.current_task()
+    function = KernelFunctionFromMethod(probe, plugin_name="test")
+    helper = create_template_helper_from_function(function, kernel, {}, template_format)
+
+    assert str(helper()) == "nested"
+    assert asyncio.current_task() is outer_task
+    assert await probe() == "nested"
 
 
 async def test_template_helpers_do_not_log_argument_values(kernel: Kernel, caplog):

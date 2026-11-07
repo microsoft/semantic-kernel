@@ -1,14 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from abc import ABC, abstractmethod
-from typing import Any
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
+from typing import Any, Self
 
 from semantic_kernel.exceptions.content_exceptions import ContentAdditionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel

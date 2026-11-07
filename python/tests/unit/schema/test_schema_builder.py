@@ -241,6 +241,16 @@ def test_build_tuple():
     }
 
 
+def test_build_variadic_tuple():
+    schema = KernelJsonSchemaBuilder.build(tuple[int, ...], "ids")
+    assert schema == {"type": "array", "items": {"type": "integer"}, "description": "ids"}
+
+
+def test_build_optional_variadic_tuple():
+    schema = KernelJsonSchemaBuilder.build(Optional[tuple[str, ...]])
+    assert schema == {"type": ["array", "null"], "items": {"type": "string"}}
+
+
 def test_build_union():
     schema = KernelJsonSchemaBuilder.build(Union[int, str])
     assert schema == {"anyOf": [{"type": "integer"}, {"type": "string"}]}
@@ -571,6 +581,20 @@ def test_build_model_schema_class_var_via_instance():
     schema = KernelJsonSchemaBuilder.build(instance)
 
     assert schema == {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+
+
+@pytest.mark.parametrize(
+    "instance",
+    [
+        ModelWithClassVar(value=1),
+        ModelInheritingClassVar(value=1, extra=2.0),
+        ModelWithClassVarAndOptional(keep="value"),
+    ],
+)
+@pytest.mark.parametrize("structured_output", [False, True])
+def test_build_model_schema_instance_matches_class(instance, structured_output):
+    expected = KernelJsonSchemaBuilder.build(type(instance), structured_output=structured_output)
+    assert KernelJsonSchemaBuilder.build(instance, structured_output=structured_output) == expected
 
 
 def test_build_model_schema_allows_serialized_payload():
