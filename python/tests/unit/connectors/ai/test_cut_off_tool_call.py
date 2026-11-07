@@ -332,3 +332,99 @@ async def test_empty_mapping_in_a_reply_that_was_not_cut_off_still_runs_the_tool
     await _invoke_anthropic(plugin, _anthropic_service("tool_use"))
 
     assert plugin.calls == ["set_mode(mode='default')"]
+
+
+def _anthropic_streaming_service(stop_reason: str) -> object:
+    """The same connector, streamed: the tool input is serialized to `"{}"` instead of handed over as a mapping."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    from anthropic import AsyncAnthropic
+    from anthropic.types import (
+        ContentBlockStopEvent,
+        Message,
+        MessageDeltaUsage,
+        RawMessageDeltaEvent,
+        RawMessageStartEvent,
+        ToolUseBlock,
+        Usage,
+    )
+    from anthropic.types.raw_message_delta_event import Delta
+
+    from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import (
+        AnthropicChatCompletion,
+    )
+
+    events = [
+        RawMessageStartEvent(
+            message=Message(
+                id="msg_1",
+                content=[],
+                model="claude-3-5-haiku-20241022",
+                role="assistant",
+                stop_reason=None,
+                stop_sequence=None,
+                type="message",
+                usage=Usage(input_tokens=10, output_tokens=1),
+            ),
+            type="message_start",
+        ),
+        ContentBlockStopEvent(
+            index=0,
+            type="content_block_stop",
+            content_block=ToolUseBlock(id="toolu_1", type="tool_use", name=TOOL, input={}),
+        ),
+        RawMessageDeltaEvent(
+            delta=Delta(stop_reason=stop_reason, stop_sequence=None),
+            type="message_delta",
+            usage=MessageDeltaUsage(output_tokens=5),
+        ),
+    ]
+
+    async def async_generator():
+        for event in events:
+            yield event
+
+    stream = AsyncMock()
+    stream.__aenter__.return_value = async_generator()
+
+    client = MagicMock(spec=AsyncAnthropic)
+    client.messages = MagicMock()
+    client.messages.stream.return_value = stream
+    return AnthropicChatCompletion(
+        ai_model_id="claude-3-5-haiku-20241022", service_id="test", api_key="", async_client=client
+    )
+
+
+async def _invoke_anthropic_stream(plugin: RecordingPlugin, service) -> None:
+    from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
+        AnthropicChatPromptExecutionSettings,
+    )
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+
+    settings = AnthropicChatPromptExecutionSettings(
+        function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True, maximum_auto_invoke_attempts=1)
+    )
+    history = ChatHistory(system_message="Test")
+    history.add_user_message("do it")
+    async for _ in service.get_streaming_chat_message_content(
+        history, settings, kernel=_kernel(plugin), arguments=KernelArguments()
+    ):
+        pass
+
+
+@pytest.mark.asyncio
+async def test_cut_off_streamed_reply_that_arrives_as_an_empty_object_does_not_run_the_tool() -> None:
+    """The connector serializes the cut-off input to `"{}"`, which the aggregation cannot tell from written text."""
+    plugin = RecordingPlugin()
+    await _invoke_anthropic_stream(plugin, _anthropic_streaming_service("max_tokens"))
+
+    assert plugin.calls == [], f"tool ran with defaults: {plugin.calls!r}"
+
+
+@pytest.mark.asyncio
+async def test_empty_object_in_a_streamed_reply_that_was_not_cut_off_still_runs_the_tool() -> None:
+    """Same shape, but the model ended the turn on `tool_use`: the empty object is the arguments it meant."""
+    plugin = RecordingPlugin()
+    await _invoke_anthropic_stream(plugin, _anthropic_streaming_service("tool_use"))
+
+    assert plugin.calls == ["set_mode(mode='default')"]

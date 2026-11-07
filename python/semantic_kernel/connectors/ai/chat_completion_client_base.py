@@ -69,10 +69,22 @@ def _fragment_key(function_call: FunctionCallContent) -> str:
 
 
 def _note_written_arguments(arguments_written: set[str], message: "StreamingChatMessageContent | None") -> None:
-    """Remember the streamed calls that already carried argument text, before the aggregation runs."""
+    """Remember the streamed calls that already carried argument text, before the aggregation runs.
+
+    A value that holds only an empty object is not text the model wrote: a connector that hands the parsed
+    input over serializes a call cut off before its arguments to `"{}"`, and the aggregation would otherwise
+    make that look like a call whose arguments were written.
+    """
     for item in message.items if message is not None else ():
-        if isinstance(item, FunctionCallContent) and item.arguments:
+        if isinstance(item, FunctionCallContent) and _wrote_argument_text(item.arguments):
             arguments_written.add(_fragment_key(item))
+
+
+def _wrote_argument_text(arguments: "str | Mapping[str, Any] | None") -> bool:
+    """Whether a streamed chunk carried argument text the model did write."""
+    if isinstance(arguments, str):
+        return arguments.strip() not in ("", "{}")
+    return bool(arguments)
 
 
 def _record_refused_calls(chat_history: "ChatHistory", function_calls: list[FunctionCallContent]) -> None:
