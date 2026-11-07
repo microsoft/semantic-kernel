@@ -40,7 +40,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
             raise ImportError("onnxruntime-genai is not installed.")
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
-            with open(json_gen_ai_config) as file:
+            with open(json_gen_ai_config, encoding="utf-8") as file:
                 config: dict = json.load(file)
                 enable_multi_modality = "vision" in config.get("model", {})
                 model = OnnxRuntimeGenAi.Model(ai_model_path)
