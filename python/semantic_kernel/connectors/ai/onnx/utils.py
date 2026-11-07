@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from enum import Enum
 
-from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, TextContent
+from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent, TextContent
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.exceptions import ServiceException, ServiceInvalidRequestError
 
@@ -104,12 +104,8 @@ def phi3v_template(history: ChatHistory) -> str:
         if message.role == AuthorRole.SYSTEM:
             phi3v_input += f"<|system|>\n{message.content}<|end|>\n"
         if message.role == AuthorRole.USER:
-            for item in message.items:
-                if isinstance(item, TextContent):
-                    phi3v_input += f"<|user|>\n{item.text}<|end|>\n"
-                if isinstance(item, ImageContent):
-                    phi3v_input += f"<|image_{image_count + 1}|>\n"
-                    image_count += 1
+            user_content, image_count, _ = _multimodal_user_content(message, image_count)
+            phi3v_input += f"<|user|>\n{user_content}<|end|>\n"
         if message.role == AuthorRole.ASSISTANT:
             phi3v_input += f"<|assistant|>\n{message.content}<|end|>\n"
     phi3v_input += "<|assistant|>\n"
@@ -133,20 +129,51 @@ def phi4mm_template(history: ChatHistory) -> str:
         if message.role == AuthorRole.SYSTEM:
             phi4mm_input += f"<|system|>\n{message.content}<|end|>\n"
         if message.role == AuthorRole.USER:
-            for item in message.items:
-                if isinstance(item, TextContent):
-                    phi4mm_input += f"<|user|>\n{item.text}<|end|>\n"
-                # Currently only one image is supported in Onnx
-                if isinstance(item, ImageContent):
-                    phi4mm_input += f"<|image_{image_count + 1}|>\n"
-                    image_count += 1
-                if isinstance(item, AudioContent):
-                    phi4mm_input += f"<|audio_{audio_count + 1}|>\n"
-                    audio_count += 1
+            user_content, image_count, audio_count = _multimodal_user_content(
+                message, image_count, audio_count, include_audio=True
+            )
+            phi4mm_input += f"<|user|>\n{user_content}<|end|>\n"
         if message.role == AuthorRole.ASSISTANT:
             phi4mm_input += f"<|assistant|>\n{message.content}<|end|>\n"
     phi4mm_input += "<|assistant|>\n"
     return phi4mm_input
+
+
+def _multimodal_user_content(
+    message: ChatMessageContent,
+    image_count: int,
+    audio_count: int = 0,
+    include_audio: bool = False,
+) -> tuple[str, int, int]:
+    """Builds the content of a single user turn for the Phi-3-vision and Phi-4-multimodal templates.
+
+    All content of the message goes into one user turn: the image placeholders first, then the audio
+    placeholders, each on its own line, then the text. This is the prompt format given in the model
+    cards and used by the onnxruntime-genai examples. Placeholders are numbered across the whole chat
+    history, starting at 1.
+
+    Args:
+        message (ChatMessageContent): The user message.
+        image_count (int): The number of images in the chat history before this message.
+        audio_count (int): The number of audio clips in the chat history before this message.
+        include_audio (bool): Whether to emit audio placeholders.
+
+    Returns:
+        tuple[str, int, int]: The user content and the updated image and audio counts.
+    """
+    image_tags = ""
+    audio_tags = ""
+    texts: list[str] = []
+    for item in message.items:
+        if isinstance(item, TextContent):
+            texts.append(item.text)
+        elif isinstance(item, ImageContent):
+            image_count += 1
+            image_tags += f"<|image_{image_count}|>\n"
+        elif include_audio and isinstance(item, AudioContent):
+            audio_count += 1
+            audio_tags += f"<|audio_{audio_count}|>\n"
+    return image_tags + audio_tags + "\n".join(texts), image_count, audio_count
 
 
 def gemma_template(history: ChatHistory) -> str:
