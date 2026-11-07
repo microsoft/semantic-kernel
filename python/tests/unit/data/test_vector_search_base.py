@@ -43,3 +43,16 @@ async def test_create_search_function_preserves_filter_for_invalid_invocation_op
 
     mock_search.assert_awaited_once()
     assert mock_search.await_args.kwargs["filter"] == search_filter
+
+
+def test_search_overloads_match_implementation_parameters():
+    """The public `search` overloads must only advertise keyword arguments the implementation accepts."""
+    import inspect
+    from typing import get_overloads
+
+    impl_params = set(inspect.signature(VectorSearch.search).parameters)
+    for overload in get_overloads(VectorSearch.search):
+        overload_params = set(inspect.signature(overload).parameters)
+        assert "vector_field_name" not in overload_params
+        assert "vector_property_name" in overload_params
+        assert overload_params - {"kwargs"} <= impl_params | {"kwargs"}
