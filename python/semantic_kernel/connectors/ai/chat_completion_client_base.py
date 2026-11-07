@@ -49,7 +49,9 @@ def _arguments_never_written(
     """A cut-off reply that stopped before writing any argument: the tool would run on its defaults.
 
     `arguments_written` is the streamed evidence, collected before the aggregation turns empty fragments into
-    `"{}"`; without it the finished arguments are judged directly. A mapping is left to the existing parsing.
+    `"{}"`; without it the finished arguments are judged directly. Connectors that hand over the parsed input
+    instead of the raw text (Anthropic, Bedrock) report a call cut off before its arguments as an empty
+    mapping, while a deliberate no-argument call there ends with `tool_use` rather than `length`.
     """
     if finish_reason != FinishReason.LENGTH:
         return False
@@ -58,7 +60,7 @@ def _arguments_never_written(
         return not arguments_written and not isinstance(raw, Mapping)
     if isinstance(raw, str):
         return not raw.strip()
-    return raw is None
+    return raw is None or (isinstance(raw, Mapping) and not raw)
 
 
 def _fragment_key(function_call: FunctionCallContent) -> str:
