@@ -95,7 +95,6 @@ class TextMemoryPlugin(KernelBaseModel):
 
         Args:
             text: The text to save to the memory
-            kernel: The kernel instance, that has a memory store
             collection: The collection to save the information
             key: The unique key to associate with the information
 
