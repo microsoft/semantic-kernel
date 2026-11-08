@@ -16,11 +16,14 @@ from anthropic.lib.streaming._types import TextEvent
 from anthropic.types import (
     ContentBlockStopEvent,
     Message,
+    MessageDeltaUsage,
     RawMessageDeltaEvent,
     RawMessageStartEvent,
     TextBlock,
     ToolUseBlock,
+    Usage,
 )
+from openai.types.completion_usage import PromptTokensDetails
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
@@ -32,6 +35,7 @@ from semantic_kernel.connectors.ai.anthropic.services.utils import (
 )
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -61,8 +65,11 @@ if TYPE_CHECKING:
 # map finish reasons from Anthropic to Semantic Kernel
 ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
     "end_turn": SemanticKernelFinishReason.STOP,
+    "stop_sequence": SemanticKernelFinishReason.STOP,
     "max_tokens": SemanticKernelFinishReason.LENGTH,
+    "model_context_window_exceeded": SemanticKernelFinishReason.LENGTH,
     "tool_use": SemanticKernelFinishReason.TOOL_CALLS,
+    "refusal": SemanticKernelFinishReason.CONTENT_FILTER,
 }
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -270,7 +277,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         finish_reason = None
         if response.stop_reason:
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[response.stop_reason]
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP.get(response.stop_reason)
 
         return ChatMessageContent(
             inner_content=response,
@@ -308,12 +315,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
-            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[str(stream_event.delta.stop_reason)]
-            output_tokens = stream_event.usage.output_tokens
-            if metadata is None:
-                metadata = {"usage": {"output_tokens": output_tokens}}
-            else:
-                metadata = metadata | {"usage": metadata.get("usage", {}) | {"output_tokens": output_tokens}}
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP.get(str(stream_event.delta.stop_reason))
+            usage = _get_completion_usage(stream_event.usage)
+            start_usage = metadata.get("usage") if metadata else None
+            if getattr(stream_event.usage, "input_tokens", None) is None and isinstance(start_usage, CompletionUsage):
+                # The input token counts are only reported at message start.
+                usage = start_usage.model_copy(update={"completion_tokens": usage.completion_tokens})
+            metadata = (metadata or {}) | {"usage": usage}
 
         return StreamingChatMessageContent(
             choice_index=0,
@@ -338,7 +346,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
         response_metadata: dict[str, Any] = {"id": response.id}
         if hasattr(response, "usage") and response.usage is not None:
-            response_metadata["usage"] = response.usage
+            response_metadata["usage"] = _get_completion_usage(response.usage)
 
         return [self._create_chat_message_content(response, response_metadata)]
 
@@ -357,10 +365,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
-                metadata: dict[str, Any] = {"usage": {}, "id": None}
+                metadata: dict[str, Any] = {"usage": None, "id": None}
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
-                        metadata["usage"]["input_tokens"] = stream_event.message.usage.input_tokens
+                        metadata["usage"] = _get_completion_usage(stream_event.message.usage)
                         metadata["id"] = stream_event.message.id
                     elif isinstance(stream_event, (TextEvent, RawMessageDeltaEvent)) or (
                         isinstance(stream_event, ContentBlockStopEvent)
@@ -391,3 +399,18 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 )
 
         return tool_calls
+
+
+def _get_completion_usage(usage: Usage | MessageDeltaUsage) -> CompletionUsage:
+    """Convert Anthropic usage to CompletionUsage.
+
+    Anthropic reports the tokens read from and written to the prompt cache separately from `input_tokens`,
+    so they are added back to get the full prompt token count. Older SDK versions lack some of these fields.
+    """
+    cache_read_tokens = getattr(usage, "cache_read_input_tokens", None) or 0
+    cache_creation_tokens = getattr(usage, "cache_creation_input_tokens", None) or 0
+    return CompletionUsage(
+        prompt_tokens=(getattr(usage, "input_tokens", None) or 0) + cache_read_tokens + cache_creation_tokens,
+        prompt_tokens_details=PromptTokensDetails(cached_tokens=cache_read_tokens) if cache_read_tokens else None,
+        completion_tokens=usage.output_tokens,
+    )
