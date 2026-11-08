@@ -209,24 +209,33 @@ class ChromaCollection(
                 f"Chroma only supports one vector field, but {len(self.definition.vector_fields)} were provided."
             )
 
+    def _storage_keyed(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Return the record keyed by storage names.
+
+        Dict and dataclass records arrive keyed by storage name, pydantic models keyed by field name.
+        """
+        keyed = dict(record)
+        for field in self.definition.fields:
+            storage_name = field.storage_name or field.name
+            if storage_name != field.name and storage_name not in keyed and field.name in keyed:
+                keyed[storage_name] = keyed.pop(field.name)
+        return keyed
+
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         vector_field = self.definition.vector_fields[0]
-        id_field_name = self.definition.key_name
+        id_field_name = self.definition.key_field_storage_name
+        vector_field_name = vector_field.storage_name or vector_field.name
         store_models = []
-        for record in records:
+        for record in map(self._storage_keyed, records):
             store_model = {
                 "id": record[id_field_name],
-                "metadata": {
-                    k: v
-                    for k, v in record.items()
-                    if k not in [id_field_name, vector_field.storage_name or vector_field.name]
-                },
+                "metadata": {k: v for k, v in record.items() if k not in [id_field_name, vector_field_name]},
             }
             if self.embedding_func:
-                store_model["document"] = (record[vector_field.storage_name or vector_field.name],)
+                store_model["document"] = (record[vector_field_name],)
             else:
-                store_model["embedding"] = record[vector_field.storage_name or vector_field.name]
+                store_model["embedding"] = record[vector_field_name]
             if store_model["metadata"] == {}:
                 store_model.pop("metadata")
             store_models.append(store_model)
@@ -235,10 +244,12 @@ class ChromaCollection(
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         vector_field = self.definition.vector_fields[0]
-        # replace back the name of the vector, content and id fields
+        # replace back the storage name of the vector, content and id fields
         for record in records:
-            record[self.definition.key_name] = record.pop("id")
-            record[vector_field.name] = record.pop("document", None) or record.pop("embedding", None)
+            record[self.definition.key_field_storage_name] = record.pop("id")
+            record[vector_field.storage_name or vector_field.name] = record.pop("document", None) or record.pop(
+                "embedding", None
+            )
         return records
 
     @override
