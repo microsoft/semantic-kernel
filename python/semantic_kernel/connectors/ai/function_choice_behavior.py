@@ -179,7 +179,12 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @classmethod
     def from_dict(cls: type[_T], data: dict) -> _T:
-        """Create a FunctionChoiceBehavior from a dictionary."""
+        """Create a FunctionChoiceBehavior from a dictionary.
+
+        The default for `auto_invoke` matches `from_string` and the classmethods:
+        auto-invocation is enabled for the "auto" and "required" types and disabled
+        for "none". An explicit `auto_invoke` key in the dict always wins.
+        """
         from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
 
         type_map = {
@@ -188,7 +193,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
             "required": cls.Required,
         }
         behavior_type = data.pop("type", "auto")
-        auto_invoke = data.pop("auto_invoke", False)
+        auto_invoke = data.pop("auto_invoke", behavior_type != "none")
         functions = data.pop("functions", None)
         filters = data.pop("filters", None)
 
