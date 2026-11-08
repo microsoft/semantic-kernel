@@ -183,8 +183,21 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
         The default for `auto_invoke` matches `from_string` and the classmethods:
         auto-invocation is enabled for the "auto" and "required" types and disabled
-        for "none". An explicit `auto_invoke` key in the dict always wins.
+        for "none".
+
+        An explicit `auto_invoke` key overrides that default, with two exceptions:
+
+        * an explicit `maximum_auto_invoke_attempts` in the same dict wins, because the
+          classmethods only fill the count in when it is absent -- so
+          `{"type": "auto", "auto_invoke": False, "maximum_auto_invoke_attempts": 3}`
+          still auto-invokes. Leave the count out when `auto_invoke=False` is meant to
+          disable invocation for "auto" and "required".
+        * the "none" behavior ignores `auto_invoke` entirely: `NoneInvoke()` always sets
+          the attempt count to 0, whatever the dict says.
+
+        The input dict is copied, so its keys are left in place for the caller.
         """
+        data = dict(data)
         from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
 
         type_map = {
