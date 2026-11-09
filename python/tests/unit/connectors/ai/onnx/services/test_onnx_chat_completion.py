@@ -20,6 +20,20 @@ def test_onnx_chat_completion_with_valid_env_variable(gen_ai_config, model, toke
     assert not service.enable_multi_modality
 
 
+@patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
+@patch("onnxruntime_genai.Model")
+@patch("onnxruntime_genai.Tokenizer")
+def test_onnx_config_is_read_as_utf8(gen_ai_config, model, tokenizer, onnx_unit_test_env):
+    """The genai_config read must name UTF-8 rather than inherit the host default."""
+    OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, env_file_path="test.env")
+
+    config_calls = [
+        call for call in open.call_args_list if call.args and str(call.args[0]).endswith("genai_config.json")
+    ]
+    assert config_calls, [call.args for call in open.call_args_list]
+    assert all(call.kwargs.get("encoding") == "utf-8" for call in config_calls), config_calls
+
+
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config_vision))
 @patch("onnxruntime_genai.Model")
 @patch("onnxruntime_genai.Tokenizer")

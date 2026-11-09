@@ -747,3 +747,39 @@ def test_chat_history_prompt_round_trip_keeps_entities(text: str):
 
     restored = ChatHistory.from_rendered_prompt(chat_history.to_prompt())
     assert [message.content for message in restored.messages] == [text, text]
+
+
+def test_chat_history_file_round_trip_keeps_non_ascii(tmp_path):
+    """A history with accented and CJK text has to survive the file round trip."""
+    history = ChatHistory()
+    history.add_user_message("héllo — 世界")
+
+    file_path = tmp_path / "chat_history_utf8.json"
+    history.store_chat_history_to_file(file_path)
+
+    # The stored bytes are UTF-8 no matter what the host's default encoding is.
+    assert "héllo — 世界".encode() in file_path.read_bytes()
+
+    restored = ChatHistory.load_chat_history_from_file(file_path)
+    assert restored.messages[0].content == "héllo — 世界"
+
+
+def test_chat_history_file_io_requests_utf8_explicitly(tmp_path, monkeypatch):
+    """Both file opens have to name the encoding instead of relying on the default."""
+    recorded = []
+    real_open = open
+
+    def spy_open(*args, **kwargs):
+        recorded.append(kwargs.get("encoding"))
+        return real_open(*args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", spy_open)
+
+    history = ChatHistory()
+    history.add_user_message("héllo — 世界")
+    file_path = tmp_path / "chat_history_utf8.json"
+    history.store_chat_history_to_file(file_path)
+    ChatHistory.load_chat_history_from_file(file_path)
+
+    assert recorded, "the history never touched the filesystem"
+    assert all(encoding == "utf-8" for encoding in recorded), recorded
