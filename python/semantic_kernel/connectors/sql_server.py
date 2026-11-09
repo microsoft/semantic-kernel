@@ -11,7 +11,7 @@ from collections.abc import AsyncIterable, Sequence
 from contextlib import contextmanager
 from io import StringIO
 from itertools import chain
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, Self, TypeVar
 
 from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import SecretStr, ValidationError, field_validator
@@ -45,11 +45,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
     from pyodbc import Connection

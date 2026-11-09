@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
-from contextlib import AbstractAsyncContextManager
+from contextlib import AbstractAsyncContextManager, aclosing
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -142,15 +142,16 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
 
-        async for stream_message in function.invoke_stream(self, arguments):
-            if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
-            ):
-                raise KernelInvokeException(
-                    f"Error occurred while invoking function: '{function.fully_qualified_name}'"
-                ) from exception
-            function_result.append(stream_message)
-            yield stream_message
+        async with aclosing(function.invoke_stream(self, arguments)) as stream:
+            async for stream_message in stream:
+                if isinstance(stream_message, FunctionResult) and (
+                    exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
+                ):
+                    raise KernelInvokeException(
+                        f"Error occurred while invoking function: '{function.fully_qualified_name}'"
+                    ) from exception
+                function_result.append(stream_message)
+                yield stream_message
 
         if return_function_results:
             output_function_result: list["StreamingContentMixin"] = []
