@@ -165,6 +165,33 @@ public class ServerUrlValidatorTests
     }
 
     [Theory]
+    [InlineData("https://api.example.com/v1/a%2Fb/", "https://api.example.com/v1/a%2fb/resource")]
+    [InlineData("https://api.example.com/v1/a%2fb/", "https://api.example.com/v1/a%2Fb/resource")]
+    public async Task ItShouldMatchPercentEncodedPathsRegardlessOfHexCaseAsync(string allowedBaseUrl, string url)
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri(allowedBaseUrl)]
+        };
+
+        // Should not throw.
+        await ServerUrlValidator.ValidateAsync(new Uri(url), options);
+    }
+
+    [Fact]
+    public async Task ItShouldStillRejectPathLetterCaseMismatchWithPercentEncodingAsync()
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1/a%2Fb/")]
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(new Uri("https://api.example.com/v1/A%2fb/resource"), options));
+        Assert.Contains("does not match", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("https://api.example.com/v1/public/..%2finternal/keys")]
     [InlineData("https://api.example.com/v1/public/..%2Finternal/keys")]
     [InlineData("https://api.example.com/v1/public/..%5cinternal/keys")]
