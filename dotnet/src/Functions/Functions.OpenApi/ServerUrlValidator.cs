@@ -86,7 +86,14 @@ internal static class ServerUrlValidator
             return false;
         }
 
-        var urlPath = url.GetLeftPart(UriPartial.Path);
+        // Dot-segments (raw or percent-encoded, e.g. "..%2f") may be resolved by downstream
+        // servers or proxies and escape the allowed path, so such URLs never match.
+        if (RestApiOperation.ContainsDotSegment(url.AbsolutePath))
+        {
+            return false;
+        }
+
+        var urlPath = url.AbsolutePath;
 
         foreach (var baseUrl in allowedBaseUrls)
         {
@@ -103,13 +110,14 @@ internal static class ServerUrlValidator
                 continue;
             }
 
-            var baseUrlPath = baseUrl.GetLeftPart(UriPartial.Path);
+            // Paths are case-sensitive (RFC 3986 section 6.2.2.1), so compare them ordinally.
+            var baseUrlPath = baseUrl.AbsolutePath;
             var baseUrlWithSlash = baseUrlPath.EndsWith("/", StringComparison.Ordinal)
                 ? baseUrlPath
                 : baseUrlPath + "/";
 
-            if (string.Equals(urlPath, baseUrlPath, StringComparison.OrdinalIgnoreCase) ||
-                urlPath.StartsWith(baseUrlWithSlash, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(urlPath, baseUrlPath, StringComparison.Ordinal) ||
+                urlPath.StartsWith(baseUrlWithSlash, StringComparison.Ordinal))
             {
                 return true;
             }
