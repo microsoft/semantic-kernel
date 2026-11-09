@@ -15,7 +15,7 @@ Formalizing a mechanism that supports serialization and deserialization of any `
 #### Goals
 - **Capture & Restore Primary Chat History**: The primary `AgentChat` history must be captured and restored for full fidelity.
 - **Capture & Restore Channel State**: In addition to the primary chat history, the state for each `AgentChannel` within the `AgentChat` must be captured and restored.
-- **Capture Agent Metadata**: Capturing the agent Identifier, Name, and Type upon serialization provides a guidance on how to restore the the `AgentChat` during deserialization.
+- **Capture Agent Metadata**: Capturing the agent Identifier, Name, and Type upon serialization provides a guidance on how to restore the `AgentChat` during deserialization.
 
 
 #### Non-Goals
@@ -31,7 +31,7 @@ Formalizing a mechanism that supports serialization and deserialization of any `
 When restoring an `AgentChat`, the application must also re-create the `Agent` instances participating in the chat (outside of the control of the deserialization process).  This creates the opportunity for the following cases:
 
 #### 1. **Equivalent:** All of the original agent types (channels) available in the restored chat.
-This shall result in a full-fidelity restoration of of the original chat.
+This shall result in a full-fidelity restoration of the original chat.
 
 |Source Chat|Target Chat|
 |---|---|
@@ -40,7 +40,7 @@ This shall result in a full-fidelity restoration of of the original chat.
 |`ChatCompletionAgent` & `OpenAIAssistantAgent`|`ChatCompletionAgent` & `OpenAIAssistantAgent`|
 
 #### 2. **Enhanced:** Additional original agent types (channels) available in the restored chat.
-This shall also result in a full-fidelity restoration of of the original chat.
+This shall also result in a full-fidelity restoration of the original chat.
 Any new agent type (channel) will synchronize to the chat once restored (identical to adding a new agent type to a chat that is progress).
 
 |Source Chat|Target Chat|
@@ -49,7 +49,7 @@ Any new agent type (channel) will synchronize to the chat once restored (identic
 |`OpenAIAssistantAgent`|`ChatCompletionAgent` & `OpenAIAssistantAgent`|
 
 #### 3. **Reduced:** A subset of original agent types (channels) available in the restored chat.
-This shall also result in a full-fidelity restoration of of the original chat to the available channels.  Introduction of a missing agent type (channel) post restoration will
+This shall also result in a full-fidelity restoration of the original chat to the available channels.  Introduction of a missing agent type (channel) post restoration will
 synchronize the channel to the current chat (identical to adding a new agent type to a chat that is progress).
 
 |Source Chat|Target Chat|

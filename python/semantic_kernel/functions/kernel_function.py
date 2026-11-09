@@ -226,7 +226,7 @@ class KernelFunction(KernelBaseModel):
 
     @abstractmethod
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
-        """Internal invoke method of the the function with the given arguments.
+        """Internal invoke method of the function with the given arguments.
 
         This function should be implemented by the subclass.
         It relies on updating the context with the result from the function.
@@ -298,7 +298,7 @@ class KernelFunction(KernelBaseModel):
 
     @abstractmethod
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
-        """Internal invoke method of the the function with the given arguments.
+        """Internal invoke method of the function with the given arguments.
 
         The abstract method is defined without async because otherwise the typing fails.
         A implementation of this function should be async.

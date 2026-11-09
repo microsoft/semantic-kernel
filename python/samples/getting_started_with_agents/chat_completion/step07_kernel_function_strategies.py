@@ -85,7 +85,7 @@ async def main():
     selection_function = KernelFunctionFromPrompt(
         function_name="selection",
         prompt=f"""
-        Determine which participant takes the next turn in a conversation based on the the most recent participant.
+        Determine which participant takes the next turn in a conversation based on the most recent participant.
         State only the name of the participant to take the next turn.
         No participant should take more than one turn in a row.
         
