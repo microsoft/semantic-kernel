@@ -682,6 +682,24 @@ async def test_function_invocation_filters_streaming(kernel: Kernel):
     ]
 
 
+async def test_explicit_none_for_optional_parameters_is_not_coerced(kernel: Kernel):
+    @kernel_function
+    def func_optional(
+        count: int | None = None,
+        label: Annotated[str | None, "A label"] = None,
+        item: CustomTypeDataclass | None = None,
+    ) -> Any:
+        return (count, label, item)
+
+    func = kernel.add_function(plugin_name="test", function=func_optional)
+
+    res = await kernel.invoke(func, arguments=KernelArguments(count=None, label=None, item=None))
+    assert res.value == (None, None, None)
+
+    res = await kernel.invoke(func, arguments=KernelArguments(count="3", label="x"))
+    assert res.value == (3, "x", None)
+
+
 async def test_default_handling(kernel: Kernel):
     @kernel_function
     def func_default(input: str = "test"):

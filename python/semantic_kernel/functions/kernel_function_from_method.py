@@ -177,7 +177,8 @@ class KernelFunctionFromMethod(KernelFunction):
             if param.name in context.arguments:
                 value: Any = context.arguments[param.name]
                 if (
-                    param.type_
+                    value is not None
+                    and param.type_
                     and "," not in param.type_
                     and param.type_object
                     and param.type_object is not inspect._empty
