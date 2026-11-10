@@ -290,3 +290,92 @@ def test_extract_range_parallel_tool_calls_preserves_chronological_order():
     extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
 
     assert extracted == [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+
+def test_extract_range_parallel_tool_calls_filter_call_message_drops_all_results():
+    """Regression test: filtering the call message drops all of its paired parallel results."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    filter_func = lambda m: m is msg_assistant  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert msg_assistant not in extracted
+    assert msg_paris_result not in extracted
+    assert msg_tokyo_result not in extracted
+    assert extracted == [msg_user, msg_done]
+
+
+def test_extract_range_parallel_tool_calls_filter_all_results_drops_call_message():
+    """Regression test: filtering all parallel results drops the call message to preserve pairs."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    filter_func = lambda m: m in (msg_paris_result, msg_tokyo_result)  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert msg_assistant not in extracted
+    assert msg_paris_result not in extracted
+    assert msg_tokyo_result not in extracted
+    assert extracted == [msg_user, msg_done]
+
+
+def test_extract_range_multiple_results_in_single_message():
+    """Regression test: when a single TOOL message holds multiple FunctionResultContent items,
+    extract_range preserves them without duplicate entries.
+    """
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_tool_multi = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[
+            FunctionResultContent(id="call_paris", name="get_weather", result="15C"),
+            FunctionResultContent(id="call_tokyo", name="get_weather", result="22C"),
+        ],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_tool_multi, msg_done]
+
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+
+    assert extracted == [msg_user, msg_assistant, msg_tool_multi, msg_done]
