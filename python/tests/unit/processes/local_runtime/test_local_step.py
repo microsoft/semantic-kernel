@@ -270,6 +270,88 @@ async def test_handle_message_updates_inputs_and_invokes_function(mocked_process
         assert step.inputs["func"]["param"] is None
 
 
+@pytest.mark.parametrize(
+    "ready_inputs",
+    [{}, {"context": object()}],
+    ids=["no_parameters", "step_context_only"],
+)
+async def test_handle_message_partial_input_ignores_other_function_that_needs_no_input(
+    mocked_process_step_state, mocked_process_step_info, ready_inputs
+):
+    """Partial fill of one function waits even when another function is already ready."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke = AsyncMock(return_value=MagicMock(value="result"))
+
+    add_function = AsyncMock(spec=KernelFunction)
+    add_function.name = "add"
+    add_function.plugin_name = "test_plugin"
+    ready_function = AsyncMock(spec=KernelFunction)
+    ready_function.name = "ready"
+    ready_function.plugin_name = "test_plugin"
+
+    step = LocalStep(
+        kernel=mock_kernel,
+        step_info=mocked_process_step_info,
+        event_namespace="ns",
+        step_state=mocked_process_step_state,  # type: ignore
+        factories={},
+        functions={"add": add_function, "ready": ready_function},
+        inputs={"add": {"a": None, "b": None}, "ready": dict(ready_inputs)},
+        initial_inputs={"add": {"a": None, "b": None}, "ready": dict(ready_inputs)},
+        initialize_task=True,
+    )
+
+    with patch.object(LocalStep, "emit_event") as mock_emit_event:
+        await step.handle_message(
+            LocalMessage(source_id="source", destination_id="dest", function_name="add", values={"a": 1})
+        )
+
+        mock_kernel.invoke.assert_not_awaited()
+        mock_emit_event.assert_not_awaited()
+        assert step.inputs["add"] == {"a": 1, "b": None}
+
+        await step.handle_message(
+            LocalMessage(source_id="source", destination_id="dest", function_name="add", values={"b": 2})
+        )
+
+        mock_kernel.invoke.assert_awaited_once_with(add_function, a=1, b=2)
+        assert mock_emit_event.call_args.args[0].id == "add.OnResult"
+        assert step.inputs["add"] == {"a": None, "b": None}
+
+
+async def test_handle_message_invokes_function_that_needs_no_input(mocked_process_step_state, mocked_process_step_info):
+    """A message that targets a no-input function still runs it."""
+    mock_kernel = AsyncMock(spec=Kernel)
+    mock_kernel.invoke = AsyncMock(return_value=MagicMock(value="result"))
+
+    add_function = AsyncMock(spec=KernelFunction)
+    add_function.name = "add"
+    add_function.plugin_name = "test_plugin"
+    ready_function = AsyncMock(spec=KernelFunction)
+    ready_function.name = "ready"
+    ready_function.plugin_name = "test_plugin"
+
+    step = LocalStep(
+        kernel=mock_kernel,
+        step_info=mocked_process_step_info,
+        event_namespace="ns",
+        step_state=mocked_process_step_state,  # type: ignore
+        factories={},
+        functions={"add": add_function, "ready": ready_function},
+        inputs={"add": {"a": None, "b": None}, "ready": {}},
+        initial_inputs={"add": {"a": None, "b": None}, "ready": {}},
+        initialize_task=True,
+    )
+
+    with patch.object(LocalStep, "emit_event") as mock_emit_event:
+        await step.handle_message(
+            LocalMessage(source_id="source", destination_id="dest", function_name="ready", values={})
+        )
+
+        mock_kernel.invoke.assert_awaited_once_with(ready_function)
+        assert mock_emit_event.call_args.args[0].id == "ready.OnResult"
+
+
 async def test_handle_message_raises_target_function_not_found(mocked_process_step_state, mocked_process_step_info):
     """Test handle_message raises an exception if the target function is not the one that is invocable."""
     mock_kernel = AsyncMock(spec=Kernel)
