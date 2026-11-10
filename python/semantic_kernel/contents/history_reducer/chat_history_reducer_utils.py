@@ -230,7 +230,7 @@ def extract_range(
             out_of_range_results = [r for r in results if not (start <= r < end)]
             if in_range_results:
                 if filter_func and filter_func(msg):
-                    for r in in_range_results:
+                    for r in set(in_range_results):
                         if r in sliced:
                             sliced.remove(r)
                     i += 1
@@ -239,7 +239,7 @@ def extract_range(
                 kept_in_range = [r for r in in_range_results if not (filter_func and filter_func(history[r]))]
                 skipped_in_range = [r for r in in_range_results if filter_func and filter_func(history[r])]
 
-                for r in skipped_in_range:
+                for r in set(skipped_in_range):
                     if r in sliced:
                         sliced.remove(r)
 
@@ -248,8 +248,8 @@ def extract_range(
                     continue
 
                 extracted.append(msg)
-                for r in in_range_results:
-                    if r in kept_in_range and r > idx:
+                for r in sorted(set(kept_in_range)):
+                    if r > idx:
                         extracted.append(history[r])
                         if r in sliced:
                             sliced.remove(r)
