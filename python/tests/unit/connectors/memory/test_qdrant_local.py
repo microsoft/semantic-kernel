@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Annotated
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from semantic_kernel.connectors.qdrant import QdrantCollection
 from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
@@ -61,3 +61,39 @@ async def test_local_hybrid_search_single_comparison_filter(named_local_collecti
         filter="lambda x: x.temperature > 1",
     )
     assert sorted([r.record.id async for r in results.results]) == [2, 3]
+
+
+@vectorstoremodel
+@dataclass
+class Product:
+    id: Annotated[int, VectorStoreField("key")]
+    price: Annotated[float, VectorStoreField("data", is_indexed=True)]
+    in_stock: Annotated[bool, VectorStoreField("data", is_indexed=True)]
+    vector: Annotated[list[float] | None, VectorStoreField("vector", dimensions=2)] = None
+
+
+@fixture
+async def product_collection():
+    async with QdrantCollection(record_type=Product, collection_name="products", location=":memory:") as collection:
+        await collection.ensure_collection_exists()
+        await collection.upsert([Product(1, 4.5, True, [1.0, 0.0]), Product(2, 5.0, False, [0.0, 1.0])])
+        yield collection
+
+
+@mark.parametrize(
+    ("filter_str", "expected"),
+    [
+        # MatchValue rejects floats, and an int never matched a float payload
+        ("lambda x: x.price == 4.5", [1]),
+        ("lambda x: x.price != 4.5", [2]),
+        ("lambda x: x.price == 5", [2]),
+        # MatchAny only accepts lists of str or int
+        ("lambda x: x.price in [4.5, 9.0]", [1]),
+        ("lambda x: x.price not in [4.5]", [2]),
+        ("lambda x: x.in_stock in [True]", [1]),
+        ("lambda x: x.in_stock not in [True]", [2]),
+    ],
+)
+async def test_local_filter_with_float_and_bool_values(product_collection, filter_str, expected):
+    results = await product_collection.search(vector=[1.0, 1.0], filter=filter_str)
+    assert sorted([r.record.id async for r in results.results]) == expected

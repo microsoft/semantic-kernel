@@ -79,6 +79,23 @@ TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
     "default": Datatype.FLOAT32,
 }
 IN_MEMORY_STRING: Final[str] = ":memory:"
+# The server compares ranges as float64, so larger ints are matched exactly with MatchValue instead.
+MAX_EXACT_FLOAT_INT: Final[int] = 2**53
+
+
+def _match_value(key: str, value: Any) -> FieldCondition:
+    """Match a single value, numerically for numbers so 5 also matches 5.0 and floats are accepted."""
+    # MatchValue only accepts str, int and bool, and an int never matches a float payload
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and abs(value) <= MAX_EXACT_FLOAT_INT:
+        return FieldCondition(key=key, range=Range(gte=value, lte=value))
+    return FieldCondition(key=key, match=MatchValue(value=value))
+
+
+def _match_any(key: str, values: list[Any]) -> FieldCondition | Filter:
+    """Match any of the values; MatchAny only accepts a list of str or a list of int."""
+    if all(isinstance(value, str) for value in values):
+        return FieldCondition(key=key, match=MatchAny(any=values))
+    return Filter(should=[_match_value(key, value) for value in values])
 
 
 @release_candidate
@@ -388,14 +405,14 @@ class QdrantCollection(
                 match op:
                     case ast.In():
                         # IN: left in right (right is a list)
-                        return FieldCondition(key=left, match=MatchAny(any=right))
+                        return _match_any(left, right)
                     case ast.NotIn():
                         # NOT IN: left not in right
-                        return Filter(must_not=[FieldCondition(key=left, match=MatchAny(any=right))])
+                        return Filter(must_not=[_match_any(left, right)])
                     case ast.Eq():
-                        return FieldCondition(key=left, match=MatchValue(value=right))
+                        return _match_value(left, right)
                     case ast.NotEq():
-                        return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
+                        return Filter(must_not=[_match_value(left, right)])
                     case ast.Gt():
                         return FieldCondition(key=left, range=Range(gt=right))
                     case ast.GtE():
