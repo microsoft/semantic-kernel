@@ -135,7 +135,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if not data or "," not in data:
             raise ContentInitializationError("Invalid data uri format. The data is missing.")
 
-        pattern = "(((?P<mime_type>[a-zA-Z]+/[a-zA-Z-]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*))?(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
+        pattern = "(((?P<mime_type>[a-zA-Z]+/[a-zA-Z0-9!#$&^_.+-]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*))?(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
         match = re.match(pattern, data)
         if not match:
             raise ContentInitializationError("Invalid data uri format.")
