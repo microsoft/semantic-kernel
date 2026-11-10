@@ -205,14 +205,13 @@ def extract_range(
     sliced = list(range(start, end))
 
     # If we need to preserve call->result pairs, gather them
-    pair_map = {}
+    call_to_results: dict[int, list[int]] = {}
+    result_to_call: dict[int, int] = {}
     if preserve_pairs:
         pairs = get_call_result_pairs(history)
-        # store in a dict for quick membership checking
-        # call_idx -> result_idx, and also result_idx -> call_idx
         for cidx, ridx in pairs:
-            pair_map[cidx] = ridx
-            pair_map[ridx] = cidx
+            call_to_results.setdefault(cidx, []).append(ridx)
+            result_to_call[ridx] = cidx
 
     extracted: list[ChatMessageContent] = []
     i = 0
@@ -220,53 +219,69 @@ def extract_range(
         idx = sliced[i]
         msg = history[idx]
 
-        # If filter_func excludes it, skip it
-        if filter_func and filter_func(msg):
-            i += 1
-            continue
-
         # skipping system/developer message
         if msg.role in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
             i += 1
             continue
 
-        # If preserve_pairs is on, and there's a paired index, skip or include them both
-        if preserve_pairs and idx in pair_map:
-            paired_idx = pair_map[idx]
-            # If the pair is within [start, end), we must keep or skip them together
-            if start <= paired_idx < end:
-                # Check if the pair or itself fails filter_func
-                if filter_func and (filter_func(history[paired_idx]) or filter_func(msg)):
-                    # skip both
+        if preserve_pairs and idx in call_to_results:
+            results = call_to_results[idx]
+            in_range_results = [r for r in results if start <= r < end]
+            if in_range_results:
+                if filter_func and filter_func(msg):
+                    for r in in_range_results:
+                        if r in sliced:
+                            sliced.remove(r)
                     i += 1
-                    # Also skip the paired index if it's in our current slice
-                    if paired_idx in sliced:
-                        # remove it from the slice so we don't process it again
-                        sliced.remove(paired_idx)
                     continue
-                # keep both
+
+                if filter_func and all(filter_func(history[r]) for r in in_range_results):
+                    for r in in_range_results:
+                        if r in sliced:
+                            sliced.remove(r)
+                    i += 1
+                    continue
+
                 extracted.append(msg)
-                if paired_idx > idx:
-                    # We'll skip the pair in the normal iteration by removing from slice
-                    # but add it to extracted right now
-                    extracted.append(history[paired_idx])
-                    if paired_idx in sliced:
-                        sliced.remove(paired_idx)
-                else:
-                    # if paired_idx < idx, it might appear later, so skip for now
-                    # but we may have already processed it if i was the 2nd item
-                    # either way, do not add duplicates
-                    pass
+                for r in in_range_results:
+                    if r > idx:
+                        extracted.append(history[r])
+                        if r in sliced:
+                            sliced.remove(r)
                 i += 1
                 continue
-            # If the paired_idx is outside [start, end), there's no conflict
-            # so we can just do normal logic
+
+            if filter_func and filter_func(msg):
+                i += 1
+                continue
             extracted.append(msg)
             i += 1
-        else:
-            # keep it if filter_func not triggered
+            continue
+
+        if preserve_pairs and idx in result_to_call:
+            cidx = result_to_call[idx]
+            if start <= cidx < end:
+                if filter_func and filter_func(msg):
+                    i += 1
+                    continue
+                extracted.append(msg)
+                i += 1
+                continue
+
+            if filter_func and filter_func(msg):
+                i += 1
+                continue
             extracted.append(msg)
             i += 1
+            continue
+
+        # Normal message (not a call or result under preserve_pairs)
+        if filter_func and filter_func(msg):
+            i += 1
+            continue
+
+        extracted.append(msg)
+        i += 1
 
     return extracted
 
