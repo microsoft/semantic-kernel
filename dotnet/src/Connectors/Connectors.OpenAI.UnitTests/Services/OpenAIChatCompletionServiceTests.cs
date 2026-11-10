@@ -1344,6 +1344,45 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("string", itemsProperties.GetProperty("Output").GetProperty("type").GetString());
     }
 
+    [Fact]
+    public async Task GetChatMessageContentsMovesRepeatedTypeReferencesToTopLevelDefinitions()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = typeof(ResponseWithRepeatedArrayItems) };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestJsonElement = JsonElement.Parse(actualRequestContent);
+        var schema = requestJsonElement.GetProperty("response_format").GetProperty("json_schema").GetProperty("schema");
+        var propertyBItems = schema.GetProperty("properties").GetProperty("PropertyB").GetProperty("items");
+
+        Assert.True(propertyBItems.TryGetProperty("$ref", out var propertyBItemsReferenceElement));
+
+        string? propertyBItemsReference = propertyBItemsReferenceElement.GetString();
+        Assert.NotNull(propertyBItemsReference);
+        Assert.True(propertyBItemsReference.StartsWith("#/$defs/", StringComparison.Ordinal), propertyBItemsReference);
+        Assert.DoesNotContain("#/properties/", propertyBItemsReference);
+
+        string definitionName = propertyBItemsReference.Substring("#/$defs/".Length);
+        var definition = schema.GetProperty("$defs").GetProperty(definitionName);
+
+        Assert.Equal("object", definition.GetProperty("type").GetString());
+        Assert.Equal("string", definition.GetProperty("properties").GetProperty("Property1").GetProperty("type").GetString());
+        Assert.Equal("integer", definition.GetProperty("properties").GetProperty("Property2").GetProperty("type").GetString());
+    }
+
     [Theory]
     [InlineData(typeof(TestStruct), "TestStruct")]
     [InlineData(typeof(TestStruct?), "TestStruct")]
@@ -2004,6 +2043,20 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         public string Explanation { get; set; }
 
         public string Output { get; set; }
+    }
+
+    private sealed class ResponseWithRepeatedArrayItems
+    {
+        public RepeatedArrayItem[] PropertyA { get; set; }
+
+        public RepeatedArrayItem[] PropertyB { get; set; }
+    }
+
+    private sealed class RepeatedArrayItem
+    {
+        public string Property1 { get; set; }
+
+        public int Property2 { get; set; }
     }
 
     private struct TestStruct
