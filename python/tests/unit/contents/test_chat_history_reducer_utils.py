@@ -230,3 +230,63 @@ def test_locate_safe_reduction_index_tool_role_without_function_result_content()
             f"Tool result at index 2 was kept but tool call at index 1 was dropped. "
             f"Kept indices: {kept_indices}, reduction index: {idx}"
         )
+
+
+def test_extract_range_parallel_tool_calls_filter_partial_result():
+    """Regression test for #14485: filtering out only one of several parallel tool results
+    must not drop the assistant message that made the tool calls.
+    """
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    # Filter out only the Tokyo result (e.g. moderation or specific error filter)
+    filter_func = lambda m: m is msg_tokyo_result  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert msg_assistant in extracted, "Assistant message with tool calls must not be dropped"
+    assert msg_paris_result in extracted, "Unfiltered Paris tool result must be kept"
+    assert msg_tokyo_result not in extracted, "Filtered Tokyo tool result must be excluded"
+    assert extracted == [msg_user, msg_assistant, msg_paris_result, msg_done]
+
+
+def test_extract_range_parallel_tool_calls_preserves_chronological_order():
+    """Regression test: parallel tool call results must preserve their natural chronological order."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+
+    assert extracted == [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
