@@ -82,3 +82,25 @@ def test_create_options_with_wrong_parameter():
                 "max_length": 128,
             },
         )
+
+
+@pytest.mark.parametrize("repetition_penalty", [0.5, 1.0, 1.1, 1.5, 2.0])
+def test_repetition_penalty_accepts_positive_values(repetition_penalty: float):
+    # onnxruntime-genai: 1.0 means no penalty, values above 1.0 penalize repeated tokens.
+    settings = OnnxGenAIPromptExecutionSettings(repetition_penalty=repetition_penalty)
+    assert settings.prepare_settings_dict()["repetition_penalty"] == repetition_penalty
+
+
+@pytest.mark.parametrize("repetition_penalty", [0.0, -1.0])
+def test_repetition_penalty_rejects_non_positive_values(repetition_penalty: float):
+    # The penalty divides positive logits, so it must be greater than 0.
+    with pytest.raises(ValidationError):
+        OnnxGenAIPromptExecutionSettings(repetition_penalty=repetition_penalty)
+
+
+@pytest.mark.parametrize("length_penalty", [-1.0, -0.5, 0.0, 1.0, 1.5, 2.0])
+def test_length_penalty_accepts_values_outside_zero_one(length_penalty: float):
+    # onnxruntime-genai uses length_penalty as an exponent in beam search: > 0.0 promotes longer
+    # sequences, < 0.0 promotes shorter ones.
+    settings = OnnxGenAIPromptExecutionSettings(length_penalty=length_penalty)
+    assert settings.prepare_settings_dict()["length_penalty"] == length_penalty
