@@ -99,7 +99,7 @@ def test_stop_process():
     # Assert
     assert edge_builder.target is not None
     assert edge_builder.target.function_name == "END"
-    source.link_to.assert_called_once_with("END", edge_builder)
+    source.link_to.assert_called_once_with(event_id, edge_builder)
 
 
 def test_build():
