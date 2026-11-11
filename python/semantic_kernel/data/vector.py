@@ -4,7 +4,25 @@ import json
 import logging
 import operator
 from abc import abstractmethod
-from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UnaryOp, USub, copy_location, expr, parse
+from ast import (
+    AST,
+    Constant,
+    Eq,
+    Gt,
+    GtE,
+    Lambda,
+    Lt,
+    LtE,
+    NodeTransformer,
+    NodeVisitor,
+    NotEq,
+    UnaryOp,
+    USub,
+    cmpop,
+    copy_location,
+    expr,
+    parse,
+)
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -740,6 +758,16 @@ class _FoldUnaryNumericConstants(NodeTransformer):
         ):
             return copy_location(Constant(-node.operand.value), node)
         return node
+
+
+_OP_INVERSION: Final[dict[type[cmpop], type[cmpop]]] = {
+    Lt: Gt,
+    LtE: GtE,
+    Gt: Lt,
+    GtE: LtE,
+    Eq: Eq,
+    NotEq: NotEq,
+}
 
 
 class LambdaVisitor(NodeVisitor, Generic[TFilters]):
