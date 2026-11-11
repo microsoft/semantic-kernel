@@ -335,3 +335,20 @@ async def test_search_embed(collection):
         async for result in query_response.results:
             assert result.record == record
             assert result.score == 0.1
+
+
+async def test_build_filter_in_list(collection):
+    assert collection._build_filter("lambda x: x.content in ['a', 'b']") == {"content": {"$in": ["a", "b"]}}
+
+
+async def test_build_filter_not_in_list(collection):
+    assert collection._build_filter("lambda x: x.content not in ['a', 'b']") == {"content": {"$nin": ["a", "b"]}}
+
+
+async def test_build_filter_not_over_in_becomes_nin(collection):
+    assert collection._build_filter("lambda x: not (x.content in ['a', 'b'])") == {"content": {"$nin": ["a", "b"]}}
+
+
+async def test_build_filter_not_over_other_expression_raises(collection):
+    with raises(NotImplementedError, match="only supported over"):
+        collection._build_filter("lambda x: not (x.content == 'a')")
