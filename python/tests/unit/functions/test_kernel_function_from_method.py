@@ -883,3 +883,27 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+async def test_function_invoke_rejects_invalid_union_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def union_function(value: int | str) -> int | str:
+        nonlocal invoked
+        invoked = True
+        return value
+
+    function = KernelFunction.from_method(union_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(
+            kernel=kernel,
+            arguments=KernelArguments(value={"unexpected": "value"}),
+        )
+
+    assert not invoked
+
