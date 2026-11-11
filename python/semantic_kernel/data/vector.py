@@ -6,6 +6,10 @@ import operator
 from abc import abstractmethod
 from ast import (
     AST,
+    And,
+    Attribute,
+    BoolOp,
+    Compare,
     Constant,
     Eq,
     Gt,
@@ -13,6 +17,7 @@ from ast import (
     Lambda,
     Lt,
     LtE,
+    Name,
     NodeTransformer,
     NodeVisitor,
     NotEq,
@@ -768,6 +773,56 @@ _OP_INVERSION: Final[dict[type[cmpop], type[cmpop]]] = {
     Eq: Eq,
     NotEq: NotEq,
 }
+
+
+class _NormalizeComparisonConstants(NodeTransformer):
+    """Normalize constant-on-left comparisons and chained comparisons in filter lambdas.
+
+    Vector-store ``_lambda_parser`` implementations assume comparison operations have the
+    record property on the left and the constant value on the right (e.g. ``x.price > 5``).
+    When a user writes a comparison with the constant on the left (e.g. ``5 < x.price`` or
+    ``10 == x.id``) or writes a chained range comparison (e.g. ``0 <= x.price < 5``),
+    connectors either produce malformed query filters (e.g. Chroma/MongoDB using the constant
+    as field key), fail schema validation (e.g. Qdrant FieldCondition), or raise
+    NotImplementedError (e.g. Weaviate).
+
+    Normalizing these comparisons into canonical ``property op constant`` comparisons and
+    decomposing chained comparisons into logical ANDs ensures consistent behavior across
+    all vector database connectors.
+    """
+
+    def _normalize_single(self, node: Compare) -> Compare:
+        """Invert a single comparison if the constant is on the left and property on the right."""
+        if (
+            len(node.ops) == 1
+            and type(node.ops[0]) in _OP_INVERSION
+            and isinstance(node.left, Constant)
+            and isinstance(node.comparators[0], (Attribute, Name))
+        ):
+            inv_op_cls = _OP_INVERSION[type(node.ops[0])]
+            inv_op = copy_location(inv_op_cls(), node.ops[0])
+            return copy_location(
+                Compare(left=node.comparators[0], ops=[inv_op], comparators=[node.left]),
+                node,
+            )
+        return node
+
+    def visit_Compare(self, node: Compare) -> AST:
+        """Normalize chained comparisons into BoolOp(And) and flip constant-on-left operands."""
+        self.generic_visit(node)
+        if len(node.ops) > 1:
+            values: list[expr] = []
+            for idx in range(len(node.ops)):
+                left = node.left if idx == 0 else node.comparators[idx - 1]
+                right = node.comparators[idx]
+                op = node.ops[idx]
+                sub = copy_location(
+                    Compare(left=left, ops=[op], comparators=[right]),
+                    node,
+                )
+                values.append(self._normalize_single(sub))
+            return copy_location(BoolOp(op=And(), values=values), node)
+        return self._normalize_single(node)
 
 
 class LambdaVisitor(NodeVisitor, Generic[TFilters]):
