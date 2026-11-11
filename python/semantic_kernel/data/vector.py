@@ -2099,11 +2099,14 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         visitor = LambdaVisitor(self._lambda_parser)
         folder = _FoldUnaryNumericConstants()
+        normalizer = _NormalizeComparisonConstants()
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
             # Fold negative literals so connector parsers see a numeric Constant (#14571).
             tree = folder.visit(tree)
+            # Normalize constant-on-left comparisons and decompose chained comparisons.
+            tree = normalizer.visit(tree)
             visitor.visit(tree)
         created_filters = visitor.output_filters
         if len(created_filters) == 0:
