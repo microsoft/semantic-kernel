@@ -226,61 +226,43 @@ def extract_range(
 
         if preserve_pairs and idx in call_to_results:
             results = call_to_results[idx]
-            in_range_results = [r for r in results if start <= r < end]
-            out_of_range_results = [r for r in results if not (start <= r < end)]
-            if in_range_results:
-                if filter_func and filter_func(msg):
-                    for r in set(in_range_results):
-                        if r in sliced:
-                            sliced.remove(r)
-                    i += 1
-                    continue
-
-                kept_in_range = [r for r in in_range_results if not (filter_func and filter_func(history[r]))]
-                skipped_in_range = [r for r in in_range_results if filter_func and filter_func(history[r])]
-
-                for r in set(skipped_in_range):
-                    if r in sliced:
-                        sliced.remove(r)
-
-                if not kept_in_range and not out_of_range_results:
-                    i += 1
-                    continue
-
-                extracted.append(msg)
-                for r in sorted(set(kept_in_range)):
-                    if r > idx:
-                        extracted.append(history[r])
-                        if r in sliced:
-                            sliced.remove(r)
-                i += 1
-                continue
-
             if filter_func and filter_func(msg):
+                for r in set(results):
+                    if start <= r < end and r > idx and r in sliced:
+                        sliced.remove(r)
                 i += 1
                 continue
-            extracted.append(msg)
+
+            kept_in_range: list[int] = []
+            for r in results:
+                if not (start <= r < end):
+                    continue
+                if filter_func and filter_func(history[r]):
+                    if r > idx and r in sliced:
+                        sliced.remove(r)
+                elif r > idx:
+                    kept_in_range.append(r)
+
+            if not kept_in_range:
+                i += 1
+                continue
+
+            unique_kept = sorted(set(kept_in_range))
+            extracted.append(_filter_call_message_items(msg, [history[r] for r in unique_kept]))
+            for r in unique_kept:
+                extracted.append(history[r])
+                if r in sliced:
+                    sliced.remove(r)
             i += 1
             continue
 
         if preserve_pairs and idx in result_to_call:
             cidx = result_to_call[idx]
-            if start <= cidx < end:
-                if filter_func and filter_func(msg):
-                    i += 1
-                    continue
-                extracted.append(msg)
+            if start <= cidx < end and filter_func and filter_func(history[cidx]):
                 i += 1
                 continue
 
-            if filter_func and filter_func(msg):
-                i += 1
-                continue
-            extracted.append(msg)
-            i += 1
-            continue
-
-        # Normal message (not a call or result under preserve_pairs)
+        # Normal message (not a call, or a result whose paired call is outside [start, end))
         if filter_func and filter_func(msg):
             i += 1
             continue
@@ -302,3 +284,27 @@ def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
     if msg.role == AuthorRole.TOOL:
         return True
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)
+
+
+def _filter_call_message_items(
+    call_msg: ChatMessageContent,
+    kept_results: list[ChatMessageContent],
+) -> ChatMessageContent:
+    """Keep only FunctionCallContent items in call_msg whose ID matches a kept result.
+
+    Non-call items are preserved, and a shallow copy with the updated items list
+    is returned when any FunctionCallContent is stripped so the original history
+    message is never mutated.
+    """
+    kept_result_ids = {
+        item.id
+        for res_msg in kept_results
+        for item in res_msg.items
+        if isinstance(item, FunctionResultContent) and item.id is not None
+    }
+    filtered_items = [
+        item for item in call_msg.items if not isinstance(item, FunctionCallContent) or item.id in kept_result_ids
+    ]
+    if len(filtered_items) == len(call_msg.items):
+        return call_msg
+    return call_msg.model_copy(update={"items": filtered_items})
