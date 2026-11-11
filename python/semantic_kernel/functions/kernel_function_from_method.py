@@ -4,7 +4,7 @@ import inspect
 import logging
 from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import Any
+from typing import Any, get_origin
 
 from pydantic import Field, TypeAdapter, ValidationError
 
@@ -140,7 +140,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 return [self._parse_parameter(item, item_type) for item in value]
             raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
         else:
-            if getattr(param_type, "__origin__", None) is not None:
+            if get_origin(param_type) is not None:
                 try:
                     return TypeAdapter(param_type).validate_python(value)
                 except Exception as exc:

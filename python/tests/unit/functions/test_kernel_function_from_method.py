@@ -907,3 +907,14 @@ async def test_function_invoke_rejects_invalid_union_argument(kernel: Kernel):
 
     assert not invoked
 
+
+@pytest.mark.parametrize("value", [42, "valid"])
+async def test_function_invoke_accepts_valid_union_argument(kernel: Kernel, value: int | str):
+    @kernel_function
+    def union_function(value: int | str) -> int | str:
+        return value
+
+    function = KernelFunction.from_method(union_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value=value))
+
+    assert result.value == value
