@@ -885,6 +885,40 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     assert "metadata" in model_dump
 
 
+async def test_function_invoke_accepts_valid_typed_dict_argument(kernel: Kernel):
+    @kernel_function
+    def typed_dict_function(value: dict[str, int]) -> dict[str, int]:
+        return value
+
+    function = KernelFunction.from_method(typed_dict_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value={"first": 1, "second": 2}))
+
+    assert result.value == {"first": 1, "second": 2}
+
+
+async def test_function_invoke_rejects_invalid_typed_dict_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def typed_dict_function(value: dict[str, int]) -> dict[str, int]:
+        nonlocal invoked
+        invoked = True
+        return value
+
+    function = KernelFunction.from_method(typed_dict_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(
+            kernel=kernel,
+            arguments=KernelArguments(value={"first": "not-an-integer"}),
+        )
+
+    assert not invoked
+
+
 async def test_function_invoke_rejects_invalid_union_argument(kernel: Kernel):
     invoked = False
 
