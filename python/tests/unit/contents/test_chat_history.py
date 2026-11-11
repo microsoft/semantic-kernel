@@ -12,6 +12,7 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.status import Status
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -31,6 +32,30 @@ def mock_chat_completion_response() -> ChatCompletion:
         model="test",
         object="chat.completion",
     )
+
+
+@pytest.mark.parametrize("serializer", [str, ChatHistory.to_prompt], ids=["str", "to_prompt"])
+@pytest.mark.parametrize("status", list(Status))
+def test_xml_roundtrip_preserves_message_status(status: Status, serializer):
+    history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.ASSISTANT, content="Working", status=status)])
+
+    xml = serializer(history)
+    restored = ChatHistory.from_rendered_prompt(xml)
+
+    assert f'status="{status.value}"' in xml
+    assert restored[0].status is status
+
+
+@pytest.mark.parametrize("serializer", [str, ChatHistory.to_prompt], ids=["str", "to_prompt"])
+def test_xml_serialization_omits_cleared_message_status(serializer):
+    message = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Working", status=Status.IN_PROGRESS)
+    message.status = None
+
+    xml = serializer(ChatHistory(messages=[message]))
+    restored = ChatHistory.from_rendered_prompt(xml)
+
+    assert "status=" not in xml
+    assert restored[0].status is None
 
 
 def test_init_with_system_message_only():
