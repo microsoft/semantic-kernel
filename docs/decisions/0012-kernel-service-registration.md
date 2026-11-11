@@ -23,7 +23,7 @@ public TextMemoryPlugin(ISemanticTextMemory memory)
 
 `TextMemoryPlugin` depends on `ISemanticTextMemory` interface. In similar way, other Plugins may have multiple dependencies and there should be a way how to resolve required dependencies manually or automatically.
 
-At the moment, `ISemanticTextMemory` is a property of `IKernel` interface, which allows to inject `ISemanticTextMemory` into `TextMemoryPlugin` during Plugin initialization:
+At the moment, `ISemanticTextMemory` is a property of `IKernel` interface, which allows you to inject `ISemanticTextMemory` into `TextMemoryPlugin` during Plugin initialization:
 
 ```csharp
 kernel.ImportFunctions(new TextMemoryPlugin(kernel.Memory));
