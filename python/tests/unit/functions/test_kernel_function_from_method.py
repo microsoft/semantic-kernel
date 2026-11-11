@@ -700,6 +700,21 @@ async def test_explicit_none_for_optional_parameters_is_not_coerced(kernel: Kern
     assert res.value == (3, "x", None)
 
 
+async def test_explicit_none_for_non_optional_parameters_raises(kernel: Kernel):
+    @kernel_function
+    def func_required(count: int) -> int:
+        return count
+
+    @kernel_function
+    def func_int_default(count: int = 5) -> int:
+        return count
+
+    for method in (func_required, func_int_default):
+        func = KernelFunction.from_method(method, "test")
+        with pytest.raises(FunctionExecutionException, match="Parameter count is expected to be parsed"):
+            await func.invoke(kernel=kernel, arguments=KernelArguments(count=None))
+
+
 async def test_default_handling(kernel: Kernel):
     @kernel_function
     def func_default(input: str = "test"):

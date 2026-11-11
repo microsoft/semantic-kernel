@@ -176,8 +176,9 @@ class KernelFunctionFromMethod(KernelFunction):
                 continue
             if param.name in context.arguments:
                 value: Any = context.arguments[param.name]
+                accepts_none = not param.is_required and param.default_value is None
                 if (
-                    value is not None
+                    not (value is None and accepts_none)
                     and param.type_
                     and "," not in param.type_
                     and param.type_object
