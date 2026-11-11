@@ -4,13 +4,37 @@
 
 import ast
 from ast import Attribute, BoolOp, Compare, Constant, Eq, Gt, GtE, Lt, LtE, Name, NotEq, parse
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from chromadb.api import ClientAPI
+from qdrant_client.async_qdrant_client import AsyncQdrantClient
+from qdrant_client.models import FieldCondition, Range
+from qdrant_client.models import Filter as QdrantFilter
+from weaviate import WeaviateAsyncClient
+from weaviate.classes.query import Filter as WeaviateFilter
 
+from semantic_kernel.connectors.chroma import ChromaCollection
+from semantic_kernel.connectors.qdrant import QdrantCollection
+from semantic_kernel.connectors.weaviate import WeaviateCollection
 from semantic_kernel.data.vector import (
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
     _FoldUnaryNumericConstants,
     _NormalizeComparisonConstants,
 )
+
+
+@pytest.fixture
+def numeric_definition() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="price", type="float"),
+            VectorStoreField("data", name="temperature", type="float"),
+            VectorStoreField("vector", name="vector", dimensions=2, type="float"),
+        ]
+    )
 
 
 @pytest.mark.parametrize(
@@ -104,7 +128,6 @@ def test_normalize_chained_comparisons_decomposes_into_and():
     assert isinstance(body.op, ast.And)
     assert len(body.values) == 2
 
-    # First sub-comparison: 0 <= x.price -> x.price >= 0
     first = body.values[0]
     assert isinstance(first, Compare)
     assert isinstance(first.ops[0], GtE)
@@ -113,7 +136,6 @@ def test_normalize_chained_comparisons_decomposes_into_and():
     assert isinstance(first.comparators[0], Constant)
     assert first.comparators[0].value == 0
 
-    # Second sub-comparison: x.price < 5
     second = body.values[1]
     assert isinstance(second, Compare)
     assert isinstance(second.ops[0], Lt)
@@ -146,3 +168,48 @@ def test_normalize_chained_comparisons_with_folded_negative_literal():
     assert isinstance(second.left, Attribute)
     assert second.left.attr == "temperature"
     assert second.comparators[0].value == 20
+
+
+def test_chroma_build_filter_normalized_comparisons(numeric_definition):
+    collection = ChromaCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+        client=MagicMock(spec=ClientAPI),
+    )
+    assert collection._build_filter("lambda x: 5 > x.price") == {"price": {"$lt": 5}}
+    assert collection._build_filter("lambda x: 0 <= x.price < 5") == {
+        "$and": [{"price": {"$gte": 0}}, {"price": {"$lt": 5}}]
+    }
+
+
+def test_qdrant_build_filter_normalized_comparisons(numeric_definition):
+    collection = QdrantCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+        client=MagicMock(spec=AsyncQdrantClient),
+    )
+    assert collection._build_filter("lambda x: 5 > x.price") == FieldCondition(key="price", range=Range(lt=5.0))
+    assert collection._build_filter("lambda x: 0 <= x.price < 5") == QdrantFilter(
+        must=[
+            FieldCondition(key="price", range=Range(gte=0.0)),
+            FieldCondition(key="price", range=Range(lt=5.0)),
+        ]
+    )
+
+
+def test_weaviate_build_filter_normalized_comparisons(numeric_definition):
+    collection = WeaviateCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+        async_client=AsyncMock(spec=WeaviateAsyncClient),
+    )
+    assert collection._build_filter("lambda x: 5 > x.price") == WeaviateFilter.by_property("price").less_than(5)
+    parsed = collection._build_filter("lambda x: 0 <= x.price < 5")
+    expected = WeaviateFilter.all_of([
+        WeaviateFilter.by_property("price").greater_or_equal(0),
+        WeaviateFilter.by_property("price").less_than(5),
+    ])
+    assert parsed.filters == expected.filters
