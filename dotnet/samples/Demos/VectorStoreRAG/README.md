@@ -10,6 +10,7 @@ The sample can be configured in various ways:
 1. You can choose your preferred vector store by setting the `Rag:VectorStoreType` configuration setting in the `appsettings.json` file to one of the following values:
    1. AzureAISearch
    1. AzureDocumentDB
+   1. Chroma
    1. CosmosNoSql
    1. InMemory
    1. Qdrant
@@ -128,6 +129,22 @@ the following secrets here:
 ```cli
 dotnet user-secrets set "VectorStores:CosmosNoSql:ConnectionString" "<yourconnectionstring>"
 dotnet user-secrets set "VectorStores:CosmosNoSql:DatabaseName" "<yourdbname>"
+```
+
+### Chroma
+
+If you want to use Chroma as your vector store, you will need to have an instance of Chroma available.
+
+You can use the following command to start a Chroma instance in docker, and this will work with the default configured settings:
+
+```cli
+docker run -d --name chroma -p 8000:8000 chromadb/chroma:latest
+```
+
+If you want to use a different instance of Chroma, you can update the appsettings.json file or add the following secret to reconfigure:
+
+```cli
+dotnet user-secrets set "VectorStores:Chroma:ConnectionString" "<yourchromaconnectionstring>"
 ```
 
 ### Qdrant

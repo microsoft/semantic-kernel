@@ -16,6 +16,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Chroma"/></para>
 /// </summary>
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="embeddingGenerator">The service to use for generating embeddings.</param>
