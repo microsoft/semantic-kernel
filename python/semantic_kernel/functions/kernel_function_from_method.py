@@ -6,7 +6,7 @@ from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
 from typing import Any, get_origin
 
-from pydantic import Field, TypeAdapter, ValidationError
+from pydantic import ConfigDict, Field, TypeAdapter, ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -142,7 +142,8 @@ class KernelFunctionFromMethod(KernelFunction):
         else:
             if get_origin(param_type) is not None:
                 try:
-                    return TypeAdapter(param_type).validate_python(value)
+                    adapter = TypeAdapter(param_type, config=ConfigDict(arbitrary_types_allowed=True))
+                    return adapter.validate_python(value)
                 except Exception as exc:
                     raise FunctionExecutionException(
                         f"Parameter is expected to be parsed to {param_type} but is not."
