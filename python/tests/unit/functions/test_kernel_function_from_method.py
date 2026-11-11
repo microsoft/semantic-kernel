@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
+from asyncio import CancelledError
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -24,6 +25,85 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 kernel_function_module = import_module("semantic_kernel.functions.kernel_function")
+
+
+@pytest.mark.parametrize("asynchronous", [False, True])
+@pytest.mark.parametrize("via_kernel", [False, True])
+@pytest.mark.parametrize("termination", ["close", "cancel", "exhaust", "error"])
+async def test_invoke_stream_closes_native_generator(
+    kernel: Kernel, asynchronous: bool, via_kernel: bool, termination: str
+):
+    closed = []
+    failure = ValueError("native stream failed")
+
+    @kernel_function
+    def sync_stream() -> Iterable[str]:
+        try:
+            yield "first"
+            if termination == "error":
+                raise failure
+            yield "second"
+        finally:
+            closed.append(True)
+
+    @kernel_function
+    async def async_stream() -> AsyncGenerator[str, None]:
+        try:
+            yield "first"
+            if termination == "error":
+                raise failure
+            yield "second"
+        finally:
+            closed.append(True)
+
+    # Retain the source so garbage collection cannot stand in for explicit cleanup.
+    method = async_stream if asynchronous else sync_stream
+    source = method()
+    function = KernelFunctionFromMethod(method=method, stream_method=lambda: source)
+    stream = kernel.invoke_stream(function) if via_kernel else function.invoke_stream(kernel)
+    try:
+        assert await anext(stream) == "first"
+        assert not closed
+        if termination == "close":
+            await stream.aclose()
+        elif termination == "cancel":
+            with pytest.raises(CancelledError):
+                await stream.athrow(CancelledError())
+        elif termination == "error":
+            with pytest.raises(ValueError) as exc_info:
+                await anext(stream)
+            assert exc_info.value is failure
+        else:
+            assert [part async for part in stream] == ["second"]
+        assert closed == [True]
+    finally:
+        await stream.aclose()
+        if asynchronous:
+            await source.aclose()
+        else:
+            source.close()
+
+
+@pytest.mark.parametrize("via_kernel", [False, True])
+async def test_invoke_stream_does_not_close_ordinary_result(kernel: Kernel, via_kernel: bool):
+    closed = []
+
+    class ResultList(list):
+        def close(self):
+            closed.append(True)
+
+    @kernel_function
+    def native() -> str:
+        return "non-streaming result"
+
+    result = ResultList(["ordinary result"])
+    function = KernelFunctionFromMethod(method=native, stream_method=lambda: result)
+    stream = kernel.invoke_stream(function) if via_kernel else function.invoke_stream(kernel)
+    parts = [part async for part in stream]
+    assert len(parts) == 1
+    assert parts[0].value is result
+    assert result == ["ordinary result"]
+    assert not closed
 
 
 class CustomType(KernelBaseModel):

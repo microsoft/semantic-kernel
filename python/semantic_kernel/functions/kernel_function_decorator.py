@@ -35,6 +35,8 @@ def kernel_function(
     if you set `{"include_in_function_choices": False}` in the annotation, that parameter will not be included in
     the representation of the function towards LLM's or MCP Servers. If you do set this and the parameter is required
     but you do not set it in a invoke level arguments, the function will raise an error.
+    During auto function calling, a tool call from the model that sets such a parameter is rejected as an
+    unexpected argument, so the value can only come from invoke level arguments or the parameter default.
 
     After the annotations, it checks recursively until it reaches the lowest level, and it combines
     the types into a single comma-separated string, a forwardRef is also supported.
@@ -161,7 +163,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     ret.update(meta)
                 else:
                     logger.debug(f"Unknown metadata type: {meta}")
-        if hasattr(param, "__origin__"):
+        if hasattr(param, "__origin__") and param.__origin__ not in (Union, types.UnionType):
             ret.update(_parse_parameter(name, param.__origin__, default))
         if hasattr(param, "__args__"):
             args = []

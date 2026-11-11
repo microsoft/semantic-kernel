@@ -30,7 +30,7 @@ repos:
     rev: v3.17.0
     hooks:
     - id: pyupgrade
-      args: [--py310-plus]
+      args: [--py311-plus]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.6
     hooks:
