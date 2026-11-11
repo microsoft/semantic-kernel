@@ -79,14 +79,17 @@ TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
     "default": Datatype.FLOAT32,
 }
 IN_MEMORY_STRING: Final[str] = ":memory:"
-# The server compares ranges as float64, so larger ints are matched exactly with MatchValue instead.
+# The server compares ranges as float64, which can't tell 2**53 from 2**53 + 1, so ints from 2**53 up
+# are matched exactly with MatchValue instead.
 MAX_EXACT_FLOAT_INT: Final[int] = 2**53
 
 
 def _match_value(key: str, value: Any) -> FieldCondition:
     """Match a single value, numerically for numbers so 5 also matches 5.0 and floats are accepted."""
     # MatchValue only accepts str, int and bool, and an int never matches a float payload
-    if isinstance(value, (int, float)) and not isinstance(value, bool) and abs(value) <= MAX_EXACT_FLOAT_INT:
+    if isinstance(value, float) or (
+        isinstance(value, int) and not isinstance(value, bool) and abs(value) < MAX_EXACT_FLOAT_INT
+    ):
         return FieldCondition(key=key, range=Range(gte=value, lte=value))
     return FieldCondition(key=key, match=MatchValue(value=value))
 

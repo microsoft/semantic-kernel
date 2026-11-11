@@ -5,7 +5,7 @@ from typing import Annotated
 
 from pytest import fixture, mark
 
-from semantic_kernel.connectors.qdrant import QdrantCollection
+from semantic_kernel.connectors.qdrant import QdrantCollection, _match_value
 from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 
 
@@ -92,8 +92,22 @@ async def product_collection():
         ("lambda x: x.price not in [4.5]", [2]),
         ("lambda x: x.in_stock in [True]", [1]),
         ("lambda x: x.in_stock not in [True]", [2]),
+        # Large floats too, which MatchValue would reject
+        ("lambda x: x.price == 1e20", []),
+        ("lambda x: x.price != 1e20", [1, 2]),
     ],
 )
 async def test_local_filter_with_float_and_bool_values(product_collection, filter_str, expected):
     results = await product_collection.search(vector=[1.0, 1.0], filter=filter_str)
     assert sorted([r.record.id async for r in results.results]) == expected
+
+
+@mark.parametrize(
+    ("value", "uses_range"),
+    [(2**53 - 1, True), (-(2**53) + 1, True), (2**53, False), (2**60, False), (1e20, True)],
+)
+def test_match_value_uses_range_only_where_float64_is_exact(value, uses_range):
+    # The server compares ranges as float64, where 2**53 and 2**53 + 1 are the same value
+    condition = _match_value("n", value)
+    assert (condition.range is not None) is uses_range
+    assert (condition.match is None) is uses_range
