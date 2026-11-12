@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from dataclasses import is_dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Generic
 
@@ -174,7 +175,9 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
                 if isinstance(candidate, dict):
                     try:
                         parsed_state_from_metadata = (
-                            t_state(**candidate) if hasattr(t_state, "__fields__") else t_state()
+                            t_state(**candidate)
+                            if hasattr(t_state, "__fields__") or is_dataclass(t_state)
+                            else t_state()
                         )
                     except Exception as ex:
                         raise KernelException(
@@ -199,7 +202,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
                 )
 
             if actual_state is None:
-                actual_state = t_state() if hasattr(t_state, "__fields__") else t_state
+                actual_state = t_state()
 
             state_object = KernelProcessStepState[t_state](  # type: ignore
                 name=self.name, id=self.id, version=version, state=actual_state
