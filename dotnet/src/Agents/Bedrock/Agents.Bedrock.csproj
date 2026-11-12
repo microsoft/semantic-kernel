@@ -39,6 +39,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.BedrockAgent" />
     <PackageReference Include="AWSSDK.BedrockAgentRuntime" />
+    <PackageReference Include="AWSSDK.Core" />
     <PackageReference Include="System.Memory.Data" />
   </ItemGroup>
 
