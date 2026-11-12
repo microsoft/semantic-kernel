@@ -4,7 +4,7 @@ This project contains a collection of examples used in documentation on [learn.m
 
 ## Prerequisites
 
-- [Python](https://www.python.org/downloads/) 3.10 and above
+- [Python](https://www.python.org/downloads/) 3.11 and above
 - Install Semantic Kernel through PyPi:
   ```bash
   pip install semantic-kernel

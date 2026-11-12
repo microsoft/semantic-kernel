@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import os
 import tempfile
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union
+from typing import Annotated, Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -296,6 +297,61 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
             request_index=0,
             function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
+
+
+async def test_invoke_function_call_does_not_log_argument_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    class TestPlugin:
+        @kernel_function
+        def echo(self, value: str) -> str:
+            return value
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+
+    caplog.set_level(logging.INFO, logger="semantic_kernel.kernel")
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function")
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": secret}),
+        chat_history=ChatHistory(),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name in {"semantic_kernel.kernel", "semantic_kernel.functions.kernel_function"}
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Calling test-echo function." in messages
+
+
+async def test_invoke_function_call_does_not_log_exception_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+
+    class TestPlugin:
+        @kernel_function
+        def fail(self, value: str) -> str:
+            raise ValueError(value)
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+
+    caplog.set_level(logging.ERROR, logger="semantic_kernel.kernel")
+    caplog.set_level(logging.ERROR, logger="semantic_kernel.functions.kernel_function")
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-fail", arguments={"value": secret}),
+        chat_history=ChatHistory(),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name in {"semantic_kernel.kernel", "semantic_kernel.functions.kernel_function"}
+    ]
+    assert secret not in "\n".join(messages)
+    assert "Function failed. Error type: ValueError." in messages
+    assert "Error invoking function test-fail. Error type: ValueError." in messages
 
 
 class LightsPlugin:
@@ -624,6 +680,62 @@ async def test_invoke_function_call_with_missing_or_unexpected_args(kernel: Kern
         and call[1]["message"].items[0].id == "test_id"
         for call in add_message_calls
     ), "Expected fallback message not found in chat history."
+
+
+@pytest.mark.parametrize(
+    "model_arguments",
+    [{"value": "visible", "scope": "model-value"}, '{"value": "visible", "scope": "model-value"}'],
+    ids=["dict", "json"],
+)
+async def test_invoke_function_call_rejects_model_supplied_hidden_parameter(kernel: Kernel, model_arguments):
+    calls: list[str] = []
+
+    class TestPlugin:
+        @kernel_function
+        def echo(
+            self,
+            value: str,
+            scope: Annotated[str, "Host supplied", {"include_in_function_choices": False}] = "default",
+        ) -> str:
+            calls.append(scope)
+            return f"{value}:{scope}"
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+    chat_history = ChatHistory()
+
+    result = await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments=model_arguments),
+        chat_history=chat_history,
+        arguments=KernelArguments(scope="host-value"),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert result is None
+    assert calls == []
+    assert "Received unexpected argument(s): ['scope']" in chat_history.messages[-1].items[0].result
+
+
+async def test_invoke_function_call_keeps_host_supplied_hidden_parameter(kernel: Kernel):
+    class TestPlugin:
+        @kernel_function
+        def echo(
+            self,
+            value: str,
+            scope: Annotated[str, "Host supplied", {"include_in_function_choices": False}] = "default",
+        ) -> str:
+            return f"{value}:{scope}"
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+    chat_history = ChatHistory()
+
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": "visible"}),
+        chat_history=chat_history,
+        arguments=KernelArguments(scope="host-value"),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert chat_history.messages[-1].items[0].result == "visible:host-value"
 
 
 async def test_invoke_function_call_with_filters_blocks_unallowed_function(kernel: Kernel):
@@ -1092,7 +1204,6 @@ def test_get_service_with_multiple_types(kernel_with_service: Kernel):
 
 
 def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
-    """This is valid syntax only in python 3.10+. It is skipped for older versions."""
     service_get = kernel_with_service.get_service("service", type=Union[AIServiceClientBase, ChatCompletionClientBase])
     assert service_get == kernel_with_service.services["service"]
 

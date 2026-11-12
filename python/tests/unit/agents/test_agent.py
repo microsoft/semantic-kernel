@@ -6,6 +6,7 @@ from typing import ClassVar
 from unittest.mock import AsyncMock
 
 import pytest
+from mcp.shared.memory import create_connected_server_and_client_session
 
 from semantic_kernel.agents.agent import AGENT_TYPE_REGISTRY, AgentRegistry, DeclarativeSpecMixin, register_agent_type
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
@@ -83,6 +84,15 @@ async def test_agent_default_id():
 
     assert agent.id is not None
     assert isinstance(uuid.UUID(agent.id), uuid.UUID)
+
+
+@pytest.mark.parametrize("use_plugin_names", [False, True])
+async def test_agent_as_mcp_server_tool_name(use_plugin_names):
+    agent = MockAgent()
+    server = agent.as_mcp_server(use_plugin_names=use_plugin_names)
+    async with create_connected_server_and_client_session(server) as client:
+        expected_name = f"mcp-{agent.name}" if use_plugin_names else agent.name
+        assert [tool.name for tool in (await client.list_tools()).tools] == [expected_name]
 
 
 def test_get_channel_keys():

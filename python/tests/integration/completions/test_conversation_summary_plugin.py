@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -47,6 +48,7 @@ Jane: That's a good idea. Let me see if I can find one. Maybe Lorem Ipsum?
 John: Yeah, that's a good idea."""
 
 
+@pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401).")
 async def test_azure_summarize_conversation_using_plugin(kernel):
     service_id = "text_completion"
 

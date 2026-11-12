@@ -11,7 +11,7 @@ from collections.abc import AsyncIterable, Sequence
 from contextlib import contextmanager
 from io import StringIO
 from itertools import chain
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, Self, TypeVar
 
 from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import SecretStr, ValidationError, field_validator
@@ -35,6 +35,7 @@ from semantic_kernel.data.vector import (
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
+    VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -45,11 +46,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
     from pyodbc import Connection
@@ -570,7 +566,7 @@ class SqlServerCollection(
             cur.execute(*query.to_execute())
             col_names = [desc[0] for desc in cur.description]
             for row in cur:
-                record = {
+                yield {
                     col: (
                         json.loads(row.__getattribute__(col))
                         if col in self.definition.vector_field_names
@@ -578,7 +574,6 @@ class SqlServerCollection(
                     )
                     for col in col_names
                 }
-                yield record
                 await asyncio.sleep(0)
 
     @override
@@ -598,33 +593,43 @@ class SqlServerCollection(
                             op = node.ops[idx]
                             values.append(parse(ast.Compare(left=left, ops=[op], comparators=[right])))
                         return f"({' AND '.join(values)})"
-                    left = parse(node.left)  # type: ignore
+                    left_node = node.left
                     right_node = node.comparators[0]
                     op = node.ops[0]
+                    if isinstance(op, (ast.Eq, ast.NotEq, ast.Is, ast.IsNot)):
+                        if isinstance(left_node, ast.Constant) and left_node.value is None:
+                            left_node, right_node = right_node, left_node
+                        if isinstance(right_node, ast.Constant) and right_node.value is None:
+                            if isinstance(left_node, ast.Constant) and (
+                                left_node.value is None or isinstance(left_node.value, (str, int, float, bool, bytes))
+                            ):
+                                matches = (left_node.value is None) == isinstance(op, (ast.Eq, ast.Is))
+                                return "(1 = 1)" if matches else "(1 = 0)"
+                            return (
+                                f"{parse(left_node)} IS NULL"
+                                if isinstance(op, (ast.Eq, ast.Is))
+                                else f"{parse(left_node)} IS NOT NULL"
+                            )
+                        if isinstance(op, (ast.Is, ast.IsNot)):
+                            raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                    left = parse(left_node)  # type: ignore
+                    right = parse(right_node)  # type: ignore
                     match op:
                         case ast.In():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} IN {right}"
                         case ast.NotIn():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} NOT IN {right}"
                         case ast.Eq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} = {right}"
                         case ast.NotEq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <> {right}"
                         case ast.Gt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} > {right}"
                         case ast.GtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} >= {right}"
                         case ast.Lt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} < {right}"
                         case ast.LtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <= {right}"
                     raise NotImplementedError(f"Unsupported operator: {type(op)}")
                 case ast.BoolOp():
@@ -658,7 +663,10 @@ class SqlServerCollection(
                     return QueryBuilder.escape_identifier(node.id)
                 case ast.Constant():
                     value = node.value
-                    if isinstance(value, (str, int, float, bool, bytes)) or value is None:
+                    if isinstance(value, bool):
+                        command.add_parameter("1" if value else "0")
+                        return "?"
+                    if isinstance(value, (str, int, float, bytes)) or value is None:
                         command.add_parameter(str(value))
                         return "?"
                     raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
@@ -799,15 +807,20 @@ class SqlServerStore(VectorStore):
 # region: Query Build Functions
 
 
-def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str | None:
+def _python_type_to_sql(python_type_str: str | None, is_key: bool = False, field_name: str | None = None) -> str:
     """Convert a string representation of a Python type to a SQL data type.
 
     Args:
         python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
         is_key: Whether the type is a key field.
+        field_name: Name of the field the type belongs to, used in error messages.
 
     Returns:
-        Corresponding SQL data type as a string, if found. If the type is not found, return None.
+        Corresponding SQL data type as a string.
+
+    Raises:
+        VectorStoreOperationException: If the type is None.
+        VectorStoreModelValidationError: If the type is not supported for automatic table creation.
     """
     if python_type_str is None:
         raise VectorStoreOperationException("property type cannot be None")
@@ -830,14 +843,18 @@ def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> st
     if match:
         # Extract the inner type of the list and convert it to a SQL array type
         element_type_str = match.group(1)
-        sql_element_type = _python_type_to_sql(element_type_str)
+        sql_element_type = _python_type_to_sql(element_type_str, field_name=field_name)
         return f"{sql_element_type}[]"
 
     # Handle basic types
     if python_type_str in type_mapping:
         return type_mapping[python_type_str]
 
-    return None
+    field_context = f" for field '{field_name}'" if field_name else ""
+    raise VectorStoreModelValidationError(
+        f"SQL Server field type {python_type_str!r}{field_context} is not supported for automatic table creation. "
+        "Use a supported Python type, or create the table before using the collection."
+    )
 
 
 def _cast_value(value: Any) -> str:
@@ -886,13 +903,13 @@ def _build_create_table_query(
             # add the key field
             command.query.append(
                 f"{QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} "
-                f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
+                f"{_python_type_to_sql(key_field.type_, is_key=True, field_name=key_field.name)} NOT NULL,\n"
             )
             # add the data fields
             for field in data_fields:
                 command.query.append(
                     f"{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
-                    f" {_python_type_to_sql(field.type_)} NULL,\n"
+                    f" {_python_type_to_sql(field.type_, field_name=field.name)} NULL,\n"
                 )
             # add the vector fields
             for field in vector_fields:
@@ -993,7 +1010,8 @@ def _build_merge_query(
     command = SqlCommand()
     # Declare a temp table to store the keys that are updated
     command.query.append(
-        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.type_ or 'str', is_key=True)});\n"
+        f"DECLARE @UpsertedKeys TABLE (KeyColumn "
+        f"{_python_type_to_sql(key_field.type_ or 'str', is_key=True, field_name=key_field.name)});\n"
     )
     # start the MERGE statement
     command.query.append_table_name(schema, table, prefix="MERGE INTO", suffix="AS t", newline=True)

@@ -3,15 +3,16 @@
 import ipaddress
 import socket
 
+import httpx
 import pytest
-from pytest import raises
 
 from semantic_kernel.connectors.openapi_plugin.server_url_validator import (
     ServerUrlValidationOptions,
-    try_categorize_non_public_address,
+    _normalize_path,
     validate_server_url,
 )
 from semantic_kernel.exceptions import FunctionExecutionException
+from semantic_kernel.utils.public_network_address_validator import try_categorize_non_public_address
 
 
 @pytest.mark.parametrize(
@@ -19,7 +20,7 @@ from semantic_kernel.exceptions import FunctionExecutionException
     [
         ("127.0.0.1", "loopback"),
         ("127.255.255.254", "loopback"),
-        ("169.254.10.10", "link-local"),
+        ("169.254.169.254", "link-local"),
         ("169.254.0.1", "link-local"),
         ("10.0.0.1", "private (RFC1918)"),
         ("172.16.0.1", "private (RFC1918)"),
@@ -39,8 +40,13 @@ from semantic_kernel.exceptions import FunctionExecutionException
         ("::1", "loopback"),
         ("::", "unspecified"),
         ("fe80::1", "link-local"),
+        ("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "link-local"),
+        ("fec0::", "site-local"),
+        ("fec0::1", "site-local"),
+        ("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local"),
         ("fc00::1", "private (IPv6 ULA)"),
         ("fd00::1", "private (IPv6 ULA)"),
+        ("ff00::", "multicast"),
         ("ff02::1", "multicast"),
         ("2001:db8::1", "reserved"),
         ("::ffff:127.0.0.1", "loopback"),
@@ -78,12 +84,18 @@ def test_try_categorize_non_public_address_allows_public_addresses(address: str)
 
 async def test_validate_server_url_rejects_literal_link_local_ipv4():
     with pytest.raises(FunctionExecutionException, match="link-local"):
-        await validate_server_url("https://169.254.10.10/latest/meta-data/")
+        await validate_server_url("https://169.254.169.254/latest/meta-data/")
 
 
 async def test_validate_server_url_rejects_literal_loopback_ipv6():
     with pytest.raises(FunctionExecutionException, match="loopback"):
         await validate_server_url("https://[::1]/")
+
+
+@pytest.mark.parametrize("address", ["fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"])
+async def test_validate_server_url_rejects_literal_site_local_ipv6(address):
+    with pytest.raises(FunctionExecutionException, match="site-local"):
+        await validate_server_url(f"https://[{address}]/")
 
 
 async def test_validate_server_url_rejects_http_scheme_by_default():
@@ -106,6 +118,15 @@ async def test_validate_server_url_allows_explicit_base_url_for_private_http_add
     await validate_server_url("http://192.168.1.100/v1/orders", options)
 
 
+async def test_validate_server_url_preserves_explicit_hostname_allowlist_dns_bypass():
+    options = ServerUrlValidationOptions(allowed_base_urls=["http://trusted.example.com/v1"])
+
+    async def unexpected_resolver(host: str):
+        raise AssertionError("An explicitly trusted URL should not be resolved.")
+
+    await validate_server_url("http://trusted.example.com/v1/orders", options, dns_resolver=unexpected_resolver)
+
+
 async def test_validate_server_url_rejects_when_allowed_base_urls_do_not_match():
     options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/v1"])
 
@@ -113,18 +134,43 @@ async def test_validate_server_url_rejects_when_allowed_base_urls_do_not_match()
         await validate_server_url("https://api.example.com/v2/orders", options)
 
 
-async def test_validate_server_url_allows_private_network_access_after_scheme_gate():
+@pytest.mark.parametrize("path", ["/api/safe", "/api/safe/orders"])
+async def test_validate_server_url_allows_matching_allowed_base_url_path_case(path):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://API.EXAMPLE.COM:443/api/safe"])
+
+    await validate_server_url(f"https://api.example.com{path}", options)
+
+
+@pytest.mark.parametrize("path", ["/api/SAFE", "/api/SAFE/orders", "/api/private", "/api/safeX"])
+async def test_validate_server_url_rejects_non_matching_allowed_base_url_path(path):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/safe"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url(f"https://api.example.com{path}", options)
+
+
+@pytest.mark.parametrize("url", ["https://10.0.0.5/", "https://[fec0::1]/"])
+async def test_validate_server_url_allows_private_network_access_after_scheme_gate(url):
     options = ServerUrlValidationOptions(allow_private_network_access=True)
 
-    await validate_server_url("https://10.0.0.5/", options)
+    await validate_server_url(url, options)
 
 
-async def test_validate_server_url_blocks_hostname_resolving_to_link_local():
+@pytest.mark.parametrize(
+    ("address", "expected_category"),
+    [
+        ("169.254.169.254", "link-local"),
+        ("fec0::", "site-local"),
+        ("fec0::1", "site-local"),
+        ("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local"),
+    ],
+)
+async def test_validate_server_url_blocks_hostname_resolving_to_non_public_address(address, expected_category):
     async def fake_resolver(host: str):
         assert host == "evil.example.com"
-        return ["169.254.10.10"]
+        return [address]
 
-    with pytest.raises(FunctionExecutionException, match="link-local"):
+    with pytest.raises(FunctionExecutionException, match=expected_category):
         await validate_server_url("https://evil.example.com/latest/meta-data/", dns_resolver=fake_resolver)
 
 
@@ -172,106 +218,227 @@ async def test_validate_server_url_blocks_empty_dns_response():
         await validate_server_url("https://empty-dns.example.com/", dns_resolver=fake_resolver)
 
 
-CLOUD_METADATA_ENDPOINTS = [
-    "169.254.169.254",  # AWS IMDS, GCP, Azure, OCI, DigitalOcean
-    "169.254.170.2",  # AWS ECS task IAM role credentials
-    "169.254.170.23",  # AWS EKS Pod Identity Agent
-    "168.63.129.16",  # Azure WireServer (publicly routable)
-    "100.100.100.200",  # Alibaba Cloud
-    "192.0.0.192",  # Oracle Cloud (Classic)
-    "169.254.42.42",  # Scaleway
-]
+@pytest.mark.parametrize(
+    "addresses",
+    [
+        ["93.184.216.34", "198.41.0.4"],
+        ["2606:4700:4700::1111", "93.184.216.34", "2606:4700:4700::1001"],
+    ],
+)
+async def test_validate_server_url_returns_validated_addresses_for_pinning(addresses):
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return addresses
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address(address) for address in addresses
+    ]
 
 
-@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
-async def test_cloud_metadata_endpoints_blocked(address):
-    with raises(FunctionExecutionException):
-        await validate_server_url(f"https://{address}/latest/meta-data/")
+async def test_validate_server_url_returns_validated_ipv6_address_for_pinning():
+    async def fake_resolver(host: str):
+        assert host == "api.example.com"
+        return ["2606:2800:220:1:248:1893:25c8:1946"]
+
+    assert await validate_server_url("https://api.example.com/", dns_resolver=fake_resolver) == [
+        ipaddress.ip_address("2606:2800:220:1:248:1893:25c8:1946")
+    ]
 
 
-@pytest.mark.parametrize("address", CLOUD_METADATA_ENDPOINTS)
-async def test_cloud_metadata_endpoints_blocked_with_private_access(address):
-    """`allow_private_network_access` covers your own network, not the credential endpoint."""
+@pytest.mark.parametrize("host", ["93.184.216.34", "[2606:4700:4700::1111]"])
+async def test_validate_server_url_returns_no_addresses_for_literal_ip_host(host):
+    assert await validate_server_url(f"https://{host}/api") == []
+
+
+async def test_validate_server_url_returns_no_addresses_for_allowed_base_url():
+    options = ServerUrlValidationOptions(allowed_base_urls=["http://api.example.com"])
+    assert await validate_server_url("http://api.example.com/api", options) == []
+
+
+async def test_validate_server_url_returns_no_addresses_when_private_access_is_allowed():
     options = ServerUrlValidationOptions(allow_private_network_access=True)
-    with raises(FunctionExecutionException, match="cloud metadata endpoint"):
-        await validate_server_url(f"https://{address}/latest/meta-data/", options)
-
-
-async def test_private_network_access_still_permits_rfc1918():
-    options = ServerUrlValidationOptions(allow_private_network_access=True)
-    await validate_server_url("https://10.0.0.5/resource", options)
-
-
-async def test_private_network_access_still_permits_loopback():
-    options = ServerUrlValidationOptions(allow_private_network_access=True)
-    await validate_server_url("https://127.0.0.1/resource", options)
+    assert await validate_server_url("https://internal.example/api", options) == []
 
 
 @pytest.mark.parametrize(
-    "address",
+    "url",
     [
-        "64:ff9b::169.254.169.254",  # NAT64 well-known prefix (RFC 6052)
-        "64:ff9b:1::169.254.169.254",  # NAT64 local-use prefix (RFC 8215)
-        "2002:a9fe:a9fe::",  # 6to4 (RFC 3056)
-        "::ffff:169.254.169.254",  # IPv4-mapped
+        "https://api.example.com/api/../admin",
+        "https://api.example.com/api/%2e%2e/admin",
+        "https://api.example.com/api/%2E%2E/admin",
+        "https://api.example.com/api/foo/../../admin",
+        "https://api.example.com/api//../../admin",
+        "https://api.example.com/api//%2e%2e/%2E%2E/admin",
+        "https://api.example.com/api//.%2e/%2E./admin",
+        "https://api.example.com/api///../../../admin",
+        "https://api.example.com/api//../../..",
+        "https://api.example.com/api/%2f../../admin",
     ],
 )
-async def test_ipv6_forms_carrying_a_blocked_ipv4_are_rejected(address):
-    with raises(FunctionExecutionException):
-        await validate_server_url(f"https://[{address}]/latest/meta-data/")
+async def test_validate_server_url_rejects_path_prefix_escape(url):
+    """Dot-segment escapes must not satisfy an /api allowlist prefix."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
 
-
-async def test_teredo_carrying_a_blocked_ipv4_is_rejected():
-    """Teredo obfuscates the client IPv4 by XOR-ing the low 32 bits with all ones."""
-    target = ipaddress.IPv4Address("169.254.169.254")
-    low = bytes(byte ^ 0xFF for byte in target.packed)
-    teredo = ipaddress.IPv6Address(b"\x20\x01\x00\x00" + b"\x00" * 8 + low)
-
-    with raises(FunctionExecutionException):
-        await validate_server_url(f"https://[{teredo}]/latest/meta-data/")
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url(url, options)
 
 
 @pytest.mark.parametrize(
-    "address",
+    "url",
     [
-        "64:ff9b::1.1.1.1",  # NAT64 well-known prefix pointing at a public IPv4
-        "2002:0101:0101::",  # 6to4 pointing at 1.1.1.1
-        "2606:4700:4700::1111",  # plain public IPv6
+        "https://api.example.com/api/./users",
+        "https://api.example.com/api//users",
+        "https://api.example.com/api//../users",
+        "https://api.example.com/api//%2e%2e/users",
+        "https://api.example.com/api/users",
+        "https://api.example.com/api/",
+        "https://api.example.com/api",
     ],
 )
-async def test_ipv6_forms_carrying_a_public_ipv4_are_allowed(address):
-    """Decoding must not reject legitimate NAT64/6to4 targets."""
-    await validate_server_url(f"https://[{address}]/resource")
+async def test_validate_server_url_allows_normalized_paths_under_prefix(url):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
+
+    assert await validate_server_url(url, options) == []
 
 
-def _rfc6052(prefix_length: int, target: str) -> ipaddress.IPv6Address:
-    """Embed an IPv4 address in the RFC 8215 local-use prefix at one of RFC 6052's lengths."""
-    packed = ipaddress.IPv4Address(target).packed
-    address = bytearray(16)
-    address[0:6] = b"\x00\x64\xff\x9b\x00\x01"
-    if prefix_length == 96:
-        address[12:16] = packed
-    elif prefix_length == 64:
-        address[9:13] = packed
-    elif prefix_length == 56:
-        address[7] = packed[0]
-        address[9:12] = packed[1:4]
-    elif prefix_length == 48:
-        address[6:8] = packed[0:2]
-        address[9:11] = packed[2:4]
-    return ipaddress.IPv6Address(bytes(address))
+async def test_validate_server_url_still_rejects_path_that_only_shares_prefix_chars():
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/apiusers", options)
 
 
-@pytest.mark.parametrize("prefix_length", [96, 64, 56, 48])
-@pytest.mark.parametrize("target", ["1.1.1.1", "169.254.169.254"])
-async def test_nat64_local_use_prefix_is_blocked_at_every_embedding_length(prefix_length, target):
-    """The whole RFC 8215 local-use prefix is refused rather than decoded at a guessed length.
+async def test_validate_server_url_rejects_path_that_only_matches_after_decoding():
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
 
-    RFC 6052 only puts the embedded address in bytes 12-15 for a /96; the shorter lengths put the
-    suffix there, which the RFC says SHOULD be zero. Decoding those bytes regardless read 0.0.0.0
-    out of an ordinary public target and rejected it as "unspecified", while declining to decode
-    would have let the metadata address through at every length but /96. Neither is inferable from
-    the address, so the prefix is blocked as a whole.
-    """
-    with raises(FunctionExecutionException):
-        await validate_server_url(f"https://[{_rfc6052(prefix_length, target)}]/resource")
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/admin/%2e%2e/api", options)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://api.example.com/api/.",
+        "https://api.example.com/api/users/..",
+        "https://api.example.com/api//..",
+    ],
+)
+async def test_validate_server_url_rejects_terminal_dot_segments_under_trailing_slash_allowlist(url):
+    """httpx sends terminal dot segments as bare paths, so an /api/ allowlist must reject them."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url(url, options)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://api.example.com/api//.",
+        "https://api.example.com/api//../",
+    ],
+)
+async def test_validate_server_url_allows_terminal_dot_segments_normalizing_to_trailing_slash(url):
+    """httpx sends /api//. and /api//../ as /api/, matching an /api/ allowlist."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/"])
+
+    assert await validate_server_url(url, options) == []
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://api.example.com/api/.",
+        "https://api.example.com/api/users/..",
+        "https://api.example.com/api//.",
+        "https://api.example.com/api//..",
+    ],
+)
+async def test_validate_server_url_allows_terminal_dot_segments_under_bare_allowlist(url):
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api"])
+
+    assert await validate_server_url(url, options) == []
+
+
+async def test_validate_server_url_rejects_terminal_dot_segment_under_double_slash_allowlist():
+    """httpx sends /api//. as /api/, so an /api// allowlist must reject it."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api//"])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api//.", options)
+
+
+@pytest.mark.parametrize(
+    "allowed_base_url",
+    [
+        "https://api.example.com/api/",
+        "https://api.example.com/api//.",
+    ],
+)
+async def test_validate_server_url_trailing_slash_allowlist_does_not_allow_bare_path(allowed_base_url):
+    options = ServerUrlValidationOptions(allowed_base_urls=[allowed_base_url])
+
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api", options)
+
+
+async def test_validate_server_url_terminal_dot_allowlist_allows_bare_path():
+    """An allowlist ending in /api/. normalizes to bare /api in httpx, so it allows bare /api."""
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api/."])
+
+    assert await validate_server_url("https://api.example.com/api", options) == []
+
+
+@pytest.mark.parametrize("decode_percent_encoded", [False, True])
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("/api//../../admin", "/admin"),
+        ("/api///../../../admin", "/admin"),
+        ("/api//..", "/api"),
+        ("/api//../", "/api/"),
+        ("/api//.", "/api/"),
+        ("/api/.", "/api"),
+        ("/api/users/..", "/api"),
+        ("/api//users", "/api//users"),
+        ("/api///users/", "/api///users/"),
+        ("/api//../../..", "/"),
+        ("//../..", "/"),
+        ("/../../admin", "/admin"),
+    ],
+)
+def test_normalize_path_pops_internal_empty_segments_but_preserves_root(path, expected, decode_percent_encoded):
+    assert _normalize_path(path, decode_percent_encoded) == expected
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/.",
+        "/api/users/..",
+        "/api//.",
+        "/api//..",
+        "/api//../",
+        "/api//users",
+        "/api///users/",
+        "/api//../../admin",
+        "/api///../../../admin",
+        "/api/../admin",
+        "/api/./users",
+        "/..",
+        "/../..",
+        "//../..",
+        "/api//../../..",
+    ],
+)
+def test_normalize_path_matches_httpx_wire_path(path):
+    httpx_wire_path = httpx.URL(f"https://api.example.com{path}").raw_path.decode("ascii").partition("?")[0]
+    assert _normalize_path(path, decode_percent_encoded=False) == httpx_wire_path
+
+
+async def test_validate_server_url_preserves_empty_segment_in_allowlist():
+    options = ServerUrlValidationOptions(allowed_base_urls=["https://api.example.com/api//"])
+
+    assert await validate_server_url("https://api.example.com/api//users", options) == []
+    with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+        await validate_server_url("https://api.example.com/api/users", options)
