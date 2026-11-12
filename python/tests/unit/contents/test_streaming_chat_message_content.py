@@ -290,6 +290,22 @@ def test_scmc_add_three():
     assert len(combined.inner_content) == 3
 
 
+def test_scmc_add_merges_item_into_one_matching_item_only():
+    message1 = StreamingChatMessageContent(
+        choice_index=0,
+        role=AuthorRole.ASSISTANT,
+        items=[
+            StreamingTextContent(choice_index=0, text="Part one. "),
+            StreamingTextContent(choice_index=0, text="Part two. "),
+        ],
+    )
+    message2 = StreamingChatMessageContent(
+        choice_index=0, role=AuthorRole.ASSISTANT, items=[StreamingTextContent(choice_index=0, text="tail")]
+    )
+    combined = message1 + message2
+    assert [item.text for item in combined.items] == ["Part one. tail", "Part two. "]
+
+
 @pytest.mark.parametrize(
     "message1, message2",
     [
