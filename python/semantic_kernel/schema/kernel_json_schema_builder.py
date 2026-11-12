@@ -2,6 +2,8 @@
 
 import ast
 import builtins
+import functools
+import operator
 import sys
 import types
 from enum import Enum
@@ -297,6 +299,10 @@ class KernelJsonSchemaBuilder:
         origin = get_origin(annotation)
         if origin is None:
             return annotation
+        if origin is types.UnionType:
+            # A PEP 604 union such as `list["Inner"] | None` has no `copy_with`, and
+            # `types.UnionType[...]` is not subscriptable, so rebuild it with `|`.
+            return functools.reduce(operator.or_, resolved_args)
         try:
             return origin[tuple(resolved_args)]
         except TypeError:

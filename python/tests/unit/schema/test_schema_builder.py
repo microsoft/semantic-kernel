@@ -856,6 +856,39 @@ def test_forward_reference_to_type_or_typing_construct_is_resolved(reference: st
     assert get_args(resolved) == (expected,)
 
 
+@pytest.mark.parametrize(
+    ("annotation", "expected"),
+    [
+        (list[list["InnerForward"] | None], list[list[InnerForward] | None]),
+        (list["InnerForward"] | None, list[InnerForward] | None),
+        (dict[str, list["InnerForward"] | None], dict[str, list[InnerForward] | None]),
+        (tuple["InnerForward", ...] | None, tuple[InnerForward, ...] | None),
+        (Optional[list["InnerForward"]], Optional[list[InnerForward]]),
+    ],
+)
+def test_forward_reference_inside_a_nullable_container_is_resolved(annotation: Any, expected: Any):
+    """A PEP 604 union has no `copy_with`, so a nested `X | None` must be rebuilt rather than dropped."""
+    resolved = KernelJsonSchemaBuilder._resolve_nested_forward_refs(annotation, globals())
+
+    assert resolved == expected
+
+
+def test_build_nested_nullable_container_with_string_forward_reference():
+    class HolderNestedNullable(KernelBaseModel):
+        rows: list[list["InnerForward"] | None] = []
+
+    class HolderNestedNullableDirect(KernelBaseModel):
+        rows: list[list[InnerForward] | None] = []
+
+    schema = KernelJsonSchemaBuilder.build(HolderNestedNullable)
+
+    assert schema == KernelJsonSchemaBuilder.build(HolderNestedNullableDirect)
+    assert schema["properties"]["rows"]["items"]["items"]["properties"] == {
+        "value": {"type": "integer"},
+        "label": {"type": "string"},
+    }
+
+
 @skip_if_get_type_hints_evaluates_nested_strings
 @pytest.mark.parametrize(
     "holder",
