@@ -73,7 +73,7 @@ def test_weaviate_store_init_with_invalid_settings_more_than_one_backends(
     weaviate_unit_test_env,
 ) -> None:
     """Test the initialization of a WeaviateStore object with multiple backend options enabled."""
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="only one of the following"):
         WeaviateStore(
             env_file_path="fake_env_file_path.env",
         )
@@ -83,7 +83,7 @@ def test_weaviate_store_init_with_invalid_settings_no_backends(
     clear_weaviate_env,
 ) -> None:
     """Test the initialization of a WeaviateStore object with no backend options enabled."""
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="must specify either a Weaviate Cloud"):
         WeaviateStore(
             env_file_path="fake_env_file_path.env",
         )
