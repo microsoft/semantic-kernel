@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/actions/**"
+      - ".github/scripts/check_team_membership.js"
       - ".github/tests/**"
       - ".github/workflows/devflow-pr-review.yml"
       - ".github/workflows/github-automation-tests.yml"
@@ -14,6 +15,7 @@ on:
       - main
     paths:
       - ".github/actions/**"
+      - ".github/scripts/check_team_membership.js"
       - ".github/tests/**"
       - ".github/workflows/devflow-pr-review.yml"
       - ".github/workflows/github-automation-tests.yml"

@@ -35,6 +35,8 @@ def kernel_function(
     if you set `{"include_in_function_choices": False}` in the annotation, that parameter will not be included in
     the representation of the function towards LLM's or MCP Servers. If you do set this and the parameter is required
     but you do not set it in a invoke level arguments, the function will raise an error.
+    During auto function calling, a tool call from the model that sets such a parameter is rejected as an
+    unexpected argument, so the value can only come from invoke level arguments or the parameter default.
 
     After the annotations, it checks recursively until it reaches the lowest level, and it combines
     the types into a single comma-separated string, a forwardRef is also supported.
@@ -71,7 +73,9 @@ def kernel_function(
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
-            _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
+            _parse_parameter("return", func_sig.return_annotation, Parameter.empty)
+            if func_sig.return_annotation
+            else {}
         )
         setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
         setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
@@ -120,7 +124,8 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         if arg.name == "self":
             continue
         annotation = arg.annotation
-        default = arg.default if arg.default != arg.empty else None
+        # Parameter.empty means "no default"; a default of None is still a default.
+        default = arg.default
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
         if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
             underlying_type = _get_underlying_type(annotation)
@@ -137,7 +142,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default is not None:
+    if default is not Parameter.empty:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
@@ -151,13 +156,14 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                 if isinstance(meta, str):
                     ret["description"] = meta
                 elif isinstance(meta, dict):
+                    meta = meta.copy()
                     # only override from the metadata if it is not already set
                     if "description" not in ret and (description := meta.pop("description", None)):
                         ret["description"] = description
                     ret.update(meta)
                 else:
                     logger.debug(f"Unknown metadata type: {meta}")
-        if hasattr(param, "__origin__"):
+        if hasattr(param, "__origin__") and param.__origin__ not in (Union, types.UnionType):
             ret.update(_parse_parameter(name, param.__origin__, default))
         if hasattr(param, "__args__"):
             args = []

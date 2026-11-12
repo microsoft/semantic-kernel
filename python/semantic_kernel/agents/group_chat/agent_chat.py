@@ -108,15 +108,15 @@ class AgentChat(KernelBaseModel):
         """Add chat messages."""
         self.set_activity_or_throw()
 
-        for message in messages:
-            if message.role == AuthorRole.SYSTEM:
-                error_message = "System messages cannot be added to the chat history."
-                logger.error(error_message)
-                raise AgentChatException(error_message)
-
-        logger.info(f"Adding `{len(messages)}` agent chat messages")
-
         try:
+            for message in messages:
+                if message.role == AuthorRole.SYSTEM:
+                    error_message = "System messages cannot be added to the chat history."
+                    logger.error(error_message)
+                    raise AgentChatException(error_message)
+
+            logger.info(f"Adding `{len(messages)}` agent chat messages")
+
             self.history.messages.extend(messages)
 
             # Broadcast message to other channels (in parallel)

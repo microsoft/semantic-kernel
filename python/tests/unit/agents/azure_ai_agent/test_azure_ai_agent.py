@@ -19,6 +19,17 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 
 
+async def test_azure_ai_project_client_supports_agent_operations():
+    async with AIProjectClient(
+        endpoint="https://test.services.ai.azure.com/api/projects/test",
+        credential=AsyncMock(spec=AsyncTokenCredential),
+    ) as client:
+        assert callable(client.agents.create_agent)
+        assert callable(client.agents.files.upload_and_poll)
+        assert callable(client.agents.threads.create)
+        assert callable(client.agents.runs.create)
+
+
 async def test_azure_ai_agent_init(ai_project_client, ai_agent_definition):
     agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
     assert agent.id == "agent123"

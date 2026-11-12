@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Document;
 using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 using Moq;
@@ -20,10 +22,12 @@ public class DocumentPluginTests
         var expectedText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.GetFileContentStreamAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.GetFileContentStreamAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
 
@@ -53,16 +57,14 @@ public class DocumentPluginTests
         var anyText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.FileExistsAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-        fileSystemConnectorMock
-            .Setup(mock => mock.GetWriteableFileStreamAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Stream.Null);
+            .ReturnsAsync((Stream.Null, false));
 
         var documentConnectorMock = new Mock<IDocumentConnector>();
         documentConnectorMock
@@ -88,16 +90,14 @@ public class DocumentPluginTests
         var anyText = Guid.NewGuid().ToString();
         var folderPath = Path.GetTempPath();
         var anyFilePath = Path.Combine(folderPath, Guid.NewGuid().ToString());
+        var expectedFilePath = PathUtilities.GetSafeFullPath(anyFilePath);
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.FileExistsAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
+            .Setup(mock => mock.OpenUpdateAsync(It.Is<string>(filePath => filePath.Equals(expectedFilePath, StringComparison.Ordinal)),
+                It.IsAny<IEnumerable<string>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-        fileSystemConnectorMock
-            .Setup(mock => mock.CreateFileAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Stream.Null);
+            .ReturnsAsync((Stream.Null, true));
 
         var documentConnectorMock = new Mock<IDocumentConnector>();
         documentConnectorMock
@@ -134,7 +134,8 @@ public class DocumentPluginTests
            target.AppendTextAsync(anyText, null!));
 
         // Assert
-        fileSystemConnectorMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+        fileSystemConnectorMock.Verify(mock => mock.OpenUpdateAsync(
+            It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()), Times.Never());
         documentConnectorMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
     }
 
@@ -192,6 +193,78 @@ public class DocumentPluginTests
         await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "//UNC/server/folder/file.docx"));
     }
 
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\file.docx")]
+    [InlineData("//UNC/server/folder/file.docx")]
+    [InlineData("/\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\/UNC/server/folder/file.docx")]
+    [InlineData("\\\\?\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\\\.\\UNC\\server\\folder\\file.docx")]
+    public async Task ItRejectsUncOrExtendedPathsOnReadAsync(string path)
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — rejected before any filesystem access
+        await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(path));
+    }
+
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\file.docx")]
+    [InlineData("//UNC/server/folder/file.docx")]
+    [InlineData("/\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\/UNC/server/folder/file.docx")]
+    [InlineData("\\\\?\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\\\.\\UNC\\server\\folder\\file.docx")]
+    public async Task ItRejectsUncOrExtendedPathsOnAppendAsync(string path)
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — rejected before any filesystem access
+        await Assert.ThrowsAsync<ArgumentException>(async () => await target.AppendTextAsync("text", path));
+    }
+
+    [Theory]
+    [InlineData("/\\evil-server\\share")]
+    [InlineData("\\/evil-server/share")]
+    public async Task ItDeniesMixedSeparatorUncPathsIntroducedViaEnvVarExpansionAsync(string envVarValue)
+    {
+        // Arrange — env var that expands to a mixed-separator UNC path
+        var envVarName = "SK_TEST_MIXUNC_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, envVarValue);
+            var maliciousPath = $"%{envVarName}%{Path.DirectorySeparatorChar}secret.docx";
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+            var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [Path.GetTempPath()]
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(maliciousPath));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await target.AppendTextAsync("text", maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
+
     [Fact]
     public async Task ItDeniesDisallowedFoldersAsync()
     {
@@ -220,7 +293,8 @@ public class DocumentPluginTests
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
-            .Setup(mock => mock.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(mock => mock.GetFileContentStreamAsync(
+                It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
 
         var documentConnectorMock = new Mock<IDocumentConnector>();

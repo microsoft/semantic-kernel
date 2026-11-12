@@ -15,6 +15,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIAudioToTextTests()
 {
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -22,7 +24,7 @@ public sealed class OpenAIAudioToTextTests()
         .AddUserSecrets<OpenAIAudioToTextTests>()
         .Build();
 
-    [RetryFact] //(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [RetryFact(Skip = TempOAIKeySkipReason)]
     public async Task OpenAIAudioToTextTestAsync()
     {
         // Arrange

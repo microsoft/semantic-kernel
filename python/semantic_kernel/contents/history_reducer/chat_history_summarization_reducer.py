@@ -2,11 +2,8 @@
 
 import logging
 import sys
+from typing import Self
 
-if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
-else:
-    from typing import Self  # type: ignore # pragma: no cover
 if sys.version < "3.12":
     from typing_extensions import override  # pragma: no cover
 else:
@@ -107,6 +104,9 @@ class ChatHistorySummarizationReducer(ChatHistoryReducer):
 
         # 1. Identify where existing summary messages end
         insertion_point = locate_summarization_boundary(history)
+        if not self.use_single_summary and system_message_index == 0:
+            # Earlier reductions keep the system message in front of their summaries, so look past it
+            insertion_point = 1 + locate_summarization_boundary(history[1:])
         if insertion_point == len(history):
             # fallback fix: force boundary to something reasonable
             logger.warning("All messages are summaries, forcing boundary to 0.")

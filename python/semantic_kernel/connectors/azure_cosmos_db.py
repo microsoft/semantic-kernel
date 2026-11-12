@@ -2,6 +2,7 @@
 
 import ast
 import asyncio
+import json
 import re
 import sys
 from collections.abc import Sequence
@@ -399,7 +400,7 @@ class CosmosMongoCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, 
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB for MongoDB."
                 )
             index_name = f"{field.storage_name or field.name}_"
-            index_kind = DISTANCE_FUNCTION_MAP_MONGODB[field.distance_function]
+            index_kind = INDEX_KIND_MAP_MONGODB[field.index_kind]
             index: dict[str, Any] = {
                 "name": index_name,
                 FieldTypes.KEY: {field.storage_name or field.name: "cosmosSearch"},
@@ -833,11 +834,24 @@ class CosmosNoSqlCollection(
         elif search_type == SearchType.KEYWORD_HYBRID:
             # Hybrid search: requires both a vector and keywords
             params.append({"name": "@keywords", "value": values})
-            text_field = options.additional_property_name
-            if not text_field:
+            requested_text_field_name = options.additional_property_name
+            if not requested_text_field_name:
                 raise VectorStoreModelException("Hybrid search requires 'keyword_field_name' in options.")
+            text_field = next(
+                (
+                    field
+                    for field in self.definition.data_fields
+                    if requested_text_field_name in {field.name, field.storage_name}
+                ),
+                None,
+            )
+            if not text_field:
+                raise VectorStoreModelException(
+                    f"Data field '{requested_text_field_name}' not found in the data model definition."
+                )
+            text_field_reference = f"c[{json.dumps(text_field.storage_name or text_field.name)}]"
             distance_clause = (
-                f"RRF(VectorDistance(c.{vector_field_name}, @vector), FullTextScore(c.{text_field}, @keywords))"
+                f"RRF(VectorDistance(c.{vector_field_name}, @vector), FullTextScore({text_field_reference}, @keywords))"
             )
         else:
             raise VectorStoreModelException(f"Search type '{search_type}' is not supported.")
@@ -1036,8 +1050,12 @@ class CosmosNoSqlCollection(
         try:
             await container_proxy.read(**kwargs)
             return True
-        except CosmosHttpResponseError:
+        except CosmosResourceNotFoundError:
             return False
+        except Exception as e:
+            raise VectorStoreOperationException(
+                f"Failed to check if container '{self.collection_name}' exists, with message {e}"
+            ) from e
 
     @override
     async def ensure_collection_deleted(self, **kwargs) -> None:
