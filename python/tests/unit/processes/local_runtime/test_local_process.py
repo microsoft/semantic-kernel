@@ -18,7 +18,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
 )
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
@@ -336,36 +335,11 @@ async def test_handle_message_with_valid_event_id(mock_process_with_output_edges
 END_PROCESS_ID = "END"
 
 
-@pytest.fixture
-def mock_process_with_steps(mock_process, mock_kernel, build_model):
-    """Fixture to create a LocalProcess with mock steps."""
-    local_process = LocalProcess(process=mock_process, kernel=mock_kernel)
-
-    # Create real LocalStep instances
-    state_1 = MagicMock(spec=KernelProcessState)
-    state_1.name = "step_1_state"
-    state_1.id = "step_1_id"
-
-    step_info_1 = MagicMock(spec=KernelProcessStepInfo)
-    step_info_1.state = state_1
-
-    state_2 = MagicMock(spec=KernelProcessState)
-    state_2.name = "step_2_state"
-    state_2.id = "step_2_id"
-
-    step_info_2 = MagicMock(spec=KernelProcessStepInfo)
-    step_info_2.state = state_2
-
-    step_1 = LocalStep(step_info=step_info_1, kernel=mock_kernel, parent_process_id="test_process")
-    step_2 = LocalStep(step_info=step_info_2, kernel=mock_kernel, parent_process_id="test_process")
-
-    local_process.steps = [step_1, step_2]
-    return local_process
-
-
 @pytest.mark.parametrize("defer_second_b", [False, True])
 @pytest.mark.parametrize("fail_first", [False, True])
 async def test_messages_to_same_step_do_not_reuse_inputs_during_invocation(defer_second_b, fail_first):
+    from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+
     pairs = []
 
     class Producer(KernelProcessStep):
@@ -403,3 +377,30 @@ async def test_messages_to_same_step_do_not_reuse_inputs_during_invocation(defer
         pass
 
     assert pairs == [(1, 1), (2, 2)]
+
+
+@pytest.fixture
+def mock_process_with_steps(mock_process, mock_kernel, build_model):
+    """Fixture to create a LocalProcess with mock steps."""
+    local_process = LocalProcess(process=mock_process, kernel=mock_kernel)
+
+    # Create real LocalStep instances
+    state_1 = MagicMock(spec=KernelProcessState)
+    state_1.name = "step_1_state"
+    state_1.id = "step_1_id"
+
+    step_info_1 = MagicMock(spec=KernelProcessStepInfo)
+    step_info_1.state = state_1
+
+    state_2 = MagicMock(spec=KernelProcessState)
+    state_2.name = "step_2_state"
+    state_2.id = "step_2_id"
+
+    step_info_2 = MagicMock(spec=KernelProcessStepInfo)
+    step_info_2.state = state_2
+
+    step_1 = LocalStep(step_info=step_info_1, kernel=mock_kernel, parent_process_id="test_process")
+    step_2 = LocalStep(step_info=step_info_2, kernel=mock_kernel, parent_process_id="test_process")
+
+    local_process.steps = [step_1, step_2]
+    return local_process
