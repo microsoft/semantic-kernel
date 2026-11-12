@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from typing import Annotated
 
 from pytest import fixture, mark
+from qdrant_client.models import MatchAny, MatchValue, Range
 
-from semantic_kernel.connectors.qdrant import QdrantCollection, _match_value
+from semantic_kernel.connectors.qdrant import QdrantCollection, _match_any, _match_value
 from semantic_kernel.data.vector import VectorStoreField, vectorstoremodel
 
 
@@ -69,6 +70,7 @@ class Product:
     id: Annotated[int, VectorStoreField("key")]
     price: Annotated[float, VectorStoreField("data", is_indexed=True)]
     in_stock: Annotated[bool, VectorStoreField("data", is_indexed=True)]
+    quantity: Annotated[int, VectorStoreField("data", is_indexed=True)]
     vector: Annotated[list[float] | None, VectorStoreField("vector", dimensions=2)] = None
 
 
@@ -76,7 +78,7 @@ class Product:
 async def product_collection():
     async with QdrantCollection(record_type=Product, collection_name="products", location=":memory:") as collection:
         await collection.ensure_collection_exists()
-        await collection.upsert([Product(1, 4.5, True, [1.0, 0.0]), Product(2, 5.0, False, [0.0, 1.0])])
+        await collection.upsert([Product(1, 4.5, True, 3, [1.0, 0.0]), Product(2, 5.0, False, 7, [0.0, 1.0])])
         yield collection
 
 
@@ -95,6 +97,13 @@ async def product_collection():
         # Large floats too, which MatchValue would reject
         ("lambda x: x.price == 1e20", []),
         ("lambda x: x.price != 1e20", [1, 2]),
+        # Int fields keep exact MatchValue and MatchAny for int values, and a float still matches numerically
+        ("lambda x: x.quantity == 3", [1]),
+        ("lambda x: x.quantity != 3", [2]),
+        ("lambda x: x.quantity in [3, 9]", [1]),
+        ("lambda x: x.quantity not in [3]", [2]),
+        ("lambda x: x.quantity == 7.0", [2]),
+        ("lambda x: x.quantity in [3, 7.0]", [1, 2]),
     ],
 )
 async def test_local_filter_with_float_and_bool_values(product_collection, filter_str, expected):
@@ -111,3 +120,11 @@ def test_match_value_uses_range_only_where_float64_is_exact(value, uses_range):
     condition = _match_value("n", value)
     assert (condition.range is not None) is uses_range
     assert (condition.match is None) is uses_range
+
+
+def test_int_field_keeps_match_value_and_match_any():
+    assert _match_value("n", 5, int_field=True).match == MatchValue(value=5)
+    assert _match_value("n", 5.5, int_field=True).range == Range(gte=5.5, lte=5.5)
+    assert _match_any("n", [1, 2], int_field=True).match == MatchAny(any=[1, 2])
+    # Without a declared int type, each int is matched numerically so it also finds float payloads
+    assert [c.range for c in _match_any("n", [1, 2]).should] == [Range(gte=1, lte=1), Range(gte=2, lte=2)]
