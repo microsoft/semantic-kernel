@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import json
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -11,6 +12,8 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import (
     ProcessFunctionNotFoundException,
 )
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.actors.event_buffer_actor import EventBufferActor
 from semantic_kernel.processes.dapr_runtime.actors.step_actor import StepActor
@@ -21,6 +24,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEventVisibility,
 )
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
@@ -120,6 +124,56 @@ async def test_process_incoming_messages(actor_context):
         expected_messages = []
         expected_messages = [json.dumps(msg.model_dump()) for msg in list(actor_context.incoming_messages.queue)]
         mock_try_add_state.assert_any_call("incomingMessagesState", expected_messages)
+
+
+@pytest.mark.parametrize("defer_second_b", [False, True])
+@pytest.mark.parametrize("fail_first", [False, True])
+async def test_process_incoming_messages_keeps_awaiting_invocations_serial(actor_context, defer_second_b, fail_first):
+    pairs = []
+
+    class Join(KernelProcessStep):
+        @kernel_function
+        async def join(self, a: int, b: int) -> int:
+            await asyncio.sleep(0)
+            pairs.append((a, b))
+            if fail_first and a == 1:
+                raise RuntimeError("first pair failed")
+            return a + b
+
+    actor_context.kernel = Kernel()
+    actor_context.factories = {"Join": Join}
+    proxy = AsyncMock()
+    messages = [
+        ProcessMessage(source_id="source", destination_id="join", function_name="join", values={key: value})
+        for key, value in (("a", 1), ("b", 1), ("a", 2), ("b", 2))
+    ]
+    with (
+        patch("dapr.actor.ActorProxy.create", return_value=proxy),
+        patch.object(actor_context._state_manager, "try_add_state", new=AsyncMock()),
+        patch.object(actor_context._state_manager, "set_state", new=AsyncMock()),
+        patch.object(actor_context._state_manager, "save_state", new=AsyncMock()),
+    ):
+        await actor_context.initialize_step(
+            json.dumps({
+                "step_info": {
+                    "state": {"name": "Join", "version": "1.0", "id": "join"},
+                    "inner_step_python_type": "Join",
+                    "edges": {},
+                },
+            })
+        )
+        first_batch = messages[:-1] if defer_second_b else messages
+        proxy.dequeue_all.return_value = [message.model_dump_json() for message in first_batch]
+        assert await actor_context.prepare_incoming_messages() == len(first_batch)
+        await actor_context.process_incoming_messages()
+
+        if defer_second_b:
+            assert pairs == [(1, 1)]
+            proxy.dequeue_all.return_value = [messages[-1].model_dump_json()]
+            assert await actor_context.prepare_incoming_messages() == 1
+            await actor_context.process_incoming_messages()
+
+    assert pairs == [(1, 1), (2, 2)]
 
 
 async def test_activate_step_with_factory_creates_state(actor_context):
