@@ -11,6 +11,7 @@ from typing_extensions import deprecated
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
+from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import get_completion_token_count
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
@@ -191,7 +192,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                completion_tokens=get_completion_token_count(response.usage_metadata),
             ),
         }
 
