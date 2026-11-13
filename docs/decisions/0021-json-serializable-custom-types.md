@@ -116,7 +116,7 @@ Required
 Not required
 
 - **Native to Native:** Passing variables from Native to Native **will not** require any serialization or deserialization as the complex type can be passed as-is.
-- **Semantic to Semantic:** Passing variables from Semantic to Semantic **will not** require any serialization or deserialization as the the complex type will be passed around using its string representation.
+- **Semantic to Semantic:** Passing variables from Semantic to Semantic **will not** require any serialization or deserialization as the complex type will be passed around using its string representation.
 
 **2. Only use native serialization methods**
 This option was originally considered, which would have effectively removed the use of the `TypeConverter`s in favor of a simple `JsonConverter`, but it was pointed out that this may result in lossy conversion between primitive types. For example, when converting from a `float` to an `int`, the primitive may be truncated in a way by the native serialization methods that does not provide an accurate result.
