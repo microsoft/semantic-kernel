@@ -20,6 +20,7 @@ def test_kernel_parameter_metadata_init():
     assert metadata.description == "description"
     assert metadata.is_required is True
     assert metadata.default_value == "default"
+    assert metadata.schema_data == {"type": "string", "description": "description (default value: default)"}
 
 
 def test_kernel_parameter_metadata_valid():
@@ -65,3 +66,29 @@ def test_kernel_parameter_metadata_without_schema_data():
 def test_kernel_parameter_metadata_with_partial_data():
     metadata = KernelParameterMetadata(name="param5", type_="float", default_value=3.14)
     assert metadata.schema_data == {"type": "number", "description": "(default value: 3.14)"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_type_alias():
+    metadata = KernelParameterMetadata(
+        name="param_alias", type="int", default_value=42, description="An integer parameter"
+    )
+    assert metadata.type_ == "int"
+    assert metadata.schema_data == {"type": "integer", "description": "An integer parameter (default value: 42)"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_default_type():
+    metadata = KernelParameterMetadata(name="param_default")
+    assert metadata.type_ == "str"
+    assert metadata.schema_data == {"type": "string"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_explicit_empty_type_():
+    metadata = KernelParameterMetadata(name="param_empty", type_="")
+    assert metadata.type_ == ""
+    assert metadata.schema_data == {"type": "object"}
+
+
+def test_kernel_parameter_metadata_infer_schema_with_explicit_empty_type_alias():
+    metadata = KernelParameterMetadata(name="param_empty_alias", type="")
+    assert metadata.type_ == ""
+    assert metadata.schema_data == {"type": "object"}
