@@ -427,7 +427,7 @@ class ChatHistory(KernelBaseModel):
             file_path: The path to the file where the serialized data will be stored.
         """
         json_str = self.serialize()
-        with open(file_path, "w") as local_file:
+        with open(file_path, "w", encoding="utf-8") as local_file:
             local_file.write(json_str)
 
     @classmethod
@@ -442,6 +442,6 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The deserialized ChatHistory instance.
         """
-        with open(file_path) as file:
+        with open(file_path, encoding="utf-8") as file:
             json_str = file.read()
         return cls.restore_chat_history(json_str)
