@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import AsyncMock, Mock, mock_open, patch
 
 import httpx
 import pytest
@@ -1030,6 +1030,70 @@ async def test_download_file_succeeds_within_allowed_directory(mock_get, aca_pyt
         await plugin.download_file(remote_file_name="remote.txt", local_file_path=str(local_file))
         assert local_file.read_bytes() == b"file data"
         mock_get.assert_awaited_once()
+
+
+def _symlink_or_skip(link, target):
+    try:
+        link.symlink_to(target)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symbolic links cannot be created in this environment.")
+
+
+async def _download_to(local_file_path, allowed_dir):
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        allowed_download_directories={str(allowed_dir)},
+    )
+    mock_request = httpx.Request(method="GET", url="https://example.com/files/content/remote.txt")
+    mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("httpx.AsyncClient.get", new=AsyncMock(return_value=mock_response)),
+    ):
+        await plugin.download_file(remote_file_name="remote.txt", local_file_path=str(local_file_path))
+
+
+@pytest.mark.parametrize("target_exists", [True, False])
+async def test_download_file_denied_through_symlink_to_outside(
+    aca_python_sessions_unit_test_env, tmp_path, target_exists
+):
+    """Test that a symlink inside an allowed directory cannot redirect the write outside it."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    outside_dir = tmp_path / "outside"
+    outside_dir.mkdir()
+    outside_file = outside_dir / "outside.txt"
+    if target_exists:
+        outside_file.write_bytes(b"original")
+    link = allowed_dir / "link.txt"
+    _symlink_or_skip(link, outside_file)
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await _download_to(link, allowed_dir)
+
+    if target_exists:
+        assert outside_file.read_bytes() == b"original"
+    else:
+        assert not outside_file.exists()
+
+
+async def test_download_file_allowed_through_symlink_within_allowed_directory(
+    aca_python_sessions_unit_test_env, tmp_path
+):
+    """Test that a symlink whose target stays inside the allowed directory is still usable."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    target = allowed_dir / "target.txt"
+    link = allowed_dir / "link.txt"
+    _symlink_or_skip(link, target)
+
+    await _download_to(link, allowed_dir)
+
+    assert target.read_bytes() == b"file data"
+    assert link.is_symlink()
 
 
 def test_allowed_directories_accepts_list(aca_python_sessions_unit_test_env):
