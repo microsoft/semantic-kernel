@@ -233,6 +233,13 @@ def test_build_set():
     assert schema == {"type": "array", "items": {"type": "integer"}}
 
 
+def test_build_frozenset():
+    schema = KernelJsonSchemaBuilder.build(frozenset[int])
+    assert schema == {"type": "array", "items": {"type": "integer"}}
+    assert KernelJsonSchemaBuilder.build(frozenset) == {"type": "array"}
+    assert KernelJsonSchemaBuilder.build("frozenset") == {"type": "array"}
+
+
 def test_build_tuple():
     schema = KernelJsonSchemaBuilder.build(tuple[int, str])
     assert schema == {
