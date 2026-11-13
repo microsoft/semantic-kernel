@@ -16,6 +16,7 @@ from semantic_kernel.const import AUTO_FUNCTION_INVOCATION_SPAN_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import AVAILABLE_FUNCTIONS
@@ -135,16 +136,18 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
         # Auto invoke loop
         with use_span(self._start_auto_function_invocation_activity(kernel, settings), end_on_exit=True) as _:
+            function_call_messages: list["ChatMessageContent"] = []
             for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
                 completions = await self._inner_get_chat_message_contents(chat_history, settings)
                 # Get the function call contents from the chat message. There is only one chat message,
                 # which should be checked in the `_verify_function_choice_settings` method.
                 function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
                 if (fc_count := len(function_calls)) == 0:
-                    return completions
+                    return self._combine_auto_invoke_text_responses(completions, function_call_messages)
 
                 # Since we have a function call, add the assistant's tool call message to the history
                 chat_history.add_message(message=completions[0])
+                function_call_messages.append(completions[0])
 
                 logger.info(f"processing {fc_count} tool calls in parallel.")
 
@@ -167,11 +170,15 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 )
 
                 if any(result.terminate for result in results if result is not None):
-                    return merge_function_results(chat_history.messages[-len(results) :])
+                    return self._combine_auto_invoke_text_responses(
+                        merge_function_results(chat_history.messages[-len(results) :]),
+                        function_call_messages,
+                    )
             else:
                 # Do a final call, without function calling when the max has been reached.
                 self._reset_function_choice_settings(settings)
-                return await self._inner_get_chat_message_contents(chat_history, settings)
+                completions = await self._inner_get_chat_message_contents(chat_history, settings)
+                return self._combine_auto_invoke_text_responses(completions, function_call_messages)
 
     async def get_chat_message_content(
         self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
@@ -376,6 +383,43 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             for message in chat_history.messages
             if not isinstance(message, (AnnotationContent, FileReferenceContent))
         ]
+
+    def _combine_auto_invoke_text_responses(
+        self,
+        completions: list["ChatMessageContent"],
+        function_call_messages: list["ChatMessageContent"],
+    ) -> list["ChatMessageContent"]:
+        """Prepend text from intermediate function-call responses to the final response."""
+        text_parts = [
+            item.text
+            for message in function_call_messages
+            for item in message.items
+            if isinstance(item, TextContent) and item.text
+        ]
+        if not text_parts:
+            return completions
+
+        prefix_text = "\n\n".join(text_parts)
+        combined_completions = copy.deepcopy(completions)
+        for completion in combined_completions:
+            text_item = next((item for item in completion.items if isinstance(item, TextContent)), None)
+            if text_item is None:
+                completion.items.insert(
+                    0,
+                    TextContent(
+                        ai_model_id=completion.ai_model_id,
+                        inner_content=completion.inner_content,
+                        metadata=completion.metadata,
+                        text=prefix_text,
+                        encoding=completion.encoding,
+                    ),
+                )
+                continue
+
+            text_item.text = "\n\n".join(part for part in [prefix_text, text_item.text] if part)
+            text_item.encoding = completion.encoding
+
+        return combined_completions
 
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
         """Additional verification to validate settings for function choice behavior.
