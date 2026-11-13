@@ -79,6 +79,29 @@ TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
     "default": Datatype.FLOAT32,
 }
 IN_MEMORY_STRING: Final[str] = ":memory:"
+# The server compares ranges as float64, which can't tell 2**53 from 2**53 + 1, so ints from 2**53 up
+# are matched exactly with MatchValue instead.
+MAX_EXACT_FLOAT_INT: Final[int] = 2**53
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _match_value(key: str, value: Any, *, int_field: bool = False) -> FieldCondition:
+    """Match a single value, numerically for numbers so 5 also matches 5.0 and floats are accepted."""
+    # MatchValue only accepts str, int and bool, and an int never matches a float payload.
+    # A field declared as int holds int payloads, so an int value there stays an exact MatchValue.
+    if isinstance(value, float) or (_is_int(value) and not int_field and abs(value) < MAX_EXACT_FLOAT_INT):
+        return FieldCondition(key=key, range=Range(gte=value, lte=value))
+    return FieldCondition(key=key, match=MatchValue(value=value))
+
+
+def _match_any(key: str, values: list[Any], *, int_field: bool = False) -> FieldCondition | Filter:
+    """Match any of the values; MatchAny only accepts a list of str or a list of int."""
+    if all(isinstance(value, str) for value in values) or (int_field and all(_is_int(value) for value in values)):
+        return FieldCondition(key=key, match=MatchAny(any=values))
+    return Filter(should=[_match_value(key, value, int_field=int_field) for value in values])
 
 
 @release_candidate
@@ -385,17 +408,21 @@ class QdrantCollection(
                 left = self._lambda_parser(node.left)
                 right = self._lambda_parser(node.comparators[0])
                 op = node.ops[0]
+                int_field = any(
+                    (field.storage_name or field.name) == left and field.type_ == "int"
+                    for field in self.definition.fields
+                )
                 match op:
                     case ast.In():
                         # IN: left in right (right is a list)
-                        return FieldCondition(key=left, match=MatchAny(any=right))
+                        return _match_any(left, right, int_field=int_field)
                     case ast.NotIn():
                         # NOT IN: left not in right
-                        return Filter(must_not=[FieldCondition(key=left, match=MatchAny(any=right))])
+                        return Filter(must_not=[_match_any(left, right, int_field=int_field)])
                     case ast.Eq():
-                        return FieldCondition(key=left, match=MatchValue(value=right))
+                        return _match_value(left, right, int_field=int_field)
                     case ast.NotEq():
-                        return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
+                        return Filter(must_not=[_match_value(left, right, int_field=int_field)])
                     case ast.Gt():
                         return FieldCondition(key=left, range=Range(gt=right))
                     case ast.GtE():
