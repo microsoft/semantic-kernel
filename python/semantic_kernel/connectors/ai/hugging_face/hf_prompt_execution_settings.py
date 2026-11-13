@@ -8,9 +8,11 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 if TYPE_CHECKING:
     from transformers import GenerationConfig
 
-
-imported = importlib.import_module("transformers")
-ready = imported is not None and hasattr(imported, "GenerationConfig")
+try:
+    imported = importlib.import_module("transformers")
+    ready = imported is not None and hasattr(imported, "GenerationConfig")
+except (ImportError, ModuleNotFoundError):
+    ready = False
 
 
 class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
@@ -27,10 +29,12 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
 
     def get_generation_config(self) -> "GenerationConfig":
         """Get the generation config."""
-        from transformers import GenerationConfig
-
         if not ready:
-            raise ImportError("transformers is not installed.")
+            raise ImportError(
+                "transformers is not installed. Please install it with `pip install semantic-kernel[hugging_face]`."
+            )
+
+        from transformers import GenerationConfig
 
         return GenerationConfig(
             **self.model_dump(
