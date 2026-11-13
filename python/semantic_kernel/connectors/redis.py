@@ -18,6 +18,7 @@ from redis.asyncio.client import Redis
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+from redis.exceptions import ResponseError
 from redisvl.index import AsyncSearchIndex
 from redisvl.index.index import process_results
 from redisvl.query.filter import FilterExpression, Num, Tag, Text
@@ -58,6 +59,11 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 logger = logging.getLogger(__name__)
+
+# Redis Search has no structured "index not found" reply and has worded it differently across
+# versions ("Unknown index name", "<name>: no such index", and since 8.8 an error code), so the
+# missing-index case is recognised by its text.
+_MISSING_INDEX_ERROR_FRAGMENTS = ("unknown index name", "no such index", "search_index_not_found", "index not found")
 
 TKey = TypeVar("TKey", bound=str)
 TQuery = TypeVar("TQuery", bound=BaseQuery)
@@ -315,8 +321,17 @@ class RedisCollection(
         try:
             await self.redis_database.ft(self.collection_name).info()
             return True
-        except Exception:
-            return False
+        except ResponseError as exc:
+            # Redis answers FT.INFO for an unknown index with an error reply, which redis-py
+            # surfaces as a plain ResponseError. Other failures also arrive as ResponseError or a
+            # subclass of it (NoPermissionError, ClusterDownError), so only a plain ResponseError
+            # with the missing-index wording means "not there"; everything else propagates, as
+            # ConnectionError and TimeoutError do. ensure_collection_deleted() gates the drop on
+            # this answer, so a swallowed failure made it return successfully having deleted nothing.
+            message = str(exc).lower()
+            if type(exc) is ResponseError and any(fragment in message for fragment in _MISSING_INDEX_ERROR_FRAGMENTS):
+                return False
+            raise
 
     @override
     async def ensure_collection_deleted(self, **kwargs) -> None:

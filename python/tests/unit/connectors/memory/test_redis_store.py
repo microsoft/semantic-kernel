@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
+from redis.exceptions import ClusterDownError, NoPermissionError, ResponseError
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 import semantic_kernel.connectors.redis as redis_module
 from semantic_kernel.connectors.redis import (
@@ -281,10 +283,69 @@ async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
 
-async def test_collection_exists_false(collection_hash, mock_collection_exists):
-    mock_collection_exists.side_effect = Exception
+@mark.parametrize(
+    "message",
+    [
+        "Unknown Index name",
+        "Unknown index name (or name is an alias itself)",
+        "test: no such index",
+        "SEARCH_INDEX_NOT_FOUND",
+        "Index not found",
+    ],
+)
+async def test_collection_exists_false(collection_hash, mock_collection_exists, message):
+    # ResponseError is what redis-py raises when FT.INFO reports an unknown index, worded
+    # differently across Redis Search versions. The previous bare Exception did not represent
+    # that, and matched a timeout just as readily.
+    mock_collection_exists.side_effect = ResponseError(message)
     exists = await collection_hash.collection_exists()
     assert not exists
+
+
+async def test_collection_exists_propagates_connection_errors(collection_hash, mock_collection_exists):
+    """A cluster that cannot be reached is not an absent index.
+
+    ensure_collection_deleted() drops the index only when collection_exists() says it is there, so
+    reporting a connection failure as "not there" made the delete a silent no-op.
+    """
+    mock_collection_exists.side_effect = RedisConnectionError("connection refused")
+    with raises(RedisConnectionError):
+        await collection_hash.collection_exists()
+
+
+@mark.parametrize(
+    "error",
+    [
+        NoPermissionError("User default has no permissions to run the 'ft.info' command"),
+        ClusterDownError("The cluster is down"),
+        ResponseError("ERR unexpected reply"),
+        # The wording match must not apply to a subclass, even when the message happens to
+        # contain a missing-index phrase (here through the user name).
+        NoPermissionError("User search_index_not_found has no permissions to run the 'ft.info' command"),
+    ],
+    ids=["no_permission", "cluster_down", "other_response_error", "no_permission_with_matching_text"],
+)
+async def test_collection_exists_propagates_other_response_errors(collection_hash, mock_collection_exists, error):
+    """Only the missing-index reply means "not there".
+
+    NoPermissionError and ClusterDownError subclass ResponseError, so catching ResponseError alone
+    still reported a denied or failed FT.INFO as an absent index.
+    """
+    mock_collection_exists.side_effect = error
+    with raises(type(error)):
+        await collection_hash.collection_exists()
+
+
+async def test_ensure_collection_deleted_propagates_permission_errors(
+    collection_hash, mock_collection_exists, mock_ensure_collection_deleted
+):
+    """A denied FT.INFO must fail the delete instead of skipping the drop and returning normally."""
+    mock_collection_exists.side_effect = NoPermissionError(
+        "User default has no permissions to run the 'ft.info' command"
+    )
+    with raises(NoPermissionError):
+        await collection_hash.ensure_collection_deleted()
+    mock_ensure_collection_deleted.assert_not_called()
 
 
 async def test_ensure_collection_deleted(collection_hash, mock_ensure_collection_deleted):
