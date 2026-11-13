@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 
 
@@ -41,3 +43,10 @@ def test_completion_usage_empty() -> None:
     # Check that the total prompt tokens and completion tokens are None
     assert total_usage.prompt_tokens == 5
     assert total_usage.completion_tokens == 0
+
+
+def test_completion_usage_invalid_add() -> None:
+    """Test adding unsupported types raises TypeError."""
+    usage = CompletionUsage(prompt_tokens=10, completion_tokens=20)
+    with pytest.raises(TypeError):
+        _ = usage + 5
