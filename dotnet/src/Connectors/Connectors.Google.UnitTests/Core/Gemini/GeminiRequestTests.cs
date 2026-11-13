@@ -439,6 +439,13 @@ public sealed class GeminiRequestTests
             c => string.Equals(c.Parts![0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
         var args = request.Contents[0].Parts![0].FunctionResponse!.Response.Arguments;
         Assert.Equal(expectedArgs.ToJsonString(), args.ToJsonString());
+
+        using var requestJson = JsonDocument.Parse(JsonSerializer.Serialize(request));
+        var content = requestJson.RootElement.GetProperty("contents")[0];
+        Assert.Equal("user", content.GetProperty("role").GetString());
+        var functionResponse = content.GetProperty("parts")[0].GetProperty("functionResponse");
+        Assert.Equal(toolCallResult.FullyQualifiedName, functionResponse.GetProperty("name").GetString());
+        AssertDeepEquals(JsonSerializer.SerializeToElement(expectedArgs), functionResponse.GetProperty("response").GetProperty("content"));
     }
 
     [Fact]
