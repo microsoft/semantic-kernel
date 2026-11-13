@@ -8,6 +8,7 @@ import pytest
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
@@ -16,10 +17,13 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEventVisibility,
 )
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_process import LocalProcess
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
+from semantic_kernel.processes.process_builder import ProcessBuilder
 
 
 @pytest.fixture
@@ -329,6 +333,50 @@ async def test_handle_message_with_valid_event_id(mock_process_with_output_edges
 
 
 END_PROCESS_ID = "END"
+
+
+@pytest.mark.parametrize("defer_second_b", [False, True])
+@pytest.mark.parametrize("fail_first", [False, True])
+async def test_messages_to_same_step_do_not_reuse_inputs_during_invocation(defer_second_b, fail_first):
+    from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+
+    pairs = []
+
+    class Producer(KernelProcessStep):
+        @kernel_function
+        async def emit(self, context: KernelProcessStepContext) -> None:
+            for event, value in (("a1", 1), ("b1", 1), ("a2", 2), ("b2", 2)):
+                await context.emit_event(event, data=value)
+
+    class Join(KernelProcessStep):
+        @kernel_function
+        async def join(self, a: int, b: int) -> None:
+            await asyncio.sleep(0)
+            pairs.append((a, b))
+            if fail_first and a == 1:
+                raise RuntimeError("first pair failed")
+
+    class Relay(KernelProcessStep):
+        @kernel_function
+        async def relay(self, value: int) -> int:
+            return value
+
+    builder = ProcessBuilder(name="join")
+    producer = builder.add_step(Producer)
+    join = builder.add_step(Join)
+    builder.on_input_event("start").send_event_to(producer, function_name="emit")
+    for event in ("a1", "b1", "a2", "b2"):
+        if defer_second_b and event == "b2":
+            relay = builder.add_step(Relay)
+            producer.on_event(event).send_event_to(relay, function_name="relay", parameter_name="value")
+            relay.on_function_result("relay").send_event_to(join, function_name="join", parameter_name="b")
+        else:
+            producer.on_event(event).send_event_to(join, function_name="join", parameter_name=event[0])
+
+    async with await start(builder.build(), Kernel(), initial_event="start"):
+        pass
+
+    assert pairs == [(1, 1), (2, 2)]
 
 
 @pytest.fixture
