@@ -4,7 +4,32 @@ import json
 import logging
 import operator
 from abc import abstractmethod
-from ast import AST, Constant, Lambda, NodeTransformer, NodeVisitor, UnaryOp, USub, copy_location, expr, parse
+from ast import (
+    AST,
+    And,
+    Attribute,
+    BoolOp,
+    Compare,
+    Constant,
+    Eq,
+    Gt,
+    GtE,
+    Is,
+    IsNot,
+    Lambda,
+    Lt,
+    LtE,
+    Name,
+    NodeTransformer,
+    NodeVisitor,
+    NotEq,
+    UnaryOp,
+    USub,
+    cmpop,
+    copy_location,
+    expr,
+    parse,
+)
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -739,6 +764,59 @@ class _FoldUnaryNumericConstants(NodeTransformer):
             and not isinstance(node.operand.value, bool)
         ):
             return copy_location(Constant(-node.operand.value), node)
+        return node
+
+
+_OP_FLIP: dict[type[cmpop], type[cmpop]] = {
+    Eq: Eq,
+    NotEq: NotEq,
+    Lt: Gt,
+    LtE: GtE,
+    Gt: Lt,
+    GtE: LtE,
+    Is: Is,
+    IsNot: IsNot,
+}
+
+
+class _NormalizeComparisonFilters(NodeTransformer):
+    """Normalize comparison filter expressions before connector parsers run.
+
+    Vector-store connector ``_lambda_parser`` implementations expect the field reference
+    (e.g., ``x.num``) on the left-hand side and the constant/literal on the right-hand side.
+    When a filter is written with the constant on the left (e.g., ``2 < x.num`` or ``3 == x.num``),
+    or uses Python's chained comparison syntax (e.g., ``1 <= x.num < 4``), connectors either
+    fail with validation errors or misinterpret the field name (#14779).
+
+    This transformer:
+    1. Splits chained comparisons (``len(ops) > 1``) into an explicit ``BoolOp(And, ...)``.
+    2. Rewrites ``Constant op Field`` into ``Field op' Constant`` (e.g., ``<`` to ``>``).
+    """
+
+    def visit_Compare(self, node: Compare) -> AST:
+        """Normalize chained comparisons and comparisons with constant on the left."""
+        self.generic_visit(node)
+        if len(node.ops) > 1:
+            pairs: list[expr] = []
+            for i in range(len(node.ops)):
+                left = node.left if i == 0 else node.comparators[i - 1]
+                right = node.comparators[i]
+                op = node.ops[i]
+                sub_compare = copy_location(Compare(left=left, ops=[op], comparators=[right]), node)
+                transformed = self.visit_Compare(sub_compare)
+                pairs.append(transformed if isinstance(transformed, expr) else sub_compare)
+            return copy_location(BoolOp(op=And(), values=pairs), node)
+
+        op_type = type(node.ops[0])
+        if op_type in _OP_FLIP:
+            left = node.left
+            right = node.comparators[0]
+            if not isinstance(left, (Attribute, Name)) and isinstance(right, (Attribute, Name)):
+                flipped_op = _OP_FLIP[op_type]()
+                return copy_location(
+                    Compare(left=right, ops=[flipped_op], comparators=[left]),
+                    node,
+                )
         return node
 
 
@@ -2016,11 +2094,14 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         visitor = LambdaVisitor(self._lambda_parser)
         folder = _FoldUnaryNumericConstants()
+        normalizer = _NormalizeComparisonFilters()
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
             # Fold negative literals so connector parsers see a numeric Constant (#14571).
             tree = folder.visit(tree)
+            # Normalize chained comparisons and constant-on-left comparisons (#14779).
+            tree = normalizer.visit(tree)
             visitor.visit(tree)
         created_filters = visitor.output_filters
         if len(created_filters) == 0:
