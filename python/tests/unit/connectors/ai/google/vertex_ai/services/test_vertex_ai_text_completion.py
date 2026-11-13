@@ -128,3 +128,18 @@ async def test_vertex_ai_streaming_text_completion(
 
 
 # endregion streaming text completion
+
+
+def test_vertex_ai_text_completion_usage_counts_thinking_tokens(vertex_ai_unit_test_env) -> None:
+    from google.cloud.aiplatform_v1beta1.types.prediction_service import GenerateContentResponse
+    from vertexai.generative_models import GenerationResponse
+
+    response = GenerationResponse._from_gapic(
+        GenerateContentResponse(
+            usage_metadata=GenerateContentResponse.UsageMetadata(
+                prompt_token_count=5, candidates_token_count=10, thoughts_token_count=40, total_token_count=55
+            )
+        )
+    )
+    usage = VertexAITextCompletion()._get_metadata_from_response(response)["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)

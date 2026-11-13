@@ -543,3 +543,18 @@ def test_create_streaming_chat_message_content_without_thought_signature(vertex_
 
 
 # endregion thought_signature deserialization tests
+
+
+def test_vertex_ai_chat_completion_usage_counts_thinking_tokens(vertex_ai_unit_test_env) -> None:
+    from google.cloud.aiplatform_v1beta1.types.prediction_service import GenerateContentResponse
+    from vertexai.generative_models import GenerationResponse
+
+    response = GenerationResponse._from_gapic(
+        GenerateContentResponse(
+            usage_metadata=GenerateContentResponse.UsageMetadata(
+                prompt_token_count=5, candidates_token_count=10, thoughts_token_count=40, total_token_count=55
+            )
+        )
+    )
+    usage = VertexAIChatCompletion()._get_metadata_from_response(response)["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)
