@@ -1065,7 +1065,7 @@ async def test_download_file_denied_through_symlink_to_outside(
     allowed_dir.mkdir()
     outside_dir = tmp_path / "outside"
     outside_dir.mkdir()
-    outside_file = outside_dir / "victim.txt"
+    outside_file = outside_dir / "outside.txt"
     if target_exists:
         outside_file.write_bytes(b"original")
     link = allowed_dir / "link.txt"
