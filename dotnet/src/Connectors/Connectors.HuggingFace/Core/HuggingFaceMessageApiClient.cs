@@ -73,7 +73,8 @@ internal sealed class HuggingFaceMessageApiClient
             modelId,
             endpoint,
             apiKey,
-            logger);
+            logger,
+            new Uri("https://router.huggingface.co"));
     }
 
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamCompleteChatMessageAsync(
