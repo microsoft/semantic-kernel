@@ -90,12 +90,34 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
     })
 
 
+# Preference order when the response is keyed by embedding type. It is fixed (not the JSON key order)
+# so the same requested types always yield the same representation for every text.
+_EMBEDDING_TYPE_PRIORITY = ("float", "int8", "uint8", "binary", "ubinary")
+
+
+def _is_numeric_vector(value: Any) -> bool:
+    return (
+        isinstance(value, list)
+        and len(value) > 0
+        and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in value)
+    )
+
+
 def parse_text_embedding_response(response: dict[str, Any]) -> list[float]:
     """Parse the response from text embedding for Cohere Command models."""
-    if "embeddings" not in response or not isinstance(response["embeddings"], list) or len(response["embeddings"]) == 0:
+    embeddings = response.get("embeddings")
+    if isinstance(embeddings, dict):
+        # With `embedding_types` set, the embeddings are keyed by type ({"float": [[...]], "int8": [[...]]}).
+        # Pick the first present type in a fixed priority order, then validate that it holds a non-empty vector.
+        selected = next((embeddings[t] for t in _EMBEDDING_TYPE_PRIORITY if t in embeddings), None)
+        if not isinstance(selected, list) or len(selected) == 0 or not _is_numeric_vector(selected[0]):
+            raise ServiceInvalidResponseError("The response from Cohere model does not contain valid embeddings.")
+        return selected[0]  # type: ignore
+
+    if not isinstance(embeddings, list) or len(embeddings) == 0:
         raise ServiceInvalidResponseError("The response from Cohere model does not contain embeddings.")
 
-    return response.get("embeddings")[0]  # type: ignore
+    return embeddings[0]  # type: ignore
 
 
 # endregion
