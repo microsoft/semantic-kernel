@@ -32,6 +32,16 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+# Finish reasons where Gemini stopped the response for the content, not for length or a natural end.
+_VERTEX_AI_CONTENT_FILTER_REASONS = frozenset({
+    Candidate.FinishReason.SAFETY,
+    Candidate.FinishReason.RECITATION,
+    Candidate.FinishReason.BLOCKLIST,
+    Candidate.FinishReason.PROHIBITED_CONTENT,
+    Candidate.FinishReason.SPII,
+})
+
+
 def finish_reason_from_vertex_ai_to_semantic_kernel(
     finish_reason: Candidate.FinishReason,
 ) -> SemanticKernelFinishReason | None:
@@ -45,7 +55,7 @@ def finish_reason_from_vertex_ai_to_semantic_kernel(
     if finish_reason == Candidate.FinishReason.MAX_TOKENS:
         return SemanticKernelFinishReason.LENGTH
 
-    if finish_reason == Candidate.FinishReason.SAFETY:
+    if finish_reason in _VERTEX_AI_CONTENT_FILTER_REASONS:
         return SemanticKernelFinishReason.CONTENT_FILTER
 
     return None
