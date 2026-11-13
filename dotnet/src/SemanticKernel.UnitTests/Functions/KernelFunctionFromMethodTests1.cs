@@ -1420,6 +1420,75 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(28, actualArgValue.Id);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItPreservesJsonConverterErrorsAsync(bool useJsonElement)
+    {
+        // Arrange
+        object value = useJsonElement ? JsonElement.Parse("500") : "500";
+        var function = KernelFunctionFactory.CreateFromMethod((JsonConverterTestQuantity quantity) => quantity.Value);
+
+        // Act
+        JsonException exception = await Assert.ThrowsAsync<JsonException>(
+            () => function.InvokeAsync(this._kernel, new() { ["quantity"] = value }));
+
+        // Assert
+        Assert.Contains("A quantity is between 1 and 100.", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ItDeserializesPlainStringArgumentsForJsonConverterTypesAsync()
+    {
+        // Arrange
+        const string expected = "FR7630006000011234567890189";
+        JsonConverterTestIban? actual = null;
+        var function = KernelFunctionFactory.CreateFromMethod((JsonConverterTestIban iban) => { actual = iban; });
+
+        // Act
+        await function.InvokeAsync(this._kernel, new() { ["iban"] = expected });
+
+        // Assert
+        Assert.Equal(expected, actual?.Value);
+    }
+
+    [Fact]
+    public async Task ItPreservesJsonConverterErrorsForPlainStringArgumentsAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod((JsonConverterTestIban iban) => iban.Value);
+
+        // Act
+        JsonException exception = await Assert.ThrowsAsync<JsonException>(
+            () => function.InvokeAsync(this._kernel, new() { ["iban"] = "FR76" }));
+
+        // Assert
+        Assert.Contains("An IBAN has 15 to 34 characters.", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ItUsesJsonSerializerOptionsWhenParsingPlainStringArgumentsAsync()
+    {
+        // Arrange
+        static int GetId(CustomTypeForJsonTests value) => value.Id;
+
+        var options = new JsonSerializerOptions
+        {
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+        };
+        var function = KernelFunctionFromMethod.Create(
+            ((Func<CustomTypeForJsonTests, int>)GetId).Method,
+            jsonSerializerOptions: options,
+            functionName: "GetId");
+
+        // Act
+        FunctionResult result = await function.InvokeAsync(this._kernel, new() { ["value"] = "/*comment*/{\"id\":28,}" });
+
+        // Assert
+        Assert.Equal(28, result.GetValue<int>());
+    }
+
     [Fact]
     public async Task ItCanDeserializeThirdPartyJsonPrimitivesAsync()
     {
@@ -1590,4 +1659,46 @@ public sealed class KernelFunctionFromMethodTests1
     {
         public override string ToString() => jsonToReturn;
     }
+
+#pragma warning disable CA1812 // Instantiated by System.Text.Json.
+    [JsonConverter(typeof(JsonConverterTestQuantityConverter))]
+    private sealed record JsonConverterTestQuantity(int Value);
+
+    private sealed class JsonConverterTestQuantityConverter : JsonConverter<JsonConverterTestQuantity>
+    {
+        public override JsonConverterTestQuantity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            int value = reader.GetInt32();
+            if (value is < 1 or > 100)
+            {
+                throw new JsonException("A quantity is between 1 and 100.");
+            }
+
+            return new JsonConverterTestQuantity(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, JsonConverterTestQuantity value, JsonSerializerOptions options) =>
+            writer.WriteNumberValue(value.Value);
+    }
+
+    [JsonConverter(typeof(JsonConverterTestIbanConverter))]
+    private sealed record JsonConverterTestIban(string Value);
+
+    private sealed class JsonConverterTestIbanConverter : JsonConverter<JsonConverterTestIban>
+    {
+        public override JsonConverterTestIban Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            string value = reader.GetString()!;
+            if (value.Length is < 15 or > 34)
+            {
+                throw new JsonException("An IBAN has 15 to 34 characters.");
+            }
+
+            return new JsonConverterTestIban(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, JsonConverterTestIban value, JsonSerializerOptions options) =>
+            writer.WriteStringValue(value.Value);
+    }
+#pragma warning restore CA1812
 }
