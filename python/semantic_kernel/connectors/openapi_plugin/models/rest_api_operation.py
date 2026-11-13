@@ -198,6 +198,17 @@ class RestApiOperation:
         full_path = urljoin(base_path, path.lstrip("/"))
         return urlunparse(parsed_base._replace(path=full_path))
 
+    @staticmethod
+    def _serialize_parameter_value(value: Any) -> Any:
+        """Serialize a scalar parameter value the way OpenAPI expects it on the wire.
+
+        Booleans use the JSON spelling (``true``/``false``) instead of Python's
+        ``True``/``False``; every other value is passed through unchanged.
+        """
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        return value
+
     def build_headers(self, arguments: dict[str, Any]) -> dict[str, str]:
         """Build the headers for the operation."""
         headers = {}
@@ -215,7 +226,7 @@ class RestApiOperation:
                     )
                 continue
 
-            headers[parameter.name] = str(argument)
+            headers[parameter.name] = str(self._serialize_parameter_value(argument))
 
         return headers
 
@@ -328,7 +339,9 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            path_template = path_template.replace(f"{{{parameter.name}}}", quote(str(argument), safe=""))
+            path_template = path_template.replace(
+                f"{{{parameter.name}}}", quote(str(self._serialize_parameter_value(argument)), safe="")
+            )
         self._validate_path_segments(path_template)
         return path_template
 
@@ -396,8 +409,12 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
+            if isinstance(argument, (list, tuple)):
+                argument = [self._serialize_parameter_value(item) for item in argument]
+            else:
+                argument = self._serialize_parameter_value(argument)
             segments.append((parameter.name, argument))
-        return urlencode(segments)
+        return urlencode(segments, doseq=True)
 
     def replace_invalid_symbols(self, parameter_name):
         """Replace invalid symbols in the parameter name with underscores."""
