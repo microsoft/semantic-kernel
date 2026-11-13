@@ -208,9 +208,6 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def to_element(self) -> "Element":
         """Convert the StreamingChatMessageContent to an XML Element.
 
-        Args:
-            root_key: str - The key to use for the root of the XML Element.
-
         Returns:
             Element - The XML Element representing the StreamingChatMessageContent.
         """

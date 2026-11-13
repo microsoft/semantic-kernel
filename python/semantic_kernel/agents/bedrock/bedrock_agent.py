@@ -201,7 +201,6 @@ class BedrockAgent(BedrockAgentBase):
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
                 the kernel functions and filters. Only FunctionChoiceType.AUTO is supported.
             arguments (KernelArguments, optional): The kernel arguments.
-            prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
             env_file_path (str, optional): The path to the environment file.
             env_file_encoding (str, optional): The encoding of the environment file.
 
@@ -698,7 +697,6 @@ class BedrockAgent(BedrockAgentBase):
         """Create a ChatHistoryChannel.
 
         Args:
-            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
             thread_id: The ID of the thread. If None, a new thread will be created.
 
         Returns:

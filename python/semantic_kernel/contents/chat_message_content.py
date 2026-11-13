@@ -235,9 +235,6 @@ class ChatMessageContent(KernelContent):
     def to_element(self) -> "Element":
         """Convert the ChatMessageContent to an XML Element.
 
-        Args:
-            root_key: str - The key to use for the root of the XML Element.
-
         Returns:
             Element - The XML Element representing the ChatMessageContent.
         """

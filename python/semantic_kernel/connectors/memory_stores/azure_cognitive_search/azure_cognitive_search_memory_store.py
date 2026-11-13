@@ -116,7 +116,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name (str): The name of the collection to create.
             vector_config (HnswVectorSearchAlgorithmConfiguration): Optional search algorithm configuration
                                                                       (default: {None}).
-            semantic_config (SemanticConfiguration): Optional search index configuration (default: {None}).
             search_resource_encryption_key (SearchResourceEncryptionKey): Optional Search Encryption Key
                                                                                        (default: {None}).
 
