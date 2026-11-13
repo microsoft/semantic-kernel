@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -66,18 +67,47 @@ internal sealed class HandoffActor :
         kernel.AutoFunctionInvocationFilters.Add(new HandoffInvocationFilter());
         kernel.Plugins.Add(this.CreateHandoffPlugin());
 
-        // Create invocation options that use auto-function invocation and our modified kernel.
+        // Preserve agent execution settings while enabling auto function choice for handoff plugins.
+        FunctionChoiceBehavior handoffFunctionChoice =
+            FunctionChoiceBehavior.Auto(options: new()
+            {
+                RetainArgumentTypes = true,
+            });
+
+        Dictionary<string, PromptExecutionSettings> executionSettings = [];
+        if (this.Agent.Arguments?.ExecutionSettings is { Count: > 0 } agentExecutionSettings)
+        {
+            foreach (KeyValuePair<string, PromptExecutionSettings> kv in agentExecutionSettings)
+            {
+                PromptExecutionSettings cloned = kv.Value.Clone();
+                cloned.FunctionChoiceBehavior = handoffFunctionChoice;
+                executionSettings[kv.Key] = cloned;
+            }
+        }
+        else
+        {
+            executionSettings[PromptExecutionSettings.DefaultServiceId] = new PromptExecutionSettings
+            {
+                FunctionChoiceBehavior = handoffFunctionChoice,
+            };
+        }
+
+        Dictionary<string, object?> parameters = [];
+        if (this.Agent.Arguments is { Count: > 0 } agentArguments)
+        {
+            foreach (KeyValuePair<string, object?> kv in agentArguments)
+            {
+                parameters[kv.Key] = kv.Value;
+            }
+        }
+
+        KernelArguments kernelArguments = new(parameters, executionSettings);
+
         AgentInvokeOptions options =
             new()
             {
                 Kernel = kernel,
-                KernelArguments = new(new PromptExecutionSettings
-                {
-                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new()
-                    {
-                        RetainArgumentTypes = true,
-                    })
-                }),
+                KernelArguments = kernelArguments,
                 OnIntermediateMessage = messageHandler,
             };
 
