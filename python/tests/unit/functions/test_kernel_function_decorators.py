@@ -2,11 +2,12 @@
 
 from collections.abc import AsyncGenerator, AsyncIterable
 from inspect import Parameter, Signature
-from typing import TYPE_CHECKING, Annotated, Any, Union
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
 
 import pytest
 
 from semantic_kernel.functions.kernel_function_decorator import _process_signature, kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -16,6 +17,14 @@ if TYPE_CHECKING:
 class InputObject(KernelBaseModel):
     arg1: str
     arg2: int
+
+
+class SelfReferencingInput(KernelBaseModel):
+    children: list["SelfReferencingInput"] = []
+
+
+class UnevaluableHintsInput:
+    value: "NotDefinedAnywhere"  # noqa: F821
 
 
 class MiscClass:
@@ -36,6 +45,54 @@ class MiscClass:
     @kernel_function
     def func_docstring_as_description(self, input):
         """Description."""
+        return input
+
+    @kernel_function
+    def func_forward_ref_list(self, items: list["InputObject"]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_colliding_with_module(self, items: list["pytest"]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_nested_nullable_list(self, items: list[list["InputObject"] | None]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_nullable_list(self, items: list["InputObject"] | None):
+        return items
+
+    @kernel_function
+    def func_forward_ref_dict_nested_in_union(self, items: dict[str, list["InputObject"] | None]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_self_referencing(self, items: list["SelfReferencingInput"]):
+        return items
+
+    @kernel_function
+    def func_forward_ref_optional(self, input: Optional["InputObject"] = None):
+        return input
+
+    @kernel_function
+    def func_forward_ref_union_with_none(self, input: Union["InputObject", None] = None):
+        return input
+
+    @kernel_function
+    def func_forward_ref_annotated(self, input: Annotated["InputObject", "description"]):
+        return input
+
+    @kernel_function
+    def func_forward_ref_optional_self_referencing(self, input: Optional["SelfReferencingInput"] = None):
+        return input
+
+    @kernel_function
+    def func_forward_ref_list_unevaluable_hints(self, input: list["UnevaluableHintsInput"]):
+        return input
+
+    @kernel_function
+    def func_forward_ref_optional_unevaluable_hints(self, input: Optional["UnevaluableHintsInput"] = None):
         return input
 
     @kernel_function
@@ -331,3 +388,145 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
     assert description == annotation_dict.get("description")
     assert type_ == annotation_dict["type_"]
     assert is_required == annotation_dict["is_required"]
+
+
+def test_kernel_function_resolves_forward_ref_in_list_parameter():
+    """list["InputObject"] on a kernel function parameter resolves to list[InputObject]."""
+    my_func = getattr(MiscClass(), "func_forward_ref_list")
+    param = my_func.__kernel_function_parameters__[0]
+
+    assert param["name"] == "items"
+    assert param["type_"] == "list[InputObject]"
+    assert param["type_object"] == list[InputObject]
+
+
+@pytest.mark.parametrize(
+    ("annotation", "expected_type_object", "expected_description"),
+    [
+        (list["InputObject"], list[InputObject], None),
+        (dict[str, "InputObject"], dict[str, InputObject], None),
+        (Annotated[list["InputObject"], "description"], list[InputObject], "description"),
+        (list["InputObject"] | None, list[InputObject], None),
+        (list[list["InputObject"] | None], list[list[InputObject] | None], None),
+        (dict[str, list["InputObject"] | None], dict[str, list[InputObject] | None], None),
+        (Annotated[list[list["InputObject"] | None], "description"], list[list[InputObject] | None], "description"),
+        (Optional["InputObject"], InputObject, None),
+        (Union["InputObject", None], InputObject, None),
+        (Annotated["InputObject", "description"], InputObject, "description"),
+    ],
+)
+def test_process_signature_resolves_forward_refs_with_globalns(annotation, expected_type_object, expected_description):
+    param = Parameter(
+        name="items",
+        annotation=annotation,
+        default=Parameter.empty,
+        kind=Parameter.POSITIONAL_OR_KEYWORD,
+    )
+    func_sig = Signature(parameters=[param])
+
+    annotations = _process_signature(func_sig, globals())
+
+    assert annotations[0]["type_object"] == expected_type_object
+    assert annotations[0].get("description") == expected_description
+
+
+def test_process_signature_without_globalns_leaves_forward_refs_unchanged():
+    """Callers that pass no namespace get the previous behaviour."""
+    param = Parameter(
+        name="items",
+        annotation=list["InputObject"],
+        default=Parameter.empty,
+        kind=Parameter.POSITIONAL_OR_KEYWORD,
+    )
+    func_sig = Signature(parameters=[param])
+
+    annotations = _process_signature(func_sig)
+
+    assert annotations[0]["type_object"] == list["InputObject"]
+
+
+def test_kernel_function_forward_ref_that_names_a_module_is_left_unresolved():
+    """A reference colliding with a non type global must not be substituted or raise at decoration."""
+    my_func = getattr(MiscClass(), "func_forward_ref_colliding_with_module")
+    param = my_func.__kernel_function_parameters__[0]
+
+    assert param["type_"] == "list[pytest]"
+    assert param["type_object"] == list["pytest"]
+
+
+def _parameter_schema(function_name):
+    my_func = getattr(MiscClass(), function_name)
+    return KernelFunctionFromMethod(method=my_func, plugin_name="test").metadata.parameters[0].schema_data
+
+
+INPUT_OBJECT_PROPERTIES = {"arg1": {"type": "string"}, "arg2": {"type": "integer"}}
+
+
+def test_kernel_function_schema_resolves_forward_ref_in_nested_nullable_list():
+    schema = _parameter_schema("func_forward_ref_nested_nullable_list")
+
+    assert schema["type"] == "array"
+    assert schema["items"]["type"] == ["array", "null"]
+    assert schema["items"]["items"]["properties"] == INPUT_OBJECT_PROPERTIES
+
+
+def test_kernel_function_schema_resolves_forward_ref_in_nullable_list():
+    schema = _parameter_schema("func_forward_ref_nullable_list")
+
+    assert schema["items"]["properties"] == INPUT_OBJECT_PROPERTIES
+
+
+def test_kernel_function_schema_resolves_forward_ref_in_dict_nested_in_union():
+    schema = _parameter_schema("func_forward_ref_dict_nested_in_union")
+
+    assert schema["additionalProperties"]["type"] == ["array", "null"]
+    assert schema["additionalProperties"]["items"]["properties"] == INPUT_OBJECT_PROPERTIES
+
+
+def test_kernel_function_schema_stops_at_a_self_reference():
+    """Resolving the reference must not turn the placeholder into a recursion error at registration."""
+    schema = _parameter_schema("func_forward_ref_self_referencing")
+
+    assert schema["items"]["properties"]["children"] == {"type": "array", "items": {"type": "object"}}
+
+
+@pytest.mark.parametrize(
+    "function_name",
+    ["func_forward_ref_optional", "func_forward_ref_union_with_none", "func_forward_ref_annotated"],
+)
+def test_kernel_function_schema_resolves_bare_forward_ref(function_name):
+    """Unwrapping these annotations leaves a bare ForwardRef, which has no origin to walk."""
+    schema = _parameter_schema(function_name)
+
+    assert schema["properties"] == INPUT_OBJECT_PROPERTIES
+    assert schema["required"] == ["arg1", "arg2"]
+
+
+@pytest.mark.parametrize(
+    "function_name",
+    ["func_forward_ref_optional", "func_forward_ref_union_with_none", "func_forward_ref_annotated"],
+)
+async def test_kernel_function_invocation_parses_bare_forward_ref(function_name, kernel):
+    function = KernelFunctionFromMethod(method=getattr(MiscClass(), function_name), plugin_name="test")
+
+    result = await function.invoke(kernel, input={"arg1": "a", "arg2": 1})
+
+    assert result.value == InputObject(arg1="a", arg2=1)
+
+
+def test_kernel_function_schema_stops_at_a_bare_self_reference():
+    schema = _parameter_schema("func_forward_ref_optional_self_referencing")
+
+    assert schema["properties"]["children"] == {"type": "array", "items": {"type": "object"}}
+
+
+@pytest.mark.parametrize(
+    ("function_name", "expected_schema"),
+    [
+        ("func_forward_ref_list_unevaluable_hints", {"type": "array", "items": {"type": "object"}}),
+        ("func_forward_ref_optional_unevaluable_hints", {"type": "object"}),
+    ],
+)
+def test_kernel_function_schema_keeps_placeholder_when_class_hints_do_not_evaluate(function_name, expected_schema):
+    """A class that cannot be built must not fail registration where the placeholder used to apply."""
+    assert _parameter_schema(function_name) == expected_schema
