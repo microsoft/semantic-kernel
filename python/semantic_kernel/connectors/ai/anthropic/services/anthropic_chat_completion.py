@@ -311,7 +311,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                     id=tool_use_block.id,
                     index=stream_event.index,
                     name=tool_use_block.name,
-                    arguments=json.dumps(tool_use_block.input) if tool_use_block.input else None,
+                    arguments=json.dumps(tool_use_block.input) if tool_use_block.input is not None else None,
                 )
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
