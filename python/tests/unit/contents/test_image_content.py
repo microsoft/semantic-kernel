@@ -38,6 +38,12 @@ def test_create_data():
     assert image.data == b"test_data"
 
 
+def test_create_svg_data_uri():
+    image = ImageContent(data_uri="data:image/svg+xml;base64,PHN2Zy8+")
+    assert image.mime_type == "image/svg+xml"
+    assert image.data == b"<svg/>"
+
+
 def test_to_str_uri():
     image = ImageContent(uri="http://test_uri")
     assert str(image) == "http://test_uri/"
