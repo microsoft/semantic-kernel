@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.ai.inference.models import JsonSchemaFormat, UserMessage
+from azure.ai.inference.models import JsonSchemaFormat, StreamingChatCompletionsUpdate, UserMessage
 from azure.core.credentials import AzureKeyCredential
 from pydantic import BaseModel, Field
 
@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
@@ -705,6 +706,102 @@ async def test_azure_ai_inference_streaming_response_format_json_schema(
     assert schema["properties"]["bar"]["type"] == "boolean"
     assert kwargs["stream"] is True
     assert kwargs["model"] == model_id
+
+
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+@patch.object(ChatCompletionsClient, "complete", new_callable=AsyncMock)
+async def test_azure_ai_inference_streaming_parallel_tool_calls_keep_their_index(
+    mock_complete,
+    azure_ai_inference_service,
+    model_id,
+    chat_history: ChatHistory,
+) -> None:
+    """Test that streamed parallel tool calls use the tool call index, not the choice index."""
+
+    def chunk(tool_call: dict) -> StreamingChatCompletionsUpdate:
+        return StreamingChatCompletionsUpdate({
+            "id": "test_id",
+            "created": 0,
+            "model": model_id,
+            "choices": [{"index": 0, "delta": {"role": "assistant", "tool_calls": [tool_call]}}],
+        })
+
+    stream = MagicMock()
+    stream.__aiter__.return_value = [
+        chunk({"index": 0, "id": "call_1", "function": {"name": "Weather-get_weather", "arguments": ""}}),
+        chunk({"index": 0, "function": {"arguments": '{"city": "Paris"}'}}),
+        chunk({"index": 1, "id": "call_2", "function": {"name": "Time-get_time", "arguments": ""}}),
+        chunk({"index": 1, "function": {"arguments": '{"zone": "Tokyo"}'}}),
+    ]
+    mock_complete.return_value = stream
+    chat_history.add_user_message("What is the weather in Paris and the time in Tokyo?")
+
+    full_message = None
+    async for messages in azure_ai_inference_service.get_streaming_chat_message_contents(
+        chat_history, AzureAIInferenceChatPromptExecutionSettings()
+    ):
+        full_message = messages[0] if full_message is None else full_message + messages[0]
+
+    function_calls = [item for item in full_message.items if isinstance(item, FunctionCallContent)]
+    assert [(fc.id, fc.index, fc.name, fc.arguments) for fc in function_calls] == [
+        ("call_1", 0, "Weather-get_weather", '{"city": "Paris"}'),
+        ("call_2", 1, "Time-get_time", '{"zone": "Tokyo"}'),
+    ]
+
+
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+@patch.object(ChatCompletionsClient, "complete", new_callable=AsyncMock)
+async def test_azure_ai_inference_streaming_tool_calls_without_index_use_their_position(
+    mock_complete,
+    azure_ai_inference_service,
+    model_id,
+    chat_history: ChatHistory,
+) -> None:
+    """Test that tool calls without an index in a single delta are indexed by their position."""
+    stream = MagicMock()
+    stream.__aiter__.return_value = [
+        StreamingChatCompletionsUpdate({
+            "id": "test_id",
+            "created": 0,
+            "model": model_id,
+            "choices": [
+                {
+                    "index": 0,
+                    "delta": {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "function": {"name": "Weather-get_weather", "arguments": '{"city": "Paris"}'},
+                            },
+                            {"id": "call_2", "function": {"name": "Time-get_time", "arguments": '{"zone": "Tokyo"}'}},
+                        ],
+                    },
+                }
+            ],
+        })
+    ]
+    mock_complete.return_value = stream
+    chat_history.add_user_message("What is the weather in Paris and the time in Tokyo?")
+
+    messages = [
+        message
+        async for chunk in azure_ai_inference_service.get_streaming_chat_message_contents(
+            chat_history, AzureAIInferenceChatPromptExecutionSettings()
+        )
+        for message in chunk
+    ]
+
+    function_calls = [item for item in messages[0].items if isinstance(item, FunctionCallContent)]
+    assert [(fc.id, fc.index) for fc in function_calls] == [("call_1", 0), ("call_2", 1)]
 
 
 # endregion streaming chat completion

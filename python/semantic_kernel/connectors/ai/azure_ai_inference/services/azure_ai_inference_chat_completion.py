@@ -349,12 +349,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 )
             )
         if choice.delta.tool_calls:
-            for tool_call in choice.delta.tool_calls:
+            for idx, tool_call in enumerate(choice.delta.tool_calls):
                 if isinstance(tool_call, StreamingChatResponseToolCallUpdate):
+                    # The SDK model has no index field, but the service sends one for each tool call.
+                    index = tool_call.get("index")
                     items.append(
                         FunctionCallContent(
                             id=tool_call.id,
-                            index=choice.index,
+                            index=idx if index is None else index,
                             name=tool_call.function.name,
                             arguments=tool_call.function.arguments,
                         )
