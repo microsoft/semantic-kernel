@@ -1,0 +1,30 @@
+[package]
+name = "getting_started_with_vector_stores"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step01_ingest_data"
+path = "step01_ingest_data.rs"
+
+[[bin]]
+name = "step02_vector_search"
+path = "step02_vector_search.rs"
+
+[[bin]]
+name = "step03_switch_vectorstore"
+path = "step03_switch_vectorstore.rs"
+
+[[bin]]
+name = "step04_use_dynamicdatamodel"
+path = "step04_use_dynamicdatamodel.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-openai = { path = "../../sk-openai" }
+sk-memory = { path = "../../sk-memory", features = ["qdrant"] }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+dotenv = { workspace = true }
