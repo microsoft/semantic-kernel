@@ -376,10 +376,14 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             required_param_names = {
                 param.name for param in function_to_call.parameters if param.name is not None and param.is_required
             }
+            # Parameters hidden from the model (include_in_function_choices=False) can only be set by the host.
+            model_param_names = {
+                param.name for param in function_to_call.parameters if param.include_in_function_choices
+            }
             received_param_names = set(parsed_args or {})
 
             missing_params = required_param_names - received_param_names
-            unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+            unexpected_params = received_param_names - model_param_names
 
             if missing_params or unexpected_params:
                 msg_parts = []
