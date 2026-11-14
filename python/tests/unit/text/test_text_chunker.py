@@ -532,3 +532,62 @@ def test_split_md_on_newlines():
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
     assert expected == split
+
+
+def test_split_str_flags_fully_resolved_input():
+    """Test _split_str() reporting whether every returned chunk fits the token budget (issue #14490)"""
+    from semantic_kernel.text.text_chunker import _split_str
+
+    # Text that fits the budget is reported as fully resolved.
+    lines, all_fit = _split_str("Short text.", max_tokens=100, separators=["."], trim=True)
+    assert lines == ["Short text."]
+    assert all_fit is True
+
+    # A split that resolves every chunk is reported as fully resolved.
+    lines, all_fit = _split_str("One. Two.", max_tokens=1, separators=["."], trim=True)
+    assert lines == ["One.", "Two."]
+    assert all_fit is True
+
+    # A chunk that no separator in the current tier can split is reported as not
+    # resolved, so the caller keeps trying the weaker tiers.
+    lines, all_fit = _split_str("OneLongUnbreakableWord", max_tokens=1, separators=["."], trim=True)
+    assert lines == ["OneLongUnbreakableWord"]
+    assert all_fit is False
+
+
+def test_split_text_lines_stops_after_fully_resolved_tier(monkeypatch):
+    """Test that no weaker separator tier runs once one tier resolved every chunk (issue #14490)"""
+    from semantic_kernel.text import text_chunker as tc
+
+    calls = {"count": 0}
+    original_split_list = tc._split_list
+
+    def counting_split_list(*args, **kwargs):
+        calls["count"] += 1
+        return original_split_list(*args, **kwargs)
+
+    monkeypatch.setattr(tc, "_split_list", counting_split_list)
+
+    text = "\n".join(f"Line number {i} is short." for i in range(30))
+    split = tc.split_plaintext_lines(text, max_token_per_line=50)
+
+    # The newline tier fully resolves this input; before the fix every one of the
+    # nine weaker tiers re-scanned the finished chunks (9 _split_list calls).
+    assert calls["count"] == 0
+    assert split == [
+        "\n".join(f"Line number {i} is short." for i in range(0, 8)),
+        "\n".join(f"Line number {i} is short." for i in range(8, 15)),
+        "\n".join(f"Line number {i} is short." for i in range(15, 22)),
+        "\n".join(f"Line number {i} is short." for i in range(22, 30)),
+    ]
+
+
+def test_split_text_lines_keeps_splitting_oversized_remainders():
+    """Test that a tier leaving an oversized chunk without its separators does not stop the loop (issue #14490)"""
+    from semantic_kernel.text.text_chunker import _token_counter
+
+    text = ("One. Two. Three. Four. Five. Six. Seven. Eight. Nine. Ten. " * 3) + "A" * 300
+    split = split_plaintext_lines(text, max_token_per_line=50)
+
+    assert split
+    assert all(_token_counter(chunk) <= 50 for chunk in split)

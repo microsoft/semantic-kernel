@@ -197,10 +197,10 @@ def _split_str_lines(
 
     text = text.replace("\r\n", "\n")
     lines: list[str] = []
-    was_split = False
+    all_chunks_fit = False
     for split_option in separators:
         if not lines:
-            lines, was_split = _split_str(
+            lines, all_chunks_fit = _split_str(
                 text=text,
                 max_tokens=max_tokens,
                 separators=split_option,
@@ -208,15 +208,15 @@ def _split_str_lines(
                 token_counter=token_counter,
             )
         else:
-            lines, was_split = _split_list(
+            lines, all_chunks_fit = _split_list(
                 text=lines,
                 max_tokens=max_tokens,
                 separators=split_option,
                 trim=trim,
                 token_counter=token_counter,
             )
-        if was_split:
-            break  # pragma: no cover
+        if all_chunks_fit:
+            break
 
     return lines
 
@@ -228,10 +228,14 @@ def _split_str(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:
-    """Split text into lines."""
-    input_was_split = False
+    """Split text into lines.
+
+    Returns the chunks and whether every returned chunk fits within ``max_tokens``;
+    a chunk that does not fit needs a weaker separator tier to be split further.
+    """
+    all_chunks_fit = False
     if not text:
-        return [], input_was_split  # pragma: no cover
+        return [], all_chunks_fit  # pragma: no cover
 
     if trim:
         text = text.strip()
@@ -239,7 +243,9 @@ def _split_str(
     text_as_is = [text]
 
     if token_counter(text) <= max_tokens:
-        return text_as_is, input_was_split
+        # A chunk trimmed down to "" cannot be finalized here; report it as not
+        # resolved so the next, weaker tier drops it.
+        return text_as_is, bool(text)
 
     half = len(text) // 2
 
@@ -260,12 +266,13 @@ def _split_str(
                 # distance is increasing, so we can stop searching
                 break
     else:
-        return text_as_is, input_was_split
+        return text_as_is, False
 
     if 0 < cutpoint < len(text):
         lines = []
+        all_chunks_fit = True
         for text_part in [text[:cutpoint], text[cutpoint:]]:
-            split, has_split = _split_str(
+            split, part_fits = _split_str(
                 text=text_part,
                 max_tokens=max_tokens,
                 separators=separators,
@@ -273,11 +280,11 @@ def _split_str(
                 token_counter=token_counter,
             )
             lines.extend(split)
-            input_was_split = input_was_split or has_split
+            all_chunks_fit = all_chunks_fit and part_fits
     else:
-        return text_as_is, input_was_split
+        return text_as_is, False
 
-    return lines, input_was_split
+    return lines, all_chunks_fit
 
 
 def _split_list(
@@ -287,14 +294,17 @@ def _split_list(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:
-    """Split list of string into lines."""
+    """Split list of string into lines.
+
+    Returns the chunks and whether every returned chunk fits within ``max_tokens``.
+    """
     if not text:
         return [], False  # pragma: no cover
 
     lines = []
-    input_was_split = False
+    all_chunks_fit = True
     for line in text:
-        split_str, was_split = _split_str(
+        split_str, part_fits = _split_str(
             text=line,
             max_tokens=max_tokens,
             separators=separators,
@@ -302,6 +312,6 @@ def _split_list(
             token_counter=token_counter,
         )
         lines.extend(split_str)
-        input_was_split = input_was_split or was_split
+        all_chunks_fit = all_chunks_fit and part_fits
 
-    return lines, input_was_split
+    return lines, all_chunks_fit
