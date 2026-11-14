@@ -407,7 +407,7 @@ class VectorStoreField:
         """Vector store field."""
         self.field_type = field_type if isinstance(field_type, FieldTypes) else FieldTypes(field_type)
         # when a field is created, the name can be empty,
-        # when a field get's added to a definition, the name needs to be there.
+        # when a field gets added to a definition, the name needs to be there.
         if name:
             self.name = name
         self.storage_name = storage_name

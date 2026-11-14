@@ -278,7 +278,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 size of total size. Defaults to 100.
 
         Raises:
-            Exception: Collection doesnt exist.
+            Exception: Collection doesn't exist.
             e: Failed to upsert a record.
 
         Returns:
@@ -360,7 +360,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             keys (List[str]): The list of keys.
 
         Raises:
-            Exception: Collection doesnt exist.
+            Exception: Collection doesn't exist.
             e: Failure to remove key.
         """
         if collection_name not in utility.list_collections():

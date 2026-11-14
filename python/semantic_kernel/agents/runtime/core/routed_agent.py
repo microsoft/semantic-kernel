@@ -19,7 +19,7 @@ ReceivesT = TypeVar("ReceivesT")
 ProducesT = TypeVar("ProducesT", covariant=True)
 
 # TODO(evmattso): Generic typevar bound binding U to agent type
-# Can't do because python doesnt support it
+# Can't do because python doesn't support it
 
 # region MessageHandler Protocol and Methods
 
