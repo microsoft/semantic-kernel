@@ -753,4 +753,55 @@ async def test_azure_ai_inference_streaming_parallel_tool_calls_keep_their_index
     ]
 
 
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+@patch.object(ChatCompletionsClient, "complete", new_callable=AsyncMock)
+async def test_azure_ai_inference_streaming_tool_calls_without_index_use_their_position(
+    mock_complete,
+    azure_ai_inference_service,
+    model_id,
+    chat_history: ChatHistory,
+) -> None:
+    """Test that tool calls without an index in a single delta are indexed by their position."""
+    stream = MagicMock()
+    stream.__aiter__.return_value = [
+        StreamingChatCompletionsUpdate({
+            "id": "test_id",
+            "created": 0,
+            "model": model_id,
+            "choices": [
+                {
+                    "index": 0,
+                    "delta": {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "function": {"name": "Weather-get_weather", "arguments": '{"city": "Paris"}'},
+                            },
+                            {"id": "call_2", "function": {"name": "Time-get_time", "arguments": '{"zone": "Tokyo"}'}},
+                        ],
+                    },
+                }
+            ],
+        })
+    ]
+    mock_complete.return_value = stream
+    chat_history.add_user_message("What is the weather in Paris and the time in Tokyo?")
+
+    messages = [
+        message
+        async for chunk in azure_ai_inference_service.get_streaming_chat_message_contents(
+            chat_history, AzureAIInferenceChatPromptExecutionSettings()
+        )
+        for message in chunk
+    ]
+
+    function_calls = [item for item in messages[0].items if isinstance(item, FunctionCallContent)]
+    assert [(fc.id, fc.index) for fc in function_calls] == [("call_1", 0), ("call_2", 1)]
+
+
 # endregion streaming chat completion
