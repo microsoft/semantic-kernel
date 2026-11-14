@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -19,6 +20,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     private readonly string _embeddingModelId;
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
+    private readonly bool _isGeminiModel;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Vertex AI.
@@ -54,7 +56,10 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         string baseUri = GetVertexAIBaseUri(location);
 
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
+        this._isGeminiModel = modelId.StartsWith("gemini-", StringComparison.OrdinalIgnoreCase);
+
+        string action = this._isGeminiModel ? "embedContent" : "predict";
+        this._embeddingEndpoint = new Uri($"{baseUri}/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:{action}");
         this._dimensions = dimensions;
     }
 
@@ -72,13 +77,59 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
-        var geminiRequest = this.GetEmbeddingRequest(data, options);
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
+        if (this._isGeminiModel)
+        {
+            var results = new List<ReadOnlyMemory<float>>(data.Count);
+            foreach (var text in data)
+            {
+                var request = this.GetGeminiEmbeddingRequest(text, options);
+                using var httpRequestMessage = await this.CreateHttpRequestAsync(request, this._embeddingEndpoint).ConfigureAwait(false);
+                string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                var response = DeserializeResponse<VertexAIGeminiEmbeddingResponse>(body);
+                results.Add(response.Embedding.Values);
+            }
+            return results;
+        }
+        else
+        {
+            var geminiRequest = this.GetEmbeddingRequest(data, options);
+            using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        return DeserializeAndProcessEmbeddingsResponse(body);
+            return DeserializeAndProcessEmbeddingsResponse(body);
+        }
+    }
+
+    private GoogleAIEmbeddingRequest.RequestEmbeddingContent GetGeminiEmbeddingRequest(string text, EmbeddingGenerationOptions? options = null)
+    {
+        static string? GetTaskType(EmbeddingGenerationOptions? options)
+        {
+            if (options?.AdditionalProperties is not null)
+            {
+                object? taskType = null;
+                object? task_type = null;
+
+                if (options?.AdditionalProperties.TryGetValue("task_type", out task_type) == true ||
+                    options?.AdditionalProperties.TryGetValue("tasktype", out taskType) == true)
+                {
+                    return (task_type ?? taskType)?.ToString();
+                }
+            }
+            return null;
+        }
+
+        return new GoogleAIEmbeddingRequest.RequestEmbeddingContent
+        {
+            Model = null,
+            Content = new GeminiContent
+            {
+                Parts = new List<GeminiPart> { new GeminiPart { Text = text } }
+            },
+            Dimensions = options?.Dimensions ?? this._dimensions,
+            TaskType = GetTaskType(options)
+        };
     }
 
     private VertexAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
@@ -89,4 +140,11 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
 
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(VertexAIEmbeddingResponse embeddingsResponse)
         => embeddingsResponse.Predictions.Select(prediction => prediction.Embeddings.Values).ToList();
+
+    internal sealed class VertexAIGeminiEmbeddingResponse
+    {
+        [JsonPropertyName("embedding")]
+        [JsonRequired]
+        public GoogleAIEmbeddingResponse.EmbeddingsValues Embedding { get; set; } = null!;
+    }
 }
