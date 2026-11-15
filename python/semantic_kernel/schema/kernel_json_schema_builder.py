@@ -171,6 +171,9 @@ class KernelJsonSchemaBuilder:
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
+        Supports standard generic containers including list, set, Sequence,
+        MutableSequence, dict, Mapping, MutableMapping, tuple, Literal, and Union.
+
         Args:
             parameter_type: The parameter type.
             description: The description of the parameter. Defaults to None.
