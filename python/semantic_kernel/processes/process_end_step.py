@@ -37,6 +37,8 @@ class EndStep(ProcessStepBuilder):
         super().__init__(
             name=self.END_STEP_VALUE,
         )
+        # The runtimes recognize the end of the process by this id, so it must not be random.
+        self.id = self.END_STEP_ID
 
     def get_function_metadata_map(
         self, plugin_type, name: str | None = None, kernel: "Kernel | None" = None
