@@ -209,6 +209,18 @@ class RestApiOperation:
             return "true" if value else "false"
         return value
 
+    @staticmethod
+    def _serialize_simple_parameter_value(value: Any) -> str:
+        """Serialize a value for a ``simple``-style parameter (path or header).
+
+        ``simple`` is the OpenAPI default style for path and header parameters:
+        arrays are comma-separated, with each item serialized as a scalar
+        (so booleans inside an array also use the ``true``/``false`` spelling).
+        """
+        if isinstance(value, (list, tuple)):
+            return ",".join(str(RestApiOperation._serialize_parameter_value(item)) for item in value)
+        return str(RestApiOperation._serialize_parameter_value(value))
+
     def build_headers(self, arguments: dict[str, Any]) -> dict[str, str]:
         """Build the headers for the operation."""
         headers = {}
@@ -226,7 +238,7 @@ class RestApiOperation:
                     )
                 continue
 
-            headers[parameter.name] = str(self._serialize_parameter_value(argument))
+            headers[parameter.name] = self._serialize_simple_parameter_value(argument)
 
         return headers
 
@@ -339,9 +351,15 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            path_template = path_template.replace(
-                f"{{{parameter.name}}}", quote(str(self._serialize_parameter_value(argument)), safe="")
-            )
+            if isinstance(argument, (list, tuple)):
+                # `simple`-style arrays are comma-separated; quote each item on its
+                # own so the separator comma itself is not percent-encoded.
+                serialized_argument = ",".join(
+                    quote(str(self._serialize_parameter_value(item)), safe="") for item in argument
+                )
+            else:
+                serialized_argument = quote(str(self._serialize_parameter_value(argument)), safe="")
+            path_template = path_template.replace(f"{{{parameter.name}}}", serialized_argument)
         self._validate_path_segments(path_template)
         return path_template
 
