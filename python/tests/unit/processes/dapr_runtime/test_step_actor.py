@@ -463,3 +463,41 @@ async def test_handle_message_success_emits_result_and_resets_inputs(mock_actor_
     assert emitted.id == "f1.OnResult"
     assert emitted.data == "out"
     assert mock_actor_context.inputs["f1"] == {"x": None}
+
+
+async def test_handle_message_partial_input_ignores_other_function_that_needs_no_input(mock_actor_context):
+    """Partial fill of one function waits even when another function needs no input."""
+    mock_actor_context.step_info = DaprStepInfo(
+        state=KernelProcessStepState(name="S", version="v", id="id"),
+        inner_step_python_type="Type",
+        edges={},
+    )
+    mock_actor_context.step_activated = True
+    mock_actor_context.functions = {
+        "add": MagicMock(plugin_name="plug", name="add"),
+        "ready": MagicMock(plugin_name="plug", name="ready"),
+    }
+    mock_actor_context.inputs = {"add": {"a": None, "b": None}, "ready": {}}
+    mock_actor_context.initial_inputs = {"add": {"a": None, "b": None}, "ready": {}}
+
+    class DummyResult:
+        value = "out"
+
+    mock_actor_context.invoke_function = AsyncMock(return_value=DummyResult())
+    mock_actor_context.emit_event = AsyncMock()
+
+    await mock_actor_context.handle_message(
+        ProcessMessage(source_id="s", destination_id="d", function_name="add", values={"a": 1})
+    )
+    mock_actor_context.invoke_function.assert_not_awaited()
+    mock_actor_context.emit_event.assert_not_awaited()
+    assert mock_actor_context.inputs["add"] == {"a": 1, "b": None}
+
+    await mock_actor_context.handle_message(
+        ProcessMessage(source_id="s", destination_id="d", function_name="add", values={"b": 2})
+    )
+    mock_actor_context.invoke_function.assert_awaited_once()
+    assert mock_actor_context.invoke_function.call_args.args[0] is mock_actor_context.functions["add"]
+    assert mock_actor_context.invoke_function.call_args.args[2] == {"a": 1, "b": 2}
+    assert mock_actor_context.emit_event.call_args.args[0].id == "add.OnResult"
+    assert mock_actor_context.inputs["add"] == {"a": None, "b": None}

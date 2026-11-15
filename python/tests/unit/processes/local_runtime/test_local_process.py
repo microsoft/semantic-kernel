@@ -8,6 +8,7 @@ import pytest
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
@@ -16,10 +17,13 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEventVisibility,
 )
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_process import LocalProcess
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
+from semantic_kernel.processes.process_builder import ProcessBuilder
 
 
 @pytest.fixture
@@ -356,3 +360,38 @@ def mock_process_with_steps(mock_process, mock_kernel, build_model):
 
     local_process.steps = [step_1, step_2]
     return local_process
+
+
+class _RelayStep(KernelProcessStep):
+    @kernel_function
+    async def pass_on(self, value: str) -> str:
+        return value
+
+
+class _AddWithResetStep(KernelProcessStep):
+    calls: list[tuple] = []
+
+    @kernel_function
+    async def reset(self) -> str:
+        type(self).calls.append(("reset",))
+        return "reset"
+
+    @kernel_function
+    async def add(self, a: str, b: str) -> str:
+        type(self).calls.append(("add", a, b))
+        return f"{a}{b}"
+
+
+async def test_process_waits_for_partial_inputs_when_step_also_has_no_input_function():
+    """Fan-in to add(a,b) succeeds even when the same step also has a no-input reset()."""
+    _AddWithResetStep.calls = []
+    builder = ProcessBuilder(name="fan_in")
+    relay = builder.add_step(_RelayStep)
+    step = builder.add_step(_AddWithResetStep)
+    builder.on_input_event("go").send_event_to(step, function_name="add", parameter_name="a")
+    builder.on_input_event("go").send_event_to(relay, function_name="pass_on", parameter_name="value")
+    relay.on_function_result("pass_on").send_event_to(step, function_name="add", parameter_name="b")
+
+    await start(process=builder.build(), kernel=Kernel(), initial_event=KernelProcessEvent(id="go", data="x"))
+
+    assert _AddWithResetStep.calls == [("add", "x", "x")]
