@@ -279,6 +279,16 @@ def test_build_mutable_mapping():
     }
 
 
+def test_build_optional_sequence():
+    schema = KernelJsonSchemaBuilder.build(Optional[Sequence[int]])
+    assert schema == {"type": ["array", "null"], "items": {"type": "integer"}}
+
+
+def test_build_optional_mapping():
+    schema = KernelJsonSchemaBuilder.build(Optional[Mapping[str, str]])
+    assert schema == {"type": ["object", "null"], "additionalProperties": {"type": "string"}}
+
+
 def test_build_union():
     schema = KernelJsonSchemaBuilder.build(Union[int, str])
     assert schema == {"anyOf": [{"type": "integer"}, {"type": "string"}]}
