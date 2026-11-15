@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="FunctionCallContent")
 
-EMPTY_VALUES: Final[list[str | None]] = ["", "{}", None]
+EMPTY_VALUES: Final[list[str | None]] = ["", None]
 
 
 class FunctionCallContent(KernelContent):
@@ -146,7 +146,28 @@ class FunctionCallContent(KernelContent):
             return arg2 or "{}"
         if arg2 in EMPTY_VALUES:
             return arg1 or "{}"
+        # A literal "{}" is only a placeholder when it stands next to a complete value. As the accumulated
+        # first side it is a finished empty object, so anything that follows replaces it. As the second side
+        # it is dropped only when the first side already parses as a complete object, otherwise it is a real
+        # delta (for example the value of a nested key) and must be kept.
+        if arg1 == "{}":
+            return arg2 or "{}"
+        if arg2 == "{}" and self._is_complete_object(arg1):
+            return arg1 or "{}"
         return (arg1 or "") + (arg2 or "")
+
+    @staticmethod
+    def _is_complete_object(value: str | None) -> bool:
+        """Check if the value is a complete JSON object."""
+        try:
+            return isinstance(json.loads(value or ""), Mapping)
+        except json.JSONDecodeError:
+            pass
+        try:
+            # Same single quote preprocessing as parse_arguments.
+            return isinstance(json.loads(re.sub(r"(?<!\\)'", '"', value or "").replace("\\'", "'")), Mapping)
+        except json.JSONDecodeError:
+            return False
 
     def parse_arguments(self) -> Mapping[str, Any] | None:
         """Parse the arguments into a dictionary."""
