@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 from unittest.mock import Mock
@@ -260,6 +260,23 @@ def test_build_sequence():
 def test_build_mutable_sequence():
     schema = KernelJsonSchemaBuilder.build(MutableSequence[str])
     assert schema == {"type": "array", "items": {"type": "string"}}
+
+
+def test_build_mapping():
+    schema = KernelJsonSchemaBuilder.build(Mapping[str, int], "counts")
+    assert schema == {
+        "type": "object",
+        "additionalProperties": {"type": "integer"},
+        "description": "counts",
+    }
+
+
+def test_build_mutable_mapping():
+    schema = KernelJsonSchemaBuilder.build(MutableMapping[str, float])
+    assert schema == {
+        "type": "object",
+        "additionalProperties": {"type": "number"},
+    }
 
 
 def test_build_union():
