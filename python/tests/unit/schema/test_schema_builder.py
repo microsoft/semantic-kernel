@@ -289,6 +289,22 @@ def test_build_optional_mapping():
     assert schema == {"type": ["object", "null"], "additionalProperties": {"type": "string"}}
 
 
+def test_build_sequence_and_mapping_with_structured_output():
+    seq_schema = KernelJsonSchemaBuilder.build(Sequence[str], description="a list of names", structured_output=True)
+    assert seq_schema == {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "a list of names",
+    }
+
+    map_schema = KernelJsonSchemaBuilder.build(Mapping[str, int], description="lookup table", structured_output=True)
+    assert map_schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "description": "lookup table",
+    }
+
+
 def test_build_union():
     schema = KernelJsonSchemaBuilder.build(Union[int, str])
     assert schema == {"anyOf": [{"type": "integer"}, {"type": "string"}]}
