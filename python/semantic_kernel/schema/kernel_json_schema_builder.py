@@ -2,7 +2,7 @@
 
 import sys
 import types
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from enum import Enum
 from typing import Any, ClassVar, Literal, Union, get_args, get_origin, get_type_hints
 
@@ -192,7 +192,7 @@ class KernelJsonSchemaBuilder:
             if description:
                 schema["description"] = description
             return schema
-        if origin is dict:
+        if origin is dict or origin is Mapping or origin is MutableMapping:
             _, value_type = args
             additional_properties = cls.build(value_type, structured_output=structured_output)
             if additional_properties == {"type": "object"}:
