@@ -996,6 +996,66 @@ async def test_upload_file_succeeds_within_allowed_directory(
 
 
 @patch("httpx.AsyncClient.get")
+@patch("httpx.AsyncClient.post")
+async def test_upload_file_nested_file_succeeds_within_allowed_directory(
+    mock_post, mock_get, aca_python_sessions_unit_test_env, tmp_path
+):
+    """Test that upload_file succeeds for a file nested in a subdirectory within allowed directories."""
+
+    async def async_return(result):
+        return result
+
+    allowed_dir = tmp_path / "allowed"
+    sub_dir = allowed_dir / "subdir"
+    sub_dir.mkdir(parents=True)
+    test_file = sub_dir / "nested_test.txt"
+    test_file.write_text("nested content")
+
+    with patch(
+        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+        return_value="test_token",
+    ):
+        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_response = httpx.Response(
+            status_code=200,
+            json={"$id": "1", "value": []},
+            request=mock_request,
+        )
+        mock_post.return_value = await async_return(mock_response)
+
+        mock_get_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_get_response = httpx.Response(
+            status_code=200,
+            json={
+                "$id": "1",
+                "value": [
+                    {
+                        "$id": "2",
+                        "properties": {
+                            "$id": "3",
+                            "filename": "nested_test.txt",
+                            "size": 14,
+                            "lastModifiedTime": "2024-07-02T19:29:23.4369699Z",
+                        },
+                    },
+                ],
+            },
+            request=mock_get_request,
+        )
+        mock_get.return_value = await async_return(mock_get_response)
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            enable_dangerous_file_uploads=True,
+            allowed_upload_directories={str(allowed_dir)},
+        )
+
+        result = await plugin.upload_file(local_file_path=str(test_file))
+        assert result.filename == "nested_test.txt"
+        mock_post.assert_awaited_once()
+
+
+@patch("httpx.AsyncClient.get")
 async def test_download_file_works_without_allowed_directories(mock_get, aca_python_sessions_unit_test_env, tmp_path):
     """Test that download_file works without restrictions when allowed_download_directories is None."""
 
