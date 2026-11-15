@@ -900,6 +900,23 @@ async def test_upload_file_denied_when_path_is_allowed_directory(aca_python_sess
         await plugin.upload_file(local_file_path=str(allowed_dir))
 
 
+async def test_upload_file_denied_when_path_is_subdirectory(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that upload_file raises an exception when path is a subdirectory inside allowed directory."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    sub_dir = allowed_dir / "subdir"
+    sub_dir.mkdir()
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
+        allowed_upload_directories={str(allowed_dir)},
+    )
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path=str(sub_dir))
+
+
 @patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
 async def test_upload_file_succeeds_within_allowed_directory(
