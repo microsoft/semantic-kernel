@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+from collections.abc import MutableSequence, Sequence
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 from unittest.mock import Mock
@@ -249,6 +250,16 @@ def test_build_variadic_tuple():
 def test_build_optional_variadic_tuple():
     schema = KernelJsonSchemaBuilder.build(Optional[tuple[str, ...]])
     assert schema == {"type": ["array", "null"], "items": {"type": "string"}}
+
+
+def test_build_sequence():
+    schema = KernelJsonSchemaBuilder.build(Sequence[int], "items")
+    assert schema == {"type": "array", "items": {"type": "integer"}, "description": "items"}
+
+
+def test_build_mutable_sequence():
+    schema = KernelJsonSchemaBuilder.build(MutableSequence[str])
+    assert schema == {"type": "array", "items": {"type": "string"}}
 
 
 def test_build_union():
