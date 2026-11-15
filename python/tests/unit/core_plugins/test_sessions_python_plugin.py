@@ -917,6 +917,25 @@ async def test_upload_file_denied_when_path_is_subdirectory(aca_python_sessions_
         await plugin.upload_file(local_file_path=str(sub_dir))
 
 
+async def test_upload_file_denied_through_symlink_to_directory(aca_python_sessions_unit_test_env, tmp_path):
+    """Test that a symlink pointing to a directory is rejected in upload validation."""
+    allowed_dir = tmp_path / "allowed"
+    allowed_dir.mkdir()
+    sub_dir = allowed_dir / "subdir"
+    sub_dir.mkdir()
+    link = allowed_dir / "link_to_dir"
+    _symlink_or_skip(link, sub_dir)
+
+    plugin = SessionsPythonTool(
+        auth_callback=lambda: "sample_token",
+        enable_dangerous_file_uploads=True,
+        allowed_upload_directories={str(allowed_dir)},
+    )
+
+    with pytest.raises(FunctionExecutionException, match="Access denied"):
+        await plugin.upload_file(local_file_path=str(link))
+
+
 @patch("httpx.AsyncClient.get")
 @patch("httpx.AsyncClient.post")
 async def test_upload_file_succeeds_within_allowed_directory(
