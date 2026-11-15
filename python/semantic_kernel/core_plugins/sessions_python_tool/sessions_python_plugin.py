@@ -191,7 +191,10 @@ class SessionsPythonTool(KernelBaseModel):
         return f"{base_url}{endpoint}?{query_string}"
 
     def _validate_local_path_for_upload(self, local_file_path: str) -> str:
-        """Validate local path is within allowed upload directories.
+        """Validate local path is within allowed upload directories and is not a directory.
+
+        The path is canonicalized to ensure it resides inside an allowed directory.
+        Paths that resolve to an allowed directory itself or any subdirectory are rejected.
 
         Args:
             local_file_path: The path to validate.
@@ -200,7 +203,8 @@ class SessionsPythonTool(KernelBaseModel):
             str: The canonicalized absolute path.
 
         Raises:
-            FunctionExecutionException: If file operations are disabled or path is not within allowed directories.
+            FunctionExecutionException: If file operations are disabled, path is not within allowed
+                directories, or path resolves to a directory.
         """
         if not self.enable_dangerous_file_uploads:
             raise FunctionExecutionException(
