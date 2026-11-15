@@ -735,6 +735,40 @@ def test_build_headers_with_boolean_parameter():
     assert operation.build_headers(arguments) == expected_headers
 
 
+def test_build_path_with_array_parameter():
+    parameters = [RestApiParameter(name="tags", type="array", location=RestApiParameterLocation.PATH, is_required=True)]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{tags}", params=parameters
+    )
+    arguments = {"tags": ["red", "blue"]}
+    expected_path = "/resource/red,blue"
+    assert operation.build_path(operation.path, arguments) == expected_path
+
+
+def test_build_headers_with_array_parameter():
+    parameters = [
+        RestApiParameter(name="X-Tags", type="array", location=RestApiParameterLocation.HEADER, is_required=True)
+    ]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com"], path="test/path", params=parameters
+    )
+    arguments = {"X-Tags": ["red", "blue"]}
+    expected_headers = {"X-Tags": "red,blue"}
+    assert operation.build_headers(arguments) == expected_headers
+
+
+def test_build_headers_with_boolean_array_parameter():
+    parameters = [
+        RestApiParameter(name="X-Flags", type="array", location=RestApiParameterLocation.HEADER, is_required=True)
+    ]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com"], path="test/path", params=parameters
+    )
+    arguments = {"X-Flags": [True, False]}
+    expected_headers = {"X-Flags": "true,false"}
+    assert operation.build_headers(arguments) == expected_headers
+
+
 def test_create_payload_artificial_parameter_with_text_plain():
     properties = [
         RestApiPayloadProperty(
