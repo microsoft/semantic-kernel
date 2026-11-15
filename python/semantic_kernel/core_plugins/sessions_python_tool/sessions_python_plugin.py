@@ -217,7 +217,11 @@ class SessionsPythonTool(KernelBaseModel):
             allowed_canonical = os.path.realpath(allowed_dir)
             try:
                 common = os.path.commonpath([allowed_canonical, canonical_path])
-                if common == allowed_canonical and canonical_path != allowed_canonical:
+                if (
+                    common == allowed_canonical
+                    and canonical_path != allowed_canonical
+                    and not os.path.isdir(canonical_path)
+                ):
                     return canonical_path
             except ValueError:
                 continue  # Different drives on Windows
