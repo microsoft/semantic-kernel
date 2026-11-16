@@ -5,7 +5,7 @@ authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
@@ -16,15 +16,16 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Framework :: Pydantic :: 2",
   "Typing :: Typed",
 ]
 dependencies = [
     # azure agents
-    "azure-ai-projects >= 1.0,< 2.5",
+    "azure-ai-projects >= 1.0,< 2.0",
     "azure-ai-agents >= 1.2.0b3",
     "aiohttp ~= 3.8",
     "cloudevents >=1,<3",
@@ -49,7 +50,7 @@ dependencies = [
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
-    "nest-asyncio ~= 1.6",
+    "nest-asyncio2 >= 1.7.4,< 2",
     "scipy>=1.15.1",
     "websockets >= 13, < 17",
     "aiortc>=1.9.0",
@@ -65,10 +66,10 @@ anthropic = [
     "anthropic ~= 0.32"
 ]
 autogen = [
-    "autogen-agentchat >= 0.2, <0.4"
+    "autogen-agentchat >= 0.2, <0.4; python_version < '3.14' and (sys_platform != 'win32' or python_version < '3.13')"
 ]
 aws = [
-    "boto3>=1.36.4,<1.43.0",
+    "boto3>=1.36.4,<1.44.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -88,7 +89,7 @@ faiss = [
 ]
 google = [
     "google-cloud-aiplatform>=1.114,<1.134",
-    "google-genai >= 1.51,< 2.23"
+    "google-genai >= 1.51,< 2.30"
 ]
 hugging_face = [
     "transformers[torch] >= 5.5.0,< 6.0",
@@ -116,11 +117,8 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-  # onnxruntime>=1.24.0 dropped Python 3.10 support; retain the last compatible runtime/genai pair for 3.10.
-  "onnxruntime==1.22.1; python_version == '3.10'",
-  "onnxruntime>=1.26.0; python_version > '3.10'",
-  "onnxruntime-genai==0.9.0; python_version == '3.10'",
-  "onnxruntime-genai==0.15.2; python_version > '3.10'"
+  "onnxruntime>=1.26.0",
+  "onnxruntime-genai==0.18.0"
 ]
 oracledb = [
     "oracledb >= 3.4.1"
@@ -139,7 +137,7 @@ qdrant = [
     "qdrant-client ~= 1.10"
 ]
 redis = [
-    "redis[hiredis] >= 6,< 8",
+    "redis[hiredis] >= 6,< 9",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
@@ -198,7 +196,7 @@ markers = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 preview = true
 
@@ -255,5 +253,5 @@ exclude_dirs = ["tests", "samples/demos/mcp_with_oauth"]
 name = "semantic_kernel"
 
 [build-system]
-requires = ["flit-core >= 3.9,<4.0"]
+requires = ["flit-core >= 3.9,< 5.0"]
 build-backend = "flit_core.buildapi"

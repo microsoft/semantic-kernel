@@ -11,6 +11,7 @@ from chromadb.api import ClientAPI
 from chromadb.api.collection_configuration import CreateCollectionConfiguration, CreateHNSWConfiguration
 from chromadb.api.types import EmbeddingFunction, Space
 from chromadb.config import Settings
+from chromadb.errors import NotFoundError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.vector import (
@@ -128,12 +129,22 @@ class ChromaCollection(
 
     @override
     async def collection_exists(self, **kwargs: Any) -> bool:
-        """Check if the collection exists."""
+        """Check if the collection exists.
+
+        Returns False only when Chroma says the collection is not there. Anything else -
+        an unreachable server, a rejected request - is raised as a
+        VectorStoreOperationException, because the caller cannot tell it apart from an
+        absent collection otherwise.
+        """
         try:
             self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
             return True
-        except Exception:
+        except NotFoundError:
             return False
+        except Exception as e:
+            raise VectorStoreOperationException(
+                f"Failed to check whether collection {self.collection_name} exists with error: {e}"
+            ) from e
 
     @override
     async def ensure_collection_exists(self, **kwargs: Any) -> None:
@@ -184,7 +195,7 @@ class ChromaCollection(
         """Delete the collection."""
         try:
             self.client.delete_collection(name=self.collection_name)
-        except ValueError:
+        except NotFoundError:
             logger.info(f"Collection {self.collection_name} could not be deleted because it doesn't exist.")
         except Exception as e:
             raise VectorStoreOperationException(

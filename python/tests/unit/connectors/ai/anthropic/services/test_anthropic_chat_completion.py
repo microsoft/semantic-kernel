@@ -22,6 +22,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent, FunctionCallContent, TextContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -666,3 +667,40 @@ async def test_streaming_usage_is_reported_as_completion_usage(
         gen_ai_attributes.INPUT_TOKENS: 130,
         gen_ai_attributes.OUTPUT_TOKENS: 7,
     }
+
+
+@pytest.mark.parametrize(
+    ("stop_reason", "finish_reason"),
+    [
+        ("end_turn", FinishReason.STOP),
+        ("stop_sequence", FinishReason.STOP),
+        ("max_tokens", FinishReason.LENGTH),
+        ("model_context_window_exceeded", FinishReason.LENGTH),
+        ("tool_use", FinishReason.TOOL_CALLS),
+        ("refusal", FinishReason.CONTENT_FILTER),
+        ("pause_turn", None),
+    ],
+)
+def test_stop_reason_maps_to_finish_reason(anthropic_unit_test_env, stop_reason, finish_reason) -> None:
+    chat_completion = AnthropicChatCompletion()
+    message = Message(
+        id="msg_1",
+        type="message",
+        role="assistant",
+        model="claude-sonnet-4-5",
+        content=[TextBlock(type="text", text="Hello")],
+        stop_reason=stop_reason,
+        stop_sequence=None,
+        usage=Usage(input_tokens=1, output_tokens=1),
+    )
+    delta_event = RawMessageDeltaEvent(
+        type="message_delta",
+        delta=Delta(stop_reason=stop_reason, stop_sequence=None),
+        usage=MessageDeltaUsage(output_tokens=1),
+    )
+
+    content = chat_completion._create_chat_message_content(message, {})
+    streaming_content = chat_completion._create_streaming_chat_message_content(delta_event)
+
+    assert content.finish_reason == finish_reason
+    assert streaming_content.finish_reason == finish_reason

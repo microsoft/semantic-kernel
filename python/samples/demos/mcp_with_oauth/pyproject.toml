@@ -3,7 +3,7 @@ name = "sk-mcp-auth"
 version = "0.1.0"
 description = "A simple example of a OAuth client connection with SK."
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.11,<3.14"
 
 dependencies = [
     "click>=8.0.0",
@@ -31,7 +31,7 @@ ignore = []
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 
 [tool.uv]
 dev-dependencies = ["pyright>=1.1.379", "pytest>=8.3.3", "ruff>=0.6.9"]

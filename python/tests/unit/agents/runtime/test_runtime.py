@@ -13,8 +13,9 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor, SpanExporter, Sp
 from semantic_kernel.agents.runtime.core import CoreAgentId
 from semantic_kernel.agents.runtime.core.agent_type import CoreAgentType
 from semantic_kernel.agents.runtime.core.base_agent import BaseAgent
+from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
-from semantic_kernel.agents.runtime.core.routed_agent import RoutedAgent, event, message_handler
+from semantic_kernel.agents.runtime.core.routed_agent import RoutedAgent, event, message_handler, rpc
 from semantic_kernel.agents.runtime.core.serialization import try_get_known_serializers_for_type
 from semantic_kernel.agents.runtime.core.topic import TopicId
 from semantic_kernel.agents.runtime.in_process.agent_instantiation_context import AgentInstantiationContext
@@ -36,6 +37,25 @@ class CascadingMessageType:
 @dataclass
 class ContentMessage:
     content: str
+
+
+@pytest.mark.parametrize("decorator", [message_handler, rpc])
+@pytest.mark.parametrize("response", [None, "response", 42, MessageType()])
+async def test_handler_with_any_return_type(decorator, response: Any) -> None:
+    @decorator
+    async def handle(self: Any, message: MessageType, ctx: MessageContext) -> Any:
+        return response
+
+    ctx = MessageContext(
+        sender=None,
+        topic_id=None,
+        is_rpc=True,
+        cancellation_token=CancellationToken(),
+        message_id="test",
+    )
+
+    assert handle.produces_types == [Any]
+    assert await handle(None, MessageType(), ctx) is response
 
 
 class LoopbackAgent(RoutedAgent):

@@ -294,11 +294,15 @@ class ChatMessageContent(KernelContent):
     def to_prompt(self) -> str:
         """Convert the ChatMessageContent to a prompt.
 
+        The encoding attribute of the content is not used here,
+        this always returns a string, the encoding is only relevant
+        for the actual text content, not for the prompt representation.
+
         Returns:
             str - The prompt from the ChatMessageContent.
         """
         root = self.to_element()
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+        return ElementTree.tostring(root, encoding="unicode", short_empty_elements=False)
 
     def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:
         """Serialize the ChatMessageContent to a dictionary.

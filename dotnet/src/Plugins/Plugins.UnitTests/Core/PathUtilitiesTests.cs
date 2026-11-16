@@ -13,7 +13,7 @@ public sealed class PathUtilitiesTests : IDisposable
 
     public PathUtilitiesTests()
     {
-        this._tempDir = Path.Combine(Path.GetTempPath(), $"PathUtilitiesTests_{Guid.NewGuid():N}");
+        this._tempDir = Path.Combine(PathUtilities.GetSafeFullPath(Path.GetTempPath()), $"PathUtilitiesTests_{Guid.NewGuid():N}");
         Directory.CreateDirectory(this._tempDir);
     }
 

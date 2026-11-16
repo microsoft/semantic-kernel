@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from google.genai.types import FinishReason, Part
+from google.genai.types import FinishReason, GenerateContentResponse, GenerateContentResponseUsageMetadata, Part
 
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
+    get_completion_token_count,
     kernel_function_metadata_to_google_ai_function_call_format,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -251,3 +252,52 @@ def test_google_ai_function_call_format_all_params_excluded_gives_no_parameters(
     )
     result = kernel_function_metadata_to_google_ai_function_call_format(metadata)
     assert result["parameters"] is None
+
+
+@pytest.mark.parametrize(
+    ("candidates_tokens", "thoughts_tokens", "expected"),
+    [
+        (10, 40, 50),
+        (10, None, 10),
+        (None, 40, 40),
+        (0, 0, 0),
+        (None, None, None),
+    ],
+)
+def test_get_completion_token_count_includes_thinking_tokens(candidates_tokens, thoughts_tokens, expected) -> None:
+    usage_metadata = GenerateContentResponseUsageMetadata(
+        prompt_token_count=5, candidates_token_count=candidates_tokens, thoughts_token_count=thoughts_tokens
+    )
+    assert get_completion_token_count(usage_metadata) == expected
+
+
+def test_get_completion_token_count_without_usage_metadata() -> None:
+    assert get_completion_token_count(None) is None
+
+
+def test_chat_completion_usage_counts_thinking_tokens(google_ai_unit_test_env) -> None:
+    from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import (
+        GoogleAIChatCompletion,
+    )
+
+    response = GenerateContentResponse(
+        usage_metadata=GenerateContentResponseUsageMetadata(
+            prompt_token_count=5, candidates_token_count=10, thoughts_token_count=40, total_token_count=55
+        )
+    )
+    usage = GoogleAIChatCompletion()._get_metadata_from_response(response)["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)
+
+
+def test_text_completion_usage_counts_thinking_tokens(google_ai_unit_test_env) -> None:
+    from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import (
+        GoogleAITextCompletion,
+    )
+
+    response = GenerateContentResponse(
+        usage_metadata=GenerateContentResponseUsageMetadata(
+            prompt_token_count=5, candidates_token_count=10, thoughts_token_count=40, total_token_count=55
+        )
+    )
+    usage = GoogleAITextCompletion()._get_metadata_from_response(response)["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)
