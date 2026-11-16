@@ -215,7 +215,10 @@ class RestApiOperation:
                     )
                 continue
 
-            headers[parameter.name] = str(argument)
+            if isinstance(argument, (list, tuple)):
+                headers[parameter.name] = ",".join(self._format_parameter_value(item) for item in argument)
+            else:
+                headers[parameter.name] = self._format_parameter_value(argument)
 
         return headers
 
@@ -328,7 +331,11 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            path_template = path_template.replace(f"{{{parameter.name}}}", quote(str(argument), safe=""))
+            if isinstance(argument, (list, tuple)):
+                formatted_value = ",".join(self._format_parameter_value(item) for item in argument)
+            else:
+                formatted_value = self._format_parameter_value(argument)
+            path_template = path_template.replace(f"{{{parameter.name}}}", quote(formatted_value, safe=""))
         self._validate_path_segments(path_template)
         return path_template
 
@@ -383,6 +390,13 @@ class RestApiOperation:
         parsed = urlparse(path)
         return bool(parsed.scheme or parsed.netloc)
 
+    @staticmethod
+    def _format_parameter_value(value: Any) -> str:
+        """Format a parameter value for serialization according to OpenAPI conventions."""
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        return str(value)
+
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
         segments = []
@@ -396,7 +410,11 @@ class RestApiOperation:
                         f"required parameter of the operation - `{self.id}`."
                     )
                 continue
-            segments.append((parameter.name, argument))
+            if isinstance(argument, (list, tuple)):
+                for item in argument:
+                    segments.append((parameter.name, self._format_parameter_value(item)))
+            else:
+                segments.append((parameter.name, self._format_parameter_value(argument)))
         return urlencode(segments)
 
     def replace_invalid_symbols(self, parameter_name):

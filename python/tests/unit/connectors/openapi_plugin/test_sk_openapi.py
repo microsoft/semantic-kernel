@@ -685,6 +685,46 @@ def test_build_query_string_with_optional_and_required_parameters():
     assert operation.build_query_string(arguments) == expected_query_string
 
 
+def test_build_query_string_with_array_and_boolean_parameters():
+    parameters = [
+        RestApiParameter(name="tags", type="array", location=RestApiParameterLocation.QUERY, is_required=False),
+        RestApiParameter(name="active", type="boolean", location=RestApiParameterLocation.QUERY, is_required=False),
+        RestApiParameter(name="archived", type="boolean", location=RestApiParameterLocation.QUERY, is_required=False),
+    ]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource", params=parameters
+    )
+    arguments = {"tags": ["red", "blue"], "active": True, "archived": False}
+    expected_query_string = "tags=red&tags=blue&active=true&archived=false"
+    assert operation.build_query_string(arguments) == expected_query_string
+
+
+def test_build_headers_with_array_and_boolean_parameters():
+    parameters = [
+        RestApiParameter(name="X-Flags", type="array", location=RestApiParameterLocation.HEADER, is_required=False),
+        RestApiParameter(name="X-Active", type="boolean", location=RestApiParameterLocation.HEADER, is_required=False),
+    ]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource", params=parameters
+    )
+    arguments = {"X-Flags": ["tag1", "tag2"], "X-Active": True}
+    expected_headers = {"X-Flags": "tag1,tag2", "X-Active": "true"}
+    assert operation.build_headers(arguments) == expected_headers
+
+
+def test_build_path_with_boolean_and_array_parameters():
+    parameters = [
+        RestApiParameter(name="flag", type="boolean", location=RestApiParameterLocation.PATH, is_required=True),
+        RestApiParameter(name="items", type="array", location=RestApiParameterLocation.PATH, is_required=True),
+    ]
+    operation = RestApiOperation(
+        id="test", method="GET", servers=["https://example.com/"], path="/resource/{flag}/{items}", params=parameters
+    )
+    arguments = {"flag": True, "items": ["a", "b"]}
+    expected_path = "/resource/true/a%2Cb"
+    assert operation.build_path(operation.path, arguments) == expected_path
+
+
 def test_create_payload_artificial_parameter_with_text_plain():
     properties = [
         RestApiPayloadProperty(
