@@ -138,7 +138,7 @@ To use Milvus, set `Rag:VectorStoreType` to `Milvus`. The provider requires Milv
 Start a local standalone instance with embedded etcd and local storage using Docker:
 
 ```cli
-docker run -d --name milvus -p 19530:19530 -e DEPLOY_MODE=STANDALONE -e ETCD_USE_EMBED=true -e COMMON_STORAGETYPE=local milvusdb/milvus:v2.6.25 milvus run standalone
+docker run -d --name milvus -p 127.0.0.1:19530:19530 -e DEPLOY_MODE=STANDALONE -e ETCD_USE_EMBED=true -e COMMON_STORAGETYPE=local milvusdb/milvus:v2.6.25 milvus run standalone
 ```
 
 The default sample settings connect to this local instance without TLS or authentication. For a remote TLS endpoint, configure the host, port, database, and API key as needed:

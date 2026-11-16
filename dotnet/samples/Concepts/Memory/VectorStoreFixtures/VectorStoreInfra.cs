@@ -44,8 +44,17 @@ internal static class VectorStoreInfra
             },
         });
 
-        await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
-        return container.ID;
+        try
+        {
+            await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
+            return container.ID;
+        }
+        catch
+        {
+            // The fixture cannot clean up a container whose ID was never returned.
+            await client.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters { Force = true });
+            throw;
+        }
     }
 
     /// <summary>
