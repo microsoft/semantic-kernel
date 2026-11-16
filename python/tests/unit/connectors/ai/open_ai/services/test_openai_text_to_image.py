@@ -123,6 +123,26 @@ async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
         await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
 
 
+@pytest.mark.parametrize("size", [(1536, 1024), (1024, 1536)])
+@patch.object(AsyncImages, "generate", new_callable=AsyncMock)
+async def test_generate_images_gpt_image_sizes(mock_generate, openai_unit_test_env, size) -> None:
+    """Test that the landscape and portrait sizes supported by gpt-image-1 are accepted."""
+    mock_generate.return_value = ImagesResponse(created=1, data=[Image(b64_json="abc")], usage=None)
+    width, height = size
+
+    openai_text_to_image = OpenAITextToImage(ai_model_id="gpt-image-1")
+    settings = OpenAITextToImageExecutionSettings(width=width, height=height)
+    result = await openai_text_to_image.generate_images("painting of flowers in vase", settings=settings)
+
+    assert result == ["abc"]
+    mock_generate.assert_awaited_once_with(
+        prompt="painting of flowers in vase",
+        model="gpt-image-1",
+        size=f"{width}x{height}",
+        n=1,
+    )
+
+
 async def test_generate_empty_description(openai_unit_test_env) -> None:
     """Test that empty description raises ServiceInvalidExecutionSettingsError."""
     ai_model_id = "test_model_id"
