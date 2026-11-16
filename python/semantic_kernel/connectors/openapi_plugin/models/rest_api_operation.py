@@ -332,10 +332,12 @@ class RestApiOperation:
                     )
                 continue
             if isinstance(argument, (list, tuple)):
-                formatted_value = ",".join(self._format_parameter_value(item) for item in argument)
+                encoded_value = ",".join(
+                    quote(self._format_parameter_value(item), safe="") for item in argument
+                )
             else:
-                formatted_value = self._format_parameter_value(argument)
-            path_template = path_template.replace(f"{{{parameter.name}}}", quote(formatted_value, safe=""))
+                encoded_value = quote(self._format_parameter_value(argument), safe="")
+            path_template = path_template.replace(f"{{{parameter.name}}}", encoded_value)
         self._validate_path_segments(path_template)
         return path_template
 

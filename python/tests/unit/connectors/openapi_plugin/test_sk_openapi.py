@@ -721,8 +721,12 @@ def test_build_path_with_boolean_and_array_parameters():
         id="test", method="GET", servers=["https://example.com/"], path="/resource/{flag}/{items}", params=parameters
     )
     arguments = {"flag": True, "items": ["a", "b"]}
-    expected_path = "/resource/true/a%2Cb"
+    expected_path = "/resource/true/a,b"
     assert operation.build_path(operation.path, arguments) == expected_path
+
+    # Verify that commas within individual array items are properly percent-encoded
+    arguments_with_inner_comma = {"flag": False, "items": ["a,b", "c"]}
+    assert operation.build_path(operation.path, arguments_with_inner_comma) == "/resource/false/a%2Cb,c"
 
 
 def test_create_payload_artificial_parameter_with_text_plain():
