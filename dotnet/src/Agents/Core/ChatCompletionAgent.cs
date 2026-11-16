@@ -423,11 +423,11 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             message.Role ??= AuthorRole.Assistant;
             message.AuthorName = this.Name;
 
-            builder.Append(message.ToString());
-
             // Capture mutated messages related function calling / tools
             for (; messageIndex < chat.Count; messageIndex++)
             {
+                // The completed turn is already stored below; only accumulate text from the next turn.
+                builder.Clear();
                 ChatMessageContent chatMessage = chat[messageIndex];
 
                 chatMessage.AuthorName = this.Name;
@@ -436,6 +436,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 history.Add(chatMessage);
             }
 
+            builder.Append(message.ToString());
             streamedContents?.Add(message);
             yield return message;
         }

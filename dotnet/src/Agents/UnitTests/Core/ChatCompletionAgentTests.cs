@@ -299,6 +299,95 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
+    /// Verify that completed tool turns are not repeated in the final streamed message stored in the thread.
+    /// </summary>
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(2, false)]
+    [InlineData(1, true)]
+    public async Task VerifyChatCompletionAgentStreamingHistoryAcrossToolTurnsAsync(int toolTurns, bool terminate)
+    {
+        List<ChatMessageContent> intermediateMessages = [];
+        List<ChatMessageContent> toolMessages = [];
+        List<StreamingChatMessageContent> serviceUpdates = [];
+        Mock<IChatCompletionService> mockService = new();
+        mockService.Setup(
+            s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((history, _, _, _) => StreamResponses(history));
+
+        ChatCompletionAgent agent = new() { Name = "TestAgent", Kernel = CreateKernel(mockService.Object) };
+        ChatHistoryAgentThread thread = new();
+        ChatMessageContent userMessage = new(AuthorRole.User, "Use the tool, then answer.");
+        AgentInvokeOptions options = new()
+        {
+            OnIntermediateMessage = message =>
+            {
+                intermediateMessages.Add(message);
+                return Task.CompletedTask;
+            }
+        };
+
+        var updates = await agent.InvokeStreamingAsync([userMessage], thread, options).ToArrayAsync();
+        var history = await thread.GetMessagesAsync().ToArrayAsync();
+
+        Assert.Equal(serviceUpdates, updates.Select(update => update.Message));
+        Assert.Equal(
+            string.Concat(Enumerable.Range(0, toolTurns).Select(turn => $"Planning {turn}.")) + (terminate ? "Result 0." : "Final answer."),
+            string.Concat(updates.Select(update => update.Message.Content)));
+        Assert.Equal((2 * toolTurns) + (terminate ? 0 : 1), intermediateMessages.Count);
+        Assert.Equal(intermediateMessages.Count + 1, history.Length);
+        Assert.Same(userMessage, history[0]);
+        Assert.Equal(toolMessages, intermediateMessages.Take(2 * toolTurns));
+        Assert.All(intermediateMessages, message => Assert.Equal(agent.Name, message.AuthorName));
+        Assert.Equal(intermediateMessages, history.Skip(1));
+        if (!terminate)
+        {
+            Assert.Equal("Final answer.", history[^1].Content);
+            Assert.Equal(AuthorRole.Assistant, history[^1].Role);
+        }
+
+        async IAsyncEnumerable<StreamingChatMessageContent> StreamResponses(ChatHistory chat)
+        {
+            for (int turn = 0; turn < toolTurns; turn++)
+            {
+                StreamingChatMessageContent planning = new(AuthorRole.Assistant, $"Planning {turn}.");
+                serviceUpdates.Add(planning);
+                yield return planning;
+
+                StreamingChatMessageContent toolUpdate = new(AuthorRole.Assistant, content: null);
+                toolUpdate.Items.Add(new StreamingFunctionCallUpdateContent(callId: $"call-{turn}", name: "tools-test"));
+                serviceUpdates.Add(toolUpdate);
+                yield return toolUpdate;
+
+                // The connector stores a completed assistant/tool pair before yielding the next model turn.
+                ChatMessageContent assistant = new(AuthorRole.Assistant, planning.Content);
+                Microsoft.SemanticKernel.FunctionCallContent call = new("test", "tools", $"call-{turn}");
+                assistant.Items.Add(call);
+                ChatMessageContent result = new(AuthorRole.Tool, $"Result {turn}.");
+                result.Items.Add(new Microsoft.SemanticKernel.FunctionResultContent(call, $"Result {turn}."));
+                chat.Add(assistant);
+                chat.Add(result);
+                toolMessages.Add(assistant);
+                toolMessages.Add(result);
+                await Task.Yield();
+            }
+
+            string[] finalParts = terminate ? ["Result 0."] : ["Final ", "answer."];
+            foreach (string part in finalParts)
+            {
+                StreamingChatMessageContent update = new(terminate ? AuthorRole.Tool : AuthorRole.Assistant, part);
+                serviceUpdates.Add(update);
+                yield return update;
+            }
+        }
+    }
+
+    /// <summary>
     /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
     [Fact]
