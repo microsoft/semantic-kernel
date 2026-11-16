@@ -9,7 +9,7 @@ from semantic_kernel.agents.runtime.core.base_agent import BaseAgent
 from semantic_kernel.agents.runtime.core.exceptions import CantHandleException
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
 from semantic_kernel.agents.runtime.core.serialization import MessageSerializer, try_get_known_serializers_for_type
-from semantic_kernel.agents.runtime.core.type_helpers import AnyType, get_types
+from semantic_kernel.agents.runtime.core.type_helpers import get_types
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger("agent_runtime.core")
@@ -155,7 +155,7 @@ def message_handler(
 
             return_value = await func(self, message, ctx)
 
-            if AnyType not in return_types and type(return_value) not in return_types:
+            if Any not in return_types and type(return_value) not in return_types:
                 if strict:
                     raise ValueError(f"Return type {type(return_value)} not in return types {return_types}")
                 logger.warning(f"Return type {type(return_value)} not in return types {return_types}")
@@ -415,7 +415,7 @@ def rpc(
 
             return_value = await func(self, message, ctx)
 
-            if AnyType not in return_types and type(return_value) not in return_types:
+            if Any not in return_types and type(return_value) not in return_types:
                 if strict:
                     raise ValueError(f"Return type {type(return_value)} not in return types {return_types}")
                 logger.warning(f"Return type {type(return_value)} not in return types {return_types}")

@@ -86,7 +86,14 @@ internal static class ServerUrlValidator
             return false;
         }
 
-        var urlPath = url.GetLeftPart(UriPartial.Path);
+        // Dot-segments (raw or percent-encoded, e.g. "..%2f") may be resolved by downstream
+        // servers or proxies and escape the allowed path, so such URLs never match.
+        if (RestApiOperation.ContainsDotSegment(url.AbsolutePath))
+        {
+            return false;
+        }
+
+        var urlPath = NormalizePercentEncodingCase(url.AbsolutePath);
 
         foreach (var baseUrl in allowedBaseUrls)
         {
@@ -103,13 +110,14 @@ internal static class ServerUrlValidator
                 continue;
             }
 
-            var baseUrlPath = baseUrl.GetLeftPart(UriPartial.Path);
+            // Paths are case-sensitive (RFC 3986 section 6.2.2.1), so compare them ordinally.
+            var baseUrlPath = NormalizePercentEncodingCase(baseUrl.AbsolutePath);
             var baseUrlWithSlash = baseUrlPath.EndsWith("/", StringComparison.Ordinal)
                 ? baseUrlPath
                 : baseUrlPath + "/";
 
-            if (string.Equals(urlPath, baseUrlPath, StringComparison.OrdinalIgnoreCase) ||
-                urlPath.StartsWith(baseUrlWithSlash, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(urlPath, baseUrlPath, StringComparison.Ordinal) ||
+                urlPath.StartsWith(baseUrlWithSlash, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -117,4 +125,33 @@ internal static class ServerUrlValidator
 
         return false;
     }
+
+    /// <summary>
+    /// Uppercases the hex digits of percent-encoded triplets (e.g. "%2f" to "%2F") so that
+    /// equivalent encodings compare equal (RFC 3986 section 6.2.2.1). Nothing is decoded, so
+    /// reserved characters such as an encoded "/" stay distinct from the literal separator.
+    /// </summary>
+    private static string NormalizePercentEncodingCase(string path)
+    {
+        if (path.IndexOf('%') < 0)
+        {
+            return path;
+        }
+
+        var chars = path.ToCharArray();
+        for (int i = 0; i + 2 < chars.Length; i++)
+        {
+            if (chars[i] == '%' && IsHexDigit(chars[i + 1]) && IsHexDigit(chars[i + 2]))
+            {
+                chars[i + 1] = char.ToUpperInvariant(chars[i + 1]);
+                chars[i + 2] = char.ToUpperInvariant(chars[i + 2]);
+                i += 2;
+            }
+        }
+
+        return new string(chars);
+    }
+
+    private static bool IsHexDigit(char c) =>
+        (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }

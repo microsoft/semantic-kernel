@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,11 +29,8 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// </para>
 /// <para>
 /// Allowed hosts are resolved before each request and non-public addresses are rejected unless
-/// <see cref="AllowPrivateNetworkAccess"/> is explicitly enabled. DNS failures are rejected.
-/// </para>
-/// <para>
-/// This pre-request check does not pin the connection's IP address and does not
-/// protect against DNS changing between validation and connection.
+/// <see cref="AllowPrivateNetworkAccess"/> is explicitly enabled. The built-in client binds
+/// the connection to the validated addresses, and DNS failures are rejected.
 /// </para>
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
@@ -40,6 +38,8 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 public sealed class HttpPlugin
 {
     private readonly HttpClient _client;
+    private readonly Func<string, CancellationToken, Task<IPAddress[]>>? _dnsResolver;
+    private readonly bool _clientSupportsValidatedAddresses;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
@@ -55,10 +55,26 @@ public sealed class HttpPlugin
     /// <remarks>
     /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
     /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// Hostname requests with a custom client require <see cref="AllowPrivateNetworkAccess"/> because the plugin cannot verify that
+    /// the supplied transport connects only to the addresses validated before the request.
     /// </remarks>
     [ActivatorUtilitiesConstructor]
-    public HttpPlugin(HttpClient? client = null) =>
-        this._client = client ?? HttpClientProvider.GetNonRedirectingHttpClient();
+    public HttpPlugin(HttpClient? client = null) : this(
+        client,
+        dnsResolver: null,
+        clientSupportsValidatedAddresses: client is null)
+    {
+    }
+
+    internal HttpPlugin(
+        HttpClient? client,
+        Func<string, CancellationToken, Task<IPAddress[]>>? dnsResolver,
+        bool clientSupportsValidatedAddresses = false)
+    {
+        this._client = client ?? HttpClientProvider.GetValidatedNonRedirectingHttpClient();
+        this._dnsResolver = dnsResolver;
+        this._clientSupportsValidatedAddresses = clientSupportsValidatedAddresses;
+    }
 
     /// <summary>
     /// List of allowed domains to send requests to.
@@ -165,14 +181,35 @@ public sealed class HttpPlugin
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
 
+        IPAddress[] validatedAddresses = [];
         if (!this.AllowPrivateNetworkAccess)
         {
-            await PublicNetworkAddressValidator.ValidateAsync(
+            validatedAddresses = await PublicNetworkAddressValidator.ValidateAsync(
                 uri, cancellationToken,
+                dnsResolver: this._dnsResolver,
                 configurationHint: $"To allow trusted internal endpoints, set {nameof(this.AllowPrivateNetworkAccess)} = true.").ConfigureAwait(false);
         }
 
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
+#if NET
+        if (validatedAddresses.Length > 0)
+        {
+            if (!this._clientSupportsValidatedAddresses)
+            {
+                throw new InvalidOperationException(
+                    $"Requests to hostnames require the built-in HTTP client when {nameof(this.AllowPrivateNetworkAccess)} is false. " +
+                    $"Use the built-in client, or configure the supplied client transport and explicitly set {nameof(this.AllowPrivateNetworkAccess)} = true.");
+            }
+
+            request.Options.Set(HttpClientProvider.ValidatedAddressesKey, validatedAddresses);
+        }
+#else
+        if (validatedAddresses.Length > 0)
+        {
+            throw new PlatformNotSupportedException(
+                $"Requests to hostnames with {nameof(this.AllowPrivateNetworkAccess)} set to false require a .NET target that supports binding HTTP connections to validated addresses.");
+        }
+#endif
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HttpPlugin)));
         using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
