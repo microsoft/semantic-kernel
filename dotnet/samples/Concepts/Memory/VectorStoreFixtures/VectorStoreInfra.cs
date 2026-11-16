@@ -35,7 +35,7 @@ internal static class VectorStoreInfra
             {
                 PortBindings = new Dictionary<string, IList<PortBinding>>
                 {
-                    { "19530", new List<PortBinding> { new() { HostPort = "19530" } } },
+                    { "19530", new List<PortBinding> { new() { HostIP = "127.0.0.1", HostPort = "19530" } } },
                 },
             },
             ExposedPorts = new Dictionary<string, EmptyStruct>
