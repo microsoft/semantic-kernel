@@ -453,7 +453,7 @@ async def test_prompt_with_helper_functions(
 
     func = KernelFunctionFromMethod(
         method=kernel_function(
-            lambda: datetime.datetime(1989, 6, 4, 12, 11, 13, tzinfo=datetime.timezone.utc).strftime(
+            lambda: datetime.datetime(1989, 6, 4, 12, 11, 13, tzinfo=datetime.UTC).strftime(
                 "%a, %d %b %Y %H:%M:%S GMT"
             ),
             name="Now",

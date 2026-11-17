@@ -137,6 +137,79 @@ public class ServerUrlValidatorTests
         await ServerUrlValidator.ValidateAsync(url, options);
     }
 
+    [Theory]
+    [InlineData("https://api.example.com/V1/Public/resource")]
+    [InlineData("https://api.example.com/v1/PUBLIC")]
+    public async Task ItShouldRejectAllowedBaseUrlPathWithDifferentCaseAsync(string url)
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1/public/")]
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(new Uri(url), options));
+        Assert.Contains("does not match", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ItShouldMatchAllowedBaseUrlSchemeAndHostCaseInsensitivelyAsync()
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1/public/")]
+        };
+
+        // Should not throw.
+        await ServerUrlValidator.ValidateAsync(new Uri("HTTPS://API.Example.COM/v1/public/resource"), options);
+    }
+
+    [Theory]
+    [InlineData("https://api.example.com/v1/a%2Fb/", "https://api.example.com/v1/a%2fb/resource")]
+    [InlineData("https://api.example.com/v1/a%2fb/", "https://api.example.com/v1/a%2Fb/resource")]
+    public async Task ItShouldMatchPercentEncodedPathsRegardlessOfHexCaseAsync(string allowedBaseUrl, string url)
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri(allowedBaseUrl)]
+        };
+
+        // Should not throw.
+        await ServerUrlValidator.ValidateAsync(new Uri(url), options);
+    }
+
+    [Fact]
+    public async Task ItShouldStillRejectPathLetterCaseMismatchWithPercentEncodingAsync()
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1/a%2Fb/")]
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(new Uri("https://api.example.com/v1/A%2fb/resource"), options));
+        Assert.Contains("does not match", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("https://api.example.com/v1/public/..%2finternal/keys")]
+    [InlineData("https://api.example.com/v1/public/..%2Finternal/keys")]
+    [InlineData("https://api.example.com/v1/public/..%5cinternal/keys")]
+    [InlineData("https://api.example.com/v1/public/%2e%2e%2finternal/keys")]
+    [InlineData("https://api.example.com/v1/public/%252e%252e%252finternal/keys")]
+    [InlineData("https://api.example.com/v1/public/sub/%2e%2e/%2e%2e/internal/keys")]
+    public async Task ItShouldRejectDotSegmentsUnderAllowedBaseUrlAsync(string url)
+    {
+        var options = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri("https://api.example.com/v1/public/")]
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ServerUrlValidator.ValidateAsync(new Uri(url), options));
+        Assert.Contains("does not match", ex.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task ItShouldPreserveExplicitHostnameAllowlistDnsBypassAsync()
     {
