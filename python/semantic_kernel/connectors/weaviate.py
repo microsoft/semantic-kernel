@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from collections.abc import Callable, Sequence
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from typing import Any, ClassVar, Final, Generic, Self, TypeVar
 
 from pydantic import SecretStr, field_validator, model_validator
 from weaviate import WeaviateAsyncClient, use_async_with_embedded, use_async_with_local, use_async_with_weaviate_cloud
@@ -51,10 +51,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
