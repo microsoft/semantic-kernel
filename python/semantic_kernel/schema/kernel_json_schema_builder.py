@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -82,10 +82,17 @@ class KernelJsonSchemaBuilder:
         properties = {}
         required = []
 
+        if not isinstance(model, type):
+            model = type(model)
         model_module_globals = vars(sys.modules[model.__module__])
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
+            if field_type is ClassVar or get_origin(field_type) is ClassVar:
+                # ClassVar annotations are class-level constants: pydantic
+                # excludes them from model fields and serialized instances,
+                # so they must not become (required) schema properties.
+                continue
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
@@ -188,7 +195,7 @@ class KernelJsonSchemaBuilder:
             _, value_type = args
             additional_properties = cls.build(value_type, structured_output=structured_output)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
+                additional_properties["properties"] = {}
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description
@@ -196,8 +203,12 @@ class KernelJsonSchemaBuilder:
                 schema["additionalProperties"] = False
             return schema
         if origin is tuple:
-            items = [cls.build(arg, structured_output=structured_output) for arg in args]
-            schema = {"type": "array", "items": items}
+            if len(args) == 2 and args[1] is Ellipsis:
+                # tuple[X, ...] holds any number of X, like list[X]
+                schema = {"type": "array", "items": cls.build(args[0], structured_output=structured_output)}
+            else:
+                items = [cls.build(arg, structured_output=structured_output) for arg in args]
+                schema = {"type": "array", "items": items}
             if description:
                 schema["description"] = description
             if structured_output:

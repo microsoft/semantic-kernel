@@ -130,7 +130,7 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
         server = agent.as_mcp_server()
 
         if transport == "sse" and port is not None:
-            import nest_asyncio
+            import nest_asyncio2
             import uvicorn
             from mcp.server.sse import SseServerTransport
             from starlette.applications import Starlette
@@ -211,7 +211,7 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
                     host,
                 )
 
-            nest_asyncio.apply()
+            nest_asyncio2.apply()
             uvicorn.run(starlette_app, host=host, port=port)  # nosec
         elif transport == "stdio":
             from mcp.server.stdio import stdio_server

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated, Any
@@ -12,6 +13,12 @@ from pytest import fixture
 
 from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
 from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
+
+collect_ignore = (
+    ["unit/agents/autogen_conversable_agent"]
+    if sys.version_info >= (3, 14) or (sys.platform == "win32" and sys.version_info[:2] == (3, 13))
+    else []
+)
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
