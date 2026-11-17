@@ -52,8 +52,8 @@ public class SessionsPythonSettings
 
     /// <summary>
     /// Gets or sets the list of allowed local directories for file downloads.
-    /// If configured, files can only be downloaded to these directories.
-    /// If <c>null</c> or empty, all paths are allowed (permissive by default).
+    /// Files can only be saved to these directories. If <c>null</c> or empty, saving downloads
+    /// to disk is denied. Downloads that return bytes without a local path are still allowed.
     /// </summary>
     [JsonIgnore]
     public IEnumerable<string>? AllowedDownloadDirectories { get; set; }

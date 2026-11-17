@@ -3,7 +3,7 @@
 import sys
 from collections.abc import Awaitable, Callable
 from copy import copy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 from azure.core.credentials import TokenCredential
 from openai import AsyncAzureOpenAI
@@ -25,11 +25,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
-else:
-    from typing import Self  # type: ignore # pragma: no cover
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated

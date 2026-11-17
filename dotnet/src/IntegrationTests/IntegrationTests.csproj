@@ -54,7 +54,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers.Milvus" />
     <PackageReference Include="Testcontainers.MongoDB" />
     <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
   </ItemGroup>

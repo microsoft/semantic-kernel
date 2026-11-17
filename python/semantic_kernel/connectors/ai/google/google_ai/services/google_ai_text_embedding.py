@@ -22,6 +22,9 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+# The Gemini batchEmbedContents endpoint accepts at most 100 inputs per request.
+MAX_EMBEDDING_BATCH_SIZE = 100
+
 
 class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
     """Google AI Text Embedding Service."""
@@ -119,31 +122,36 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         if not self.service_settings.embedding_model_id:
             raise ServiceInitializationError("The Google AI embedding model ID is required.")
 
-        async def _embed_content(client: Client) -> EmbedContentResponse:
+        async def _embed_content(client: Client, contents: list[str]) -> EmbedContentResponse:
             return await client.aio.models.embed_content(
                 model=self.service_settings.embedding_model_id,  # type: ignore[arg-type]
-                contents=texts,  # type: ignore[arg-type]
+                contents=contents,  # type: ignore[arg-type]
                 config=EmbedContentConfigDict(output_dimensionality=settings.output_dimensionality),
             )
 
+        async def _embed_all(client: Client) -> list[list[float]]:
+            # The batch embedding endpoint accepts at most MAX_EMBEDDING_BATCH_SIZE inputs per request.
+            embeddings: list[list[float]] = []
+            for start in range(0, len(texts), MAX_EMBEDDING_BATCH_SIZE):
+                response = await _embed_content(client, texts[start : start + MAX_EMBEDDING_BATCH_SIZE])
+                embeddings.extend(embedding.values for embedding in response.embeddings)  # type: ignore
+            return embeddings
+
         if self.client:
-            response: EmbedContentResponse = await _embed_content(self.client)
-        elif self.service_settings.use_vertexai:
+            return await _embed_all(self.client)
+        if self.service_settings.use_vertexai:
             with Client(
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
                 http_options=self._get_http_options(),
             ) as client:
-                response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
-        else:
-            with Client(
-                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
-                http_options=self._get_http_options(),
-            ) as client:
-                response: EmbedContentResponse = await _embed_content(client)  # type: ignore[no-redef]
-
-        return [embedding.values for embedding in response.embeddings]  # type: ignore
+                return await _embed_all(client)
+        with Client(
+            api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
+            http_options=self._get_http_options(),
+        ) as client:
+            return await _embed_all(client)
 
     @override
     def get_prompt_execution_settings_class(
