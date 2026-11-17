@@ -102,6 +102,48 @@ async def test_ensure_collection_exists_custom_dict(store, data_model_def):
     await collection.ensure_collection_deleted()
 
 
+@mark.parametrize("use_index_dict", [False, True], ids=["single-index", "index-dict"])
+@mark.parametrize("index_kind", ["flat-l2", "flat-ip", "hnsw"])
+async def test_custom_index_upsert_and_search(store, data_model_def, use_index_dict, index_kind):
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
+    records = [
+        {"id": "first", "content": "first record", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]},
+        {"id": "second", "content": "second record", "vector": [-1.0, 0.0, 0.0, 0.0, 0.0]},
+    ]
+
+    for _ in range(2):
+        if index_kind == "flat-l2":
+            index = faiss.IndexFlatL2(5)
+        elif index_kind == "flat-ip":
+            index = faiss.IndexFlatIP(5)
+        else:
+            index = faiss.IndexHNSWFlat(5, 4)
+        kwargs = {"indexes": {"vector": index}} if use_index_dict else {"index": index}
+        await collection.ensure_collection_exists(**kwargs)
+        assert collection.indexes["vector"] is index
+
+        assert await collection.upsert(records[0]) == "first"
+        key_map = collection.indexes_key_map["vector"]
+        await collection.ensure_collection_exists(**kwargs)
+        assert collection.indexes_key_map["vector"] is key_map
+        assert key_map == {"first": 0}
+        assert await collection.upsert(records[1:]) == ["second"]
+        assert key_map == {"first": 0, "second": 1}
+
+        results = await collection.search(
+            vector=records[0]["vector"], top=2, include_total_count=True, include_vectors=True
+        )
+        assert results.total_count == 2
+        assert [result.record async for result in results.results] == records
+        assert await collection.get("first", include_vectors=True) == records[0]
+        assert index.ntotal == 2
+
+        await collection.ensure_collection_deleted()
+        assert collection.indexes == {}
+        assert collection.indexes_key_map == {}
+        assert collection.inner_storage == {}
+
+
 async def test_upsert(faiss_collection):
     await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}

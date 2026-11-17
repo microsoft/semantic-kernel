@@ -2,10 +2,13 @@
 
 import ast
 import asyncio
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
 from typing import Annotated, Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from uuid import UUID
 
 import pytest
 import pytest_asyncio
@@ -24,10 +27,15 @@ from semantic_kernel.data.vector import (
     DistanceFunction,
     IndexKind,
     VectorSearchOptions,
+    VectorStoreCollectionDefinition,
     VectorStoreField,
     vectorstoremodel,
 )
-from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreOperationException
+from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreModelValidationError,
+    VectorStoreOperationException,
+)
 from semantic_kernel.functions import KernelParameterMetadata
 
 
@@ -198,6 +206,132 @@ async def test_ensure_collection_exists_model_with_python_types(vector_store: Po
     )
 
 
+async def test_ensure_collection_exists_model_with_common_postgres_types(
+    vector_store: PostgresStore, mock_cursor: Mock
+) -> None:
+    @vectorstoremodel
+    @dataclass
+    class ModelWithCommonPostgresTypes:
+        name: Annotated[str, VectorStoreField("key")]
+        event_date: Annotated[date, VectorStoreField("data")]
+        external_id: Annotated[UUID, VectorStoreField("data")]
+        amount: Annotated[Decimal, VectorStoreField("data")]
+
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=ModelWithCommonPostgresTypes,
+    )
+
+    await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_awaited_once()
+    statement = mock_cursor.execute.call_args.args[0]
+    assert statement.as_string() == (
+        'CREATE TABLE "public"."test_collection" '
+        '("name" TEXT PRIMARY KEY, "event_date" DATE, "external_id" UUID, "amount" DECIMAL)'
+    )
+
+
+async def test_ensure_collection_exists_explicit_definition_with_supported_aliases(
+    vector_store: PostgresStore, mock_cursor: Mock
+) -> None:
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="title", type="text"),
+            VectorStoreField("data", name="count", type="INTEGER"),
+            VectorStoreField("data", name="large_count", type="bigint"),
+            VectorStoreField("data", name="small_count", type="SMALLINT"),
+            VectorStoreField("data", name="score", type="double precision"),
+            VectorStoreField("data", name="approximate_score", type="real"),
+            VectorStoreField("data", name="enabled", type="BOOLEAN"),
+            VectorStoreField("data", name="metadata", type="jsonb"),
+            VectorStoreField("data", name="created_at", type="TIMESTAMP"),
+            VectorStoreField("data", name="processed_at", type="timestamptz"),
+            VectorStoreField("data", name="payload", type="bytea"),
+            VectorStoreField("data", name="summary", type="varchar(255)"),
+            VectorStoreField("data", name="description", type="character varying ( 1024 )"),
+            VectorStoreField("data", name="amount", type="numeric(10, 2)"),
+            VectorStoreField("data", name="ratio", type="decimal(6)"),
+            VectorStoreField("data", name="tags", type="list[str]"),
+            VectorStoreField("data", name="codes", type="varchar(12)[]"),
+            VectorStoreField("data", name="weights", type="DOUBLE PRECISION[]"),
+            VectorStoreField("data", name="items", type="Dict[str, Any]"),
+            VectorStoreField("data", name="item_history", type="Dict[str, Any][]"),
+            VectorStoreField("data", name="nested_item_history", type="dict[str, list[int]][][]"),
+        ]
+    )
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=dict,
+        definition=definition,
+    )
+
+    await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_awaited_once()
+    statement = mock_cursor.execute.call_args.args[0]
+    assert statement.as_string() == (
+        'CREATE TABLE "public"."test_collection" '
+        '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "large_count" BIGINT, '
+        '"small_count" SMALLINT, "score" DOUBLE PRECISION, "approximate_score" REAL, "enabled" BOOLEAN, '
+        '"metadata" JSONB, "created_at" TIMESTAMP, "processed_at" TIMESTAMP WITH TIME ZONE, "payload" BYTEA, '
+        '"summary" VARCHAR(255), "description" CHARACTER VARYING(1024), "amount" NUMERIC(10, 2), '
+        '"ratio" DECIMAL(6), "tags" TEXT[], "codes" VARCHAR(12)[], "weights" DOUBLE PRECISION[], '
+        '"items" JSONB, "item_history" JSONB[], "nested_item_history" JSONB[][])'
+    )
+
+
+@pytest.mark.parametrize(
+    "unsupported_type",
+    [
+        "TEXT); SELECT 1; --",
+        "TEXT -- comment",
+        "TEXT/*comment*/",
+        "TEXT\n); SELECT 1",
+        "list[int",
+        "list[]",
+        "INTEGER[",
+        "INTEGER[] trailing",
+        "list[custom_type]",
+        "Dict[str, Any]]",
+        "list[Dict[str, Any]]]",
+        "dict[str, Any -- comment]",
+        "varchar()",
+        "varchar(255, 1)",
+        "varchar(255); SELECT 1",
+        "varchar(123456789)",
+        "numeric()",
+        "numeric(10, 2, 1)",
+        "numeric(10, scale)",
+        "numeric(12345)",
+    ],
+)
+async def test_ensure_collection_exists_rejects_unsupported_types_before_execution(
+    vector_store: PostgresStore,
+    mock_cursor: Mock,
+    mock_connection_pool,
+    unsupported_type: str,
+) -> None:
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="content", type=unsupported_type),
+        ]
+    )
+    collection = vector_store.get_collection(
+        collection_name="test_collection",
+        record_type=dict,
+        definition=definition,
+    )
+
+    with pytest.raises(VectorStoreModelValidationError, match="not supported for automatic collection creation"):
+        await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_not_awaited()
+    mock_connection_pool[0].assert_not_called()
+
+
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.upsert([
@@ -248,9 +382,29 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
     "filter, filter_sql, filter_params",
     [
         (None, "", []),
+        ([], "", []),
         ("lambda x: x.id == 1", ' WHERE ("id" = %s)', [1]),
+        (lambda x: x.id == 1, ' WHERE ("id" = %s)', [1]),
+        (["lambda x: x.id == 1"], ' WHERE ("id" = %s)', [1]),
+        ([lambda x: x.id == 1], ' WHERE ("id" = %s)', [1]),
         (
             ["lambda x: x.id > 0", "lambda x: x.id == 1 or x.id == 2"],
+            ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
+            [0, 1, 2],
+        ),
+        (
+            [
+                lambda x: x.id > 0,
+                lambda x: x.id == 1 or x.id == 2,
+            ],
+            ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
+            [0, 1, 2],
+        ),
+        (
+            [
+                "lambda x: x.id > 0",
+                lambda x: x.id == 1 or x.id == 2,
+            ],
             ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
             [0, 1, 2],
         ),
@@ -274,7 +428,7 @@ async def test_vector_search(
     subquery_distance: str | None,
     include_vectors: bool,
     include_total_count: bool,
-    filter: str | list[str] | None,
+    filter: str | Callable | list[str | Callable] | None,
     filter_sql: str,
     filter_params: list[Any],
 ) -> None:
@@ -372,6 +526,9 @@ def filter_collection(vector_store):
         ("x.id == 1", '"id" = %s', [1]),
         ("x.id != 1", '"id" <> %s', [1]),
         ("x.id > 1", '"id" > %s', [1]),
+        ("x.id > -1", '"id" > %s', [-1]),
+        ("x.id == -1", '"id" = %s', [-1]),
+        ("x.id == -1.5", '"id" = %s', [-1.5]),
         ("x.id >= 1", '"id" >= %s', [1]),
         ("x.id < 1", '"id" < %s', [1]),
         ("x.id <= 1", '"id" <= %s', [1]),
@@ -502,7 +659,6 @@ def test_filter_identifier_quoting(filter_collection):
         ("1j != None", VectorStoreOperationException),
         ("x.id is None", NotImplementedError),
         ("x.id is not None", NotImplementedError),
-        ("x.id == -1", NotImplementedError),
         ("x.id == +1", NotImplementedError),
         ("x.id == ~1", NotImplementedError),
         ("x.tenant.startswith('a')", NotImplementedError),

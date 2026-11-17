@@ -33,6 +33,7 @@ async def main():
             args=[
                 f"--directory={str(Path(os.path.dirname(__file__)).joinpath('servers'))}",
                 "run",
+                "--no-sync",
                 "menu_agent_server.py",
             ],
             env={
@@ -47,6 +48,7 @@ async def main():
             args=[
                 f"--directory={str(Path(os.path.dirname(__file__)).joinpath('servers'))}",
                 "run",
+                "--no-sync",
                 "restaurant_booking_agent_server.py",
             ],
             env={

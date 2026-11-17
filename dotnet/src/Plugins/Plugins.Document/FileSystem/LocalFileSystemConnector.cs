@@ -1,105 +1,57 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 
-#pragma warning disable CA1031 // Exceptions are caught and returned in a task
+#pragma warning disable CA1031 // Exceptions are returned in the task, matching the connector contract.
 
 /// <summary>
-/// Connector for local filesystem
+/// Connector for local filesystem access restricted to trusted directories.
 /// </summary>
 public class LocalFileSystemConnector : IFileSystemConnector
 {
-    /// <summary>
-    /// Get the contents of a file as a read-only stream.
-    /// </summary>
-    /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="PathTooLongException"></exception>
-    /// <exception cref="DirectoryNotFoundException"></exception>
-    /// <exception cref="IOException"></exception>
-    /// <exception cref="UnauthorizedAccessException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <exception cref="FileNotFoundException"></exception>
-    /// <exception cref="NotSupportedException"></exception>
-    public Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public Task<Stream> GetFileContentStreamAsync(
+        string filePath, IEnumerable<string> allowedDirectories, CancellationToken cancellationToken = default)
     {
         try
         {
-            return Task.FromResult<Stream>(File.Open(filePath, FileMode.Open, FileAccess.Read));
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult<Stream>(SecureFileSystem.OpenRead(
+                filePath, allowedDirectories, out _, share: FileShare.None));
         }
-        catch (Exception e)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return Task.FromException<Stream>(e);
+            return Task.FromCanceled<Stream>(cancellationToken);
         }
-    }
-
-    /// <summary>
-    /// Get a writeable stream to a file.
-    /// </summary>
-    /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="PathTooLongException"></exception>
-    /// <exception cref="DirectoryNotFoundException"></exception>
-    /// <exception cref="IOException"></exception>
-    /// <exception cref="UnauthorizedAccessException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <exception cref="FileNotFoundException"></exception>
-    /// <exception cref="NotSupportedException"></exception>
-    public Task<Stream> GetWriteableFileStreamAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        try
+        catch (Exception ex)
         {
-            return Task.FromResult<Stream>(File.Open(filePath, FileMode.Open, FileAccess.ReadWrite));
-        }
-        catch (Exception e)
-        {
-            return Task.FromException<Stream>(e);
-        }
-    }
-
-    /// <summary>
-    /// Get a writeable stream to a file.
-    /// </summary>
-    /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="PathTooLongException"></exception>
-    /// <exception cref="DirectoryNotFoundException"></exception>
-    /// <exception cref="IOException"></exception>
-    /// <exception cref="UnauthorizedAccessException"></exception>
-    /// <exception cref="NotSupportedException"></exception>
-    public Task<Stream> CreateFileAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            return Task.FromResult<Stream>(File.Create(filePath));
-        }
-        catch (Exception e)
-        {
-            return Task.FromException<Stream>(e);
+            return Task.FromException<Stream>(ex);
         }
     }
 
     /// <inheritdoc/>
-    public Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
+    public Task<(Stream Stream, bool Created)> OpenUpdateAsync(
+        string filePath, IEnumerable<string> allowedDirectories, CancellationToken cancellationToken = default)
     {
         try
         {
-            return Task.FromResult(File.Exists(filePath));
+            cancellationToken.ThrowIfCancellationRequested();
+            Stream stream = SecureFileSystem.OpenUpdate(filePath, allowedDirectories, out var created);
+            return Task.FromResult((stream, created));
         }
-        catch (Exception e)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return Task.FromException<bool>(e);
+            return Task.FromCanceled<(Stream, bool)>(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<(Stream, bool)>(ex);
         }
     }
 }
