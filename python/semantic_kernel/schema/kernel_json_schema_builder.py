@@ -82,6 +82,8 @@ class KernelJsonSchemaBuilder:
         properties = {}
         required = []
 
+        if not isinstance(model, type):
+            model = type(model)
         model_module_globals = vars(sys.modules[model.__module__])
         hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
@@ -193,7 +195,7 @@ class KernelJsonSchemaBuilder:
             _, value_type = args
             additional_properties = cls.build(value_type, structured_output=structured_output)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
+                additional_properties["properties"] = {}
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description
@@ -201,8 +203,12 @@ class KernelJsonSchemaBuilder:
                 schema["additionalProperties"] = False
             return schema
         if origin is tuple:
-            items = [cls.build(arg, structured_output=structured_output) for arg in args]
-            schema = {"type": "array", "items": items}
+            if len(args) == 2 and args[1] is Ellipsis:
+                # tuple[X, ...] holds any number of X, like list[X]
+                schema = {"type": "array", "items": cls.build(args[0], structured_output=structured_output)}
+            else:
+                items = [cls.build(arg, structured_output=structured_output) for arg in args]
+                schema = {"type": "array", "items": items}
             if description:
                 schema["description"] = description
             if structured_output:

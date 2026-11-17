@@ -7,7 +7,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union
+from typing import Annotated, Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -682,6 +682,62 @@ async def test_invoke_function_call_with_missing_or_unexpected_args(kernel: Kern
     ), "Expected fallback message not found in chat history."
 
 
+@pytest.mark.parametrize(
+    "model_arguments",
+    [{"value": "visible", "scope": "model-value"}, '{"value": "visible", "scope": "model-value"}'],
+    ids=["dict", "json"],
+)
+async def test_invoke_function_call_rejects_model_supplied_hidden_parameter(kernel: Kernel, model_arguments):
+    calls: list[str] = []
+
+    class TestPlugin:
+        @kernel_function
+        def echo(
+            self,
+            value: str,
+            scope: Annotated[str, "Host supplied", {"include_in_function_choices": False}] = "default",
+        ) -> str:
+            calls.append(scope)
+            return f"{value}:{scope}"
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+    chat_history = ChatHistory()
+
+    result = await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments=model_arguments),
+        chat_history=chat_history,
+        arguments=KernelArguments(scope="host-value"),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert result is None
+    assert calls == []
+    assert "Received unexpected argument(s): ['scope']" in chat_history.messages[-1].items[0].result
+
+
+async def test_invoke_function_call_keeps_host_supplied_hidden_parameter(kernel: Kernel):
+    class TestPlugin:
+        @kernel_function
+        def echo(
+            self,
+            value: str,
+            scope: Annotated[str, "Host supplied", {"include_in_function_choices": False}] = "default",
+        ) -> str:
+            return f"{value}:{scope}"
+
+    kernel.add_plugin(TestPlugin(), plugin_name="test")
+    chat_history = ChatHistory()
+
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": "visible"}),
+        chat_history=chat_history,
+        arguments=KernelArguments(scope="host-value"),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert chat_history.messages[-1].items[0].result == "visible:host-value"
+
+
 async def test_invoke_function_call_with_filters_blocks_unallowed_function(kernel: Kernel):
     """Verify that when function_behavior has filters, an unallowed function is blocked."""
     tool_call_mock = MagicMock(spec=FunctionCallContent)
@@ -1148,7 +1204,6 @@ def test_get_service_with_multiple_types(kernel_with_service: Kernel):
 
 
 def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
-    """This is valid syntax only in python 3.10+. It is skipped for older versions."""
     service_get = kernel_with_service.get_service("service", type=Union[AIServiceClientBase, ChatCompletionClientBase])
     assert service_get == kernel_with_service.services["service"]
 

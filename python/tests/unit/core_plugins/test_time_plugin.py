@@ -9,7 +9,7 @@ import semantic_kernel as sk
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 
-test_mock_now = datetime.datetime(2031, 1, 12, 12, 24, 56, tzinfo=datetime.timezone.utc)
+test_mock_now = datetime.datetime(2031, 1, 12, 12, 24, 56, tzinfo=datetime.UTC)
 test_mock_today = datetime.date(2031, 1, 12)
 
 

@@ -4,9 +4,7 @@ import inspect
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from typing import Any, ClassVar, TypeVar, final
-
-from typing_extensions import Self
+from typing import Any, ClassVar, Self, TypeVar, final
 
 from semantic_kernel.agents.runtime.core.agent import Agent
 from semantic_kernel.agents.runtime.core.agent_id import AgentId

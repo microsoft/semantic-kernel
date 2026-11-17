@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from typing import Any, Literal
 from unittest.mock import AsyncMock, patch
 
@@ -167,10 +166,6 @@ ManagerProgressListUnknownSpeaker = [
 ]
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke():
     """Test the invoke method of the MagenticOrchestration."""
     with (
@@ -280,10 +275,6 @@ async def test_invoke_with_agent_raising_exception():
             await runtime.stop_when_idle()
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_response_callback():
     """Test the invoke method of the MagenticOrchestration with a response callback."""
 
@@ -323,10 +314,6 @@ async def test_invoke_with_response_callback():
         assert all(item.content == "mock_response" for item in responses)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_streaming_response_callback():
     """Test the invoke method of the MagenticOrchestration with a streaming response callback."""
 
@@ -374,10 +361,6 @@ async def test_invoke_with_streaming_response_callback():
         assert agent_b_response.content == "mock_response"
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_max_stall_count_exceeded():
     """ "Test the invoke method of the MagenticOrchestration with max stall count exceeded."""
     runtime = InProcessRuntime()
@@ -420,10 +403,6 @@ async def test_invoke_with_max_stall_count_exceeded():
         assert mock_get_chat_message_content.call_count == 5
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_max_round_count_exceeded():
     """ "Test the invoke method of the MagenticOrchestration with max round count exceeded."""
     runtime = InProcessRuntime()
@@ -467,10 +446,6 @@ async def test_invoke_with_max_round_count_exceeded():
         assert mock_get_chat_message_content.call_count == 2
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_max_reset_count_exceeded():
     """ "Test the invoke method of the MagenticOrchestration with max reset count exceeded."""
     runtime = InProcessRuntime()
@@ -516,10 +491,6 @@ async def test_invoke_with_max_reset_count_exceeded():
         assert mock_get_chat_message_content.call_count == 4
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_with_unknown_speaker():
     """Test the invoke method of the MagenticOrchestration with an unknown speaker."""
     runtime = InProcessRuntime()

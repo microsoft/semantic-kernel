@@ -4,14 +4,13 @@ import asyncio
 import json
 import logging
 import re
-import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager, suppress
 from datetime import timedelta
 from functools import partial
 from itertools import chain
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 from mcp import types
 from mcp.client.session import ClientSession
@@ -46,11 +45,6 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 from ..contents.function_call_content import FunctionCallContent
 from ..contents.function_result_content import FunctionResultContent
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
     from mcp.server.lowlevel.server import LifespanResultT
