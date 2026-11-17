@@ -21,13 +21,13 @@ repos:
         name: Check Valid Python Samples
         types: ["python"]
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.5
+    rev: 1.10.0
     hooks:
       - id: nbqa-check-ast
         name: Check Valid Python Notebooks
         types: ["jupyter"]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.21.2
     hooks:
     - id: pyupgrade
       args: [--py311-plus]
