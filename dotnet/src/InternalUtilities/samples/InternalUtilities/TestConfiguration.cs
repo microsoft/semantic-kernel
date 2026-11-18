@@ -24,7 +24,6 @@ public sealed class TestConfiguration
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
-    public static AzureAIInferenceConfig AzureAIInference => LoadSection<AzureAIInferenceConfig>();
     public static AzureAIConfig AzureAI => LoadSection<AzureAIConfig>();
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
@@ -86,14 +85,6 @@ public sealed class TestConfiguration
         public string ChatModelId { get; set; }
         public string EmbeddingModelId { get; set; }
         public string ApiKey { get; set; }
-    }
-
-    public class AzureAIInferenceConfig
-    {
-        public string ServiceId { get; set; }
-        public string Endpoint { get; set; }
-        public string? ApiKey { get; set; }
-        public string ChatModelId { get; set; }
     }
 
     public class OnnxConfig

@@ -23,7 +23,6 @@
       "src\\Agents\\Runtime\\InProcess\\Runtime.InProcess.csproj",
 
       "src\\Connectors\\Connectors.Amazon\\Connectors.Amazon.csproj",
-      "src\\Connectors\\Connectors.AzureAIInference\\Connectors.AzureAIInference.csproj",
       "src\\Connectors\\Connectors.AzureOpenAI\\Connectors.AzureOpenAI.csproj",
       "src\\Connectors\\Connectors.Google\\Connectors.Google.csproj",
       "src\\Connectors\\Connectors.HuggingFace\\Connectors.HuggingFace.csproj",

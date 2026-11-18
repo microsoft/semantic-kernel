@@ -64,7 +64,6 @@
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Agents\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />

@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: superseded
 contact: rogerbarreto
 date: 2024-08-07
 deciders: rogerbarreto, markwallace-microsoft
@@ -8,6 +8,10 @@ consulted: taochen
 ---
 
 # Support Connector for .Net Azure Model-as-a-Service (Azure AI Studio)
+
+## Outcome
+
+The `Microsoft.SemanticKernel.Connectors.AzureAIInference` package was removed because its upstream dependencies are no longer supported. This document remains as a historical record of the original connector decision.
 
 ## Context and Problem Statement
 

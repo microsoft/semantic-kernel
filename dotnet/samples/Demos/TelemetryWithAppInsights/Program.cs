@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
@@ -84,8 +83,6 @@ public sealed class Program
         Console.WriteLine("Write a poem about John Doe and translate it to Italian.");
         using (var _ = s_activitySource.StartActivity("Chat"))
         {
-            await RunAzureAIInferenceChatAsync(kernel);
-            Console.WriteLine();
             await RunAzureOpenAIChatAsync(kernel);
             Console.WriteLine();
             await RunGoogleAIChatAsync(kernel);
@@ -132,32 +129,7 @@ public sealed class Program
     private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
     private const string HuggingFaceServiceKey = "HuggingFace";
     private const string MistralAIServiceKey = "MistralAI";
-    private const string AzureAIInferenceServiceKey = "AzureAIInference";
-
     #region chat completion
-
-    private static async Task RunAzureAIInferenceChatAsync(Kernel kernel)
-    {
-        Console.WriteLine("============= Azure AI Inference Chat Completion =============");
-
-        if (TestConfiguration.AzureAIInference is null)
-        {
-            Console.WriteLine("Azure AI Inference is not configured. Skipping.");
-            return;
-        }
-
-        using var activity = s_activitySource.StartActivity(AzureAIInferenceServiceKey);
-        SetTargetService(kernel, AzureAIInferenceServiceKey);
-        try
-        {
-            await RunChatAsync(kernel);
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            Console.WriteLine($"Error: {ex.Message}");
-        }
-    }
 
     private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
     {
@@ -405,30 +377,6 @@ public sealed class Program
                 serviceId: MistralAIServiceKey);
         }
 
-        if (TestConfiguration.AzureAIInference is not null)
-        {
-            if (string.IsNullOrEmpty(TestConfiguration.AzureAIInference.ApiKey))
-            {
-                builder.AddAzureAIInferenceChatCompletion(
-                    modelId: TestConfiguration.AzureAIInference.ModelId,
-                    credential: new DefaultAzureCredential(),
-                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
-                    serviceId: AzureAIInferenceServiceKey,
-                    openTelemetrySourceName: "Telemetry.Example",
-                    openTelemetryConfig: c => c.EnableSensitiveData = true);
-            }
-            else
-            {
-                builder.AddAzureAIInferenceChatCompletion(
-                    modelId: TestConfiguration.AzureAIInference.ModelId,
-                    apiKey: TestConfiguration.AzureAIInference.ApiKey,
-                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
-                    serviceId: AzureAIInferenceServiceKey,
-                    openTelemetrySourceName: "Telemetry.Example",
-                    openTelemetryConfig: c => c.EnableSensitiveData = true);
-            }
-        }
-
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromType<WeatherPlugin>();
         builder.Plugins.AddFromType<LocationPlugin>();
@@ -493,16 +441,6 @@ public sealed class Program
                         {
                             Temperature = 0,
                             ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions
-                        },
-                        AzureAIInferenceServiceKey => new AzureAIInferencePromptExecutionSettings()
-                        {
-                            Temperature = 0,
-
-                            // Function/Tool calling enabled models in Azure AI Inference are listed in the below page as "Tool calling: Yes/No"
-                            // https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models, 
-                            // Ensure your model support tool calling before enabling the setting below.
-
-                            // FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                         },
                         _ => null,
                     };

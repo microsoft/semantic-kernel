@@ -96,18 +96,6 @@ internal sealed class Program
             Console.WriteLine("• ONNX Added - Use \"onnx\" in the prompt.");
         }
 
-        if (config["AzureAIInference:Endpoint"] is not null)
-        {
-            services.AddAzureAIInferenceChatCompletion(
-                serviceId: "azureai",
-                modelId: config["AzureAIInference:ChatModelId"]!,
-                endpoint: new Uri(config["AzureAIInference:Endpoint"]!),
-                apiKey: config["AzureAIInference:ApiKey"]);
-
-            serviceIds.Add("azureai");
-            Console.WriteLine("• Azure AI Inference Added - Use \"azureai\" in the prompt.");
-        }
-
         // Adding a custom filter to capture router selected service id
         services.AddSingleton<IPromptRenderFilter>(new SelectedServiceFilter());
 

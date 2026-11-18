@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
