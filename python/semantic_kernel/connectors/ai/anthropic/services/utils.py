@@ -23,13 +23,47 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+# Image media types accepted by the Anthropic API.
+_SUPPORTED_IMAGE_MEDIA_TYPES = ("image/png", "image/jpeg", "image/gif", "image/webp")
+
+# Magic numbers of the image formats supported by the Anthropic API.
+_IMAGE_MAGIC_NUMBERS: tuple[tuple[bytes, str], ...] = (
+    (b"\x89PNG\r\n\x1a\n", "image/png"),
+    (b"\xff\xd8\xff", "image/jpeg"),
+    (b"GIF87a", "image/gif"),
+    (b"GIF89a", "image/gif"),
+)
+
+
+def _detect_image_media_type(data: bytes | str) -> str | None:
+    """Detect the media type of an image from its magic number.
+
+    Args:
+        data: The raw image data.
+
+    Returns:
+        A media type supported by Anthropic, or None when the data is not a
+        recognized image.
+    """
+    if not isinstance(data, bytes):
+        return None
+    for magic, media_type in _IMAGE_MAGIC_NUMBERS:
+        if data.startswith(magic):
+            return media_type
+    if data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     """Format a user message to the expected object for the Anthropic client.
 
     A text-only message keeps its historical string content. When the message
     carries images, all items are converted to Anthropic content blocks so
     that images are not silently dropped and an image-only message remains a
-    valid request.
+    valid request. The media type of an image is taken from its MIME type when
+    supported, otherwise detected from the data; images with an unsupported or
+    undetectable media type are skipped with a warning.
 
     Args:
         message: The user message.
@@ -51,20 +85,29 @@ def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
         elif isinstance(item, ImageContent):
             if item.data:
                 data = item.data
+                media_type = (
+                    item.mime_type if item.mime_type in _SUPPORTED_IMAGE_MEDIA_TYPES else _detect_image_media_type(data)
+                )
+                if media_type is None:
+                    logger.warning(
+                        "Skipping ImageContent with an unsupported or undetectable media type "
+                        "while formatting a user message for Anthropic."
+                    )
+                    continue
                 if isinstance(data, bytes):
                     data = base64.b64encode(data).decode("ascii")
                 blocks.append({
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": item.mime_type or "image/png",
+                        "media_type": media_type,
                         "data": data,
                     },
                 })
             elif item.uri:
                 blocks.append({
                     "type": "image",
-                    "source": {"type": "url", "url": item.uri},
+                    "source": {"type": "url", "url": str(item.uri)},
                 })
             else:
                 logger.warning(
