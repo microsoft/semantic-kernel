@@ -852,7 +852,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public void ItCanSerializeResponseFormatAsType()
+    public void ItSerializesTypeResponseFormatAsJsonSchema()
     {
         // Arrange
         var settings = new OpenAIPromptExecutionSettings
@@ -860,11 +860,92 @@ public class OpenAIPromptExecutionSettingsTests
             ResponseFormat = typeof(MyTestClass)
         };
 
-        // Act & Assert
+        // Act
         var json = JsonSerializer.Serialize(settings);
 
-        Assert.NotNull(json);
-        Assert.Contains("response_format", json);
+        // Assert
+        var responseFormat = JsonElement.Parse(json).GetProperty("response_format");
+        Assert.Equal("json_schema", responseFormat.GetProperty("type").GetString());
+
+        var jsonSchema = responseFormat.GetProperty("json_schema");
+        Assert.Equal(nameof(MyTestClass), jsonSchema.GetProperty("name").GetString());
+        Assert.True(jsonSchema.GetProperty("strict").GetBoolean());
+
+        var schema = jsonSchema.GetProperty("schema");
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.Equal("integer", schema.GetProperty("properties").GetProperty(nameof(MyTestClass.MyProperty)).GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItConvertsTypeResponseFormatToChatOptionsJsonSchema()
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = typeof(MyTestClass)
+        };
+
+        // Act
+        ChatOptions options = settings.ToChatOptions(null);
+
+        // Assert
+        var responseFormat = Assert.IsType<ChatResponseFormatJson>(options.ResponseFormat);
+        Assert.Equal(nameof(MyTestClass), responseFormat.SchemaName);
+
+        JsonElement schema = responseFormat.Schema!.Value;
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.Equal("integer", schema.GetProperty("properties").GetProperty(nameof(MyTestClass.MyProperty)).GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItConvertsJsonSchemaEnvelopeResponseFormatToChatOptions()
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = JsonElement.Parse("""
+                {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "Person",
+                        "description": "A person",
+                        "strict": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": { "name": { "type": "string" } }
+                        }
+                    }
+                }
+                """)
+        };
+
+        // Act
+        ChatOptions options = settings.ToChatOptions(null);
+
+        // Assert
+        var responseFormat = Assert.IsType<ChatResponseFormatJson>(options.ResponseFormat);
+        Assert.Equal("Person", responseFormat.SchemaName);
+        Assert.Equal("A person", responseFormat.SchemaDescription);
+
+        JsonElement schema = responseFormat.Schema!.Value;
+        Assert.Equal("object", schema.GetProperty("type").GetString());
+        Assert.Equal("string", schema.GetProperty("properties").GetProperty("name").GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItKeepsRawJsonSchemaResponseFormatAsSchemaInChatOptions()
+    {
+        // Arrange
+        var rawSchema = JsonElement.Parse("""{ "type": "object", "properties": { "name": { "type": "string" } } }""");
+        var settings = new OpenAIPromptExecutionSettings { ResponseFormat = rawSchema };
+
+        // Act
+        ChatOptions options = settings.ToChatOptions(null);
+
+        // Assert
+        var responseFormat = Assert.IsType<ChatResponseFormatJson>(options.ResponseFormat);
+        Assert.Null(responseFormat.SchemaName);
+        Assert.True(JsonElement.DeepEquals(rawSchema, responseFormat.Schema!.Value));
     }
 
     /// <summary>

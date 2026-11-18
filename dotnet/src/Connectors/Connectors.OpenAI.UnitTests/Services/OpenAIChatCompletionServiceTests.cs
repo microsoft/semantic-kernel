@@ -1393,6 +1393,46 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Contains("Property2", requiredParentProperties);
     }
 
+    [Theory]
+    [InlineData("Type")]
+    [InlineData("JsonSchema")]
+    [InlineData("JsonObject")]
+    [InlineData("Text")]
+    public async Task ItSendsSameResponseFormatAfterSettingsJsonRoundTripAsync(string responseFormatKind)
+    {
+        // Arrange
+        object responseFormat = responseFormatKind switch
+        {
+            "Type" => typeof(MathReasoning),
+            "JsonSchema" => ChatResponseFormat.CreateJsonSchemaFormat(
+                jsonSchemaFormatName: "MathReasoning",
+                jsonSchema: BinaryData.FromString("""
+                    {
+                        "type": "object",
+                        "properties": { "FinalAnswer": { "type": "string" } },
+                        "required": ["FinalAnswer"],
+                        "additionalProperties": false
+                    }
+                    """),
+                jsonSchemaFormatDescription: "Math reasoning",
+                jsonSchemaIsStrict: true),
+            "JsonObject" => ChatResponseFormat.CreateJsonObjectFormat(),
+            _ => ChatResponseFormat.CreateTextFormat(),
+        };
+
+        var originalSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };
+        var roundTrippedSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(JsonSerializer.Serialize(originalSettings))!;
+
+        // Act
+        JsonElement expectedResponseFormat = await this.GetRequestResponseFormatAsync(originalSettings);
+        JsonElement actualResponseFormat = await this.GetRequestResponseFormatAsync(roundTrippedSettings);
+
+        // Assert
+        Assert.True(
+            JsonElement.DeepEquals(expectedResponseFormat, actualResponseFormat),
+            $"Expected {expectedResponseFormat.GetRawText()} but got {actualResponseFormat.GetRawText()}");
+    }
+
     [Fact]
     public async Task GetChatMessageContentReturnsRefusal()
     {
@@ -1892,6 +1932,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
         this._multiMessageHandlerStub.Dispose();
+    }
+
+    private async Task<JsonElement> GetRequestResponseFormatAsync(OpenAIPromptExecutionSettings executionSettings)
+    {
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        return JsonElement.Parse(this._messageHandlerStub.RequestContent!).GetProperty("response_format");
     }
 
     private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter

@@ -38,11 +38,12 @@ internal static class OpenAIChatResponseFormatBuilder
         {
             string schema = jsonSchemaProperty.TryGetProperty("schema", out var schemaProperty) ? schemaProperty.ToString() : throw new ArgumentException("Property 'schema' is not initialized in JSON schema response format.");
             string? schemaName = jsonSchemaProperty.TryGetProperty("name", out var nameProperty) ? nameProperty.GetString() : DefaultSchemaName;
+            string? schemaDescription = jsonSchemaProperty.TryGetProperty("description", out var descriptionProperty) && descriptionProperty.ValueKind == JsonValueKind.String ? descriptionProperty.GetString() : null;
             bool? isStrict = jsonSchemaProperty.TryGetProperty("strict", out var isStrictProperty) && isStrictProperty.ValueKind == JsonValueKind.True ? true : null;
 
             BinaryData schemaBinaryData = new(Encoding.UTF8.GetBytes(schema));
 
-            return ChatResponseFormat.CreateJsonSchemaFormat(schemaName, schemaBinaryData, jsonSchemaIsStrict: isStrict);
+            return ChatResponseFormat.CreateJsonSchemaFormat(schemaName, schemaBinaryData, schemaDescription, isStrict);
         }
 
         return ChatResponseFormat.CreateJsonSchemaFormat(

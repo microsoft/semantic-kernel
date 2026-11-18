@@ -114,7 +114,7 @@ public static class PromptExecutionSettingsExtensions
                     }
                     else
                     {
-                        options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
+                        options.ResponseFormat = responseFormat is JsonElement e ? ToChatResponseFormat(e) : null;
                     }
                 }
                 else if (entry.Key.Equals("reasoning_effort", StringComparison.OrdinalIgnoreCase) &&
@@ -259,5 +259,35 @@ public static class PromptExecutionSettingsExtensions
             result = default;
             return false;
         }
+    }
+
+    /// <summary>Converts a JSON <c>response_format</c> value to a <see cref="ChatResponseFormat"/>.</summary>
+    private static ChatResponseFormatJson ToChatResponseFormat(JsonElement responseFormat)
+    {
+        // An OpenAI response format envelope ({ "type": "json_schema", "json_schema": { "name", "description", "schema" } })
+        // carries the schema separately from its name and description, so unwrap it instead of using the envelope as the schema.
+        // "json_schema" is not a valid JSON Schema type, so any other JSON value keeps being used as the schema itself.
+        // The envelope "strict" flag is intentionally not mapped: Microsoft.Extensions.AI reads strictness from a shared
+        // ChatOptions.AdditionalProperties entry that would also make function tools strict.
+        if (responseFormat.ValueKind == JsonValueKind.Object &&
+            responseFormat.TryGetProperty("type", out JsonElement type) &&
+            type.ValueKind == JsonValueKind.String &&
+            type.ValueEquals("json_schema") &&
+            responseFormat.TryGetProperty("json_schema", out JsonElement jsonSchema) &&
+            jsonSchema.ValueKind == JsonValueKind.Object &&
+            jsonSchema.TryGetProperty("schema", out JsonElement schema))
+        {
+            return ChatResponseFormat.ForJsonSchema(
+                schema,
+                GetOptionalString(jsonSchema, "name"),
+                GetOptionalString(jsonSchema, "description"));
+        }
+
+        return ChatResponseFormat.ForJsonSchema(responseFormat);
+
+        static string? GetOptionalString(JsonElement element, string propertyName) =>
+            element.TryGetProperty(propertyName, out JsonElement property) && property.ValueKind == JsonValueKind.String
+                ? property.GetString()
+                : null;
     }
 }

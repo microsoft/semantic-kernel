@@ -174,10 +174,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>- <see cref="string"/> values: <c>"json_object"</c>, <c>"text"</c>;</para>
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
     /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
+    /// <para>
+    /// When serialized to JSON, <see cref="Type"/> and <see cref="ChatResponseFormat"/> values are written in the OpenAI
+    /// <c>response_format</c> representation, and are deserialized as a <see cref="JsonElement"/>.
+    /// </para>
     /// </remarks>
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonConverter(typeof(TypeOrFunctionResponseFormatConverter))]
+    [JsonConverter(typeof(ResponseFormatJsonConverter))]
     public object? ResponseFormat
     {
         get => this._responseFormat;
