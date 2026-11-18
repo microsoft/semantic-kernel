@@ -3,6 +3,8 @@
 import pytest
 from defusedxml.ElementTree import XML
 
+from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -130,6 +132,18 @@ def test_cmc_to_element():
         ),
         ChatMessageContent(
             role=AuthorRole.USER,
+            items=[AudioContent(uri="http://test/audio.mp3")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[AudioContent(data=b"test_audio_data", mime_type="audio/mpeg")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[BinaryContent(data=b"test_binary_data", mime_type="application/octet-stream")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
             items=[
                 TextContent(text="Hello, world!"),
                 FunctionCallContent(id="test", name="func_name", arguments="args"),
@@ -138,7 +152,17 @@ def test_cmc_to_element():
             ],
         ),
     ],
-    ids=["text", "image_uri", "image_data", "function_call", "function_result", "all"],
+    ids=[
+        "text",
+        "image_uri",
+        "image_data",
+        "function_call",
+        "function_result",
+        "audio_uri",
+        "audio_data",
+        "binary_data",
+        "all",
+    ],
 )
 def test_cmc_to_from_element(message):
     element = message.to_element()
