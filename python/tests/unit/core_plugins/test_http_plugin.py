@@ -494,6 +494,11 @@ async def test_allow_all_domains_with_allowed_domains_allows_redirects():
         "fc00::1",
         "ff02::1",
         "::ffff:169.254.169.254",
+        "64:ff9b::a00:1",
+        "64:ff9b:1::808:808",
+        "::a00:1",
+        "2002:a00:1::",
+        "2001:0:808:808:0:0:f5ff:fffe",
     ],
 )
 async def test_allowed_hostname_resolving_to_non_public_address_is_blocked(method, address, mock_dns):
@@ -513,7 +518,19 @@ async def test_allowed_hostname_resolving_to_non_public_address_is_blocked(metho
 @pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
 @pytest.mark.parametrize(
     "address",
-    ["169.254.169.254", "::1", "::ffff:127.0.0.1", "fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"],
+    [
+        "169.254.169.254",
+        "::1",
+        "::ffff:127.0.0.1",
+        "fec0::",
+        "fec0::1",
+        "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "64:ff9b::a00:1",
+        "64:ff9b:1::808:808",
+        "::a00:1",
+        "2002:a00:1::",
+        "2001:0:808:808:0:0:f5ff:fffe",
+    ],
 )
 async def test_allowed_literal_non_public_address_is_blocked_without_dns(method, address, mock_dns):
     url_host = f"[{address}]" if ":" in address else address

@@ -152,4 +152,17 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
     if address in ipaddress.ip_network("2001:db8::/32"):
         return True, "reserved"
 
+    # The local-use translation prefix is not globally reachable and supports multiple IPv4 layouts.
+    if address in ipaddress.ip_network("64:ff9b:1::/48"):
+        return True, "reserved"
+    if address in ipaddress.ip_network("64:ff9b::/96") or address.packed[:12] == b"\x00" * 12:
+        return _try_classify_ipv4(ipaddress.IPv4Address(address.packed[12:]))
+    if embedded_address := address.sixtofour:
+        return _try_classify_ipv4(embedded_address)
+    if teredo_addresses := address.teredo:
+        for embedded_address in teredo_addresses:
+            blocked, category = _try_classify_ipv4(embedded_address)
+            if blocked:
+                return True, category
+
     return False, ""
