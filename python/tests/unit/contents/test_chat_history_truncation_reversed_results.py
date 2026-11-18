@@ -3,6 +3,7 @@
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer_utils import get_call_result_pairs
 from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -30,6 +31,29 @@ def _has_result(history: list[ChatMessageContent], call_id: str) -> bool:
     return any(
         isinstance(item, FunctionResultContent) and item.id == call_id for message in history for item in message.items
     )
+
+
+async def test_truncation_keeps_call_when_a_later_turn_reuses_its_id():
+    history = [
+        _assistant_call("lookup_0"),
+        _tool_message_with(["lookup_0"]),
+        ChatMessageContent(role=AuthorRole.USER, content="Look up the next item."),
+        _assistant_call("lookup_0"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Checking the next item."),
+        _tool_message_with(["lookup_0"]),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Done."),
+    ]
+    reducer = ChatHistoryTruncationReducer(target_count=2)
+    reducer.messages = history
+    await reducer.reduce()
+
+    assert reducer.messages == history[3:]
+    assert get_call_result_pairs(history) == [(0, 1), (3, 5)]
+
+
+def test_unmatched_result_does_not_consume_a_future_call():
+    history = [_tool_message_with(["lookup_0"]), _assistant_call("lookup_0"), _tool_message_with(["lookup_0"])]
+    assert get_call_result_pairs(history) == [(1, 2)]
 
 
 async def test_truncation_does_not_orphan_earlier_call_when_results_reversed_in_one_message():
