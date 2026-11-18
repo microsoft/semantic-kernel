@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel;
 using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI;
 
 namespace GettingStarted;
 
@@ -90,17 +87,9 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
 
     public Step10_MultiAgent_Declarative(ITestOutputHelper output) : base(output)
     {
-        var openaiClient =
-           this.UseOpenAIConfig ?
-               OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
-               !string.IsNullOrWhiteSpace(this.ApiKey) ?
-                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
-
         var agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
 
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<OpenAIClient>(openaiClient);
         builder.Services.AddSingleton<PersistentAgentsClient>(agentsClient);
         AddChatCompletionToKernel(builder);
         this._kernel = builder.Build();
@@ -108,7 +97,6 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         this._kernelAgentFactory =
             new AggregatorAgentFactory(
                 new ChatCompletionAgentFactory(),
-                new OpenAIAssistantAgentFactory(),
                 new AzureAIAgentFactory());
     }
 

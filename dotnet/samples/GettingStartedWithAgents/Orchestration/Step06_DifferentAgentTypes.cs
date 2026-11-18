@@ -84,16 +84,6 @@ public class Step06_DifferentAgentTypes(ITestOutputHelper output) : BaseOrchestr
                 - Unique selling points
                 """,
                 description: "A agent that extracts key concepts from a product description.");
-        Agent writerAgent =
-            await this.CreateOpenAIAssistantAgentAsync(
-                name: "copywriter",
-                instructions:
-                """
-                You are a marketing copywriter. Given a block of text describing features, audience, and USPs,
-                compose a compelling marketing copy (like a newsletter section) that highlights these points.
-                Output should be short (around 150 words), output just the copy as a single text block.
-                """,
-                description: "An agent that writes a marketing copy based on the extracted concepts.");
         Agent editorAgent =
             await this.CreateAzureAIAgentAsync(
                 name: "editor",
@@ -103,6 +93,17 @@ public class Step06_DifferentAgentTypes(ITestOutputHelper output) : BaseOrchestr
                 give format and make it polished. Output the final improved copy as a single text block.
                 """,
                 description: "An agent that formats and proofreads the marketing copy.");
+        // The Prompt Agent is created last, so that a failure while creating the other agents can't leave it behind.
+        Agent writerAgent =
+            await this.CreateFoundryPromptAgentAsync(
+                name: "copywriter",
+                instructions:
+                """
+                You are a marketing copywriter. Given a block of text describing features, audience, and USPs,
+                compose a compelling marketing copy (like a newsletter section) that highlights these points.
+                Output should be short (around 150 words), output just the copy as a single text block.
+                """,
+                description: "An agent that writes a marketing copy based on the extracted concepts.");
 
         // Create a monitor to capturing agent responses (via ResponseCallback)
         // to display at the end of this sample. (optional)
@@ -116,18 +117,25 @@ public class Step06_DifferentAgentTypes(ITestOutputHelper output) : BaseOrchestr
                 ResponseCallback = monitor.ResponseCallback,
             };
 
-        // Start the runtime
-        InProcessRuntime runtime = new();
-        await runtime.StartAsync();
+        try
+        {
+            // Start the runtime
+            InProcessRuntime runtime = new();
+            await runtime.StartAsync();
 
-        // Run the orchestration
-        string input = "An eco-friendly stainless steel water bottle that keeps drinks cold for 24 hours";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 2));
-        Console.WriteLine($"\n# RESULT: {text}");
+            // Run the orchestration
+            string input = "An eco-friendly stainless steel water bottle that keeps drinks cold for 24 hours";
+            Console.WriteLine($"\n# INPUT: {input}\n");
+            OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
+            string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 2));
+            Console.WriteLine($"\n# RESULT: {text}");
 
-        await runtime.RunUntilIdleAsync();
+            await runtime.RunUntilIdleAsync();
+        }
+        finally
+        {
+            await this.DeleteFoundryPromptAgentsAsync();
+        }
 
         Console.WriteLine("\n\nORCHESTRATION HISTORY");
         foreach (ChatMessageContent message in monitor.History)
@@ -154,7 +162,7 @@ public class Step06_DifferentAgentTypes(ITestOutputHelper output) : BaseOrchestr
                 Consider suggestions when refining an idea.
                 """);
         Agent editor =
-            await this.CreateOpenAIAssistantAgentAsync(
+            await this.CreateFoundryPromptAgentAsync(
                 name: "Reviewer",
                 description: "An editor.",
                 instructions:
@@ -182,17 +190,24 @@ public class Step06_DifferentAgentTypes(ITestOutputHelper output) : BaseOrchestr
                 ResponseCallback = monitor.ResponseCallback,
             };
 
-        // Start the runtime
-        InProcessRuntime runtime = new();
-        await runtime.StartAsync();
+        try
+        {
+            // Start the runtime
+            InProcessRuntime runtime = new();
+            await runtime.StartAsync();
 
-        string input = "Create a slogan for a new electric SUV that is affordable and fun to drive.";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
-        Console.WriteLine($"\n# RESULT: {text}");
+            string input = "Create a slogan for a new electric SUV that is affordable and fun to drive.";
+            Console.WriteLine($"\n# INPUT: {input}\n");
+            OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
+            string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
+            Console.WriteLine($"\n# RESULT: {text}");
 
-        await runtime.RunUntilIdleAsync();
+            await runtime.RunUntilIdleAsync();
+        }
+        finally
+        {
+            await this.DeleteFoundryPromptAgentsAsync();
+        }
 
         Console.WriteLine("\n\nORCHESTRATION HISTORY");
         foreach (ChatMessageContent message in monitor.History)

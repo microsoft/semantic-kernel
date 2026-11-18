@@ -30,15 +30,19 @@ Example|Description
 [Step06_DependencyInjection](./Step06_DependencyInjection.cs)|How to define dependency injection patterns for agents.
 [Step07_Telemetry](./Step07_Telemetry.cs)|How to enable logging for agents.
 
-### Open AI Assistant
+### Foundry Prompt Agent
+
+A Microsoft Foundry Prompt Agent is a versioned agent definition (model, instructions, and tools) stored in a Foundry project. These examples use one through a `ChatCompletionAgent`. They replace the Open AI Assistant examples, because OpenAI shut down the Assistants API on August 26, 2026.
 
 Example|Description
 ---|---
-[Step01_Assistant](./OpenAIAssistant/Step01_Assistant.cs)|How to create an Open AI Assistant agent.
-[Step02_Assistant_Plugins](./OpenAIAssistant/Step02_Assistant_Plugins.cs)|How to associate plug-ins with an Open AI Assistant agent.
-[Step03_Assistant_Vision](./OpenAIAssistant/Step03_Assistant_Vision.cs)|How to provide an image as input to an Open AI Assistant agent.
-[Step04_AssistantTool_CodeInterpreter_](./OpenAIAssistant/Step04_AssistantTool_CodeInterpreter.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
-[Step05_AssistantTool_FileSearch](./OpenAIAssistant/Step05_AssistantTool_FileSearch.cs)|How to use the file-search tool for an Open AI Assistant agent.
+[Step01_FoundryPromptAgent](./FoundryPromptAgent/Step01_FoundryPromptAgent.cs)|How to use a Foundry Prompt Agent with templatized instructions.
+[Step02_FoundryPromptAgent_Plugins](./FoundryPromptAgent/Step02_FoundryPromptAgent_Plugins.cs)|How to associate plug-ins with a Foundry Prompt Agent.
+[Step03_FoundryPromptAgent_Vision](./FoundryPromptAgent/Step03_FoundryPromptAgent_Vision.cs)|How to provide an image as input to a Foundry Prompt Agent.
+[Step04_FoundryPromptAgentTool_CodeInterpreter](./FoundryPromptAgent/Step04_FoundryPromptAgentTool_CodeInterpreter.cs)|How to use the code-interpreter tool for a Foundry Prompt Agent.
+[Step05_FoundryPromptAgentTool_FileSearch](./FoundryPromptAgent/Step05_FoundryPromptAgentTool_FileSearch.cs)|How to use the file-search tool for a Foundry Prompt Agent.
+[Step06_FoundryPromptAgentTool_Function](./FoundryPromptAgent/Step06_FoundryPromptAgentTool_Function.cs)|How to store function tools on a Foundry Prompt Agent and check them later.
+[Step07_FoundryPromptAgent_Declarative](./FoundryPromptAgent/Step07_FoundryPromptAgent_Declarative.cs)|How to declaratively create an agent that uses a Foundry Prompt Agent.
 
 ### Azure AI Agent
 
@@ -89,7 +93,7 @@ Example|Description
 Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
 [Microsoft.SemanticKernel.Experimental.Agents](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Experimental/Agents)
 
-This package has been superseded by _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
+This package was superseded by _Semantic Kernel Agents_. OpenAI shut down the Assistants API on August 26, 2026, so the Open AI Assistant agent was removed. Use a Foundry Prompt Agent instead, as shown in the [Foundry Prompt Agent](#foundry-prompt-agent) examples.
 
 ## Running Examples with Filters
 
@@ -144,7 +148,7 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
     ```
 
-6. Or Azure AI:
+6. Or Azure AI (also used by the Foundry Prompt Agent examples, authenticated with the Azure CLI):
 
     ```
     dotnet user-secrets set "AzureAI:Endpoint" "..."

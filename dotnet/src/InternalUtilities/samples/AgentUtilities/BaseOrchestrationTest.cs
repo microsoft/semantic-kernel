@@ -1,26 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel;
 using System.Text;
 using System.Text.Json;
 using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of host agents
-/// based on API's such as Open AI Assistants or Azure AI Agents.
+/// based on API's such as Azure AI Agents or Microsoft Foundry Prompt Agents.
 /// </summary>
 public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     protected const int ResultTimeoutInSeconds = 30;
+
+    private readonly List<ProjectsAgentVersion> _promptAgents = [];
+    private AIProjectClient? _projectClient;
 
     protected virtual bool EnableLogging => true;
 
@@ -38,31 +41,49 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
             };
     }
 
-    protected async Task<OpenAIAssistantAgent> CreateOpenAIAssistantAgentAsync(string instructions, string? description = null, string? name = null, Kernel? kernel = null)
+    /// <summary>
+    /// Creates a <see cref="ChatCompletionAgent"/> whose chat service is a new Microsoft Foundry Prompt Agent.
+    /// </summary>
+    /// <remarks>
+    /// Call <see cref="DeleteFoundryPromptAgentsAsync"/> to delete the Prompt Agents that the sample created.
+    /// </remarks>
+    protected async Task<ChatCompletionAgent> CreateFoundryPromptAgentAsync(string instructions, string? description = null, string? name = null)
     {
-        var client =
-            this.UseOpenAIConfig ?
-                OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
-                !string.IsNullOrWhiteSpace(this.ApiKey) ?
-                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
+        this._projectClient ??= new AIProjectClient(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureCliCredential());
 
-        var assistantClient = client.GetAssistantClient();
+        // The Prompt Agent definition holds the model and the instructions.
+        ProjectsAgentVersion agentVersion =
+            await this._projectClient.CreatePromptAgentAsync(
+                name ?? "Agent",
+                new DeclarativeAgentDefinition(TestConfiguration.AzureAI.ChatModelId)
+                {
+                    Instructions = instructions,
+                });
+        this._promptAgents.Add(agentVersion);
 
-        var createOptions = new AssistantCreationOptions
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(this._projectClient.AsKernelChatClient(agentVersion, this.LoggerFactory));
+
+        return
+            new ChatCompletionAgent
+            {
+                Name = name,
+                Description = description,
+                Kernel = builder.Build(),
+            };
+    }
+
+    /// <summary>
+    /// Deletes the Microsoft Foundry Prompt Agents created by <see cref="CreateFoundryPromptAgentAsync"/>.
+    /// </summary>
+    protected async Task DeleteFoundryPromptAgentsAsync()
+    {
+        foreach (ProjectsAgentVersion agentVersion in this._promptAgents)
         {
-            Name = name,
-            Description = description,
-            Instructions = instructions,
-        };
+            await this._projectClient!.DeletePromptAgentAsync(agentVersion);
+        }
 
-        Assistant definition = await assistantClient.CreateAssistantAsync(this.Model, createOptions);
-        return new OpenAIAssistantAgent(
-            definition,
-            assistantClient)
-        {
-            Kernel = kernel ?? new Kernel(),
-        };
+        this._promptAgents.Clear();
     }
 
     protected async Task<AzureAIAgent> CreateAzureAIAgentAsync(string instructions, string? description = null, string? name = null, Kernel? kernel = null, IEnumerable<Azure.AI.Agents.Persistent.ToolDefinition>? tools = null)

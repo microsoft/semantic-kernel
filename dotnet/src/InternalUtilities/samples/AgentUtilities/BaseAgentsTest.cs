@@ -5,16 +5,15 @@ using System.Diagnostics;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 using OpenAI.Files;
 using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 using UsageDetails = Microsoft.Extensions.AI.UsageDetails;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of host agents
-/// based on API's such as Open AI Assistants or Azure AI Agents.
+/// based on API's such as Azure AI Agents or Microsoft Foundry Prompt Agents.
 /// </summary>
 public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAgentsTest(output)
 {
@@ -67,7 +66,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         string authorExpression = message.Role == AuthorRole.User ? string.Empty : FormatAuthor();
         // Include TextContent (via ChatMessageContent.Content), if present.
         string contentExpression = string.IsNullOrWhiteSpace(message.Content) ? string.Empty : message.Content;
-        bool isCode = message.Metadata?.ContainsKey(OpenAIAssistantAgent.CodeInterpreterMetadataKey) ?? false;
+        bool isCode = message.Metadata?.ContainsKey(AzureAIAgent.CodeInterpreterMetadataKey) ?? false;
         string codeMarker = isCode ? "\n  [CODE]\n" : " ";
         System.Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
 
@@ -113,11 +112,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 
         if (message.Metadata?.TryGetValue("Usage", out object? usage) ?? false)
         {
-            if (usage is RunStepTokenUsage assistantUsage)
-            {
-                WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
-            }
-            else if (usage is RunStepCompletionUsage agentUsage)
+            if (usage is RunStepCompletionUsage agentUsage)
             {
                 WriteUsage(agentUsage.TotalTokens, agentUsage.PromptTokens, agentUsage.CompletionTokens);
             }

@@ -1,39 +1,36 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
 /// Demonstrate usage of <see cref="IAutoFunctionInvocationFilter"/> for and
-/// <see cref="IFunctionInvocationFilter"/> filters with <see cref="OpenAIAssistantAgent"/>
-/// via <see cref="AgentChat"/>.
+/// <see cref="IFunctionInvocationFilter"/> filters with a Microsoft Foundry Prompt Agent.
 /// </summary>
-public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAssistantTest(output)
+public class FoundryPromptAgent_FunctionFilters(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     [Fact]
     public async Task UseFunctionInvocationFilterAsync()
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithInvokeFilter());
+        (ChatCompletionAgent agent, ProjectsAgentVersion promptAgent) = await CreateAgentAsync(kernel => kernel.FunctionInvocationFilters.Add(new InvocationFilter()));
 
-        // Invoke assistant agent (non streaming)
-        await InvokeAssistantAsync(agent);
+        // Invoke agent (non streaming)
+        await InvokeAgentAsync(agent, promptAgent);
     }
 
     [Fact]
     public async Task UseFunctionInvocationFilterStreamingAsync()
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithInvokeFilter());
+        (ChatCompletionAgent agent, ProjectsAgentVersion promptAgent) = await CreateAgentAsync(kernel => kernel.FunctionInvocationFilters.Add(new InvocationFilter()));
 
-        // Invoke assistant agent (streaming)
-        await InvokeAssistantStreamingAsync(agent);
+        // Invoke agent (streaming)
+        await InvokeAgentStreamingAsync(agent, promptAgent);
     }
 
     [Theory]
@@ -42,10 +39,10 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
     public async Task UseAutoFunctionInvocationFilterAsync(bool terminate)
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter(terminate));
+        (ChatCompletionAgent agent, ProjectsAgentVersion promptAgent) = await CreateAgentAsync(kernel => kernel.AutoFunctionInvocationFilters.Add(new AutoInvocationFilter(terminate)));
 
-        // Invoke assistant agent (non streaming)
-        await InvokeAssistantAsync(agent);
+        // Invoke agent (non streaming)
+        await InvokeAgentAsync(agent, promptAgent);
     }
 
     [Theory]
@@ -54,15 +51,15 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
     public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync(bool terminate)
     {
         // Define the agent
-        OpenAIAssistantAgent agent = await CreateAssistantAsync(CreateKernelWithAutoFilter(terminate));
+        (ChatCompletionAgent agent, ProjectsAgentVersion promptAgent) = await CreateAgentAsync(kernel => kernel.AutoFunctionInvocationFilters.Add(new AutoInvocationFilter(terminate)));
 
-        // Invoke assistant agent (streaming)
-        await InvokeAssistantStreamingAsync(agent);
+        // Invoke agent (streaming)
+        await InvokeAgentStreamingAsync(agent, promptAgent);
     }
 
-    private async Task InvokeAssistantAsync(OpenAIAssistantAgent agent)
+    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ProjectsAgentVersion promptAgent)
     {
-        OpenAIAssistantAgentThread agentThread = new(this.AssistantClient);
+        ChatHistoryAgentThread agentThread = new();
 
         try
         {
@@ -71,19 +68,19 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
             await agent.InvokeAsync(message, agentThread).ToArrayAsync();
 
             // Display the entire chat history.
-            ChatMessageContent[] history = await agentThread.GetMessagesAsync(MessageCollectionOrder.Ascending).ToArrayAsync();
+            ChatMessageContent[] history = await agentThread.GetMessagesAsync().ToArrayAsync();
             this.WriteChatHistory(history);
         }
         finally
         {
             await agentThread.DeleteAsync();
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
     }
 
-    private async Task InvokeAssistantStreamingAsync(OpenAIAssistantAgent agent)
+    private async Task InvokeAgentStreamingAsync(ChatCompletionAgent agent, ProjectsAgentVersion promptAgent)
     {
-        OpenAIAssistantAgentThread agentThread = new(this.AssistantClient);
+        ChatHistoryAgentThread agentThread = new();
 
         try
         {
@@ -92,13 +89,13 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
             await agent.InvokeStreamingAsync(message, agentThread).ToArrayAsync();
 
             // Display the entire chat history.
-            ChatMessageContent[] history = await agentThread.GetMessagesAsync(MessageCollectionOrder.Ascending).ToArrayAsync();
+            ChatMessageContent[] history = await agentThread.GetMessagesAsync().ToArrayAsync();
             this.WriteChatHistory(history);
         }
         finally
         {
             await agentThread.DeleteAsync();
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
     }
 
@@ -113,45 +110,30 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
         }
     }
 
-    private async Task<OpenAIAssistantAgent> CreateAssistantAsync(Kernel kernel)
+    private async Task<(ChatCompletionAgent Agent, ProjectsAgentVersion PromptAgent)> CreateAgentAsync(Action<Kernel> addFilter)
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                instructions: "Answer questions about the menu.",
-                metadata: SampleMetadata);
+        // Define the Prompt Agent. A Prompt Agent only calls functions declared on its definition,
+        // so the plugin functions are declared as function tools.
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                "Host",
+                new DeclarativeAgentDefinition(DeploymentName) { Instructions = "Answer questions about the menu." }
+                    .AddFunctionTools(plugin));
+
+        // Semantic Kernel invokes the plugin functions locally, so the kernel filters apply to them.
+        Kernel kernel = this.CreateKernel(promptAgent, plugin);
+        addFilter(kernel);
 
         // Create the agent
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, [plugin])
-        {
-            Kernel = kernel
-        };
+        ChatCompletionAgent agent =
+            new()
+            {
+                Kernel = kernel,
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
 
-        return agent;
-    }
-
-    private Kernel CreateKernelWithAutoFilter(bool terminate)
-    {
-        IKernelBuilder builder = Kernel.CreateBuilder();
-
-        base.AddChatCompletionToKernel(builder);
-
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter(terminate));
-
-        return builder.Build();
-    }
-
-    private Kernel CreateKernelWithInvokeFilter()
-    {
-        IKernelBuilder builder = Kernel.CreateBuilder();
-
-        base.AddChatCompletionToKernel(builder);
-
-        builder.Services.AddSingleton<IFunctionInvocationFilter>(new InvocationFilter());
-
-        return builder.Build();
+        return (agent, promptAgent);
     }
 
     private sealed class MenuPlugin

@@ -3,7 +3,6 @@
 using System;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 
 namespace Microsoft.SemanticKernel.Process.Internal;
 
@@ -21,7 +20,6 @@ public static class ProcessAgentFactory
         return agentDefinition.Type switch
         {
             AzureAIAgentFactory.AzureAIAgentType => new AzureAIAgentFactory(),
-            OpenAIAssistantAgentFactory.OpenAIAssistantAgentType => new OpenAIAssistantAgentFactory(),
             ChatCompletionAgentFactory.ChatCompletionAgentType => new ChatCompletionAgentFactory(),
             _ => throw new NotSupportedException($"Agent type {agentDefinition.Type} is not supported."),
         };

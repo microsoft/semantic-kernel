@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel;
+using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using Events;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,10 +9,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI;
 using SharedSteps;
 using Step04.Plugins;
 using Step04.Steps;
@@ -22,20 +21,8 @@ namespace Step04;
 /// Demonstrate creation of a <see cref="KernelProcess"/> that orchestrates an <see cref="Agent"/> conversation.
 /// For visual reference of the process check <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step04_agentorchestration" >diagram</see>.
 /// </summary>
-public class Step04_AgentOrchestration : BaseTest
+public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
-    public Step04_AgentOrchestration(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
-    {
-        this.Client =
-    this.UseOpenAIConfig ?
-        OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
-        !string.IsNullOrWhiteSpace(this.ApiKey) ?
-            OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-            OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
-    }
-
-    protected OpenAIClient Client { get; init; }
-
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
 
@@ -54,31 +41,40 @@ public class Step04_AgentOrchestration : BaseTest
         await RunProcessAsync(process);
     }
 
+    /// <summary>
+    /// Orchestrates a single agent, defined declaratively, that uses a Microsoft Foundry Prompt Agent as its chat service.
+    /// </summary>
     [Fact]
     public async Task SingleTeacherStudentAgentCallAsync()
     {
-        // Define process
-        KernelProcess process = SetupSingleAgentProcess<BasicTeacherAgentInput>(nameof(SingleTeacherStudentAgentCallAsync));
+        // Define the Prompt Agent, which holds the model of the student agent.
+        AIProjectClient projectClient = new(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureCliCredential());
+        ProjectsAgentVersion promptAgent =
+            await projectClient.CreatePromptAgentAsync(
+                "Student",
+                new DeclarativeAgentDefinition(TestConfiguration.AzureAI.ChatModelId));
 
-        // Setup kernel with OpenAI Client
-        Kernel kernel = SetupKernel();
-
-        // Execute process
-        await using LocalKernelProcessContext localProcess =
-            await process.StartAsync(
-                kernel,
-                new KernelProcessEvent()
-                {
-                    Id = AgentOrchestrationEvents.StartProcess
-                });
-
-        // Cleaning up created agents
-        var processState = await localProcess.GetStateAsync();
-        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.Id == "Student").FirstOrDefault()!.State;
-        var agentId = agentState?.State?.AgentId;
-        if (agentId != null)
+        try
         {
-            await this.Client.GetAssistantClient().DeleteAssistantAsync(agentId);
+            // Define process
+            KernelProcess process = SetupSingleAgentProcess<BasicTeacherAgentInput>(nameof(SingleTeacherStudentAgentCallAsync));
+
+            // Setup kernel with the Prompt Agent as its chat service
+            Kernel kernel = SetupKernel(projectClient, promptAgent);
+
+            // Execute process
+            await using LocalKernelProcessContext localProcess =
+                await process.StartAsync(
+                    kernel,
+                    new KernelProcessEvent()
+                    {
+                        Id = AgentOrchestrationEvents.StartProcess
+                    });
+        }
+        finally
+        {
+            // Cleaning up the created Prompt Agent
+            await projectClient.DeletePromptAgentAsync(promptAgent);
         }
     }
 
@@ -151,14 +147,10 @@ public class Step04_AgentOrchestration : BaseTest
         var agentStep = process.AddStepFromAgent(new()
         {
             Name = "Student",
-            // On purpose not assigning AgentId, if not provided a new agent is created
             Description = "Solves problem given",
             Instructions = "Solve the problem given, if the question is repeated mention something like I already answered but here is the answer with a bit of humor",
-            Model = new()
-            {
-                Id = "gpt-4o",
-            },
-            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType,
+            // The model comes from the Prompt Agent definition that the kernel's chat service sends requests to.
+            Type = ChatCompletionAgentFactory.ChatCompletionAgentType,
         });
 
         // Entry point
@@ -275,12 +267,11 @@ public class Step04_AgentOrchestration : BaseTest
         }
     }
 
-    private Kernel SetupKernel()
+    private Kernel SetupKernel(AIProjectClient projectClient, ProjectsAgentVersion promptAgent)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
-        // Add Chat Completion to Kernel
-        this.AddChatCompletionToKernel(builder);
-        builder.Services.AddSingleton<OpenAIClient>(this.Client);
+        // Add the Prompt Agent as the only chat service, so the agent created by the process uses it.
+        builder.Services.AddSingleton(projectClient.AsKernelChatClient(promptAgent));
 
         // NOTE: Uncomment to see process logging
         //builder.Services.AddSingleton<ILoggerFactory>(this.LoggerFactory);

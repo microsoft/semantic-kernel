@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using Azure.AI.Projects.Agents;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -19,7 +18,7 @@ namespace GettingStarted;
 /// <summary>
 /// A repeat of <see cref="Step03_Chat"/> with telemetry enabled.
 /// </summary>
-public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(output)
+public class Step07_Telemetry(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for the example's main activity.
@@ -27,7 +26,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     private static readonly ActivitySource s_activitySource = new("AgentsTelemetry.Example");
 
     /// <summary>
-    /// Demonstrates logging in <see cref="ChatCompletionAgent"/>, <see cref="OpenAIAssistantAgent"/> and <see cref="AgentGroupChat"/>.
+    /// Demonstrates logging in <see cref="ChatCompletionAgent"/>, including one that uses a Microsoft Foundry Prompt Agent, and <see cref="AgentGroupChat"/>.
     /// Logging is enabled through the <see cref="Agent.LoggerFactory"/> and <see cref="AgentChat.LoggerFactory"/> properties.
     /// This example uses <see cref="XunitLogger"/> to output logs to the test console, but any compatible logging provider can be used.
     /// </summary>
@@ -48,7 +47,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     }
 
     /// <summary>
-    /// Demonstrates tracing in <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/>.
+    /// Demonstrates tracing in <see cref="ChatCompletionAgent"/>, including one that uses a Microsoft Foundry Prompt Agent.
     /// Tracing is enabled through the <see cref="TracerProvider"/>.
     /// For output this example uses Console as well as Application Insights.
     /// </summary>
@@ -108,27 +107,31 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
                 LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
             };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: "CopyWriter",
-                instructions:
-                    """
-                    You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-                    The goal is to refine and decide on the single best copy as an expert in the field.
-                    Only provide a single proposal per response.
-                    You're laser focused on the goal at hand.
-                    Don't waste time with chit chat.
-                    Consider suggestions when refining an idea.
-                    """,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                "CopyWriter",
+                new DeclarativeAgentDefinition(DeploymentName)
+                {
+                    Instructions =
+                        """
+                        You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+                        The goal is to refine and decide on the single best copy as an expert in the field.
+                        Only provide a single proposal per response.
+                        You're laser focused on the goal at hand.
+                        Don't waste time with chit chat.
+                        Consider suggestions when refining an idea.
+                        """,
+                });
 
-        // Create the agent
-        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient)
-        {
-            LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory)
-        };
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent agentWriter =
+            new()
+            {
+                Name = "CopyWriter",
+                Kernel = this.CreateKernel(promptAgent),
+                LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory)
+            };
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -157,43 +160,50 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);
 
-        if (useStreaming)
+        try
         {
-            string lastAgent = string.Empty;
-            await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync())
+            if (useStreaming)
             {
-                if (string.IsNullOrEmpty(response.Content))
+                string lastAgent = string.Empty;
+                await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync())
                 {
-                    continue;
+                    if (string.IsNullOrEmpty(response.Content))
+                    {
+                        continue;
+                    }
+
+                    if (!lastAgent.Equals(response.AuthorName, StringComparison.Ordinal))
+                    {
+                        Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                        lastAgent = response.AuthorName ?? string.Empty;
+                    }
+
+                    Console.WriteLine($"\t > streamed: '{response.Content}'");
                 }
 
-                if (!lastAgent.Equals(response.AuthorName, StringComparison.Ordinal))
-                {
-                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
-                    lastAgent = response.AuthorName ?? string.Empty;
-                }
+                // Display the chat history.
+                Console.WriteLine("================================");
+                Console.WriteLine("CHAT HISTORY");
+                Console.WriteLine("================================");
 
-                Console.WriteLine($"\t > streamed: '{response.Content}'");
+                ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
+
+                for (int index = 0; index < history.Length; index++)
+                {
+                    this.WriteAgentChatMessage(history[index]);
+                }
             }
-
-            // Display the chat history.
-            Console.WriteLine("================================");
-            Console.WriteLine("CHAT HISTORY");
-            Console.WriteLine("================================");
-
-            ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
-
-            for (int index = 0; index < history.Length; index++)
+            else
             {
-                this.WriteAgentChatMessage(history[index]);
+                await foreach (ChatMessageContent response in chat.InvokeAsync())
+                {
+                    this.WriteAgentChatMessage(response);
+                }
             }
         }
-        else
+        finally
         {
-            await foreach (ChatMessageContent response in chat.InvokeAsync())
-            {
-                this.WriteAgentChatMessage(response);
-            }
+            await this.DeletePromptAgentAsync(promptAgent);
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");

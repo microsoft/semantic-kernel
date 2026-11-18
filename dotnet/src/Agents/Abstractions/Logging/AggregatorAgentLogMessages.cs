@@ -50,8 +50,8 @@ internal static partial class AggregatorAgentLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
-        Message = "[{MethodName}] Restoring assistant channel for {ChannelType}.")]
-    public static partial void LogOpenAIAssistantAgentRestoringChannel(
+        Message = "[{MethodName}] Restoring aggregator channel for {ChannelType}.")]
+    public static partial void LogAggregatorAgentRestoringChannel(
         this ILogger logger,
         string methodName,
         string channelType);
@@ -62,8 +62,8 @@ internal static partial class AggregatorAgentLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "[{MethodName}] Restored assistant channel for {ChannelType}.")]
-    public static partial void LogOpenAIAssistantAgentRestoredChannel(
+        Message = "[{MethodName}] Restored aggregator channel for {ChannelType}.")]
+    public static partial void LogAggregatorAgentRestoredChannel(
         this ILogger logger,
         string methodName,
         string channelType);

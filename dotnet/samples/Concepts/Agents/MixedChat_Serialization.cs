@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
 /// Demonstrate the serialization of <see cref="AgentGroupChat"/> with a <see cref="ChatCompletionAgent"/>
-/// and an <see cref="OpenAIAssistantAgent"/>.
+/// that uses a chat completion service and a <see cref="ChatCompletionAgent"/> that uses a Microsoft Foundry Prompt Agent.
 /// </summary>
-public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Serialization(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
@@ -33,7 +32,7 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
     [InlineData(false)]
     public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
-        // Define the agents: one of each type
+        // Define the agents: one for each service
         ChatCompletionAgent agentTranslator =
             new()
             {
@@ -42,38 +41,48 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: CounterName,
-                instructions: CounterInstructions,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                CounterName,
+                new DeclarativeAgentDefinition(DeploymentName) { Instructions = CounterInstructions });
 
-        // Create the agent
-        OpenAIAssistantAgent agentCounter = new(assistant, this.AssistantClient);
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent agentCounter =
+            new()
+            {
+                Name = CounterName,
+                Kernel = this.CreateKernel(promptAgent),
+            };
 
-        AgentGroupChat chat = CreateGroupChat();
-
-        // Invoke chat and display messages.
-        ChatMessageContent input = new(AuthorRole.User, "1");
-        chat.AddChatMessage(input);
-        this.WriteAgentChatMessage(input);
-
-        Console.WriteLine("============= Dynamic Agent Chat - Primary (prior to serialization) ==============");
-        await InvokeAgents(chat);
-
-        AgentGroupChat copy = CreateGroupChat();
-        Console.WriteLine("\n=========== Serialize and restore the Agent Chat into a new instance ============");
-        await CloneChatAsync(chat, copy);
-
-        Console.WriteLine("\n============ Continue with the dynamic Agent Chat (after deserialization) ===============");
-        await InvokeAgents(copy);
-
-        Console.WriteLine("\n============ The entire Agent Chat (includes messages prior to serialization and those after deserialization) ==============");
-        await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
+        try
         {
-            this.WriteAgentChatMessage(content);
+            AgentGroupChat chat = CreateGroupChat();
+
+            // Invoke chat and display messages.
+            ChatMessageContent input = new(AuthorRole.User, "1");
+            chat.AddChatMessage(input);
+            this.WriteAgentChatMessage(input);
+
+            Console.WriteLine("============= Dynamic Agent Chat - Primary (prior to serialization) ==============");
+            await InvokeAgents(chat);
+
+            AgentGroupChat copy = CreateGroupChat();
+            Console.WriteLine("\n=========== Serialize and restore the Agent Chat into a new instance ============");
+            await CloneChatAsync(chat, copy);
+
+            Console.WriteLine("\n============ Continue with the dynamic Agent Chat (after deserialization) ===============");
+            await InvokeAgents(copy);
+
+            Console.WriteLine("\n============ The entire Agent Chat (includes messages prior to serialization and those after deserialization) ==============");
+            await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
+            {
+                this.WriteAgentChatMessage(content);
+            }
+        }
+        finally
+        {
+            await this.DeletePromptAgentAsync(promptAgent);
         }
 
         chatClient?.Dispose();
