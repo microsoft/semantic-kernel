@@ -190,3 +190,18 @@ async def test_google_search_init_with_custom_url(google_search_unit_test_env) -
     custom_endpoint = "https://custom-google-proxy.internal/v1"
     search = GoogleSearch(custom_url=custom_endpoint)
     assert search.settings.custom_url == custom_endpoint
+
+async def test_google_search_custom_url_with_existing_query_params(google_search_unit_test_env) -> None:
+    """Test that existing query parameters in custom_url are preserved and merged."""
+    from semantic_kernel.data.text_search import SearchOptions
+    custom_endpoint = "https://custom-proxy.internal/search?tenant=team"
+    search = GoogleSearch(custom_url=custom_endpoint)
+    with patch("semantic_kernel.connectors.google_search.AsyncClient") as mock_client:
+        mock_instance = AsyncMock()
+        from httpx import Request
+        mock_instance.get.return_value = Response(200, text='{"items": []}', request=Request('GET', custom_endpoint))
+        mock_client.return_value.__aenter__.return_value = mock_instance
+        await search._inner_search("test", SearchOptions())
+        called_url = str(mock_instance.get.call_args[0][0])
+        assert "tenant=team" in called_url
+        assert "q=test" in called_url
