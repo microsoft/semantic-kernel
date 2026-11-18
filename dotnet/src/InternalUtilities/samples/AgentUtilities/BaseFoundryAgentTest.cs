@@ -94,7 +94,7 @@ public abstract class BaseFoundryAgentTest : BaseAgentsTest<AIProjectClient>
     /// Downloads the files that the code interpreter tool generated for a response.
     /// </summary>
     /// <param name="message">The response message.</param>
-    /// <param name="launchViewer">Opens each downloaded file with its default application, for example to display a chart.</param>
+    /// <param name="launchViewer">Opens each downloaded image with its default viewer, for example to display a chart.</param>
     protected async Task DownloadGeneratedFilesAsync(ChatMessageContent message, bool launchViewer = false)
     {
         foreach (ContainerFileCitationMessageAnnotation file in message.GetGeneratedFiles())
@@ -107,7 +107,7 @@ public abstract class BaseFoundryAgentTest : BaseAgentsTest<AIProjectClient>
     /// Downloads the files that the code interpreter tool generated for a streamed response.
     /// </summary>
     /// <param name="message">A streamed update.</param>
-    /// <param name="launchViewer">Opens each downloaded file with its default application, for example to display a chart.</param>
+    /// <param name="launchViewer">Opens each downloaded image with its default viewer, for example to display a chart.</param>
     protected async Task DownloadGeneratedFilesAsync(StreamingChatMessageContent message, bool launchViewer = false)
     {
         foreach (ContainerFileCitationMessageAnnotation file in message.GetGeneratedFiles())
@@ -115,6 +115,8 @@ public abstract class BaseFoundryAgentTest : BaseAgentsTest<AIProjectClient>
             await this.DownloadGeneratedFileAsync(file, launchViewer);
         }
     }
+
+    private static readonly HashSet<string> s_viewableImageExtensions = new(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp" };
 
     private async Task DownloadGeneratedFileAsync(ContainerFileCitationMessageAnnotation file, bool launchViewer)
     {
@@ -124,14 +126,11 @@ public abstract class BaseFoundryAgentTest : BaseAgentsTest<AIProjectClient>
         await File.WriteAllBytesAsync(filePath, content.ToArray());
         Console.WriteLine($"  File #{file.FileId} saved to: {filePath}");
 
-        if (launchViewer)
+        // The model chooses the file name. Only images are opened, and the shell opens them with the default viewer
+        // instead of a command line, so a generated script or executable is never run.
+        if (launchViewer && s_viewableImageExtensions.Contains(Path.GetExtension(filePath)))
         {
-            Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/C start {filePath}"
-                });
+            using Process? viewer = Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
         }
     }
 }
