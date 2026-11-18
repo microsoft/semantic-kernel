@@ -62,4 +62,9 @@ def start_as_current_span(
     if function.description:
         attributes[TOOL_DESCRIPTION] = function.description
 
-    return tracer.start_as_current_span(f"{OPERATION_NAME} {function.fully_qualified_name}", attributes=attributes)
+    return tracer.start_as_current_span(
+        f"{OPERATION_NAME} {function.fully_qualified_name}",
+        attributes=attributes,
+        record_exception=False,
+        set_status_on_exception=False,
+    )

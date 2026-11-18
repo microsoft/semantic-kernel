@@ -383,3 +383,45 @@ def test_create_functions_propagates_enable_file_ref_resolution():
             enable_file_ref_resolution=True,
             enable_http_ref_resolution=False,
         )
+
+
+def _path_item_spec(path_item: dict) -> dict:
+    return {
+        "openapi": "3.0.1",
+        "info": {"title": "t", "version": "1"},
+        "servers": [{"url": "https://api.example.com"}],
+        "paths": {"/items/{id}": path_item},
+    }
+
+
+def test_create_rest_api_operations_path_item_keys_and_shared_parameters():
+    id_param = {"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}
+    spec = _path_item_spec({
+        "summary": "Item",
+        "description": "An item",
+        "parameters": [id_param],
+        "get": {"operationId": "getItem", "responses": {"200": {"description": "ok"}}},
+        "delete": {"operationId": "deleteItem", "responses": {"200": {"description": "ok"}}},
+    })
+
+    operations = OpenApiParser().create_rest_api_operations(spec)
+
+    assert set(operations) == {"getItem", "deleteItem"}
+    for operation in operations.values():
+        assert [p.name for p in operation.parameters] == ["id"]
+
+
+def test_create_rest_api_operations_operation_parameter_overrides_path_parameter():
+    spec = _path_item_spec({
+        "parameters": [{"name": "id", "in": "path", "required": True, "schema": {"type": "string"}}],
+        "get": {
+            "operationId": "getItem",
+            "parameters": [
+                {"name": "id", "in": "path", "required": True, "description": "own", "schema": {"type": "integer"}}
+            ],
+            "responses": {"200": {"description": "ok"}},
+        },
+    })
+
+    operation = OpenApiParser().create_rest_api_operations(spec)["getItem"]
+    assert [(p.name, p.type, p.description) for p in operation.parameters] == [("id", "integer", "own")]

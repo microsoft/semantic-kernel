@@ -151,7 +151,7 @@ def kernel_function_metadata_to_function_call_format(metadata: KernelFunctionMet
         "description": metadata.description or "",
         "input_schema": {
             "type": "object",
-            "properties": {p.name: p.schema_data for p in metadata.parameters},
-            "required": [p.name for p in metadata.parameters if p.is_required],
+            "properties": {p.name: p.schema_data for p in metadata.parameters if p.include_in_function_choices},
+            "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
         },
     }

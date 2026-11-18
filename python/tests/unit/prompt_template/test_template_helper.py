@@ -1,11 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import logging
+
 import pytest
+import sniffio
 
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
+from semantic_kernel.prompt_template.const import HANDLEBARS_TEMPLATE_FORMAT_NAME, JINJA2_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.utils.template_function_helpers import create_template_helper_from_function
 
 
@@ -24,6 +28,67 @@ def test_create_helpers(kernel: Kernel):
 
     # Assert
     assert int(str(result(x=1))) == 2
+
+
+@pytest.mark.parametrize("template_format", [JINJA2_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME])
+async def test_sync_template_helpers_preserve_async_task_context(kernel: Kernel, template_format: str):
+    @kernel_function
+    async def probe() -> str:
+        assert asyncio.current_task() is not None
+        assert sniffio.current_async_library() == "asyncio"
+        async with asyncio.timeout(1):
+            await asyncio.sleep(0)
+        return "nested"
+
+    outer_task = asyncio.current_task()
+    function = KernelFunctionFromMethod(probe, plugin_name="test")
+    helper = create_template_helper_from_function(function, kernel, {}, template_format)
+
+    assert str(helper()) == "nested"
+    assert asyncio.current_task() is outer_task
+    assert await probe() == "nested"
+
+
+async def test_template_helpers_do_not_log_argument_values(kernel: Kernel, caplog):
+    secret = "SYNTHETIC_SECRET_VALUE"
+    function = KernelFunctionFromMethod(kernel_function(lambda value: value, name="test"), plugin_name="test")
+    sync_jinja_helper = create_template_helper_from_function(
+        function, kernel, {}, JINJA2_TEMPLATE_FORMAT_NAME, enable_async=False
+    )
+    async_jinja_helper = create_template_helper_from_function(
+        function, kernel, {}, JINJA2_TEMPLATE_FORMAT_NAME, enable_async=True
+    )
+    handlebars_helper = create_template_helper_from_function(
+        function, kernel, {}, HANDLEBARS_TEMPLATE_FORMAT_NAME, enable_async=False
+    )
+
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.prompt_template.utils.template_function_helpers")
+    caplog.set_level(logging.DEBUG, logger="semantic_kernel.functions.kernel_function")
+    sync_jinja_helper(value=secret)
+    await async_jinja_helper(value=secret)
+    handlebars_helper(secret, secret, value=secret)
+
+    all_messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name
+        in {
+            "semantic_kernel.prompt_template.utils.template_function_helpers",
+            "semantic_kernel.functions.kernel_function",
+        }
+    ]
+    messages = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "semantic_kernel.prompt_template.utils.template_function_helpers"
+    ]
+    assert secret not in "\n".join(all_messages)
+    assert (
+        messages.count("Invoking function test-test with positional argument count 0 and keyword argument count 1.")
+        == 2
+    )
+    assert "Invoking function test-test with positional argument count 1 and keyword argument count 1." in messages
+    assert "Handlebars context with `this`." in messages
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
-from contextlib import AbstractAsyncContextManager
+from contextlib import AbstractAsyncContextManager, aclosing
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -142,15 +142,16 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
 
-        async for stream_message in function.invoke_stream(self, arguments):
-            if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
-            ):
-                raise KernelInvokeException(
-                    f"Error occurred while invoking function: '{function.fully_qualified_name}'"
-                ) from exception
-            function_result.append(stream_message)
-            yield stream_message
+        async with aclosing(function.invoke_stream(self, arguments)) as stream:
+            async for stream_message in stream:
+                if isinstance(stream_message, FunctionResult) and (
+                    exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
+                ):
+                    raise KernelInvokeException(
+                        f"Error occurred while invoking function: '{function.fully_qualified_name}'"
+                    ) from exception
+                function_result.append(stream_message)
+                yield stream_message
 
         if return_function_results:
             output_function_result: list["StreamingContentMixin"] = []
@@ -375,10 +376,14 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             required_param_names = {
                 param.name for param in function_to_call.parameters if param.name is not None and param.is_required
             }
+            # Parameters hidden from the model (include_in_function_choices=False) can only be set by the host.
+            model_param_names = {
+                param.name for param in function_to_call.parameters if param.include_in_function_choices
+            }
             received_param_names = set(parsed_args or {})
 
             missing_params = required_param_names - received_param_names
-            unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+            unexpected_params = received_param_names - model_param_names
 
             if missing_params or unexpected_params:
                 msg_parts = []
@@ -423,7 +428,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        logger.info("Calling %s function.", function_call.name)
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -475,7 +480,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             if result:
                 context.function_result = result
         except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
+            logger.error(
+                "Error invoking function %s. Error type: %s.",
+                context.function.fully_qualified_name,
+                type(exc).__name__,
+            )
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
             if context.function_result is not None:
                 context.function_result.value = value
