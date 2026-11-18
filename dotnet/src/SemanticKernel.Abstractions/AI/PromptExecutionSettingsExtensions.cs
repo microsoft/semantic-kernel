@@ -267,8 +267,9 @@ public static class PromptExecutionSettingsExtensions
         // An OpenAI response format envelope ({ "type": "json_schema", "json_schema": { "name", "description", "schema" } })
         // carries the schema separately from its name and description, so unwrap it instead of using the envelope as the schema.
         // "json_schema" is not a valid JSON Schema type, so any other JSON value keeps being used as the schema itself.
-        // The envelope "strict" flag is intentionally not mapped: Microsoft.Extensions.AI reads strictness from a shared
-        // ChatOptions.AdditionalProperties entry that would also make function tools strict.
+        // The envelope "strict" flag is intentionally not mapped here: Microsoft.Extensions.AI reads strictness from a shared
+        // ChatOptions.AdditionalProperties entry that would also make function tools strict. Connector-specific settings
+        // can carry strictness through their PrepareChatOptionsForRequest override instead.
         if (responseFormat.ValueKind == JsonValueKind.Object &&
             responseFormat.TryGetProperty("type", out JsonElement type) &&
             type.ValueKind == JsonValueKind.String &&

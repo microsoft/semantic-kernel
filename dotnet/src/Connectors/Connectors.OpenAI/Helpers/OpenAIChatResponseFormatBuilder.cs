@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
 using OpenAI.Chat;
@@ -66,7 +67,48 @@ internal static class OpenAIChatResponseFormatBuilder
         return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
     }
 
+    /// <summary>
+    /// Gets the <see cref="ChatResponseFormat"/> for a response format value when it is a strict JSON schema; otherwise, <see langword="null"/>.
+    /// </summary>
+    internal static ChatResponseFormat? GetStrictJsonSchemaResponseFormat(object? responseFormat)
+    {
+        switch (responseFormat)
+        {
+            case Type formatObjectType:
+                // Type-based formats are always created as strict JSON schemas.
+                return GetJsonSchemaResponseFormat(formatObjectType);
+
+            case ChatResponseFormat formatObject:
+                // ChatResponseFormat does not expose its strictness, so inspect its OpenAI wire representation.
+                using (JsonDocument document = JsonDocument.Parse(ModelReaderWriter.Write(formatObject).ToMemory()))
+                {
+                    return IsStrictJsonSchema(document.RootElement) ? formatObject : null;
+                }
+
+            case JsonElement formatElement when IsStrictJsonSchema(formatElement):
+                // Only well-formed strict envelopes are converted, so malformed values keep their existing behavior.
+                return GetJsonSchemaResponseFormat(formatElement);
+
+            default:
+                return null;
+        }
+    }
+
     #region private
+
+    /// <summary>
+    /// Determines whether a JSON value is a <c>json_schema</c> response format envelope with a schema and <c>strict</c> set to <see langword="true"/>.
+    /// </summary>
+    private static bool IsStrictJsonSchema(JsonElement responseFormat) =>
+        responseFormat.ValueKind == JsonValueKind.Object &&
+        responseFormat.TryGetProperty("type", out JsonElement type) &&
+        type.ValueKind == JsonValueKind.String &&
+        type.ValueEquals("json_schema") &&
+        responseFormat.TryGetProperty("json_schema", out JsonElement jsonSchema) &&
+        jsonSchema.ValueKind == JsonValueKind.Object &&
+        jsonSchema.TryGetProperty("schema", out _) &&
+        jsonSchema.TryGetProperty("strict", out JsonElement strict) &&
+        strict.ValueKind == JsonValueKind.True;
 
     /// <summary>
     /// Returns a type name concatenated with generic argument type names if they exist.

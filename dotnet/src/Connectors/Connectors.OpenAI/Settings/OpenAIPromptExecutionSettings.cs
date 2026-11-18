@@ -625,26 +625,36 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     {
         base.PrepareChatOptionsForRequest(options);
 
-        if (this._extraBody is null || this._extraBody.Count == 0)
+        // ChatOptions.ResponseFormat cannot carry a strict JSON schema: Microsoft.Extensions.AI reads strictness from a shared
+        // ChatOptions.AdditionalProperties entry that would also make function tools strict. The OpenAI chat client keeps a
+        // response format already set on the raw ChatCompletionOptions, so the exact strict format is carried there instead.
+        ChatResponseFormat? strictResponseFormat = OpenAIChatResponseFormatBuilder.GetStrictJsonSchemaResponseFormat(this._responseFormat);
+        List<KeyValuePair<string, object?>>? snapshot = this._extraBody is { Count: > 0 } ? new(this._extraBody) : null;
+
+        if (strictResponseFormat is null && snapshot is null)
         {
             return;
         }
 
-        var snapshot = new List<KeyValuePair<string, object?>>(this._extraBody);
-
         options.RawRepresentationFactory = (_) =>
         {
-            var raw = new ChatCompletionOptions();
-            foreach (var kvp in snapshot)
+            var raw = new ChatCompletionOptions { ResponseFormat = strictResponseFormat };
+            if (snapshot is not null)
             {
-                ApplyExtraBodyEntry(raw, kvp.Key, kvp.Value);
+                foreach (var kvp in snapshot)
+                {
+                    ApplyExtraBodyEntry(raw, kvp.Key, kvp.Value);
+                }
             }
             return raw;
         };
 
-        // The base ToChatOptions catch-all writes ExtraBody into AdditionalProperties via JSON round-trip.
-        // The factory above is the canonical carrier, so remove the duplicate here.
-        options.AdditionalProperties?.Remove("extra_body");
+        if (snapshot is not null)
+        {
+            // The base ToChatOptions catch-all writes ExtraBody into AdditionalProperties via JSON round-trip.
+            // The factory above is the canonical carrier, so remove the duplicate here.
+            options.AdditionalProperties?.Remove("extra_body");
+        }
     }
 
     /// <summary>
