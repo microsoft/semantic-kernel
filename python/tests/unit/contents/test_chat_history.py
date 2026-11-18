@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import locale
+import sys
+
 import pytest
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
@@ -624,6 +627,35 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     assert chat_history_2.messages[2] == chat_history.messages[2]
     assert chat_history_2.messages[3] == chat_history.messages[3]
     assert chat_history_2.messages[4] == chat_history.messages[4]
+
+
+def test_to_from_file_uses_utf8_encoding(tmp_path):
+    """Chat history files are written and read as UTF-8, not with the platform default encoding.
+
+    The JSON produced by ``serialize`` is UTF-8, so a non-UTF-8 platform default encoding either
+    fails to encode characters the code page cannot represent, or silently corrupts the content
+    when the file is read back.
+    """
+    if sys.flags.utf8_mode:
+        pytest.skip("UTF-8 mode forces UTF-8 for text files, hiding the platform default encoding")
+
+    previous_locale = locale.setlocale(locale.LC_ALL)
+    try:
+        # Pin a non-UTF-8 default encoding so the platform default is not UTF-8 by accident.
+        locale.setlocale(locale.LC_ALL, "C")
+        content = "héllo 世界 🎉"
+        chat_history = ChatHistory()
+        chat_history.add_user_message(content)
+
+        file_path = tmp_path / "chat_history.json"
+        chat_history.store_chat_history_to_file(file_path)
+
+        assert file_path.read_bytes().decode("utf-8")
+
+        chat_history_2 = ChatHistory.load_chat_history_from_file(file_path)
+        assert chat_history_2.messages[0].content == content
+    finally:
+        locale.setlocale(locale.LC_ALL, previous_locale)
 
 
 def test_from_rendered_prompt_preserves_html_p_tag():
