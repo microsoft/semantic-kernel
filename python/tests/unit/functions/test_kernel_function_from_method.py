@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
+import sys
+import types
 from asyncio import CancelledError
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import nullcontext
@@ -883,3 +885,30 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+async def test_as_agent_framework_tool_creates_function_tool(monkeypatch):
+    created: dict[str, Any] = {}
+
+    class FakeFunctionTool:
+        def __init__(self, **kwargs: Any) -> None:
+            created.update(kwargs)
+
+    # agent_framework is an optional dependency, so a stand-in module exposes only the current FunctionTool API.
+    fake_agent_framework = types.ModuleType("agent_framework")
+    fake_agent_framework.FunctionTool = FakeFunctionTool  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "agent_framework", fake_agent_framework)
+
+    @kernel_function(name="get_weather", description="Gets the weather.")
+    def get_weather(location: Annotated[str, "The location."]) -> str:
+        return f"Sunny in {location}"
+
+    func = KernelFunctionFromMethod(method=get_weather, plugin_name="weather")
+
+    tool = func.as_agent_framework_tool()
+
+    assert isinstance(tool, FakeFunctionTool)
+    assert created["name"] == "get_weather"
+    assert created["description"] == "Gets the weather."
+    assert "location" in created["input_model"].model_fields
+    assert await created["func"](location="Seattle") == '"Sunny in Seattle"'
