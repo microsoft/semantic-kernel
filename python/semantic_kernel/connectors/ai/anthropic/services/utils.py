@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import base64
 import json
 import logging
 from collections.abc import Callable, Mapping
@@ -9,6 +10,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -24,16 +26,56 @@ if TYPE_CHECKING:
 def _format_user_message(message: ChatMessageContent) -> dict[str, Any]:
     """Format a user message to the expected object for the Anthropic client.
 
+    A text-only message keeps its historical string content. When the message
+    carries images, all items are converted to Anthropic content blocks so
+    that images are not silently dropped and an image-only message remains a
+    valid request.
+
     Args:
         message: The user message.
 
     Returns:
         The formatted user message.
     """
-    return {
-        "role": "user",
-        "content": message.content,
-    }
+    if not any(isinstance(item, ImageContent) for item in message.items):
+        return {
+            "role": "user",
+            "content": message.content,
+        }
+
+    blocks: list[dict[str, Any]] = []
+    for item in message.items:
+        if isinstance(item, TextContent):
+            if item.text:
+                blocks.append({"type": "text", "text": item.text})
+        elif isinstance(item, ImageContent):
+            if item.data:
+                data = item.data
+                if isinstance(data, bytes):
+                    data = base64.b64encode(data).decode("ascii")
+                blocks.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": item.mime_type or "image/png",
+                        "data": data,
+                    },
+                })
+            elif item.uri:
+                blocks.append({
+                    "type": "image",
+                    "source": {"type": "url", "url": item.uri},
+                })
+            else:
+                logger.warning(
+                    "Skipping ImageContent with neither data nor URI while formatting a user message for Anthropic."
+                )
+        else:
+            logger.warning(
+                f"Unsupported item type in User message while formatting chat history for Anthropic: {type(item)}"
+            )
+
+    return {"role": "user", "content": blocks}
 
 
 def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
