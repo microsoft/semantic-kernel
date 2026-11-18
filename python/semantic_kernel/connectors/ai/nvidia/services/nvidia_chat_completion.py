@@ -5,7 +5,7 @@ import sys
 from collections.abc import AsyncGenerator
 from typing import Any, Literal
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
@@ -181,7 +181,7 @@ class NvidiaChatCompletion(NvidiaHandler, ChatCompletionClientBase):
         self._handle_structured_output(settings)
 
         response = await self._send_request(settings)
-        assert isinstance(response, AsyncGenerator)  # nosec
+        assert isinstance(response, AsyncStream)  # nosec
 
         async for chunk in response:
             if len(chunk.choices) == 0:
