@@ -1317,6 +1317,39 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
+    public async Task ItCombinesStreamedFunctionCallFragmentsWhenConvertingToMEAIChatResponseUpdateAsync()
+    {
+        // Arrange
+        var fakeService = new FakeChatCompletionService()
+        {
+            GetStreamingChatMessageContentsResult = [
+                new StreamingChatMessageContent(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent("call1", "GetWeather", "{\"", functionCallIndex: 0)] },
+                new StreamingChatMessageContent(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "location\":\"Amsterdam\"}", functionCallIndex: 0)] },
+            ]
+        };
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("What is the weather in Amsterdam?");
+
+        // Act
+        var updates = await kernel.InvokeStreamingAsync<MEAI.ChatResponseUpdate>(function).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, updates.Count);
+        Assert.Empty(updates[0].Contents);
+        Assert.Empty(updates[1].Contents);
+
+        var functionCall = Assert.IsType<MEAI.FunctionCallContent>(Assert.Single(updates[2].Contents));
+        Assert.Equal("call1", functionCall.CallId);
+        Assert.Equal("GetWeather", functionCall.Name);
+        Assert.Null(functionCall.Exception);
+        Assert.Equal("Amsterdam", functionCall.Arguments?["location"]?.ToString());
+    }
+
+    [Fact]
     public async Task ItConvertsFromSKStreamingChatMessageContentToStringAsync()
     {
         var innerContent = new { test = "a" };

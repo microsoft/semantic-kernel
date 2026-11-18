@@ -139,22 +139,17 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
             throw new InvalidOperationException("The provided session is not compatible with the agent. Only sessions created by the agent can be used.");
         }
 
+        StreamingChatMessageContentConverter converter = new();
+
         await foreach (var responseItem in this._innerAgent.InvokeStreamingAsync(messages.Select(x => x.ToChatMessageContent()).ToList(), typedSession.InnerThread, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            var update = responseItem.Message.ToChatResponseUpdate();
+            yield return this.ToAgentResponseUpdate(converter.ConvertNext(responseItem.Message), responseItem);
+        }
 
-            yield return new MAAI.AgentResponseUpdate
-            {
-                AuthorName = update.AuthorName,
-                AgentId = this._innerAgent.Id,
-                RawRepresentation = responseItem,
-                AdditionalProperties = update.AdditionalProperties,
-                MessageId = update.MessageId,
-                Role = update.Role,
-                ResponseId = update.ResponseId,
-                CreatedAt = update.CreatedAt,
-                Contents = update.Contents
-            };
+        // Streamed function call arguments arrive as fragments, so complete function calls are only available after the stream ends.
+        if (converter.Complete() is { } functionCallUpdate)
+        {
+            yield return this.ToAgentResponseUpdate(functionCallUpdate, rawRepresentation: null);
         }
     }
 
@@ -169,4 +164,18 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         ? this._innerAgent
         : base.GetService(serviceType, serviceKey);
     }
+
+    private MAAI.AgentResponseUpdate ToAgentResponseUpdate(ChatResponseUpdate update, object? rawRepresentation) =>
+        new()
+        {
+            AuthorName = update.AuthorName,
+            AgentId = this._innerAgent.Id,
+            RawRepresentation = rawRepresentation,
+            AdditionalProperties = update.AdditionalProperties,
+            MessageId = update.MessageId,
+            Role = update.Role,
+            ResponseId = update.ResponseId,
+            CreatedAt = update.CreatedAt,
+            Contents = update.Contents
+        };
 }

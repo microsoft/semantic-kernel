@@ -305,6 +305,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)}, {typeof(ITextGenerationService)}, and {typeof(IChatClient)}");
         }
 
+        StreamingChatMessageContentConverter? chatResponseUpdateConverter = null;
+
         await foreach (object content in asyncReference.ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -342,7 +344,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(ChatResponseUpdate).IsAssignableFrom(typeof(TResult))
                     && content is StreamingChatMessageContent streamingChatMessageContent)
                 {
-                    yield return (TResult)(object)streamingChatMessageContent.ToChatResponseUpdate();
+                    yield return (TResult)(object)(chatResponseUpdateConverter ??= new()).ConvertNext(streamingChatMessageContent);
                     continue;
                 }
             }
@@ -403,6 +405,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
 
             throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are derivations of {typeof(StreamingKernelContent)}, {typeof(StreamingKernelContent)}, string, byte[], or a matching type for {typeof(StreamingKernelContent)}.{nameof(StreamingKernelContent.InnerContent)} property");
+        }
+
+        // Streamed function call arguments arrive as fragments, so complete function calls are only available after the stream ends.
+        if (chatResponseUpdateConverter?.Complete() is { } functionCallUpdate)
+        {
+            yield return (TResult)(object)functionCallUpdate;
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
