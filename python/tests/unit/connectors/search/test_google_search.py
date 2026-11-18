@@ -203,5 +203,6 @@ async def test_google_search_custom_url_with_existing_query_params(google_search
         mock_client.return_value.__aenter__.return_value = mock_instance
         await search._inner_search("test", SearchOptions())
         called_url = str(mock_instance.get.call_args[0][0])
+        assert called_url.startswith("https://custom-proxy.internal/search?")
         assert "tenant=team" in called_url
         assert "q=test" in called_url
