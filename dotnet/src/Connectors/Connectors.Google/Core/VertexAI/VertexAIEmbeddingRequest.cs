@@ -15,7 +15,7 @@ internal sealed class VertexAIEmbeddingRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public RequestParameters? Parameters { get; set; }
 
-    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data) => new()
+    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data, int? dimensions = null) => new()
     {
         Requests = data.Select(text => new RequestContent
         {
@@ -23,8 +23,8 @@ internal sealed class VertexAIEmbeddingRequest
         }).ToList(),
         Parameters = new RequestParameters
         {
-            // todo make configurable when ITextEmbeddingGenerationService will support parameters
-            AutoTruncate = false
+            AutoTruncate = false,
+            OutputDimensionality = dimensions
         }
     };
 
@@ -46,5 +46,9 @@ internal sealed class VertexAIEmbeddingRequest
     {
         [JsonPropertyName("autoTruncate")]
         public bool AutoTruncate { get; set; }
+
+        [JsonPropertyName("outputDimensionality")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? OutputDimensionality { get; set; }
     }
 }

@@ -77,7 +77,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         foreach (Match match in responseChunks)
         {
             i++;
-            JsonElement jsonTokenChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value)
+            JsonElement jsonTokenChunk = JsonElement.Parse(match.Groups[1].Value)
                 .GetProperty("token");
 
             Assert.Equal(jsonTokenChunk
@@ -105,7 +105,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             i++;
             var messageChunk = chatMessageContents[i];
 
-            JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
+            JsonElement jsonRootChunk = JsonElement.Parse(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
             Assert.IsType<HuggingFaceTextGenerationStreamMetadata>(messageChunk.Metadata);

@@ -1,14 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from typing import Annotated, Any, Literal
 
 from pydantic import Field
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
@@ -49,19 +43,6 @@ class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
             "on the function choice configuration.",
         ),
     ] = None
-
-    @override
-    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
-        """Prepare the settings as a dictionary for sending to the AI service.
-
-        This method removes the tools and tool_choice keys from the settings dictionary, as
-        the Google AI service mandates these two settings to be sent as separate parameters.
-        """
-        settings_dict = super().prepare_settings_dict(**kwargs)
-        settings_dict.pop("tools", None)
-        settings_dict.pop("tool_config", None)
-
-        return settings_dict
 
 
 class GoogleAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):

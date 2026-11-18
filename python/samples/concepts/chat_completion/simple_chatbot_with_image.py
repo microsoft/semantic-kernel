@@ -34,7 +34,7 @@ from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent
 # make sure to use a service that supports image input from a URI.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
-IMAGE_URI = "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+IMAGE_URI = "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/python/tests/assets/sample_image.jpg"
 IMAGE_PATH = "samples/concepts/resources/sample_image.jpg"
 
 # Create an image content with the image URI.

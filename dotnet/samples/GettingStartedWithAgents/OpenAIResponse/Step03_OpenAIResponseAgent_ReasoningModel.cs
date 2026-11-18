@@ -15,7 +15,7 @@ public class Step03_OpenAIResponseAgent_ReasoningModel(ITestOutputHelper output)
     public async Task UseOpenAIResponseAgentWithAReasoningModelAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries with a detailed response.",
@@ -33,7 +33,7 @@ public class Step03_OpenAIResponseAgent_ReasoningModel(ITestOutputHelper output)
     public async Task UseOpenAIResponseAgentWithAReasoningModelAndSummariesAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client);
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId);
 
         // ResponseCreationOptions allows you to specify tools for the agent.
         OpenAIResponseAgentInvokeOptions invokeOptions = new()
@@ -86,7 +86,7 @@ public class Step03_OpenAIResponseAgent_ReasoningModel(ITestOutputHelper output)
     public async Task UseOpenAIResponseAgentWithAReasoningModelAndToolsAsync()
     {
         // Define the agent
-        OpenAIResponseAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client, this.ModelId)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries with a detailed response.",

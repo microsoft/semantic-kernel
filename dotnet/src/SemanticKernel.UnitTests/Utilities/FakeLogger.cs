@@ -8,7 +8,7 @@ namespace SemanticKernel.UnitTests.Utilities;
 
 public class FakeLogger : ILogger
 {
-    public List<(LogLevel Level, string Message, Exception? Exception)> Logs { get; } = new();
+    public List<(LogLevel Level, string Message, Exception? Exception)> Logs { get; } = [];
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 

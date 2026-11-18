@@ -5,7 +5,7 @@ import logging
 import sys
 from collections.abc import MutableSequence, Sequence
 from importlib import metadata
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from typing import Any, ClassVar, Final, Generic, Self, TypeVar
 
 from pydantic import SecretStr, ValidationError
 from pymongo import AsyncMongoClient, ReplaceOne
@@ -40,11 +40,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -64,6 +59,7 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
     DistanceFunction.DOT_PROD: "dotProduct",
     DistanceFunction.DEFAULT: "euclidean",
 }
+DRIVER_METADATA = DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel"))
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +206,8 @@ class MongoDBAtlasCollection(
                 managed_client=managed_client,
                 embedding_generator=embedding_generator,
             )
+            if callable(mongo_client.append_metadata):
+                mongo_client.append_metadata(DRIVER_METADATA)
             return
 
         try:
@@ -225,7 +223,7 @@ class MongoDBAtlasCollection(
 
         mongo_client = AsyncMongoClient(
             mongodb_atlas_settings.connection_string.get_secret_value(),
-            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+            driver=DRIVER_METADATA,
         )
 
         super().__init__(
@@ -565,6 +563,8 @@ class MongoDBAtlasStore(VectorStore):
                 database_name=database_name or DEFAULT_DB_NAME,
                 embedding_generator=embedding_generator,
             )
+            if callable(mongo_client.append_metadata):
+                mongo_client.append_metadata(DRIVER_METADATA)
             return
 
         try:
@@ -581,7 +581,7 @@ class MongoDBAtlasStore(VectorStore):
 
         mongo_client = AsyncMongoClient(
             mongodb_atlas_settings.connection_string.get_secret_value(),
-            driver=DriverInfo(SEMANTIC_KERNEL_USER_AGENT, metadata.version("semantic-kernel")),
+            driver=DRIVER_METADATA,
         )
 
         super().__init__(

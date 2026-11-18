@@ -3,10 +3,10 @@
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using CommunityToolkit.VectorData.Qdrant;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 
 namespace Memory;
@@ -26,13 +26,13 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
     private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreProperty>
-        {
+        Properties =
+        [
             new VectorStoreKeyProperty("Key", typeof(ulong)),
             new VectorStoreDataProperty("Term", typeof(string)),
             new VectorStoreDataProperty("Definition", typeof(string)),
             new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
-        }
+        ]
     };
 
     [Fact]

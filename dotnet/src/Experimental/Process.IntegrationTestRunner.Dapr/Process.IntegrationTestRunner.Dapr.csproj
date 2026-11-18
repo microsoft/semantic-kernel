@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.Process.IntegrationTests</RootNamespace>
     <AssemblyName>SemanticKernel.Process.IntegrationTestRunner.Dapr</AssemblyName>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -41,7 +41,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,4 +53,3 @@
   </ItemGroup>
 
 </Project>
-

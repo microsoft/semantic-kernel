@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using CommunityToolkit.VectorData.Qdrant;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Qdrant.Client;
 
@@ -24,7 +24,7 @@ namespace Memory;
 public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
-    private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
 
     [Fact]
     public async Task ConsumeExampleAsync()

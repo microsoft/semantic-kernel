@@ -1,18 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Annotated, Any
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
 from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
 from semantic_kernel.data.vector import VectorStoreCollectionDefinition, VectorStoreField, vectorstoremodel
+
+collect_ignore = (
+    ["unit/agents/autogen_conversable_agent"]
+    if sys.version_info >= (3, 14) or (sys.platform == "win32" and sys.version_info[:2] == (3, 13))
+    else []
+)
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
@@ -355,6 +361,8 @@ def definition(
 
 @fixture
 def definition_pandas(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+    import pandas as pd
+
     return VectorStoreCollectionDefinition(
         fields=[
             VectorStoreField(

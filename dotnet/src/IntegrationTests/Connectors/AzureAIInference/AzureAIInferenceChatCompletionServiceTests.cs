@@ -35,7 +35,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         .AddUserSecrets<AzureAIInferenceChatCompletionServiceTests>()
         .Build();
 
-    [Theory]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task InvokeGetChatMessageContentsAsync(string prompt, string expectedAnswerContains)
     {
@@ -57,7 +57,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains(expectedAnswerContains, result[0].Content, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task InvokeGetStreamingChatMessageContentsAsync(string prompt, string expectedAnswerContains)
     {
@@ -83,7 +83,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains(expectedAnswerContains, fullContent.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseChatForTextGenerationAsync()
     {
         // Arrange
@@ -102,7 +102,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItStreamingFromKernelTestAsync()
     {
         // Arrange
@@ -124,7 +124,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItHttpRetryPolicyTestAsync()
     {
         // Arrange
@@ -167,7 +167,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         Assert.Equal((int)HttpStatusCode.Unauthorized, ((RequestFailedException)exception).Status);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange

@@ -48,7 +48,7 @@ internal static class OpenApiTypeConverter
                 {
                     bool b => JsonValue.Create(b),
                     string s => JsonValue.Create(bool.Parse(s)),
-                    JsonElement jsonElement when jsonElement.ValueKind == JsonValueKind.True || jsonElement.ValueKind == JsonValueKind.False => jsonElement.AsNode(),
+                    JsonElement jsonElement when jsonElement.ValueKind is JsonValueKind.True or JsonValueKind.False => jsonElement.AsNode(),
                     _ => null
                 },
                 "number" => argument switch

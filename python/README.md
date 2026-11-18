@@ -1,10 +1,15 @@
 # Get Started with Semantic Kernel Python
 
+> [!IMPORTANT]
+> Semantic Kernel is now [Microsoft Agent Framework](https://github.com/microsoft/agent-framework)! Microsoft Agent Framework (MAF) is the enterprise‑ready successor to Semantic Kernel. Microsoft Agent Framework is now available at version 1.0 as a production-ready release: stable APIs, and a commitment to long-term support. Whether you're building a single assistant or orchestrating a fleet of specialized agents, Microsoft Agent Framework 1.0 gives you enterprise-grade multi-agent orchestration, multi-provider model support, and cross-runtime interoperability via A2A and MCP.
+>
+> Learn more about Semantic Kernel and Agent Framework here: [Semantic Kernel and Microsoft Agent Framework on the Agent Framework blog](https://devblogs.microsoft.com/agent-framework/semantic-kernel-and-microsoft-agent-framework/), and try out the [Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel).
+
 Highlights
 - Flexible Agent Framework: build, orchestrate, and deploy AI agents and multi-agent systems
 - Multi-Agent Systems: Model workflows and collaboration between AI specialists
 - Plugin Ecosystem: Extend with Python, OpenAPI, Model Context Protocol (MCP), and more
-- LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Vertex AI, ONNX, Ollama, NVIDIA NIM, and others
+- LLM Support: OpenAI, Azure OpenAI, Hugging Face, Mistral, Google AI, ONNX, Ollama, NVIDIA NIM, and others
 - Vector DB Support: Azure AI Search, Elasticsearch, Chroma, and more
 - Process Framework: Build structured business processes with workflow modeling
 - Multimodal: Text, vision, audio
@@ -19,7 +24,7 @@ pip install --upgrade semantic-kernel[all]
 ```
 
 Supported Platforms:
-- Python: 3.10+
+- Python: 3.11 through 3.14
 - OS: Windows, macOS, Linux
 
 ## 1. Setup API Keys
@@ -126,6 +131,7 @@ from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.functions import kernel_function, KernelArguments
 
+
 class MenuPlugin:
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
@@ -141,10 +147,12 @@ class MenuPlugin:
     ) -> Annotated[str, "Returns the price of the menu item."]:
         return "$9.99"
 
+
 class MenuItem(BaseModel):
     # Used for structured outputs
     price: float
     name: str
+
 
 async def main():
     # Configure structured outputs format
@@ -157,7 +165,7 @@ async def main():
         name="SK-Assistant",
         instructions="You are a helpful assistant.",
         plugins=[MenuPlugin()],
-        arguments=KernelArguments(settings)
+        arguments=KernelArguments(settings),
     )
 
     response = await agent.get_response("What is the price of the soup special?")
@@ -166,10 +174,53 @@ async def main():
     # Output:
     # The price of the Clam Chowder, which is the soup special, is $9.99.
 
-asyncio.run(main()) 
+
+asyncio.run(main())
 ```
 
 You can explore additional getting started agent samples [here](https://github.com/microsoft/semantic-kernel/tree/main/python/samples/getting_started_with_agents).
+
+### Tool invocation and authorization
+
+Treat model-generated function calls and arguments as untrusted input. Prompts, function descriptions,
+and a model's decision to call a tool are not authorization controls. The application must authorize
+the caller, target resource, and arguments before performing a sensitive operation.
+
+`FunctionChoiceBehavior.Auto()` without filters makes all functions registered in the kernel available
+for automatic invocation. Register only the functions needed for the task, or use an explicit, nonempty
+allowlist:
+
+```python
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
+
+settings = OpenAIChatPromptExecutionSettings(
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        filters={"included_functions": ["MenuPlugin-get_specials"]}
+    )
+)
+```
+
+Function names in `included_functions` use the `PluginName-function_name` format. Use the plugin name
+and function name actually registered in your kernel. With filters configured, the chat completion
+automatic invocation path checks the requested function against the filtered kernel metadata before
+invoking it. Keep the kernel's registered functions and the behavior's filters unchanged during a request;
+this check is not a snapshot of the tools sent to the model. An empty inclusion list is not a deny-all
+policy: empty lists do not restrict function selection.
+
+Function-choice filters restrict which functions can be selected; they do not authorize access to
+data or validate whether an operation is permitted for a particular user. Enforce those checks in the
+function or in a [function invocation filter](samples/concepts/filtering/function_invocation_filters.py).
+An [automatic function invocation filter](samples/concepts/filtering/auto_function_invoke_filters.py)
+can also inspect a proposed call and decline to invoke it by not calling `next(context)`. Setting
+`context.terminate` after `await next(context)` stops subsequent processing; it does not undo the call.
+
+For application approval before execution, use `FunctionChoiceBehavior.Auto(auto_invoke=False, filters=...)`,
+then inspect and authorize each returned call before invoking it. If you manually call
+`Kernel.invoke_function_call`, pass the same `FunctionChoiceBehavior` as its `function_behavior` argument
+to retain function-name filtering. Omitting that argument skips that filtering, and passing
+`execution_settings` alone does not enable it. Direct calls such as `Kernel.invoke` also require the
+application's own authorization; function-choice filters are not a kernel-wide access-control policy.
 
 ## 5. Multi-Agent Orchestration
 
@@ -180,6 +231,7 @@ import asyncio
 from semantic_kernel.agents import ChatCompletionAgent, GroupChatOrchestration, RoundRobinGroupChatManager
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+
 
 def get_agents():
     return [
@@ -194,6 +246,7 @@ def get_agents():
             service=AzureChatCompletion(),
         ),
     ]
+
 
 async def main():
     agents = get_agents()
@@ -214,6 +267,7 @@ async def main():
     # Final Slogan: "Feel the Charge: Adventure Meets Affordability in Your New Electric SUV!"
 
     await runtime.stop_when_idle()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

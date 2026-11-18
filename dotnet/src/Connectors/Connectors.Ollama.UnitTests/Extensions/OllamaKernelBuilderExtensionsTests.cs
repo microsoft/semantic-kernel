@@ -255,7 +255,7 @@ public class OllamaKernelBuilderExtensionsTests
 
         Assert.NotNull(service);
 
-        await service.GetChatMessageContentsAsync(new());
+        await service.GetChatMessageContentsAsync([]);
 
         Assert.Equal(1, myHttpClientHandler.InvokedCount);
     }

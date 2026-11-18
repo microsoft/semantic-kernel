@@ -82,6 +82,9 @@ async def main() -> None:
     # to signal the end of the user's turn and start the response.
     # manual VAD is not part of this sample
     # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
+
+    # Note: api_version (either through settings or directly in the client) must be set to "2025-08-28"
+    # for Azure OpenAI deployments realtime deployments.
     settings = AzureRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and

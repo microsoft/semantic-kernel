@@ -98,8 +98,11 @@ async def test_ensure_collection_exists_calls_database_methods(definition) -> No
     # Check the vector field index creation
     assert command_args["indexes"][1]["name"] == "vector_"
     assert command_args["indexes"][1]["key"] == {"vector": "cosmosSearch"}
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "COS"
-    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] is not None
+    # "kind" must be the index kind ("vector-hnsw" for index_kind="hnsw"),
+    # not the distance-function similarity code ("COS").
+    # See https://github.com/microsoft/semantic-kernel/issues/14104
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["kind"] == "vector-hnsw"
+    assert command_args["indexes"][1]["cosmosSearchOptions"]["similarity"] == "COS"
     assert command_args["indexes"][1]["cosmosSearchOptions"]["dimensions"] == 5
 
 
@@ -154,3 +157,46 @@ async def test_context_manager_does_not_close_when_not_managed(mock_model) -> No
 
     # "__aexit__" should NOT call "close" when not managed
     external_client.close.assert_not_awaited()
+
+
+def test_get_index_definitions_uses_index_kind_for_kind() -> None:
+    """Regression test for https://github.com/microsoft/semantic-kernel/issues/14104.
+
+    The "kind" of a Cosmos DB for MongoDB vector index must come from
+    INDEX_KIND_MAP_MONGODB (e.g. "vector-hnsw"), not from the distance
+    function map ("COS"/"IP"/"L2"). Using the similarity code as "kind"
+    sends an invalid createIndexes command and also prevents the
+    HNSW/IVF/DiskANN tuning options from being attached (the `match`
+    block could never hit a "vector-*" case).
+    """
+    from semantic_kernel.data.vector import DistanceFunction, IndexKind
+
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField(
+                "vector",
+                name="vector",
+                dimensions=4,
+                index_kind=IndexKind.HNSW,
+                distance_function=DistanceFunction.COSINE_SIMILARITY,
+            ),
+        ]
+    )
+    collection = CosmosMongoCollection(
+        collection_name="test_collection",
+        record_type=dict,
+        mongo_client=AsyncMock(spec=AsyncMongoClient),
+        definition=definition,
+    )
+
+    result = collection._get_index_definitions(m=16, efConstruction=64)
+    vector_index = next(i for i in result["indexes"] if "cosmosSearchOptions" in i)
+    options = vector_index["cosmosSearchOptions"]
+
+    assert options["kind"] == "vector-hnsw"
+    assert options["similarity"] == "COS"
+    assert options["dimensions"] == 4
+    assert options["m"] == 16
+    assert options["efConstruction"] == 64

@@ -29,7 +29,7 @@ internal static class HttpClientExtensions
         HttpResponseMessage? response = null;
         try
         {
-            response = await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
+            response = await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false); // CodeQL [SM03781] Internal utility method; URI validation is the caller's responsibility upstream
         }
         catch (HttpRequestException e)
         {

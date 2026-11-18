@@ -23,7 +23,7 @@ public class RenderMessageStep : KernelProcessStep
         public const string RenderUserText = nameof(RenderMessageStep.RenderUserText);
     }
 
-    private readonly static Stopwatch s_timer = Stopwatch.StartNew();
+    private static readonly Stopwatch s_timer = Stopwatch.StartNew();
 
     /// <summary>
     /// Render an explicit message to indicate the process has completed in the expected state.

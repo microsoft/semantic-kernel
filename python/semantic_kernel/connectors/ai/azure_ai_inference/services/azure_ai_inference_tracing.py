@@ -22,8 +22,14 @@ class AzureAIInferenceTracing(KernelBaseModel):
         Args:
             diagnostics_settings (ModelDiagnosticSettings, optional): Model diagnostics settings. Defaults to None.
         """
-        settings.tracing_implementation = "opentelemetry"
         super().__init__(diagnostics_settings=diagnostics_settings or ModelDiagnosticSettings())
+        # Only set tracing implementation when diagnostics is enabled to avoid
+        # interfering with method mocking in tests
+        if (
+            self.diagnostics_settings.enable_otel_diagnostics
+            or self.diagnostics_settings.enable_otel_diagnostics_sensitive
+        ):
+            settings.tracing_implementation = "opentelemetry"
 
     def __enter__(self) -> None:
         """Enable tracing.

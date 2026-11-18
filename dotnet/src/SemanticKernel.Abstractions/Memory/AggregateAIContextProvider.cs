@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0130")]
 public sealed class AggregateAIContextProvider : AIContextProvider
 {
-    private readonly List<AIContextProvider> _providers = new();
+    private readonly List<AIContextProvider> _providers = [];
 
     /// <summary>
     /// Gets the list of registered <see cref="AIContextProvider"/> objects.

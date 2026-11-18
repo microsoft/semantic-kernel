@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +44,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
         this._settings = new(sessionId: Guid.NewGuid().ToString(), endpoint: new Uri(_spConfiguration.Endpoint))
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = [new Uri(_spConfiguration.Endpoint).Host],
+            // Enable file operations for integration tests
+            EnableDangerousFileUploads = true,
+            AllowedUploadDirectories = new[] { Path.GetFullPath("TestData") },
+            AllowedDownloadDirectories = new[] { Path.GetFullPath("TestData") }
         };
 
         this._httpClientFactory = new HttpClientFactory();
@@ -181,10 +187,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private sealed class HttpClientFactory : IHttpClientFactory, IDisposable
     {
         private readonly List<HttpClient> _httpClients = [];
+        private readonly List<HttpClientHandler> _httpClientHandlers = [];
 
         public HttpClient CreateClient(string name)
         {
-            var client = new HttpClient();
+            var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            var client = new HttpClient(handler, disposeHandler: false);
+            this._httpClientHandlers.Add(handler);
             this._httpClients.Add(client);
             return client;
         }
@@ -192,6 +201,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         public void Dispose()
         {
             this._httpClients.ForEach(client => client.Dispose());
+            this._httpClientHandlers.ForEach(handler => handler.Dispose());
         }
     }
 }

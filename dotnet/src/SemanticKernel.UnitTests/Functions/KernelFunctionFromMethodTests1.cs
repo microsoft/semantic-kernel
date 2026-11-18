@@ -920,13 +920,13 @@ public sealed class KernelFunctionFromMethodTests1
         //Arrange
         var arguments = new KernelArguments()
         {
-            ["l"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("1")),                 //Passed to parameter of type long
-            ["i"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("1")),                //Passed to parameter of type int
-            ["d"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("1.0")),             //Passed to parameter of type double
-            ["f"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("1.0")),              //Passed to parameter of type float
-            ["g"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("35626209-b0ab-458c-bfc4-43e6c7bd13dc")),   //Passed to parameter of type Guid
-            ["dof"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("4")),   //Passed to parameter of type int
-            ["b"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("false")),   //Passed to parameter of type bool
+            ["l"] = JsonElement.Parse(JsonSerializer.Serialize("1")),                 //Passed to parameter of type long
+            ["i"] = JsonElement.Parse(JsonSerializer.Serialize("1")),                //Passed to parameter of type int
+            ["d"] = JsonElement.Parse(JsonSerializer.Serialize("1.0")),             //Passed to parameter of type double
+            ["f"] = JsonElement.Parse(JsonSerializer.Serialize("1.0")),              //Passed to parameter of type float
+            ["g"] = JsonElement.Parse(JsonSerializer.Serialize("35626209-b0ab-458c-bfc4-43e6c7bd13dc")),   //Passed to parameter of type Guid
+            ["dof"] = JsonElement.Parse(JsonSerializer.Serialize("4")),   //Passed to parameter of type int
+            ["b"] = JsonElement.Parse(JsonSerializer.Serialize("false")),   //Passed to parameter of type bool
         };
 
         var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f, Guid g, int dof, bool b) =>
@@ -1043,7 +1043,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         func = KernelFunctionFactory.CreateFromMethod((List<string> val) => val.ToAsyncEnumerable());
         result = await func.InvokeAsync(this._kernel, input);
-        Assert.Equal(expected, ((IAsyncEnumerable<string>)result.Value!).ToEnumerable());
+        Assert.Equal(expected, ((IAsyncEnumerable<string>)result.Value!).ToBlockingEnumerable());
     }
 
     [Fact]
@@ -1356,7 +1356,7 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItCanDeserializeJsonElementAsync()
     {
         // Arrange
-        var element = JsonDocument.Parse(@"{""id"":28}").RootElement;
+        var element = JsonElement.Parse(@"{""id"":28}");
         CustomTypeForJsonTests? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });

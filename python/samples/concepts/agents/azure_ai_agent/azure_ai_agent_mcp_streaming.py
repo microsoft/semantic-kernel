@@ -40,6 +40,8 @@ async def main() -> None:
 
         # Optionally you may configure to require approval
         # Allowed values are "never" or "always"
+        # When set to "always", Semantic Kernel asks the `mcp_tool_approval_callback` configured on the
+        # agent before each MCP tool call, and denies the call if no callback is configured.
         mcp_tool.set_approval_mode("never")
 
         # 2. Create an agent with the MCP tool on the Azure AI agent service
