@@ -6,7 +6,12 @@ from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 from pandas import DataFrame
 from pytest import mark, raises
 
-from semantic_kernel.data.vector import SerializeMethodProtocol, ToDictMethodProtocol
+from semantic_kernel.data.vector import (
+    SerializeMethodProtocol,
+    ToDictMethodProtocol,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+)
 from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
@@ -126,6 +131,32 @@ async def test_crud_operations(vector_store_record_collection):
             assert rec.content == batch[idx].content
     await vector_store_record_collection.delete(ids)
     assert len(vector_store_record_collection.inner_storage) == 0
+
+
+async def test_get_with_zero_numeric_key(DictVectorStoreRecordCollection):
+    """A key of 0 is a valid key and must be fetched, not treated as a missing key argument.
+
+    ``get`` used to decide whether a single key was supplied with ``if not keys and key:``,
+    so the valid numeric keys ``0`` and ``0.0`` were mistaken for "no key supplied".
+    """
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="int"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
+        ]
+    )
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        record_type=dict,
+        definition=definition,
+    )
+    record = {"id": 0, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    await vector_store_record_collection.upsert(record)
+
+    assert await vector_store_record_collection.get(0) == {"id": 0, "content": "test_content"}
+    assert await vector_store_record_collection.get(keys=[0]) == [{"id": 0, "content": "test_content"}]
+    assert await vector_store_record_collection.get(1) is None
 
 
 @mark.parametrize(
