@@ -148,7 +148,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
-        return [self._create_text_content(response, candidate) for candidate in response.candidates]  # type: ignore
+        return [self._create_text_content(response, candidate) for candidate in response.candidates or [Candidate()]]
 
     @override
     @trace_streaming_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
@@ -174,7 +174,10 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
         if self.client:
             async for chunk in _generate_content_stream(self.client):
-                yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
+                yield [
+                    self._create_streaming_text_content(chunk, candidate)
+                    for candidate in chunk.candidates or [Candidate()]
+                ]
         elif self.service_settings.use_vertexai:
             with Client(
                 vertexai=True,
@@ -183,14 +186,20 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
                 http_options=self._get_http_options(),
             ) as client:
                 async for chunk in _generate_content_stream(client):
-                    yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
+                    yield [
+                        self._create_streaming_text_content(chunk, candidate)
+                        for candidate in chunk.candidates or [Candidate()]
+                    ]
         else:
             with Client(
                 api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
                 http_options=self._get_http_options(),
             ) as client:
                 async for chunk in _generate_content_stream(client):
-                    yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]  # type: ignore
+                    yield [
+                        self._create_streaming_text_content(chunk, candidate)
+                        for candidate in chunk.candidates or [Candidate()]
+                    ]
 
     # endregion
 

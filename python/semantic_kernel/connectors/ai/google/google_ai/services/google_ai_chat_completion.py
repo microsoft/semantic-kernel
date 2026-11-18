@@ -182,7 +182,9 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
-        return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
+        return [
+            self._create_chat_message_content(response, candidate) for candidate in response.candidates or [Candidate()]
+        ]
 
     @override
     @trace_streaming_chat_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
@@ -216,7 +218,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             async for chunk in _generate_content_stream(self.client):
                 yield [
                     self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                    for candidate in chunk.candidates  # type: ignore
+                    for candidate in chunk.candidates or [Candidate()]
                 ]
         elif self.service_settings.use_vertexai:
             with Client(
@@ -228,7 +230,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 async for chunk in _generate_content_stream(client):
                     yield [
                         self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                        for candidate in chunk.candidates  # type: ignore
+                        for candidate in chunk.candidates or [Candidate()]
                     ]
         else:
             with Client(
@@ -238,7 +240,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 async for chunk in _generate_content_stream(client):
                     yield [
                         self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
-                        for candidate in chunk.candidates  # type: ignore
+                        for candidate in chunk.candidates or [Candidate()]
                     ]
 
     @override

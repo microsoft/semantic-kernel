@@ -5,7 +5,13 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from google.genai import Client
 from google.genai.models import AsyncModels
-from google.genai.types import GenerateContentConfigDict
+from google.genai.types import (
+    BlockedReason,
+    GenerateContentConfigDict,
+    GenerateContentResponse,
+    GenerateContentResponsePromptFeedback,
+    GenerateContentResponseUsageMetadata,
+)
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
@@ -151,6 +157,31 @@ async def test_google_ai_text_completion_with_custom_client(
     mock_generate_content.assert_called_once()
 
 
+def _blocked_prompt_response() -> GenerateContentResponse:
+    """A response for a blocked prompt: no candidates, only the prompt feedback and usage."""
+    return GenerateContentResponse(
+        prompt_feedback=GenerateContentResponsePromptFeedback(block_reason=BlockedReason.SAFETY),
+        usage_metadata=GenerateContentResponseUsageMetadata(prompt_token_count=7, total_token_count=7),
+    )
+
+
+@patch.object(AsyncModels, "generate_content", new_callable=AsyncMock)
+async def test_google_ai_text_completion_without_candidates(
+    mock_google_model_generate_content,
+    google_ai_unit_test_env,
+    prompt: str,
+) -> None:
+    """A response without candidates returns an empty text that keeps the prompt feedback."""
+    mock_google_model_generate_content.return_value = _blocked_prompt_response()
+
+    responses = await GoogleAITextCompletion().get_text_contents(prompt, GoogleAITextPromptExecutionSettings())
+
+    assert len(responses) == 1
+    assert responses[0].text == ""
+    assert responses[0].metadata["prompt_feedback"].block_reason == BlockedReason.SAFETY
+    assert responses[0].metadata["usage"].prompt_tokens == 7
+
+
 # endregion text completion
 
 
@@ -207,6 +238,33 @@ async def test_google_ai_streaming_text_completion_with_custom_client(
 
     # Verify that the custom client's method was called
     mock_generate_content_stream.assert_called_once()
+
+
+@patch.object(AsyncModels, "generate_content_stream", new_callable=AsyncMock)
+async def test_google_ai_streaming_text_completion_chunk_without_candidates(
+    mock_google_model_generate_content_stream,
+    google_ai_unit_test_env,
+    prompt: str,
+) -> None:
+    """A streamed chunk without candidates yields an empty text that keeps the prompt feedback."""
+
+    async def _stream():
+        yield _blocked_prompt_response()
+
+    mock_google_model_generate_content_stream.return_value = _stream()
+
+    chunks = [
+        chunk
+        async for chunk in GoogleAITextCompletion().get_streaming_text_contents(
+            prompt, GoogleAITextPromptExecutionSettings()
+        )
+    ]
+
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 1
+    assert chunks[0][0].text == ""
+    assert chunks[0][0].metadata["prompt_feedback"].block_reason == BlockedReason.SAFETY
+    assert chunks[0][0].metadata["usage"].prompt_tokens == 7
 
 
 # endregion streaming text completion
