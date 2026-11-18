@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 from mistralai import CompletionEvent, Mistral
 from mistralai.models import (
@@ -13,6 +14,8 @@ from mistralai.models import (
     DeltaMessage,
     UsageInfo,
 )
+from mistralai.utils.eventstreaming import EventStreamAsync
+from mistralai.utils.serializers import unmarshal_json
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -623,6 +626,57 @@ async def test_mistral_ai_chat_completion_get_streaming_chat_message_contents_su
     # First chunk contains "Hello ", second chunk "World!".
     assert collected_chunks[0][0].items[0].text == "Hello "
     assert collected_chunks[1][0].items[0].text == "World!"
+
+
+async def test_mistral_ai_chat_completion_get_streaming_chat_message_contents_event_stream():
+    """Test streaming when the SDK returns an EventStreamAsync, which is not an AsyncGenerator."""
+    chunks = [
+        CompletionChunk(
+            id="chunk1",
+            created=1,
+            model="test-model",
+            choices=[
+                CompletionResponseStreamChoice(
+                    index=0, delta=DeltaMessage(role="assistant", content="Hello "), finish_reason=None
+                )
+            ],
+        ),
+        CompletionChunk(
+            id="chunk1",
+            created=1,
+            model="test-model",
+            choices=[
+                CompletionResponseStreamChoice(index=0, delta=DeltaMessage(content="World!"), finish_reason="stop")
+            ],
+        ),
+    ]
+    sse = "".join(f"data: {chunk.model_dump_json()}\n\n" for chunk in chunks) + "data: [DONE]\n\n"
+    event_stream = EventStreamAsync(
+        httpx.Response(200, headers={"content-type": "text/event-stream"}, content=sse.encode()),
+        lambda raw: unmarshal_json(raw, CompletionEvent),
+        sentinel="[DONE]",
+    )
+
+    async_mock_client = MagicMock(spec=Mistral)
+    async_mock_client.chat = MagicMock()
+    async_mock_client.chat.stream_async = AsyncMock(return_value=event_stream)
+
+    chat_completion = MistralAIChatCompletion(
+        ai_model_id="test-model",
+        api_key="test_key",
+        async_client=async_mock_client,
+    )
+
+    collected_chunks = []
+    async for chunk_list in chat_completion.get_streaming_chat_message_contents(
+        ChatHistory(), MistralAIChatPromptExecutionSettings()
+    ):
+        collected_chunks.append(chunk_list)
+
+    assert len(collected_chunks) == 2
+    assert collected_chunks[0][0].items[0].text == "Hello "
+    assert collected_chunks[1][0].items[0].text == "World!"
+    assert collected_chunks[1][0].finish_reason == FinishReason.STOP
 
 
 async def test_mistral_ai_chat_completion_get_streaming_chat_message_contents_failure():

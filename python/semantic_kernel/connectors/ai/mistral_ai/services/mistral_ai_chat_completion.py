@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
@@ -178,8 +178,10 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
                 ex,
             ) from ex
 
-        # If there is no response end the generator
-        if isinstance(response, AsyncGenerator):
+        # If there is no response end the generator.
+        # Newer mistralai versions return an EventStreamAsync, which is async iterable
+        # but not an AsyncGenerator, so check for AsyncIterable to support both.
+        if isinstance(response, AsyncIterable):
             async for chunk in response:
                 if len(chunk.data.choices) == 0:
                     continue
