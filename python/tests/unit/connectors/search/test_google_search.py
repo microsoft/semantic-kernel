@@ -184,3 +184,9 @@ def test_parse_filter_lambda_valid(google_search, filter_lambda, expected):
 def test_parse_filter_lambda_invalid(google_search, filter_lambda, exception_type):
     with pytest.raises(exception_type):
         google_search._parse_filter_lambda(filter_lambda)
+
+async def test_google_search_init_with_custom_url(google_search_unit_test_env) -> None:
+    """Test that GoogleSearch successfully initializes with a custom URL."""
+    custom_endpoint = "https://custom-google-proxy.internal/v1"
+    search = GoogleSearch(custom_url=custom_endpoint)
+    assert search.settings.custom_url == custom_endpoint

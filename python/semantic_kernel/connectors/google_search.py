@@ -144,6 +144,7 @@ class GoogleSearchSettings(KernelBaseSettings):
 
     api_key: SecretStr
     engine_id: str | None = None
+    custom_url: str | None = None
 
 
 @experimental
@@ -156,6 +157,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         self,
         api_key: str | None = None,
         search_engine_id: str | None = None,
+        custom_url: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -174,6 +176,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             settings = GoogleSearchSettings(
                 api_key=api_key,
                 engine_id=search_engine_id,
+                custom_url=custom_url,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -261,7 +264,8 @@ class GoogleSearch(KernelBaseModel, TextSearch):
                 params:\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
-        full_url = f"{CUSTOM_SEARCH_URL}{self._build_query(query, options)}"
+        base_url = self.settings.custom_url or CUSTOM_SEARCH_URL
+        full_url = f"{base_url}{self._build_query(query, options)}"
         headers = {"user_agent": SEMANTIC_KERNEL_USER_AGENT}
         try:
             async with AsyncClient(timeout=5) as client:
