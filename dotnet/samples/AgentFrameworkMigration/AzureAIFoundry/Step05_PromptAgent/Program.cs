@@ -20,7 +20,8 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_FOUNDRY_PROJECT_ENDPOINT is not set.");
 // The classic Foundry Agents service used by the SK AzureAIAgent rejects the top_p parameter it sends to GPT-5.6 models, so default to gpt-5.4-mini.
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_FOUNDRY_PROJECT_DEPLOYMENT_NAME") ?? "gpt-5.4-mini";
-const string AgentName = "MigrationPromptAgent";
+// A unique name per run keeps cleanup from deleting a same-named agent that another run or user created in the project.
+var agentName = $"MigrationPromptAgent-{Guid.NewGuid():N}";
 const string AgentInstructions = "You are good at telling jokes.";
 var userInput = "Tell me a joke about a pirate.";
 var followUpInput = "Now explain why the joke is funny in one sentence.";
@@ -39,7 +40,7 @@ async Task SKAgentAsync()
     // SK creates the server-side agent definition with the Persistent Agents client.
     PersistentAgent definition = await azureAgentClient.Administration.CreateAgentAsync(
         deploymentName,
-        name: AgentName,
+        name: agentName,
         instructions: AgentInstructions);
 
     AzureAIAgent agent = new(definition, azureAgentClient);
@@ -78,7 +79,7 @@ async Task AFAgentAsync()
 
     // AF creates the server-side Prompt Agent as a versioned definition in the Foundry project.
     ProjectsAgentVersion agentVersion = await projectClient.AgentAdministrationClient.CreateAgentVersionAsync(
-        AgentName,
+        agentName,
         new ProjectsAgentVersionCreationOptions(
             new DeclarativeAgentDefinition(model: deploymentName)
             {
@@ -86,12 +87,14 @@ async Task AFAgentAsync()
             }));
 
     FoundryAgent agent = projectClient.AsAIAgent(agentVersion);
+    ChatClientAgentSession? session = null;
 
-    // The agent creates the server-side conversation; there is no provider-specific thread type to construct.
-    ChatClientAgentSession session = await agent.CreateConversationSessionAsync();
-
+    // The cleanup scope starts right after the agent exists, so a failure while creating the conversation still deletes the agent.
     try
     {
+        // The agent creates the server-side conversation; there is no provider-specific thread type to construct.
+        session = await agent.CreateConversationSessionAsync();
+
         Console.WriteLine(await agent.RunAsync(userInput, session));
 
         Console.WriteLine("---");
@@ -104,15 +107,19 @@ async Task AFAgentAsync()
 
         // An existing Prompt Agent is loaded by name instead of by the Persistent Agents id.
         Console.WriteLine("\n=== AF Agent (existing Prompt Agent loaded by name) ===\n");
-        ProjectsAgentRecord agentRecord = await projectClient.AgentAdministrationClient.GetAgentAsync(AgentName);
+        ProjectsAgentRecord agentRecord = await projectClient.AgentAdministrationClient.GetAgentAsync(agentName);
         FoundryAgent existingAgent = projectClient.AsAIAgent(agentRecord);
         Console.WriteLine(await existingAgent.RunAsync(userInput));
     }
     finally
     {
         // AgentSession has no delete API, so the caller deletes the server-side conversation through the provider SDK.
+        if (session?.ConversationId is { } conversationId)
+        {
+            await projectClient.GetProjectOpenAIClient().GetProjectConversationsClient().DeleteConversationAsync(conversationId);
+        }
+
         // Deleting the agent removes the Prompt Agent and all of its versions.
-        await projectClient.GetProjectOpenAIClient().GetProjectConversationsClient().DeleteConversationAsync(session.ConversationId);
-        await projectClient.AgentAdministrationClient.DeleteAgentAsync(AgentName);
+        await projectClient.AgentAdministrationClient.DeleteAgentAsync(agentName);
     }
 }
