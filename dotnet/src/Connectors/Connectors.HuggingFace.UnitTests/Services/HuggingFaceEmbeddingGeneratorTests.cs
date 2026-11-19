@@ -39,7 +39,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests : IDisposable
         await sut.GenerateAsync([]);
 
         //Assert
-        Assert.Contains("/fake-model/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("https://fake-random-test-host/fake-path/models/fake-model/pipeline/feature-extraction", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]

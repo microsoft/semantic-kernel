@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
@@ -103,6 +104,31 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
             Assert.Equal(jsonDeltaChunk.GetProperty("content").GetString(), chatMessageContents[i].Content);
             Assert.Equal(jsonDeltaChunk.GetProperty("role").GetString(), chatMessageContents[i].Role.ToString());
         }
+    }
+
+    [Fact]
+    public async Task ShouldPreserveStreamingReasoningContentAsync()
+    {
+        // Arrange
+        var response = HuggingFaceTestHelper.GetTestResponse("chatcompletion_test_stream_response.txt")
+            .Replace(
+                "\"content\":\"Deep\"",
+                "\"content\":\"Deep\",\"reasoning\":\"Testing reasoning\"",
+                StringComparison.Ordinal);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(response);
+        var client = this.CreateChatCompletionClient();
+
+        // Act
+        var contents = await client.StreamCompleteChatMessageAsync(
+            CreateSampleChatHistory(),
+            executionSettings: null,
+            cancellationToken: CancellationToken.None).ToListAsync();
+
+        // Assert
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoning = Assert.Single(contents.SelectMany(content => content.Items).OfType<StreamingReasoningContent>());
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        Assert.Equal("Testing reasoning", reasoning.Text);
     }
 
     [Fact]

@@ -20,12 +20,15 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class HuggingFaceClient
 {
+    private static readonly Uri s_defaultEndpoint = new("https://router.huggingface.co/hf-inference");
     private readonly HttpClient _httpClient;
 
     internal string ModelProvider => "huggingface";
     internal string? ModelId { get; }
     internal string? ApiKey { get; }
     internal Uri Endpoint { get; }
+    internal bool UsesHuggingFaceInferenceEndpoint =>
+        string.Equals(this.Endpoint.AbsoluteUri.TrimEnd('/'), s_defaultEndpoint.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     internal string Separator { get; }
     internal ILogger Logger { get; }
 
@@ -44,7 +47,7 @@ internal sealed class HuggingFaceClient
             throw new InvalidOperationException("A valid model id or endpoint must be provided.");
         }
 
-        endpoint ??= new Uri("https://router.huggingface.co/hf-inference");
+        endpoint ??= s_defaultEndpoint;
         this.Separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
         this.Endpoint = endpoint;
         this.ModelId = modelId;

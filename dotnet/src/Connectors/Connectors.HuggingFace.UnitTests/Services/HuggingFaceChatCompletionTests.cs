@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
@@ -111,7 +112,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("https://fake-random-test-host/fake-path/v1/chat/completions", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
@@ -127,7 +128,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("https://fake-random-test-host/fake-path/v1/chat/completions", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
@@ -141,7 +142,24 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.StartsWith("https://router.huggingface.co/hf-inference/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("https://router.huggingface.co/v1/chat/completions", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task HostedInferenceEndpointShouldUseChatRouterAsync()
+    {
+        //Arrange
+        var sut = new HuggingFaceChatCompletionService(
+            "fake-model",
+            endpoint: new Uri("https://router.huggingface.co/hf-inference/"),
+            httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
+
+        //Act
+        await sut.GetChatMessageContentAsync(chatHistory);
+
+        //Assert
+        Assert.Equal("https://router.huggingface.co/v1/chat/completions", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
@@ -183,6 +201,28 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         Assert.NotNull(content);
 
         Assert.Equal("This is a testing chat completion response", content.Content);
+    }
+
+    [Fact]
+    public async Task ShouldPreserveReasoningContentAsync()
+    {
+        // Arrange
+        var response = HuggingFaceTestHelper.GetTestResponse("chatcompletion_test_response.json")
+            .Replace(
+                "\"content\": \"This is a testing chat completion response\"",
+                "\"content\": \"This is a testing chat completion response\", \"reasoning\": \"Testing reasoning\"",
+                StringComparison.Ordinal);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(response);
+        var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
+
+        // Act
+        var content = await sut.GetChatMessageContentAsync(CreateSampleChatHistory());
+
+        // Assert
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var reasoning = Assert.Single(content.Items.OfType<ReasoningContent>());
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        Assert.Equal("Testing reasoning", reasoning.Text);
     }
 
     [Fact]
