@@ -380,9 +380,15 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             model_param_names = {
                 param.name for param in function_to_call.parameters if param.include_in_function_choices
             }
+            hidden_param_names = {
+                param.name for param in function_to_call.parameters if not param.include_in_function_choices
+            }
             received_param_names = set(parsed_args or {})
+            # A hidden parameter is never advertised to the model, so its value comes from the invoke level
+            # arguments. When it is required, those host supplied values satisfy the requirement.
+            host_param_names = set(args_cloned) & hidden_param_names
 
-            missing_params = required_param_names - received_param_names
+            missing_params = required_param_names - received_param_names - host_param_names
             unexpected_params = received_param_names - model_param_names
 
             if missing_params or unexpected_params:
@@ -412,12 +418,17 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        # Only parameters advertised to the model can be requested in a tool call. A required parameter that is
+        # hidden from the model is satisfied by the invoke level arguments instead, as checked above.
+        required_model_params = [
+            param for param in function_to_call.parameters if param.is_required and param.include_in_function_choices
+        ]
+        num_required_func_params = len(required_model_params)
         if parsed_args is None or len(parsed_args) < num_required_func_params:
             msg = (
                 f"There are `{num_required_func_params}` tool call arguments required and "
                 f"only `{len(parsed_args) if parsed_args is not None else 0}` received. The required arguments are: "
-                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                f"{[param.name for param in required_model_params]}. "
                 "Please provide the required arguments and try again."
             )
             logger.info(msg)
