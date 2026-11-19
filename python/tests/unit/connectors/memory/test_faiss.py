@@ -1,11 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import Annotated
+
 import faiss
-from pytest import fixture, mark, raises
+from pydantic import BaseModel
+from pytest import approx, fixture, mark, raises
 
 from semantic_kernel.connectors.faiss import FaissCollection, FaissStore
-from semantic_kernel.data.vector import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
-from semantic_kernel.exceptions import VectorStoreInitializationException
+from semantic_kernel.data.vector import (
+    DistanceFunction,
+    VectorStoreCollectionDefinition,
+    VectorStoreField,
+    vectorstoremodel,
+)
+from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 
 @fixture(scope="function")
@@ -144,12 +152,157 @@ async def test_custom_index_upsert_and_search(store, data_model_def, use_index_d
         assert collection.inner_storage == {}
 
 
+@fixture(scope="function")
+def aliased_definition(data_model_def) -> VectorStoreCollectionDefinition:
+    """Only the key field declares a storage_name.
+
+    This mirrors the InMemory test for the same behaviour and keeps the data and
+    vector fields on their logical names, so the record reaches _inner_upsert
+    under whichever serialization the record type produces.
+    """
+    data_model_def.key_field.storage_name = "stored_id"
+    return data_model_def
+
+
+@vectorstoremodel
+class AliasedModel(BaseModel):
+    id: Annotated[str, VectorStoreField("key", storage_name="stored_id")]
+    content: Annotated[str, VectorStoreField("data")] = "test content"
+    vector: Annotated[
+        list[float] | None,
+        VectorStoreField(
+            "vector",
+            dimensions=5,
+            index_kind="flat",
+            distance_function="dot_prod",
+            type="float",
+        ),
+    ] = None
+
+
+@mark.parametrize("model_kind", ["dict", "pydantic"], ids=["dict", "pydantic"])
+async def test_upsert_with_key_storage_name(aliased_definition, model_kind):
+    """A key field with a storage_name must upsert whichever shape it serializes to."""
+    model_type = {"dict": dict, "pydantic": AliasedModel}[model_kind]
+    collection = FaissCollection(record_type=model_type, definition=aliased_definition, collection_name="test-alias")
+    record = model_type(id="testid", content="test content", vector=[1.0, 0.0, 0.0, 0.0, 0.0])
+    await collection.ensure_collection_exists()
+
+    assert await collection.upsert(record) == "testid"
+    assert collection.indexes_key_map["vector"] == {"testid": 0}
+    assert set(collection.inner_storage) == {"testid"}
+
+    results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], top=1, include_vectors=True)
+    assert [result.record async for result in results.results] == [record]
+    await collection.ensure_collection_deleted()
+
+
+@vectorstoremodel
+class VectorAliasedModel(BaseModel):
+    id: Annotated[str, VectorStoreField("key", type="str")]
+    content: Annotated[str, VectorStoreField("data", type="str")] = "test content"
+    embedding: Annotated[
+        list[float] | None,
+        VectorStoreField(
+            "vector",
+            storage_name="vec",
+            dimensions=5,
+            index_kind="flat",
+            distance_function="dot_prod",
+            type="float",
+        ),
+    ] = None
+
+
+def vector_aliased_definition() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="content", type="str"),
+            VectorStoreField(
+                "vector",
+                name="embedding",
+                storage_name="vec",
+                dimensions=5,
+                index_kind="flat",
+                distance_function="dot_prod",
+                type="float",
+            ),
+        ]
+    )
+
+
+async def test_upsert_with_vector_storage_name_pydantic_model():
+    """A pydantic model_dump keeps the logical vector name; the vector must still resolve."""
+    collection = FaissCollection(
+        record_type=VectorAliasedModel, definition=vector_aliased_definition(), collection_name="test-vec-alias"
+    )
+    record = VectorAliasedModel(id="testid", embedding=[1.0, 0.0, 0.0, 0.0, 0.0])
+    await collection.ensure_collection_exists()
+
+    assert await collection.upsert(record) == "testid"
+    assert collection.indexes["embedding"].ntotal == 1
+    # Assert the indexed vector itself, so a wrong-but-valid vector cannot pass.
+    assert collection.indexes["embedding"].reconstruct(0) == approx([1.0, 0.0, 0.0, 0.0, 0.0])
+
+    results = await collection.search(vector=[1.0, 0.0, 0.0, 0.0, 0.0], top=1, include_vectors=True)
+    assert [result.record async for result in results.results] == [record]
+    await collection.ensure_collection_deleted()
+
+
+async def test_upsert_with_custom_to_dict_logical_names(aliased_definition):
+    """A custom to_dict that emits the logical key name must still resolve."""
+    aliased_definition.to_dict = lambda record, **kwargs: {
+        "id": record["id"],
+        "content": record["content"],
+        "vector": record["vector"],
+    }
+    collection = FaissCollection(record_type=dict, definition=aliased_definition, collection_name="test-alias-logical")
+    record = {"id": "testid", "content": "test content", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]}
+    await collection.ensure_collection_exists()
+
+    assert await collection.upsert(record) == "testid"
+    assert collection.indexes_key_map["vector"] == {"testid": 0}
+    await collection.ensure_collection_deleted()
+
+
 async def test_upsert(faiss_collection):
     await faiss_collection.ensure_collection_exists()
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     key = await faiss_collection.upsert(record)
     assert key == "testid"
     assert faiss_collection.inner_storage == {"testid": record}
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_on_empty_collection_returns_no_results(faiss_collection):
+    """An empty index has nothing to search; faiss would otherwise assert k > 0."""
+    await faiss_collection.ensure_collection_exists()
+
+    results = await faiss_collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=3, include_total_count=True)
+    assert [result async for result in results.results] == []
+    assert results.total_count == 0
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_on_empty_collection_still_validates_the_filter(faiss_collection):
+    """An empty index returns early, but an invalid filter must still raise."""
+    await faiss_collection.ensure_collection_exists()
+
+    with raises(VectorStoreOperationException):
+        await faiss_collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=3, filter="not valid (")
+    await faiss_collection.ensure_collection_deleted()
+
+
+async def test_search_after_deleting_every_record_returns_no_results(faiss_collection):
+    """Deleting the last record empties the index; a later search must not raise."""
+    await faiss_collection.ensure_collection_exists()
+    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await faiss_collection.upsert(record)
+    await faiss_collection.delete("testid")
+
+    results = await faiss_collection.search(vector=record["vector"], top=3)
+    assert [result async for result in results.results] == []
     await faiss_collection.ensure_collection_deleted()
 
 
