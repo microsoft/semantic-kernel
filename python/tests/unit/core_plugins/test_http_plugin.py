@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import ipaddress
 import logging
 import socket
 from unittest.mock import AsyncMock, patch
@@ -574,6 +576,89 @@ async def test_public_dns_addresses_are_allowed(method, mock_dns):
     request.assert_called_once_with(URL("http://example.com/"), **request.call_args.kwargs)
     assert request.call_args.kwargs["allow_redirects"] is False
     mock_dns.assert_awaited_once()
+
+
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+async def test_http_methods_pin_validated_dns_addresses(method, mock_dns):
+    mock_dns.return_value = dns_response("93.184.216.34", "2606:4700:4700::1111")
+    plugin = HttpPlugin(allowed_domains={"example.com"})
+
+    with (
+        patch("aiohttp.TCPConnector") as connector_type,
+        patch("aiohttp.ClientSession") as session_type,
+    ):
+        session = session_type.return_value
+        session.__aenter__.return_value = session
+        request = getattr(session, method)
+        request.return_value.__aenter__.return_value.text.return_value = "public response"
+
+        kwargs = {"body": {"key": "value"}} if method in {"post", "put"} else {}
+        assert await getattr(plugin, method)("http://example.com/", **kwargs) == "public response"
+
+    session_type.assert_called_once_with(connector=connector_type.return_value)
+    resolver = connector_type.call_args.kwargs["resolver"]
+    assert await resolver.resolve("example.com", 80, socket.AF_UNSPEC) == [
+        {
+            "hostname": "example.com",
+            "host": "93.184.216.34",
+            "port": 80,
+            "family": socket.AF_INET,
+            "proto": socket.IPPROTO_TCP,
+            "flags": socket.AI_NUMERICHOST,
+        },
+        {
+            "hostname": "example.com",
+            "host": "2606:4700:4700::1111",
+            "port": 80,
+            "family": socket.AF_INET6,
+            "proto": socket.IPPROTO_TCP,
+            "flags": socket.AI_NUMERICHOST,
+        },
+    ]
+    with pytest.raises(OSError, match="only 'example.com' was validated"):
+        await resolver.resolve("rebound.example", 80, socket.AF_UNSPEC)
+    mock_dns.assert_awaited_once_with("example.com", None, type=socket.SOCK_STREAM)
+
+
+async def test_request_pins_connection_to_validated_address_under_dns_rebinding(mock_dns):
+    response_body = b"validated address response"
+
+    async def handle_request(reader, writer):
+        await reader.readuntil(b"\r\n\r\n")
+        writer.write(
+            b"HTTP/1.1 200 OK\r\n"
+            + f"Content-Length: {len(response_body)}\r\n".encode()
+            + b"Connection: close\r\n\r\n"
+            + response_body
+        )
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen()
+    listener.setblocking(False)
+    port = listener.getsockname()[1]
+    server = await asyncio.start_server(handle_request, sock=listener)
+
+    mock_dns.return_value = dns_response("127.0.0.2")
+    plugin = HttpPlugin(allowed_domains={"rebind.example"}, allowed_ports={port})
+
+    try:
+        with patch(
+            "semantic_kernel.core_plugins.http_plugin.ensure_public_host",
+            new_callable=AsyncMock,
+            return_value=[ipaddress.ip_address("127.0.0.1")],
+        ) as validate_host:
+            assert await plugin.get(f"http://rebind.example:{port}/") == response_body.decode()
+    finally:
+        server.close()
+        await server.wait_closed()
+
+    validate_host.assert_awaited_once()
+    mock_dns.assert_not_awaited()
 
 
 @pytest.mark.parametrize("method", ["get", "post", "put", "delete"])

@@ -25,7 +25,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    """Create a Kernel prompt template."""
+    """Create a Kernel prompt template.
+
+    Template source is executable configuration: function expressions invoke functions registered in the Kernel
+    during rendering. Use only trusted template source and pass untrusted content through template arguments.
+    """
 
     _blocks: list[Block] = PrivateAttr(default_factory=list)
 

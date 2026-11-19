@@ -5,6 +5,7 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
+from contextlib import aclosing, closing
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
@@ -352,13 +353,15 @@ class KernelFunction(KernelBaseModel):
                 function_results: list[Any] = []
                 if function_context.result is not None:
                     if isasyncgen(function_context.result.value):
-                        async for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        async with aclosing(function_context.result.value) as async_stream:
+                            async for partial in async_stream:
+                                function_results.append(partial)
+                                yield partial
                     elif isgenerator(function_context.result.value):
-                        for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        with closing(function_context.result.value) as stream:
+                            for partial in stream:
+                                function_results.append(partial)
+                                yield partial
                     else:
                         function_results.append(function_context.result.value)
                         yield function_context.result

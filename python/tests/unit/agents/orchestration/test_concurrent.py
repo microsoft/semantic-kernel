@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import sys
 from unittest.mock import patch
 
 import pytest
@@ -112,10 +111,6 @@ async def test_invoke_with_streaming_response_callback():
         await runtime.stop_when_idle()
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
-)
 async def test_invoke_cancel_before_completion():
     """Test the invoke method of the ConcurrentOrchestration with cancellation before completion."""
     with (

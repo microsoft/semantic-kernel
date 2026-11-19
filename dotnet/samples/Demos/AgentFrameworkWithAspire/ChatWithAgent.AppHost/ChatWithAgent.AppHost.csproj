@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="13.0.0" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.6.5" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,7 +9,9 @@
     <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>2d10c3b5-399d-40cc-bbf3-143be681db63</UserSecretsId>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Keep NuGet-restored orchestration deps so the sample runs without the Aspire CLI installed. -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);CS1591;ASPIRE010</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
