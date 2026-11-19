@@ -155,6 +155,25 @@ public class ChatHistoryTruncationReducerTests
         Assert.Contains(reducedHistory!, m => m.Role == AuthorRole.System);
     }
 
+    /// <summary>
+    /// Validate history reduced to the system message and the latest message when the target count is one.
+    /// </summary>
+    [Fact]
+    public async Task VerifySystemMessageWithSingleTargetCountAsync()
+    {
+        // Arrange
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockChatHistoryGenerator.CreateSimpleHistory(20, includeSystemMessage: true).ToArray();
+        ChatHistoryTruncationReducer reducer = new(1);
+
+        // Act
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        // Assert
+        VerifyReducedHistory(reducedHistory, 2);
+        Assert.Equal(AuthorRole.System, reducedHistory!.First().Role);
+        Assert.Same(sourceHistory[^1], reducedHistory!.Last());
+    }
+
     private static void VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
     {
         Assert.NotNull(reducedHistory);

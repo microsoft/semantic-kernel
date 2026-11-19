@@ -104,7 +104,8 @@ internal static class ChatHistoryReducerExtensions
         int offsetCount = 0,
         bool hasSystemMessage = false)
     {
-        targetCount -= hasSystemMessage ? 1 : 0;
+        // The system message counts toward the target, but at least one other message is always retained
+        targetCount = Math.Max(1, targetCount - (hasSystemMessage ? 1 : 0));
 
         // Compute the index of the truncation threshold
         int thresholdIndex = chatHistory.Count - (thresholdCount ?? 0) - targetCount;
