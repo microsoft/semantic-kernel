@@ -2,7 +2,6 @@
 
 """Reasoning content model."""
 
-from html import unescape
 from typing import ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
@@ -52,7 +51,7 @@ class ReasoningContent(KernelContent):
         """Create an instance from an XML Element."""
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
-        return cls(text=unescape(element.text) if element.text else "")
+        return cls(text=element.text or "")
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary suitable for message serialization."""

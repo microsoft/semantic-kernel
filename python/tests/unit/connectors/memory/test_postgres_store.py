@@ -2,7 +2,7 @@
 
 import ast
 import asyncio
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -382,9 +382,29 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
     "filter, filter_sql, filter_params",
     [
         (None, "", []),
+        ([], "", []),
         ("lambda x: x.id == 1", ' WHERE ("id" = %s)', [1]),
+        (lambda x: x.id == 1, ' WHERE ("id" = %s)', [1]),
+        (["lambda x: x.id == 1"], ' WHERE ("id" = %s)', [1]),
+        ([lambda x: x.id == 1], ' WHERE ("id" = %s)', [1]),
         (
             ["lambda x: x.id > 0", "lambda x: x.id == 1 or x.id == 2"],
+            ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
+            [0, 1, 2],
+        ),
+        (
+            [
+                lambda x: x.id > 0,
+                lambda x: x.id == 1 or x.id == 2,
+            ],
+            ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
+            [0, 1, 2],
+        ),
+        (
+            [
+                "lambda x: x.id > 0",
+                lambda x: x.id == 1 or x.id == 2,
+            ],
             ' WHERE ("id" > %s) AND (("id" = %s OR "id" = %s))',
             [0, 1, 2],
         ),
@@ -408,7 +428,7 @@ async def test_vector_search(
     subquery_distance: str | None,
     include_vectors: bool,
     include_total_count: bool,
-    filter: str | list[str] | None,
+    filter: str | Callable | list[str | Callable] | None,
     filter_sql: str,
     filter_params: list[Any],
 ) -> None:
@@ -506,6 +526,9 @@ def filter_collection(vector_store):
         ("x.id == 1", '"id" = %s', [1]),
         ("x.id != 1", '"id" <> %s', [1]),
         ("x.id > 1", '"id" > %s', [1]),
+        ("x.id > -1", '"id" > %s', [-1]),
+        ("x.id == -1", '"id" = %s', [-1]),
+        ("x.id == -1.5", '"id" = %s', [-1.5]),
         ("x.id >= 1", '"id" >= %s', [1]),
         ("x.id < 1", '"id" < %s', [1]),
         ("x.id <= 1", '"id" <= %s', [1]),
@@ -636,7 +659,6 @@ def test_filter_identifier_quoting(filter_collection):
         ("1j != None", VectorStoreOperationException),
         ("x.id is None", NotImplementedError),
         ("x.id is not None", NotImplementedError),
-        ("x.id == -1", NotImplementedError),
         ("x.id == +1", NotImplementedError),
         ("x.id == ~1", NotImplementedError),
         ("x.tenant.startswith('a')", NotImplementedError),

@@ -736,7 +736,7 @@ class AssistantThreadActions:
                 cls._poll_loop(agent, run, thread_id, polling_options),
                 timeout=polling_options.run_polling_timeout.total_seconds(),
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             timeout_duration = polling_options.run_polling_timeout
             error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
             logger.error(error_message)
