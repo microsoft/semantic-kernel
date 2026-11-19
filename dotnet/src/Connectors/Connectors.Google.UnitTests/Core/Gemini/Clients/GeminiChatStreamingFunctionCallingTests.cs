@@ -150,7 +150,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
-        Assert.Equal(AuthorRole.Tool, content.Role);
+        Assert.Equal(AuthorRole.User, content.Role);
         var functionResponse = content.Parts![0].FunctionResponse;
         Assert.NotNull(functionResponse);
         Assert.Equal(toolCallResponse.FullyQualifiedName, functionResponse.FunctionName);
