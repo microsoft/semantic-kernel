@@ -20,7 +20,7 @@ let builder =
     // TODO: request your API key in your 🤗 hugging face private settings
     let API_KEY = "TODO_REPLACE_ME"
     let MODEL_ID = "microsoft/Phi-3-mini-4k-instruct" // pick the model you prefer!
-    let API_URL = $"https://api-inference.huggingface.co/"
+    let API_URL = $"https://router.huggingface.co/"
 
     let b = Kernel.CreateBuilder().AddHuggingFaceChatCompletion(
             MODEL_ID,
