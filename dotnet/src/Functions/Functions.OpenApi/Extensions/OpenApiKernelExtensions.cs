@@ -169,6 +169,7 @@ public static class OpenApiKernelExtensions
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
+            executionParameters?.ServerUrlValidationOptions,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(

@@ -89,6 +89,7 @@ public static partial class OpenApiKernelPluginFactory
             httpClient,
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
+            executionParameters?.ServerUrlValidationOptions,
             cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
@@ -275,6 +276,8 @@ public static partial class OpenApiKernelPluginFactory
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
 
+        var removedArgumentNames = GetArgumentNamesRemovedByParameterFilter(operation, restOperationParameters, executionParameters);
+
         async Task<RestApiOperationResponse> ExecuteAsync(Kernel kernel, KernelFunction function, KernelArguments variables, CancellationToken cancellationToken)
         {
             try
@@ -288,7 +291,18 @@ public static partial class OpenApiKernelPluginFactory
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                return await runner.RunAsync(operation, variables, options, cancellationToken).ConfigureAwait(false);
+                var arguments = variables;
+                if (removedArgumentNames is not null)
+                {
+                    // Parameters removed by the parameter filter are not part of the function, so their arguments are not sent.
+                    arguments = new KernelArguments(variables);
+                    foreach (var name in removedArgumentNames)
+                    {
+                        arguments.Remove(name);
+                    }
+                }
+
+                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -361,6 +375,43 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     #region private
+
+    /// <summary>
+    /// Returns the argument names of the operation parameters removed by the parameter filter, if any.
+    /// </summary>
+    private static HashSet<string>? GetArgumentNamesRemovedByParameterFilter(
+        RestApiOperation operation,
+        IReadOnlyList<RestApiParameter> filteredParameters,
+        OpenApiFunctionExecutionParameters? executionParameters)
+    {
+        if (executionParameters?.ParameterFilter is null)
+        {
+            return null;
+        }
+
+        // Argument names are matched the same way KernelArguments matches them.
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var parameter in operation.GetParameters(executionParameters.EnableDynamicPayload, executionParameters.EnablePayloadNamespacing))
+        {
+            names.Add(parameter.Name);
+            if (!string.IsNullOrEmpty(parameter.ArgumentName))
+            {
+                names.Add(parameter.ArgumentName!);
+            }
+        }
+
+        foreach (var parameter in filteredParameters)
+        {
+            names.Remove(parameter.Name);
+            if (!string.IsNullOrEmpty(parameter.ArgumentName))
+            {
+                names.Remove(parameter.ArgumentName!);
+            }
+        }
+
+        return names.Count > 0 ? names : null;
+    }
 
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";

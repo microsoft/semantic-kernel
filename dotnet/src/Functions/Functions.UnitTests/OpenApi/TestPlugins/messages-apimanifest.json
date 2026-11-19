@@ -1,0 +1,18 @@
+{
+  "applicationName": "Messages",
+  "publisher": {
+    "name": "Publisher",
+    "contactEmail": "publisher-email@example.com"
+  },
+  "apiDependencies": {
+    "messages": {
+      "apiDescriptionUrl": "messages-openapi.yml",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/me/messages"
+        }
+      ]
+    }
+  }
+}
