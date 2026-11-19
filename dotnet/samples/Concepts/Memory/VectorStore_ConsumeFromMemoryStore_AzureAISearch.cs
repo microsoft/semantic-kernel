@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using Azure;
 using Azure.Search.Documents.Indexes;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Memory;
@@ -27,7 +27,7 @@ namespace Memory;
 public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
-    private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
 
     [Fact]
     public async Task ConsumeExampleAsync()

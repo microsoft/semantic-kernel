@@ -12,7 +12,7 @@ This sample demonstrates how to implement an AI Model Router using Semantic Kern
 
 ## Prerequisites
 
-- [.NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ## Configuring the sample
 

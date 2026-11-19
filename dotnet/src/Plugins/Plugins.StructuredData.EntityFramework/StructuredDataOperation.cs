@@ -31,15 +31,12 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     public static StructuredDataOperation Delete { get; } = new("Delete");
 
     /// <summary>
-    /// The default set of supported operations.
+    /// The default set of supported operations. Mutation operations require explicit application mapping and scoped resolution.
     /// </summary>
-    public static readonly HashSet<StructuredDataOperation> Default = new()
-    {
-        Select,
-        Insert,
-        Update,
-        Delete
-    };
+    public static readonly HashSet<StructuredDataOperation> Default =
+    [
+        Select
+    ];
 
     /// <summary>
     /// Gets the label associated with this <see cref="StructuredDataOperation"/>.

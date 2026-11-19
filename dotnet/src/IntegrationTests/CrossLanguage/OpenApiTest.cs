@@ -105,7 +105,11 @@ public class OpenApiTest
         Kernel kernel = kernelProvider.GetNewKernel();
 
         using var httpMessageHandlerStub = new HttpMessageHandlerStub();
-        var execParams = new OpenApiFunctionExecutionParameters { HttpClient = new HttpClient(httpMessageHandlerStub) };
+        var execParams = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = new HttpClient(httpMessageHandlerStub),
+            ServerUrlValidationOptions = new() { AllowPrivateNetworkAccess = true }
+        };
         var plugin = await kernel.CreatePluginFromOpenApiAsync("LightBulb", "./CrossLanguage/Data/LightBulbApi.json", execParams);
 
         KernelFunction function = plugin[functionName];

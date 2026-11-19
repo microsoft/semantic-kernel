@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -38,6 +39,8 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
@@ -50,7 +53,7 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        const string OperationName = "text.completions";
+        const string OperationName = "text_completion";
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
@@ -88,6 +91,8 @@ internal static class ModelDiagnostics
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
@@ -100,7 +105,7 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        const string OperationName = "chat.completions";
+        const string OperationName = "chat";
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
@@ -141,6 +146,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Start an agent invocation activity and return the activity.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static Activity? StartAgentInvocationActivity(
         string agentId,
         string agentName,
@@ -189,6 +196,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Set the agent response for a given activity.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static void SetAgentResponse(this Activity activity, IEnumerable<ChatMessageContent>? responses)
     {
         if (!IsModelDiagnosticsEnabled() || responses is null)
@@ -207,6 +216,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// End the agent streaming response for a given activity.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static void EndAgentStreamingResponse(
         this Activity activity,
         IEnumerable<StreamingChatMessageContent>? contents)
@@ -244,6 +255,8 @@ internal static class ModelDiagnostics
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens = null, int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
 
@@ -251,12 +264,16 @@ internal static class ModelDiagnostics
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     internal static void EndStreaming(
         this Activity activity,
         IEnumerable<StreamingKernelContent>? contents,
@@ -313,6 +330,8 @@ internal static class ModelDiagnostics
     internal static bool HasListeners() => s_activitySource.HasListeners();
 
     #region Private
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
         where TPromptExecutionSettings : PromptExecutionSettings
     {
@@ -409,6 +428,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Convert a chat model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static string ToGenAIConventionsChoiceFormat(ChatMessageContent chatMessage, int index)
     {
         var jsonObject = new
@@ -425,6 +446,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Convert a text model response to a JSON string based on the OTel GenAI Semantic Conventions format
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static string ToGenAIConventionsChoiceFormat(TextContent textContent, int index)
     {
         var jsonObject = new
@@ -494,6 +517,8 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Set the streaming completion response for a given activity.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static void SetCompletionResponse(
         Activity activity,
         Dictionary<int, List<StreamingKernelContent>> choices,
@@ -626,13 +651,15 @@ internal static class ModelDiagnostics
         public const string UserMessage = "gen_ai.user.message";
         public const string AssistantMessage = "gen_ai.assistant.message";
         public const string ToolMessage = "gen_ai.tool.message";
+        public const string DeveloperMessage = "gen_ai.tool.developer";
         public const string Choice = "gen_ai.choice";
         public static readonly Dictionary<AuthorRole, string> RoleToEventMap = new()
             {
                 { AuthorRole.System, SystemMessage },
                 { AuthorRole.User, UserMessage },
                 { AuthorRole.Assistant, AssistantMessage },
-                { AuthorRole.Tool, ToolMessage }
+                { AuthorRole.Tool, ToolMessage },
+                { AuthorRole.Developer, DeveloperMessage }
             };
     }
     # endregion

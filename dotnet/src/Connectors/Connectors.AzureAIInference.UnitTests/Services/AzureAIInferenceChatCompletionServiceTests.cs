@@ -207,7 +207,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
         // Assert
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var optionsJson = JsonElement.Parse(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
 
@@ -246,7 +246,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
                 format = formatValue;
                 break;
             case "JsonElement.String":
-                format = JsonSerializer.Deserialize<JsonElement>(formatValue);
+                format = JsonElement.Parse(formatValue);
                 break;
             case "ChatResponseFormat":
                 format = formatValue == "text" ? new ChatCompletionsResponseFormatText() : new ChatCompletionsResponseFormatJsonObject();

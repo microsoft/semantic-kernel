@@ -275,8 +275,8 @@ class TextSearch:
             try:
                 inner_options = create_options(SearchOptions, deepcopy(options), **kwargs)
             except ValidationError:
-                # this usually only happens when the kwargs are invalid, so blank options in this case.
-                inner_options = SearchOptions()
+                # Ignore invalid invocation overrides and retain the configured options.
+                inner_options = create_options(SearchOptions, deepcopy(options))
             inner_options.filter = update_func(filter=inner_options.filter, parameters=parameters, **kwargs)
             try:
                 results = await self.search(

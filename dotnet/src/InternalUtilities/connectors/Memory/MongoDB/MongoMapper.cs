@@ -11,6 +11,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -40,7 +41,8 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
 
         var conventionPack = new ConventionPack
         {
-            new IgnoreExtraElementsConvention(ignoreExtraElements: true)
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true),
+            new GuidStandardRepresentationConvention()
         };
 
         ConventionRegistry.Register(
@@ -138,5 +140,16 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
         }
 
         return BsonSerializer.Deserialize<TRecord>(storageModel);
+    }
+
+    private class GuidStandardRepresentationConvention : ConventionBase, IMemberMapConvention
+    {
+        public void Apply(BsonMemberMap memberMap)
+        {
+            if (memberMap.MemberType == typeof(Guid) && memberMap.MemberInfo.GetCustomAttribute<BsonRepresentationAttribute>() is null)
+            {
+                memberMap.SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
+            }
+        }
     }
 }

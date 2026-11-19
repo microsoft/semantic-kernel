@@ -14,6 +14,12 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
 
+# The Assistants API has been retired: every request now returns HTTP 410 (assistants_api_deprecated)
+# on Azure OpenAI and HTTP 404 on OpenAI, so these tests can no longer run against a live service.
+# Remove this skip once the assistant agents are migrated to the replacement API.
+# https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/migrate#migrate-classic-agents-to-new-agents
+pytestmark = pytest.mark.skip(reason="The Assistants API has been retired.")
+
 
 class WeatherPlugin:
     """A sample Mock weather plugin."""

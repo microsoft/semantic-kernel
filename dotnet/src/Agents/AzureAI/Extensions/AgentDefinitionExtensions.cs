@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.Agents.Persistent;
 using Azure.AI.Projects;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
@@ -156,8 +156,8 @@ internal static class AgentDefinitionExtensions
                 AIProjectClientOptions options =
                     new()
                     {
-                        Transport = new HttpClientTransport(httpClient),
-                        RetryPolicy = new RetryPolicy(maxRetries: 0) // Disable retry policy if a custom HttpClient is provided.
+                        Transport = new HttpClientPipelineTransport(httpClient),
+                        RetryPolicy = new ClientRetryPolicy(maxRetries: 0) // Disable retry policy if a custom HttpClient is provided.
                     };
                 return new AIProjectClient(new Uri(endpoint), tokenCredential, options);
             }
@@ -319,9 +319,9 @@ internal static class AgentDefinitionExtensions
     private static IEnumerable<string> GetConnectionIds(this AIProjectClient projectClient, AgentToolDefinition tool)
     {
         HashSet<string> connections = [.. tool.GetToolConnections()];
-        Connections connectionClient = projectClient.GetConnectionsClient();
+        AIProjectConnectionsOperations connectionOperations = projectClient.Connections;
         return
-            connectionClient.GetConnections()
+            connectionOperations.GetConnections()
                 .Where(connection => connections.Contains(connection.Name))
                 .Select(connection => connection.Id);
     }

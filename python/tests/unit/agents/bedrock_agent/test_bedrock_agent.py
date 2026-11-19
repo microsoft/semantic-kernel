@@ -671,3 +671,81 @@ async def test_bedrock_agent_invoke_stream_with_function_call(
 
 
 # endregion
+
+
+# region Filename Sanitization Tests
+
+
+def test_sanitize_filename_simple():
+    """Test _sanitize_filename with a simple filename."""
+    assert BedrockAgent._sanitize_filename("file.txt") == "file.txt"
+
+
+def test_sanitize_filename_with_spaces():
+    """Test _sanitize_filename with spaces in filename."""
+    assert BedrockAgent._sanitize_filename("my file.txt") == "my file.txt"
+
+
+def test_sanitize_filename_directory_traversal_unix():
+    """Test _sanitize_filename strips Unix-style directory traversal."""
+    assert BedrockAgent._sanitize_filename("../../../etc/passwd") == "passwd"
+    assert BedrockAgent._sanitize_filename("../../file.txt") == "file.txt"
+    assert BedrockAgent._sanitize_filename("/etc/passwd") == "passwd"
+
+
+def test_sanitize_filename_directory_traversal_windows():
+    """Test _sanitize_filename strips Windows-style directory traversal."""
+    assert BedrockAgent._sanitize_filename("..\\..\\..\\Windows\\System32\\config") == "config"
+    assert BedrockAgent._sanitize_filename("C:\\Users\\file.txt") == "file.txt"
+    assert BedrockAgent._sanitize_filename("\\\\server\\share\\file.txt") == "file.txt"
+
+
+def test_sanitize_filename_mixed_separators():
+    """Test _sanitize_filename with mixed path separators."""
+    assert BedrockAgent._sanitize_filename("../path\\to/file.txt") == "file.txt"
+    assert BedrockAgent._sanitize_filename("..\\path/to\\file.txt") == "file.txt"
+
+
+def test_sanitize_filename_null_byte():
+    """Test _sanitize_filename removes null bytes."""
+    assert BedrockAgent._sanitize_filename("file\x00.txt") == "file.txt"
+    assert BedrockAgent._sanitize_filename("file.txt\x00.exe") == "file.txt.exe"
+
+
+def test_sanitize_filename_empty():
+    """Test _sanitize_filename returns empty string for empty result."""
+    assert BedrockAgent._sanitize_filename("") == ""
+    assert BedrockAgent._sanitize_filename("../") == ""
+    assert BedrockAgent._sanitize_filename("..\\") == ""
+
+
+def test_sanitize_filename_only_dots():
+    """Test _sanitize_filename handles edge cases with dots."""
+    # Note: os.path.basename("..") returns ".." which is kept as-is
+    # Only "../" or "..\" patterns get stripped to empty string
+    assert BedrockAgent._sanitize_filename(".") == "."
+
+
+def test_sanitize_filename_logs_warning(caplog):
+    """Test _sanitize_filename logs warning when filename is sanitized."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        result = BedrockAgent._sanitize_filename("../malicious/file.txt")
+        assert result == "file.txt"
+        assert "potentially malicious path components" in caplog.text
+        assert "../malicious/file.txt" in caplog.text
+        assert "file.txt" in caplog.text
+
+
+def test_sanitize_filename_no_warning_for_clean_filename(caplog):
+    """Test _sanitize_filename does not log warning for clean filenames."""
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        result = BedrockAgent._sanitize_filename("clean_file.txt")
+        assert result == "clean_file.txt"
+        assert "potentially malicious" not in caplog.text
+
+
+# endregion

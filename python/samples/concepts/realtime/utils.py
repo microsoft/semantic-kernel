@@ -321,6 +321,7 @@ class AudioPlayerWebRTC(BaseModel):
             logger.debug(f"Audio output status: {status}")
         if self._queue:
             if self._queue.empty():
+                outdata[:] = 0
                 return
             data = self._queue.get_nowait()
             outdata[:] = data.reshape(outdata.shape)

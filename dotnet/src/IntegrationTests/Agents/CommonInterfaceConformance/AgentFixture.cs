@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
+using MAAI = Microsoft.Agents.AI;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
@@ -14,6 +15,8 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 public abstract class AgentFixture : IAsyncLifetime
 {
     public abstract Agent Agent { get; }
+
+    public abstract MAAI.AIAgent AIAgent { get; }
 
     public abstract AgentThread AgentThread { get; }
 

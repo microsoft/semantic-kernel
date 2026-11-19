@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Testing obsolete ITextSearch, TextSearchOptions backward compatibility
+
 using Microsoft.SemanticKernel.Data;
 
 namespace SemanticKernel.AotTests.UnitTests.Search;

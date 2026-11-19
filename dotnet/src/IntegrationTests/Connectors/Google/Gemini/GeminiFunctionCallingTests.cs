@@ -319,6 +319,43 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
     [RetryTheory(Skip = SkipMessage)]
     [InlineData(ServiceType.GoogleAI, true)]
     [InlineData(ServiceType.VertexAI, false)]
+    public async Task ChatStreamingAutoInvokeTwoPluginsShouldGetDateAndReturnWeatherResponseAsync(ServiceType serviceType, bool isBeta)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.ImportPluginFromType<DateTimePlugin>(nameof(DateTimePlugin));
+        kernel.ImportPluginFromType<WeatherPlugin>(nameof(WeatherPlugin));
+        kernel.ImportPluginFromType<TaskPlugin>(nameof(TaskPlugin));
+        var sut = this.GetChatService(serviceType, isBeta);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Whats the time and weather in Seattle?");
+        var executionSettings = new GeminiPromptExecutionSettings()
+        {
+            MaxTokens = 2000,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+        };
+
+        // Act
+        var responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel)
+            .ToListAsync();
+
+        string content = string.Concat(responses.Select(c => c.Content));
+        this.Output.WriteLine(content);
+        Assert.Contains("sunny", content, StringComparison.OrdinalIgnoreCase);
+
+        chatHistory.AddUserMessage("How many tasks I have for today, using the same date I checked weather in seattle");
+        responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel)
+            .ToListAsync();
+
+        // Assert
+        content = string.Concat(responses.Select(c => c.Content));
+        this.Output.WriteLine(content);
+        Assert.Contains("5", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory(Skip = SkipMessage)]
+    [InlineData(ServiceType.GoogleAI, true)]
+    [InlineData(ServiceType.VertexAI, false)]
     public async Task ChatGenerationAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType, bool isBeta)
     {
         // Arrange
@@ -414,6 +451,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         }
     }
 
+    public sealed class WeatherPlugin
+    {
+        [KernelFunction(nameof(GetWeather))]
+        [Description("Get the weather for a given location.")]
+        public string GetWeather([Description("Location to get the weather for")] string location)
+        {
+            return $"The weather in {location} is sunny.";
+        }
+    }
+
     public sealed class DatePlugin
     {
         [KernelFunction(nameof(GetDate))]
@@ -454,6 +501,16 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
             }
 
             return dateTime.ToString("D", formatProvider);
+        }
+    }
+
+    public sealed class DateTimePlugin
+    {
+        [KernelFunction(nameof(GetCurrentDateTime))]
+        [Description("Get current UTC date and time.")]
+        public string GetCurrentDateTime()
+        {
+            return DateTime.UtcNow.ToString("u");
         }
     }
 

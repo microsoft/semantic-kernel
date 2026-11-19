@@ -222,6 +222,17 @@ def data_model_pandas_definition() -> object:
 
 
 @fixture
+async def pandas_vector_store_record_collection(DictVectorStoreRecordCollection, data_model_pandas_definition):
+    from pandas import DataFrame
+
+    return DictVectorStoreRecordCollection(
+        collection_name="test",
+        record_type=DataFrame,
+        definition=data_model_pandas_definition,
+    )
+
+
+@fixture
 def record_type_vanilla():
     @vectorstoremodel
     class DataModelClass:

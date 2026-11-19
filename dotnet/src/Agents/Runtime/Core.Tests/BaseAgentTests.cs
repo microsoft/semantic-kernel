@@ -223,7 +223,7 @@ public class BaseAgentTests
         AgentId agentId = new("TestType", "TestKey");
         TestAgentA agent = new(agentId, runtime, "Test Agent");
 
-        JsonElement state = JsonDocument.Parse("{ }").RootElement;
+        JsonElement state = JsonElement.Parse("{ }");
 
         // Act
         await agent.LoadStateAsync(state);

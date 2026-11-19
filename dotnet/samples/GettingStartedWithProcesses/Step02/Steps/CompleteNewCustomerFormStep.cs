@@ -99,7 +99,7 @@ public class CompleteNewCustomerFormStep : KernelProcessStep<NewCustomerFormStat
             MaxTokens = 2048
         };
 
-        ChatHistory chatHistory = new();
+        ChatHistory chatHistory = [];
         chatHistory.AddSystemMessage(_formCompletionSystemPrompt
             .Replace("{{current_form_state}}", JsonSerializer.Serialize(_state!.newCustomerForm.CopyWithDefaultValues(), _jsonOptions)));
         chatHistory.AddRange(_state.conversation);

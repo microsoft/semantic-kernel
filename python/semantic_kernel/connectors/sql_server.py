@@ -11,7 +11,7 @@ from collections.abc import AsyncIterable, Sequence
 from contextlib import contextmanager
 from io import StringIO
 from itertools import chain
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, Self, TypeVar
 
 from azure.core.credentials_async import AsyncTokenCredential
 from pydantic import SecretStr, ValidationError, field_validator
@@ -35,6 +35,7 @@ from semantic_kernel.data.vector import (
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
+    VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
@@ -45,11 +46,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
     from pyodbc import Connection
@@ -154,6 +150,20 @@ class QueryBuilder:
             self.append(string, suffix=sep)
         self.append(strings[-1], suffix=suffix)
 
+    @staticmethod
+    def escape_identifier(identifier: str) -> str:
+        """Escape and bracket-quote a SQL Server identifier.
+
+        Escapes `]` to `]]` and wraps in square brackets, matching
+        the SQL Server standard for delimited identifiers.
+        """
+        return f"[{identifier.replace(']', ']]')}]"
+
+    @staticmethod
+    def format_table_name(schema: str, table_name: str) -> str:
+        """Return an escaped [schema].[table] string."""
+        return f"{QueryBuilder.escape_identifier(schema)}.{QueryBuilder.escape_identifier(table_name)}"
+
     def append_table_name(
         self, schema: str, table_name: str, prefix: str = "", suffix: str | None = None, newline: bool = False
     ) -> None:
@@ -169,7 +179,10 @@ class QueryBuilder:
             suffix: Optional suffix to add after the table name.
             newline: Whether to add a newline after the table name or suffix.
         """
-        self.append(f"{prefix} [{schema}].[{table_name}] {suffix or ''}", suffix="\n" if newline else "")
+        self.append(
+            f"{prefix} {self.format_table_name(schema, table_name)} {suffix or ''}",
+            suffix="\n" if newline else "",
+        )
 
     def remove_last(self, number_of_chars: int):
         """Remove the last number_of_chars from the StringBuilder."""
@@ -553,7 +566,7 @@ class SqlServerCollection(
             cur.execute(*query.to_execute())
             col_names = [desc[0] for desc in cur.description]
             for row in cur:
-                record = {
+                yield {
                     col: (
                         json.loads(row.__getattribute__(col))
                         if col in self.definition.vector_field_names
@@ -561,7 +574,6 @@ class SqlServerCollection(
                     )
                     for col in col_names
                 }
-                yield record
                 await asyncio.sleep(0)
 
     @override
@@ -581,33 +593,43 @@ class SqlServerCollection(
                             op = node.ops[idx]
                             values.append(parse(ast.Compare(left=left, ops=[op], comparators=[right])))
                         return f"({' AND '.join(values)})"
-                    left = parse(node.left)  # type: ignore
+                    left_node = node.left
                     right_node = node.comparators[0]
                     op = node.ops[0]
+                    if isinstance(op, (ast.Eq, ast.NotEq, ast.Is, ast.IsNot)):
+                        if isinstance(left_node, ast.Constant) and left_node.value is None:
+                            left_node, right_node = right_node, left_node
+                        if isinstance(right_node, ast.Constant) and right_node.value is None:
+                            if isinstance(left_node, ast.Constant) and (
+                                left_node.value is None or isinstance(left_node.value, (str, int, float, bool, bytes))
+                            ):
+                                matches = (left_node.value is None) == isinstance(op, (ast.Eq, ast.Is))
+                                return "(1 = 1)" if matches else "(1 = 0)"
+                            return (
+                                f"{parse(left_node)} IS NULL"
+                                if isinstance(op, (ast.Eq, ast.Is))
+                                else f"{parse(left_node)} IS NOT NULL"
+                            )
+                        if isinstance(op, (ast.Is, ast.IsNot)):
+                            raise NotImplementedError(f"Unsupported operator: {type(op)}")
+                    left = parse(left_node)  # type: ignore
+                    right = parse(right_node)  # type: ignore
                     match op:
                         case ast.In():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} IN {right}"
                         case ast.NotIn():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} NOT IN {right}"
                         case ast.Eq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} = {right}"
                         case ast.NotEq():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <> {right}"
                         case ast.Gt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} > {right}"
                         case ast.GtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} >= {right}"
                         case ast.Lt():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} < {right}"
                         case ast.LtE():
-                            right = parse(right_node)  # type: ignore
                             return f"{left} <= {right}"
                     raise NotImplementedError(f"Unsupported operator: {type(op)}")
                 case ast.BoolOp():
@@ -631,17 +653,20 @@ class SqlServerCollection(
                         raise VectorStoreOperationException(
                             f"Field '{node.attr}' not in data model (storage property names are used)."
                         )
-                    return f"[{node.attr}]"
+                    return QueryBuilder.escape_identifier(node.attr)
                 case ast.Name():
                     # Only allow names that are in the data model
                     if node.id not in self.definition.storage_names:
                         raise VectorStoreOperationException(
                             f"Field '{node.id}' not in data model (storage property names are used)."
                         )
-                    return f"[{node.id}]"
+                    return QueryBuilder.escape_identifier(node.id)
                 case ast.Constant():
                     value = node.value
-                    if isinstance(value, (str, int, float, bool, bytes)) or value is None:
+                    if isinstance(value, bool):
+                        command.add_parameter("1" if value else "0")
+                        return "?"
+                    if isinstance(value, (str, int, float, bytes)) or value is None:
                         command.add_parameter(str(value))
                         return "?"
                     raise VectorStoreOperationException(f"Unsupported constant type: {type(value)}")
@@ -782,15 +807,20 @@ class SqlServerStore(VectorStore):
 # region: Query Build Functions
 
 
-def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str | None:
+def _python_type_to_sql(python_type_str: str | None, is_key: bool = False, field_name: str | None = None) -> str:
     """Convert a string representation of a Python type to a SQL data type.
 
     Args:
         python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
         is_key: Whether the type is a key field.
+        field_name: Name of the field the type belongs to, used in error messages.
 
     Returns:
-        Corresponding SQL data type as a string, if found. If the type is not found, return None.
+        Corresponding SQL data type as a string.
+
+    Raises:
+        VectorStoreOperationException: If the type is None.
+        VectorStoreModelValidationError: If the type is not supported for automatic table creation.
     """
     if python_type_str is None:
         raise VectorStoreOperationException("property type cannot be None")
@@ -813,14 +843,18 @@ def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> st
     if match:
         # Extract the inner type of the list and convert it to a SQL array type
         element_type_str = match.group(1)
-        sql_element_type = _python_type_to_sql(element_type_str)
+        sql_element_type = _python_type_to_sql(element_type_str, field_name=field_name)
         return f"{sql_element_type}[]"
 
     # Handle basic types
     if python_type_str in type_mapping:
         return type_mapping[python_type_str]
 
-    return None
+    field_context = f" for field '{field_name}'" if field_name else ""
+    raise VectorStoreModelValidationError(
+        f"SQL Server field type {python_type_str!r}{field_context} is not supported for automatic table creation. "
+        "Use a supported Python type, or create the table before using the collection."
+    )
 
 
 def _cast_value(value: Any) -> str:
@@ -860,32 +894,34 @@ def _build_create_table_query(
     """Build the CREATE TABLE query based on the data model."""
     command = SqlCommand()
     if if_not_exists:
-        command.query.append_table_name(
-            schema, table, prefix="IF OBJECT_ID(N'", suffix="', N'U') IS NULL", newline=True
-        )
+        # OBJECT_ID takes a string literal — escape ' → '' in addition to identifier escaping
+        table_ref = QueryBuilder.format_table_name(schema, table).replace("'", "''")
+        command.query.append(f"IF OBJECT_ID(N'{table_ref}', N'U') IS NULL", suffix="\n")
     with command.query.in_logical_group():
         command.query.append_table_name(schema, table, prefix="CREATE TABLE", newline=True)
         with command.query.in_parenthesis(suffix=";"):
             # add the key field
             command.query.append(
-                f'"{key_field.storage_name or key_field.name}" '
-                f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
+                f"{QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} "
+                f"{_python_type_to_sql(key_field.type_, is_key=True, field_name=key_field.name)} NOT NULL,\n"
             )
             # add the data fields
-            [
-                command.query.append(f'"{field.storage_name or field.name}" {_python_type_to_sql(field.type_)} NULL,\n')
-                for field in data_fields
-            ]
+            for field in data_fields:
+                command.query.append(
+                    f"{QueryBuilder.escape_identifier(field.storage_name or field.name)}"
+                    f" {_python_type_to_sql(field.type_, field_name=field.name)} NULL,\n"
+                )
             # add the vector fields
             for field in vector_fields:
                 if field.index_kind not in INDEX_KIND_MAP:
                     raise VectorStoreOperationException(
                         f"Index kind '{field.index_kind}' is not supported for field '{field.name}'"
                     )
-                command.query.append(f'"{field.storage_name or field.name}" VECTOR({field.dimensions}) NULL,\n')
+                escaped_name = QueryBuilder.escape_identifier(field.storage_name or field.name)
+                command.query.append(f"{escaped_name} VECTOR({field.dimensions}) NULL,\n")
             # set the primary key
             with command.query.in_parenthesis("PRIMARY KEY", "\n"):
-                command.query.append(key_field.name)
+                command.query.append(QueryBuilder.escape_identifier(key_field.storage_name or key_field.name))
     return command
 
 
@@ -954,9 +990,11 @@ def _add_field_names(
     """
     fields = chain([key_field], data_fields, vector_fields or [])
     if table_identifier:
-        strings = [f"{table_identifier}.{field.storage_name or field.name}" for field in fields]
+        strings = [
+            f"{table_identifier}.{QueryBuilder.escape_identifier(field.storage_name or field.name)}" for field in fields
+        ]
     else:
-        strings = [field.storage_name or field.name for field in fields]
+        strings = [QueryBuilder.escape_identifier(field.storage_name or field.name) for field in fields]
     command.query.append_list(strings)
 
 
@@ -972,7 +1010,8 @@ def _build_merge_query(
     command = SqlCommand()
     # Declare a temp table to store the keys that are updated
     command.query.append(
-        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.type_ or 'str', is_key=True)});\n"
+        f"DECLARE @UpsertedKeys TABLE (KeyColumn "
+        f"{_python_type_to_sql(key_field.type_ or 'str', is_key=True, field_name=key_field.name)});\n"
     )
     # start the MERGE statement
     command.query.append_table_name(schema, table, prefix="MERGE INTO", suffix="AS t", newline=True)
@@ -997,17 +1036,17 @@ def _build_merge_query(
         _add_field_names(command, key_field, data_fields, vector_fields)
     # add the ON clause
     with command.query.in_parenthesis("ON", "\n"):
-        command.query.append(
-            f"t.{key_field.storage_name or key_field.name} = s.{key_field.storage_name or key_field.name}"
-        )
+        escaped_key = QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)
+        command.query.append(f"t.{escaped_key} = s.{escaped_key}")
     # Set the Matched clause
     command.query.append("WHEN MATCHED THEN\n")
     command.query.append("UPDATE SET ")
+    update_parts = []
+    for field in chain(data_fields, vector_fields):
+        escaped = QueryBuilder.escape_identifier(field.storage_name or field.name)
+        update_parts.append(f"t.{escaped} = s.{escaped}")
     command.query.append_list(
-        [
-            f"t.{field.storage_name or field.name} = s.{field.storage_name or field.name}"
-            for field in chain(data_fields, vector_fields)
-        ],
+        update_parts,
         suffix="\n",
     )
     # Set the Not Matched clause
@@ -1018,7 +1057,8 @@ def _build_merge_query(
     with command.query.in_parenthesis("VALUES", " \n"):
         _add_field_names(command, key_field, data_fields, vector_fields, table_identifier="s")
     # add the closing parenthesis
-    command.query.append(f"OUTPUT inserted.{key_field.name} INTO @UpsertedKeys (KeyColumn);\n")
+    escaped_key_out = QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)
+    command.query.append(f"OUTPUT inserted.{escaped_key_out} INTO @UpsertedKeys (KeyColumn);\n")
     command.query.append("SELECT KeyColumn FROM @UpsertedKeys;\n")
     return command
 
@@ -1041,7 +1081,7 @@ def _build_select_query(
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
     if keys:
-        command.query.append(f"WHERE {key_field.storage_name or key_field.name} IN\n")
+        command.query.append(f"WHERE {QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} IN\n")
         with command.query.in_parenthesis():
             # add the keys
             command.query.append_list(["?"] * len(keys))
@@ -1061,7 +1101,7 @@ def _build_delete_query(
     # start the DELETE statement
     command.query.append_table_name(schema, table)
     # add the WHERE clause
-    command.query.append(f"WHERE [{key_field.storage_name or key_field.name}] IN")
+    command.query.append(f"WHERE {QueryBuilder.escape_identifier(key_field.storage_name or key_field.name)} IN")
     with command.query.in_parenthesis():
         # add the keys
         command.query.append_list(["?"] * len(keys))
@@ -1109,7 +1149,7 @@ def _build_search_query(
     asc = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
 
     command.query.append(
-        f", VECTOR_DISTANCE('{distance_function}', {vector_field.storage_name or vector_field.name}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
+        f", VECTOR_DISTANCE('{distance_function}', {QueryBuilder.escape_identifier(vector_field.storage_name or vector_field.name)}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
     )
     command.add_parameter(_cast_value(vector))
     # add the FROM clause

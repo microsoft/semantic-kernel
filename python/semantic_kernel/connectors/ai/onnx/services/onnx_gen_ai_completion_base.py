@@ -6,7 +6,7 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
-from semantic_kernel.contents import ImageContent
+from semantic_kernel.contents import AudioContent, ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -50,7 +50,7 @@ class OnnxGenAICompletionBase(KernelBaseModel):
                     tokenizer = OnnxRuntimeGenAi.Tokenizer(model)
                 tokenizer_stream = tokenizer.create_stream()
         except Exception as ex:
-            raise ServiceInitializationError("Failed to initialize OnnxTextCompletion service", ex) from ex
+            raise ServiceInitializationError("Failed to initialize OnnxCompletion service", ex) from ex
 
         super().__init__(
             model=model,
@@ -64,25 +64,27 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         self,
         prompt: str,
         settings: OnnxGenAIPromptExecutionSettings,
-        image: ImageContent | None = None,
+        images: list[ImageContent] | None = None,
+        audios: list[AudioContent] | None = None,
     ) -> AsyncGenerator[list[str], Any]:
         try:
             params = OnnxRuntimeGenAi.GeneratorParams(self.model)
             params.set_search_options(**settings.prepare_settings_dict())
+            generator = OnnxRuntimeGenAi.Generator(self.model, params)
             if not self.enable_multi_modality:
                 input_tokens = self.tokenizer.encode(prompt)
-                params.input_ids = input_tokens
+                generator.append_tokens(input_tokens)
             else:
-                if image is not None:
-                    # With the use of Pybind there is currently no way to load images from bytes
-                    # We can only open images from a file path currently
-                    image = OnnxRuntimeGenAi.Images.open(str(image.uri))
-                input_tokens = self.tokenizer(prompt, images=image)
-                params.set_inputs(input_tokens)
-            generator = OnnxRuntimeGenAi.Generator(self.model, params)
+                # With the use of Pybind in ONNX there is currently no way to load images from bytes
+                # We can only open images & audios from a file path currently
+                if images is not None:
+                    images = OnnxRuntimeGenAi.Images.open(*[str(image.uri) for image in images])
+                if audios is not None:
+                    audios = OnnxRuntimeGenAi.Audios.open(*[str(audio.uri) for audio in audios])
+                input_tokens = self.tokenizer(prompt, images=images, audios=audios)
+                generator.set_inputs(input_tokens)
 
             while not generator.is_done():
-                generator.compute_logits()
                 generator.generate_next_token()
                 new_token_choices = [self.tokenizer_stream.decode(token) for token in generator.get_next_tokens()]
                 yield new_token_choices
@@ -94,10 +96,11 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         self,
         prompt: str,
         settings: OnnxGenAIPromptExecutionSettings,
-        image: ImageContent | None = None,
+        images: list[ImageContent] | None = None,
+        audios: list[AudioContent] | None = None,
     ):
         token_choices: list[str] = []
-        async for new_token_choice in self._generate_next_token_async(prompt, settings, image):
+        async for new_token_choice in self._generate_next_token_async(prompt, settings, images, audios=audios):
             # zip only works if the lists are the same length
             if len(token_choices) == 0:
                 token_choices = new_token_choice

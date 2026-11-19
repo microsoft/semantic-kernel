@@ -58,7 +58,10 @@ internal partial class ClientCore
     protected const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
-    protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
+    protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool(
+        functionName: "NonInvocableTool",
+        functionDescription: "A placeholder tool used when no real tools are available",
+        functionParameters: BinaryData.FromString("""{"type":"object","required":[],"properties":{}}"""));
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -267,6 +270,7 @@ internal partial class ClientCore
             ChatFinishReason finishReason = default;
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
+            ChatTokenUsage? finalUsage = null;
 
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
@@ -306,6 +310,11 @@ internal partial class ClientCore
                         streamedRole ??= chatCompletionUpdate.Role;
                         //streamedName ??= update.AuthorName;
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
+
+                        if (chatCompletionUpdate.Usage is not null)
+                        {
+                            finalUsage = chatCompletionUpdate.Usage;
+                        }
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
                         if (functionCallingConfig.AutoInvoke)
@@ -351,6 +360,11 @@ internal partial class ClientCore
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
+                    }
+
+                    if (finalUsage is not null)
+                    {
+                        this.LogUsage(finalUsage);
                     }
 
                     // Translate all entries into ChatCompletionsFunctionToolCall instances.
@@ -533,6 +547,8 @@ internal partial class ClientCore
                 options.Metadata.Add(kvp.Key, kvp.Value);
             }
         }
+
+        OpenAIPromptExecutionSettings.ApplyExtraBody(options, executionSettings);
 
         return options;
     }
@@ -751,9 +767,16 @@ internal partial class ClientCore
                     continue;
                 }
 
-                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+                var result = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
 
-                toolMessages.Add(new ToolChatMessage(resultContent.CallId, stringResult ?? string.Empty));
+                // OpenAI does not support multimodal tool results - return error message for ImageContent
+                if (result is ImageContent)
+                {
+                    toolMessages.Add(new ToolChatMessage(resultContent.CallId, FunctionCalling.FunctionCallsProcessor.ImageContentNotSupportedErrorMessage));
+                    continue;
+                }
+
+                toolMessages.Add(new ToolChatMessage(resultContent.CallId, (string?)result ?? string.Empty));
             }
 
             if (toolMessages is not null)
@@ -983,9 +1006,9 @@ internal partial class ClientCore
             return "audio/opus";
         }
 
-        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Aac)
         {
-            return "audio/wav";
+            return "audio/aac";
         }
 
         if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Flac)
@@ -998,7 +1021,7 @@ internal partial class ClientCore
             return "audio/pcm16";
         }
 
-        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'flac' and 'pcm16'.");
+        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'aac', 'flac' and 'pcm16'.");
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)

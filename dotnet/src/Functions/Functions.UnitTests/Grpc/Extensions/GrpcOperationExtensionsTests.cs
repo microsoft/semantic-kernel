@@ -24,7 +24,7 @@ public class GrpcOperationExtensionsTests
     }
 
     [Fact]
-    public void ThereShouldBeAddressParameter()
+    public void ThereShouldNotBeAddressParameter()
     {
         // Act
         var parameters = GrpcOperation.CreateParameters();
@@ -34,8 +34,7 @@ public class GrpcOperationExtensionsTests
         Assert.NotEmpty(parameters);
 
         var addressParameter = parameters.SingleOrDefault(p => p.Name == "address");
-        Assert.NotNull(addressParameter);
-        Assert.Equal("Address for gRPC channel to use.", addressParameter.Description);
+        Assert.Null(addressParameter);
     }
 
     [Fact]

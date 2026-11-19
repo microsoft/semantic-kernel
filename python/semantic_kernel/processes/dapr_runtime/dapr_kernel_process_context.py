@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
+from collections.abc import Sequence
 
 from dapr.actor import ActorId, ActorProxy
 
@@ -9,6 +10,7 @@ from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcess
 from semantic_kernel.processes.dapr_runtime.interfaces.process_interface import ProcessInterface
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
+from semantic_kernel.processes.step_utils import DEFAULT_ALLOWED_MODULE_PREFIXES
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
@@ -20,13 +22,21 @@ class DaprKernelProcessContext:
     process: KernelProcess
     max_supersteps: int = 100
 
-    def __init__(self, process: KernelProcess, max_supersteps: int | None = None) -> None:
+    def __init__(
+        self,
+        process: KernelProcess,
+        max_supersteps: int | None = None,
+        allowed_module_prefixes: Sequence[str] | None = DEFAULT_ALLOWED_MODULE_PREFIXES,
+    ) -> None:
         """Initialize a new instance of DaprKernelProcessContext.
 
         Args:
             process: The kernel process to start.
             max_supersteps: The maximum number of supersteps. This is the total number of times process steps will run.
                 Defaults to None, and thus the process will run its steps 100 times.
+            allowed_module_prefixes: Sequence of module prefixes that are allowed
+                for step class loading. Defaults to ("semantic_kernel.",). Pass
+                None to allow any module (not recommended for production).
         """
         if process.state.name is None:
             raise ValueError("Process state name must not be None")
@@ -36,6 +46,7 @@ class DaprKernelProcessContext:
         if max_supersteps is not None:
             self.max_supersteps = max_supersteps
 
+        self.allowed_module_prefixes = allowed_module_prefixes
         self.process = process
         process_id = ActorId(process.state.id)
         self.dapr_process = ActorProxy.create(  # type: ignore
@@ -76,4 +87,6 @@ class DaprKernelProcessContext:
         """
         raw_process_info = await self.dapr_process.get_process_info()
         dapr_process_info = DaprProcessInfo.model_validate(raw_process_info)
-        return dapr_process_info.to_kernel_process()
+        return dapr_process_info.to_kernel_process(
+            allowed_module_prefixes=self.allowed_module_prefixes,
+        )

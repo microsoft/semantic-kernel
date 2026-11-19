@@ -65,7 +65,7 @@ public class OpenAIPromptExecutionSettingsTests
             Store = true,
             Metadata = new Dictionary<string, string>() { { "foo", "bar" } },
             ReasoningEffort = "high",
-            Audio = JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}"),
+            Audio = JsonElement.Parse("{\"format\":\"mp3\", \"voice\": \"alloy\"}"),
             Modalities = new List<string> { "audio", "text" }
         };
 
@@ -168,7 +168,7 @@ public class OpenAIPromptExecutionSettingsTests
                 { "logprobs", true },
                 { "top_logprobs", 5 },
                 { "store", true },
-                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "audio", JsonElement.Parse("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
                 { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
@@ -388,7 +388,7 @@ public class OpenAIPromptExecutionSettingsTests
                 { "seed", 123456 },
                 { "store", true },
                 { "top_logprobs", 5 },
-                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "audio", JsonElement.Parse("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
                 { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
@@ -469,7 +469,7 @@ public class OpenAIPromptExecutionSettingsTests
                 { "seed", "123456" },
                 { "store", true },
                 { "top_logprobs", "5" },
-                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "audio", JsonElement.Parse("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
                 { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }

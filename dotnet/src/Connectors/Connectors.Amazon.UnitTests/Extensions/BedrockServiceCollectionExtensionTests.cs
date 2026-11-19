@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json.Serialization;
@@ -230,7 +229,7 @@ public sealed class BedrockServiceCollectionExtensionTests : IDisposable
                 Message = new Message
                 {
                     Role = role,
-                    Content = new List<ContentBlock> { new() { Text = text } }
+                    Content = [new() { Text = text }]
                 }
             },
             Metrics = new ConverseMetrics(),
