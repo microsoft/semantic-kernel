@@ -5,6 +5,8 @@ import pytest
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
+from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -747,3 +749,23 @@ def test_chat_history_prompt_round_trip_keeps_entities(text: str):
 
     restored = ChatHistory.from_rendered_prompt(chat_history.to_prompt())
     assert [message.content for message in restored.messages] == [text, text]
+
+
+def test_chat_history_prompt_round_trip_preserves_audio_and_binary_content():
+    chat_history = ChatHistory()
+    audio = AudioContent(data=b"test_audio", mime_type="audio/mpeg")
+    binary = BinaryContent(data=b"test_binary", mime_type="application/octet-stream")
+    chat_history.add_user_message([audio])
+    chat_history.add_assistant_message([binary])
+
+    prompt = chat_history.to_prompt()
+    restored = ChatHistory.from_rendered_prompt(prompt)
+
+    assert len(restored.messages) == 2
+    assert restored.messages[0].role == AuthorRole.USER
+    assert isinstance(restored.messages[0].items[0], AudioContent)
+    assert restored.messages[0].items[0] == audio
+
+    assert restored.messages[1].role == AuthorRole.ASSISTANT
+    assert isinstance(restored.messages[1].items[0], BinaryContent)
+    assert restored.messages[1].items[0] == binary
