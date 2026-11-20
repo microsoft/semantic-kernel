@@ -1,0 +1,36 @@
+name: Node.js Unit Tests
+
+on:
+  pull_request:
+    branches: ["main", "feature*"]
+    paths:
+      - "nodejs/**"
+
+jobs:
+  nodejs-unit-tests:
+    name: Node.js Unit Tests
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: ["22", "24"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        experimental: [false]
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: nodejs
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: nodejs/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test -- --ci --coverage

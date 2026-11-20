@@ -85,5 +85,7 @@
   "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
   "python.testing.pytestArgs": ["python/tests"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.preferences.includePackageJsonAutoImports": "auto"
 }
