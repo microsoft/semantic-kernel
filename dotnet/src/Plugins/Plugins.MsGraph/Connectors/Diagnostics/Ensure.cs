@@ -35,7 +35,7 @@ internal static class Ensure
     {
         if (parameter is null)
         {
-            throw new ArgumentNullException($"Parameter '{parameterName}' cannot be null.", parameterName);
+            throw new ArgumentNullException(parameterName, $"Parameter '{parameterName}' cannot be null.");
         }
     }
 }

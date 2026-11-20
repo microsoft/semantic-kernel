@@ -14,6 +14,14 @@ namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 public class CalendarPluginTests
 {
     [Fact]
+    public void ConstructorThrowsWithConnectorParamNameWhenConnectorIsNull()
+    {
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => new CalendarPlugin(null!));
+        Assert.Equal("connector", ex.ParamName);
+    }
+
+    [Fact]
     public async Task AddEventAsyncSucceedsAsync()
     {
         // Arrange
