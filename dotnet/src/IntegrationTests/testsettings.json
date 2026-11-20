@@ -68,7 +68,7 @@
     "ChatCompletionModelId": "tgi",
     "ApiKey": "",
     "TextGenerationEndpoint": "http://localhost:8080/",
-    "EmbeddingEndpoint": "https://api-inference.huggingface.co/",
+    "EmbeddingEndpoint": "https://router.huggingface.co/hf-inference/",
     "ChatCompletionEndpoint": "http://localhost:8080/"
   },
   "GoogleAI": {

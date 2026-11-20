@@ -50,6 +50,9 @@ internal sealed class ChatCompletionResponse
         [JsonPropertyName("content")]
         public string? Content { get; set; }
 
+        [JsonPropertyName("reasoning")]
+        public string? Reasoning { get; set; }
+
         [JsonPropertyName("tool_calls")]
         public List<ChoiceToolCall>? ToolCalls { get; set; }
 

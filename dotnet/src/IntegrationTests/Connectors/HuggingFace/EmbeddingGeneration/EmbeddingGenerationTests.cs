@@ -59,7 +59,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : Hugging
 
         // Assert
         this.Output.WriteLine($"Returned dimensions: {response.Vector.Length}");
-        Assert.Equal(1024, response.Vector.Length);
+        Assert.Equal(384, response.Vector.Length);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
@@ -76,7 +76,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : Hugging
         this.Output.WriteLine($"Returned dimensions for first input: {response[0].Vector.Length}");
         this.Output.WriteLine($"Returned dimensions for second input: {response[1].Vector.Length}");
         Assert.Equal(2, response.Count);
-        Assert.Equal(1024, response[0].Vector.Length);
-        Assert.Equal(1024, response[1].Vector.Length);
+        Assert.Equal(384, response[0].Vector.Length);
+        Assert.Equal(384, response[1].Vector.Length);
     }
 }

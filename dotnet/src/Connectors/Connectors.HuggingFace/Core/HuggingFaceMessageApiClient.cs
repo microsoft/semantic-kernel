@@ -25,6 +25,8 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 /// </summary>
 internal sealed class HuggingFaceMessageApiClient
 {
+    private static readonly Uri s_defaultChatEndpoint = new("https://router.huggingface.co/v1/chat/completions");
+
     private readonly HuggingFaceClient _clientCore;
 
     private static readonly string s_namespace = typeof(HuggingFaceChatCompletionService).Namespace!;
@@ -218,13 +220,22 @@ internal sealed class HuggingFaceMessageApiClient
                 UsageTotalTokens = response.Usage?.TotalTokens,
             };
 
-            chatMessageContents.Add(new ChatMessageContent(
+            var message = new ChatMessageContent(
                 role: new AuthorRole(choice.Message?.Role ?? AuthorRole.Assistant.ToString()),
                 content: choice.Message?.Content,
                 modelId: response.Model,
                 innerContent: response,
                 encoding: Encoding.UTF8,
-                metadata: metadata));
+                metadata: metadata);
+
+            if (!string.IsNullOrEmpty(choice.Message?.Reasoning))
+            {
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                message.Items.Add(new ReasoningContent(choice.Message.Reasoning));
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            }
+
+            chatMessageContents.Add(message);
         }
 
         return chatMessageContents;
@@ -254,6 +265,13 @@ internal sealed class HuggingFaceMessageApiClient
                 modelId,
                 Encoding.UTF8,
                 metadata);
+
+            if (!string.IsNullOrEmpty(choice.Delta?.Reasoning))
+            {
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                streamChat.Items.Add(new StreamingReasoningContent(choice.Delta.Reasoning));
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            }
 
             return streamChat;
         }
@@ -294,5 +312,10 @@ internal sealed class HuggingFaceMessageApiClient
         => SseJsonParser.ParseAsync<ChatCompletionStreamResponse>(responseStream, cancellationToken);
 
     private Uri GetChatGenerationEndpoint()
-        => new($"{this._clientCore.Endpoint}{this._clientCore.Separator}v1/chat/completions");
+    {
+        // Hosted chat is routed separately from HF Inference tasks; custom TGI endpoints retain their own base URL.
+        return this._clientCore.UsesHuggingFaceInferenceEndpoint
+            ? s_defaultChatEndpoint
+            : new($"{this._clientCore.Endpoint}{this._clientCore.Separator}v1/chat/completions");
+    }
 }
