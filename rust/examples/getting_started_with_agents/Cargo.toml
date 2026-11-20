@@ -1,0 +1,69 @@
+[package]
+name = "getting_started_with_agents"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "step01_agent"
+path = "step01_agent.rs"
+
+[[bin]]
+name = "step02_plugins"
+path = "step02_plugins.rs"
+
+[[bin]]
+name = "step03_chat"
+path = "step03_chat.rs"
+
+[[bin]]
+name = "step04_strategies"
+path = "step04_strategies.rs"
+
+[[bin]]
+name = "step05_json"
+path = "step05_json.rs"
+
+[[bin]]
+name = "step06_concurrent"
+path = "step06_concurrent.rs"
+
+[[bin]]
+name = "step07_sequential"
+path = "step07_sequential.rs"
+
+[[bin]]
+name = "step08_handoff"
+path = "step08_handoff.rs"
+
+[[bin]]
+name = "step09_telemetry"
+path = "step09_telemetry.rs"
+
+[[bin]]
+name = "step09_declarative"
+path = "step09_declarative.rs"
+
+[[bin]]
+name = "step10_agent_as_function"
+path = "step10_agent_as_function.rs"
+
+[[bin]]
+name = "step10_multiagent_declarative"
+path = "step10_multiagent_declarative.rs"
+
+[dependencies]
+semantic_kernel = { path = "../../semantic_kernel" }
+sk-openai = { path = "../../sk-openai" }
+sk-agent = { path = "../../sk-agent" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+dotenv = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+async-trait = { workspace = true }
+futures = "0.3"
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
