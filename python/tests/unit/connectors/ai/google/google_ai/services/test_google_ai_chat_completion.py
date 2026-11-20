@@ -5,7 +5,14 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from google.genai import Client
 from google.genai.models import AsyncModels
-from google.genai.types import Content, GenerateContentConfigDict
+from google.genai.types import (
+    BlockedReason,
+    Content,
+    GenerateContentConfigDict,
+    GenerateContentResponse,
+    GenerateContentResponsePromptFeedback,
+    GenerateContentResponseUsageMetadata,
+)
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -256,6 +263,33 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
     assert responses[0].content == mock_google_ai_chat_completion_response.candidates[0].content.parts[0].text
 
 
+def _blocked_prompt_response() -> GenerateContentResponse:
+    """A response for a blocked prompt: no candidates, only the prompt feedback and usage."""
+    return GenerateContentResponse(
+        prompt_feedback=GenerateContentResponsePromptFeedback(block_reason=BlockedReason.SAFETY),
+        usage_metadata=GenerateContentResponseUsageMetadata(prompt_token_count=7, total_token_count=7),
+    )
+
+
+@patch.object(AsyncModels, "generate_content", new_callable=AsyncMock)
+async def test_google_ai_chat_completion_without_candidates(
+    mock_google_ai_model_generate_content,
+    google_ai_unit_test_env,
+    chat_history: ChatHistory,
+) -> None:
+    """A response without candidates returns an empty message that keeps the prompt feedback."""
+    mock_google_ai_model_generate_content.return_value = _blocked_prompt_response()
+
+    responses = await GoogleAIChatCompletion().get_chat_message_contents(
+        chat_history, GoogleAIChatPromptExecutionSettings()
+    )
+
+    assert len(responses) == 1
+    assert responses[0].items == []
+    assert responses[0].metadata["prompt_feedback"].block_reason == BlockedReason.SAFETY
+    assert responses[0].metadata["usage"].prompt_tokens == 7
+
+
 # endregion chat completion
 
 
@@ -430,6 +464,33 @@ async def test_google_ai_streaming_chat_completion_with_function_choice_behavior
             system_instruction=filter_system_message(chat_history),
         ),
     )
+
+
+@patch.object(AsyncModels, "generate_content_stream", new_callable=AsyncMock)
+async def test_google_ai_streaming_chat_completion_chunk_without_candidates(
+    mock_google_ai_model_generate_content_stream,
+    google_ai_unit_test_env,
+    chat_history: ChatHistory,
+) -> None:
+    """A streamed chunk without candidates yields an empty message that keeps the prompt feedback."""
+
+    async def _stream():
+        yield _blocked_prompt_response()
+
+    mock_google_ai_model_generate_content_stream.return_value = _stream()
+
+    chunks = [
+        messages
+        async for messages in GoogleAIChatCompletion().get_streaming_chat_message_contents(
+            chat_history, GoogleAIChatPromptExecutionSettings()
+        )
+    ]
+
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 1
+    assert chunks[0][0].items == []
+    assert chunks[0][0].metadata["prompt_feedback"].block_reason == BlockedReason.SAFETY
+    assert chunks[0][0].metadata["usage"].prompt_tokens == 7
 
 
 # endregion streaming chat completion
