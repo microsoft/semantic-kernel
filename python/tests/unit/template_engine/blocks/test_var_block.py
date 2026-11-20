@@ -49,8 +49,17 @@ def test_valid_syntax(name):
 
 @mark.parametrize(
     "content",
-    ["$", "$test-var", "test_var", "$a>b", "$."],
-    ids=["prefix_only", "invalid_characters", "no_prefix", "invalid_characters2", "invalid_characters3"],
+    ["$", "$test-var", "test_var", "$a>b", "$.", "1var", "{var", "}var"],
+    ids=[
+        "prefix_only",
+        "invalid_characters",
+        "no_prefix",
+        "invalid_characters2",
+        "invalid_characters3",
+        "digit_prefix",
+        "opening_brace_prefix",
+        "closing_brace_prefix",
+    ],
 )
 def test_syntax_errors(content):
     match = content.replace("$", "\\$") if "$" in content else content
