@@ -433,6 +433,7 @@ class KernelFunction(KernelBaseModel):
         Returns:
             AIFunction: The agent framework tool.
         """
+        import inspect
         import json
 
         from pydantic import Field, create_model
@@ -451,15 +452,60 @@ class KernelFunction(KernelBaseModel):
             kernel = Kernel()
         name = name or self.name
         description = description or self.description
+
+        # When the function has a real Python callable, its signature is the source of truth
+        # for each field. The parameter metadata loses information: `is_required` is False
+        # for `x: str | None` with no default, and a union such as `str | int | None` is
+        # flattened to the string "str, int" with no type object, which pydantic cannot
+        # evaluate.
+        method = getattr(self, "method", None)
+        signature = inspect.signature(method, eval_str=True) if method is not None else None
+
         fields = {}
         for param in self.parameters:
             if param.include_in_function_choices:
-                if param.default_value is not None:
+                sig_param = signature.parameters.get(param.name) if signature is not None and param.name else None
+                if sig_param is not None:
+                    annotation: Any = Any if sig_param.annotation is inspect.Parameter.empty else sig_param.annotation
+                    if sig_param.default is inspect.Parameter.empty:
+                        fields[param.name] = (annotation, Field(description=param.description))
+                    else:
+                        fields[param.name] = (
+                            annotation,
+                            Field(description=param.description, default=sig_param.default),
+                        )
+                    continue
+                # _process_signature stores inspect.Parameter.empty as type_object for an
+                # unannotated parameter, and pydantic cannot build a schema from that, so it
+                # counts the same as "no usable type object" alongside None.
+                type_object = param.type_object
+                if type_object is inspect.Parameter.empty:
+                    type_object = None
+                annotation = param.type_
+                if param.is_required:
+                    fields[param.name] = (annotation, Field(description=param.description))
+                else:
+                    # A parameter that isn't required may still carry an actual default of None
+                    # (e.g. `tag: str | None = None`), which is different from having no default
+                    # at all. The annotation needs to accept None in that case, or pydantic
+                    # rejects the None default and any explicit None passed by the caller.
+                    if type_object is not None:
+                        # Prefer the real type object when we have one: it is unambiguous,
+                        # unlike the type_ string, which turns a multi-type union such as
+                        # `str | int | None` into "str, int", a string pydantic cannot evaluate.
+                        annotation = type_object
+                        if param.default_value is None:
+                            annotation = type_object | None
+                    else:
+                        # type_ is a comma-joined string for a multi-type union (e.g. "str, int")
+                        # when no single non-None type could be resolved; appending "| None" to
+                        # that would produce an invalid forward reference, so it is left alone.
+                        if param.default_value is None and param.type_ and "," not in param.type_:
+                            annotation = f"{param.type_} | None"
                     fields[param.name] = (
-                        param.type_,
+                        annotation,
                         Field(description=param.description, default=param.default_value),
                     )
-                fields[param.name] = (param.type_, Field(description=param.description))
         input_model = create_model("InputModel", **fields)  # type: ignore
 
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
