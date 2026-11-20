@@ -314,6 +314,11 @@ class ChatMessageContent(KernelContent):
             role_key: self.role.value,
         }
         if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
+            # The text of an assistant turn is its own content: a message may carry both tool calls and
+            # text, and dropping the text loses what the model said in that turn.
+            text_content = "".join(item.text for item in self.items if isinstance(item, TextContent))
+            if text_content:
+                ret[content_key] = text_content
             ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionCallContent)]
         else:
             ret[content_key] = self._parse_items()
