@@ -14,6 +14,8 @@ from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
+    AUDIO_CONTENT_TAG,
+    BINARY_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
     FILE_REFERENCE_CONTENT_TAG,
@@ -43,6 +45,8 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
 
 TAG_CONTENT_MAP = {
     ANNOTATION_CONTENT_TAG: AnnotationContent,
+    AUDIO_CONTENT_TAG: AudioContent,
+    BINARY_CONTENT_TAG: BinaryContent,
     TEXT_CONTENT_TAG: TextContent,
     FILE_REFERENCE_CONTENT_TAG: FileReferenceContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
