@@ -477,7 +477,7 @@ class Agent(KernelBaseModel, ABC):
             return self.arguments
 
         # Both are not None, so merge with precedence for override_args.
-        merged_execution_settings = self.arguments.execution_settings or {}
+        merged_execution_settings = (self.arguments.execution_settings or {}).copy()
         if override_args.execution_settings:
             merged_execution_settings.update(override_args.execution_settings)
 
