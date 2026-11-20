@@ -195,76 +195,208 @@ public sealed class GeminiToolCallBehaviorTests
     }
 
     [Fact]
-    public void FunctionChoiceBehaviorAutoConvertsToAutoInvokeKernelFunctions()
+    public void FunctionChoiceBehaviorAutoConvertsToEnabledFunctionsWithAllKernelFunctions()
     {
         // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA", "FunctionB");
         var settings = new GeminiPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Act
-        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
 
         // Assert
         Assert.NotNull(converted.ToolCallBehavior);
-        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        var enabledFunctions = Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
         Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
+        // The provided set is validated against the requested functions.
+        Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
+        // Auto continues to provide the functions across follow-up requests.
+        Assert.Equal(int.MaxValue, converted.ToolCallBehavior.MaximumUseAttempts);
+        Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}FunctionA", $"TestPlugin{GeminiFunction.NameSeparator}FunctionB" }, GetAdvertisedFunctionNames(enabledFunctions, kernel));
     }
 
     [Fact]
-    public void FunctionChoiceBehaviorAutoWithNoAutoInvokeConvertsToEnableKernelFunctions()
+    public void FunctionChoiceBehaviorAutoWithNoAutoInvokeConvertsToEnabledFunctionsWithoutAutoInvoke()
     {
         // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA");
         var settings = new GeminiPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false)
         };
 
         // Act
-        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
 
         // Assert
         Assert.NotNull(converted.ToolCallBehavior);
-        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
         Assert.Equal(0, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
-    public void FunctionChoiceBehaviorRequiredConvertsToAutoInvokeKernelFunctions()
+    public void FunctionChoiceBehaviorRequiredConvertsToEnabledFunctions()
     {
         // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA");
         var settings = new GeminiPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Required()
         };
 
         // Act
-        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
 
         // Assert
         Assert.NotNull(converted.ToolCallBehavior);
-        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
-        Assert.True(converted.ToolCallBehavior.MaximumAutoInvokeAttempts > 0);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
+        Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
+        // Required stops providing the functions after the first request so the model is not
+        // repeatedly forced to call them on follow-up iterations. Auto-invocation is capped to the same
+        // value so it does not outlast the advertised tools (MaximumUseAttempts >= MaximumAutoInvokeAttempts).
+        Assert.Equal(1, converted.ToolCallBehavior.MaximumUseAttempts);
+        Assert.Equal(1, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+        Assert.True(converted.ToolCallBehavior.MaximumUseAttempts >= converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
-    public void FunctionChoiceBehaviorNoneConvertsToEnableKernelFunctions()
+    public void FunctionChoiceBehaviorNoneConvertsToEnabledFunctionsWithoutAutoInvoke()
     {
         // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA");
         var settings = new GeminiPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.None()
         };
 
         // Act
-        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings);
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
 
         // Assert
         Assert.NotNull(converted.ToolCallBehavior);
-        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
         // None behavior doesn't auto-invoke
         Assert.Equal(0, converted.ToolCallBehavior.MaximumAutoInvokeAttempts);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorAutoWithEmptyFunctionListDisablesFunctionCalling()
+    {
+        // Arrange
+        // An empty function list is documented as being equivalent to disabling function calling.
+        var kernel = CreateKernelWithFunctions("FunctionA", "FunctionB");
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: [], autoInvoke: true)
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
+
+        // Assert
+        Assert.Null(converted.ToolCallBehavior);
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorAutoWithSubsetProvidesOnlyThatSubset()
+    {
+        // Arrange
+        var kernel = CreateKernelWithFunctions("First", "Second");
+        var first = kernel.Plugins.GetFunction("TestPlugin", "First");
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: [first], autoInvoke: true)
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        var enabledFunctions = Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
+        Assert.False(GetAllowAnyRequestedKernelFunction(converted.ToolCallBehavior));
+        // Only the function specified in the behavior is provided to the model.
+        Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}First" }, GetAdvertisedFunctionNames(enabledFunctions, kernel));
+    }
+
+    [Fact]
+    public void FunctionChoiceBehaviorConfigurationErrorsArePropagated()
+    {
+        // Arrange - auto-invocation requires the declared function to exist in the kernel; when it does
+        // not, the behavior resolution throws and the error must surface rather than be swallowed.
+        var kernelWithFunction = CreateKernelWithFunctions("First");
+        var first = kernelWithFunction.Plugins.GetFunction("TestPlugin", "First");
+        var emptyKernel = Kernel.CreateBuilder().Build();
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: [first], autoInvoke: true)
+        };
+
+        // Act & Assert
+        Assert.Throws<KernelException>(() => GeminiPromptExecutionSettings.FromExecutionSettings(settings, emptyKernel));
+    }
+
+    [Fact]
+    public void FromExecutionSettingsDoesNotMutateCallerSettingsWhenConvertingFunctionChoiceBehavior()
+    {
+        // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA");
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        // Act
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
+
+        // Assert - the caller's original settings object must remain untouched.
+        Assert.NotSame(settings, converted);
+        Assert.Null(settings.ToolCallBehavior);
+        Assert.NotNull(converted.ToolCallBehavior);
+    }
+
+    [Fact]
+    public void FromExecutionSettingsWithFrozenSettingsDoesNotThrowWhenConvertingFunctionChoiceBehavior()
+    {
+        // Arrange
+        var kernel = CreateKernelWithFunctions("FunctionA");
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+        settings.Freeze();
+
+        // Act - converting a frozen settings object must not attempt to mutate it.
+        var converted = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernel);
+
+        // Assert
+        Assert.NotNull(converted.ToolCallBehavior);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(converted.ToolCallBehavior);
+    }
+
+    [Fact]
+    public void FromExecutionSettingsReResolvesFunctionChoiceBehaviorPerKernel()
+    {
+        // Arrange - a single reused settings object must reflect each request's own kernel.
+        var settings = new GeminiPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+        var kernelA = CreateKernelWithFunctions("FunctionA");
+        var kernelB = CreateKernelWithFunctions("FunctionB");
+
+        // Act
+        var convertedA = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernelA);
+        var convertedB = GeminiPromptExecutionSettings.FromExecutionSettings(settings, kernelB);
+
+        // Assert - each request reflects its own kernel.
+        var enabledA = Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(convertedA.ToolCallBehavior);
+        var enabledB = Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(convertedB.ToolCallBehavior);
+        Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}FunctionA" }, GetAdvertisedFunctionNames(enabledA, kernelA));
+        Assert.Equal(new[] { $"TestPlugin{GeminiFunction.NameSeparator}FunctionB" }, GetAdvertisedFunctionNames(enabledB, kernelB));
     }
 
     [Fact]
@@ -309,6 +441,32 @@ public sealed class GeminiToolCallBehaviorTests
             new KernelReturnParameterMetadata { ParameterType = typeof(string), Description = "Function Result" });
 
         return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+    }
+
+    private static Kernel CreateKernelWithFunctions(params string[] functionNames)
+    {
+        var functions = functionNames
+            .Select(name => KernelFunctionFactory.CreateFromMethod(() => "result", name))
+            .ToArray();
+
+        var kernel = Kernel.CreateBuilder().Build();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TestPlugin", functions));
+        return kernel;
+    }
+
+    private static bool GetAllowAnyRequestedKernelFunction(GeminiToolCallBehavior behavior)
+        => behavior.AllowAnyRequestedKernelFunction;
+
+    private static string[] GetAdvertisedFunctionNames(GeminiToolCallBehavior behavior, Kernel kernel)
+    {
+        var request = new GeminiRequest();
+        behavior.ConfigureGeminiRequest(kernel, request);
+        if (request.Tools is null)
+        {
+            return [];
+        }
+
+        return request.Tools[0].Functions.Select(f => f.Name).ToArray();
     }
 
     private static void AssertFunctions(GeminiRequest request)

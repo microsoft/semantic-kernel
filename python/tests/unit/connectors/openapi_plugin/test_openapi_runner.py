@@ -6,8 +6,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter import RestApiParameter
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_parameter_location import (
+    RestApiParameterLocation,
+)
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_payload import RestApiPayload
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenApiRunner
+from semantic_kernel.connectors.openapi_plugin.server_url_validator import ServerUrlValidationOptions
 from semantic_kernel.exceptions import FunctionExecutionException
 
 
@@ -294,7 +299,9 @@ def test_get_first_response_media_type_default():
 
 
 async def test_run_operation():
-    runner = OpenApiRunner({})
+    runner = OpenApiRunner(
+        {}, server_url_validation_options=ServerUrlValidationOptions(allowed_base_urls=["http://example.com"])
+    )
     operation = MagicMock()
     arguments = {}
     options = MagicMock()
@@ -323,3 +330,136 @@ async def test_run_operation():
 
     result = await runner.run_operation(operation, arguments, options)
     assert result == "response text"
+
+
+@pytest.mark.parametrize(
+    ("method", "route", "is_allowed"),
+    [
+        ("GET", "safe", True),
+        ("POST", "safe", True),
+        ("GET", "SAFE", False),
+        ("POST", "SAFE", False),
+    ],
+)
+async def test_run_operation_enforces_allowed_base_url_path_case_before_authentication(method, route, is_allowed):
+    runner = OpenApiRunner(
+        {},
+        server_url_validation_options=ServerUrlValidationOptions(
+            allowed_base_urls=["https://api.example.com/api/safe"]
+        ),
+    )
+    operation = RestApiOperation(
+        id="caseSensitiveOperation",
+        method=method,
+        servers=[{"url": "https://api.example.com"}],
+        path="/api/{route}",
+        params=[
+            RestApiParameter(
+                name="route",
+                type="string",
+                location=RestApiParameterLocation.PATH,
+                is_required=True,
+            )
+        ],
+    )
+    response = MagicMock()
+    response.text = "response text"
+    runner.http_client = AsyncMock()
+    runner.http_client.headers = {}
+    runner.http_client.request = AsyncMock(return_value=response)
+    runner.auth_callback = AsyncMock(return_value={"Authorization": "******"})
+
+    if is_allowed:
+        result = await runner.run_operation(operation, {"route": route})
+
+        assert result == "response text"
+        runner.auth_callback.assert_awaited_once_with()
+        runner.http_client.request.assert_awaited_once()
+        request = runner.http_client.request.await_args.kwargs
+        assert request["method"] == method
+        assert request["url"] == "https://api.example.com/api/safe"
+        assert request["headers"]["Authorization"] == "******"
+    else:
+        with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+            await runner.run_operation(operation, {"route": route})
+
+        runner.auth_callback.assert_not_awaited()
+        runner.http_client.request.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("allowed_base_url", "url", "is_allowed"),
+    [
+        ("https://api.example.com/api", "https://api.example.com/api/.", True),
+        ("https://api.example.com/api", "https://api.example.com/api/users/..", True),
+        ("https://api.example.com/api/", "https://api.example.com/api/.", False),
+        ("https://api.example.com/api/", "https://api.example.com/api/users/..", False),
+        ("https://api.example.com/api/", "https://api.example.com/api//.", True),
+        ("https://api.example.com/api//", "https://api.example.com/api//.", False),
+    ],
+)
+async def test_run_operation_enforces_allowed_base_url_with_wire_targets(allowed_base_url, url, is_allowed):
+    runner = OpenApiRunner(
+        {},
+        server_url_validation_options=ServerUrlValidationOptions(allowed_base_urls=[allowed_base_url]),
+    )
+    operation = MagicMock()
+    operation.method = "GET"
+    operation.build_headers.return_value = {}
+    operation.responses = OrderedDict()
+    runner.build_operation_url = MagicMock(return_value=url)
+    runner.build_operation_payload = MagicMock(return_value=(None, None))
+    response = MagicMock()
+    response.text = "response text"
+    runner.http_client = AsyncMock()
+    runner.http_client.headers = {}
+    runner.http_client.request = AsyncMock(return_value=response)
+    runner.auth_callback = AsyncMock(return_value={"Authorization": "******"})
+
+    if is_allowed:
+        result = await runner.run_operation(operation)
+        assert result == "response text"
+        runner.auth_callback.assert_awaited_once_with()
+        runner.http_client.request.assert_awaited_once()
+    else:
+        with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
+            await runner.run_operation(operation)
+        runner.auth_callback.assert_not_awaited()
+        runner.http_client.request.assert_not_awaited()
+
+
+async def test_run_operation_blocks_disallowed_url_before_request():
+    runner = OpenApiRunner({})
+    operation = MagicMock()
+    operation.method = "GET"
+    runner.build_operation_url = MagicMock(return_value="https://127.0.0.1/latest/meta-data/")
+    runner.http_client = AsyncMock()
+    runner.http_client.request = AsyncMock()
+
+    with pytest.raises(FunctionExecutionException, match="loopback"):
+        await runner.run_operation(operation, {}, None)
+
+    operation.build_headers.assert_not_called()
+    runner.http_client.request.assert_not_called()
+
+
+async def test_run_operation_blocks_server_variable_ssrf_before_request():
+    runner = OpenApiRunner({})
+    operation = RestApiOperation(
+        id="getCloudMetadata",
+        method="GET",
+        servers=[
+            {
+                "url": "https://{api_server}/",
+                "variables": {"api_server": {"default": "api.example.com"}},
+            }
+        ],
+        path="latest/meta-data/",
+    )
+    runner.http_client = AsyncMock()
+    runner.http_client.request = AsyncMock()
+
+    with pytest.raises(FunctionExecutionException, match="link-local"):
+        await runner.run_operation(operation, {"api_server": "169.254.169.254"}, None)
+
+    runner.http_client.request.assert_not_called()

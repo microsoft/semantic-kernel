@@ -294,11 +294,11 @@ public class CodeBlockTests
         var functionWithNamedArgument = new CodeBlock([funcId, namedArgBlock], "");
         var variable = new CodeBlock([varBlock], "");
 
-        // Assert function positional argument passed to the the function with no changes
+        // Assert function positional argument passed to the function with no changes
         await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["p1"] = expectedValue, ["var"] = expectedValue });
         Assert.Same(expectedValue, canary); // Ensuring that the two variables point to the same object, as there is no other way to verify that the argument has not been transformed from object -> string -> object during the process.
 
-        // Assert function named argument passed to the the function with no changes
+        // Assert function named argument passed to the function with no changes
         await functionWithNamedArgument.RenderCodeAsync(this._kernel, new() { ["p1"] = expectedValue, ["a1"] = expectedValue });
         Assert.Same(expectedValue, canary);
 

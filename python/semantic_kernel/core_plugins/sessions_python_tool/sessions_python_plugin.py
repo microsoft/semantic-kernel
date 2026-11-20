@@ -7,6 +7,7 @@ import re
 from collections.abc import Awaitable, Callable
 from io import BytesIO
 from typing import Annotated, Any
+from urllib.parse import quote
 
 from azure.core.credentials import TokenCredential
 from httpx import AsyncClient, HTTPStatusError
@@ -164,11 +165,17 @@ class SessionsPythonTool(KernelBaseModel):
         """Construct the remote file path.
 
         Args:
-            remote_file_path (str): The remote file path.
+            remote_file_path (str): The remote file path. Must not contain `.` or `..`
+                path segments.
 
         Returns:
             str: The remote file path.
+
+        Raises:
+            FunctionExecutionException: If remote_file_path contains `.` or `..` path segments.
         """
+        if any(segment in (".", "..") for segment in remote_file_path.split("/")):
+            raise FunctionExecutionException("The remote file path must not contain '.' or '..' path segments.")
         if not remote_file_path.startswith("/mnt/data/"):
             remote_file_path = f"/mnt/data/{remote_file_path}"
         return remote_file_path
@@ -223,6 +230,9 @@ class SessionsPythonTool(KernelBaseModel):
     def _validate_local_path_for_download(self, local_file_path: str) -> str:
         """Validate local path is within allowed download directories (optional protection).
 
+        The whole path is resolved, including the file name, so a symbolic link is judged by
+        the location it points to and not by where the link itself lives.
+
         Args:
             local_file_path: The path to validate.
 
@@ -236,21 +246,18 @@ class SessionsPythonTool(KernelBaseModel):
         if self.allowed_download_directories is None:
             return os.path.realpath(local_file_path)
 
-        parent_dir = os.path.dirname(local_file_path) or "."
-        canonical_parent = os.path.realpath(parent_dir)
-        filename = os.path.basename(local_file_path)
-        canonical_path = os.path.join(canonical_parent, filename)
+        canonical_path = os.path.realpath(local_file_path)
 
         for allowed_dir in self.allowed_download_directories:
             allowed_canonical = os.path.realpath(allowed_dir)
             try:
-                common = os.path.commonpath([allowed_canonical, canonical_parent])
-                if common == allowed_canonical:
+                common = os.path.commonpath([allowed_canonical, canonical_path])
+                if common == allowed_canonical and canonical_path != allowed_canonical:
                     return canonical_path
             except ValueError:
-                continue
+                continue  # Different drives on Windows
 
-        logger.warning(f"Download denied for path: {local_file_path}")
+        logger.warning(f"Download denied for path: {local_file_path} (resolved: {canonical_path})")
         raise FunctionExecutionException(
             f"Access denied: '{local_file_path}' is not within allowed download directories."
         )
@@ -339,6 +346,7 @@ class SessionsPythonTool(KernelBaseModel):
 
         Args:
             remote_file_path (str): The path to the file in the session.
+                Must not contain `.` or `..` path segments.
             local_file_path (str): The path to the file on the local machine.
                 Must be within allowed_upload_directories.
 
@@ -346,7 +354,8 @@ class SessionsPythonTool(KernelBaseModel):
             RemoteFileMetadata: The metadata of the uploaded file.
 
         Raises:
-            FunctionExecutionException: If local_file_path is not provided or not in allowed directories.
+            FunctionExecutionException: If remote_file_path contains `.` or `..` path segments,
+                or local_file_path is not provided or not in allowed directories.
         """
         if not local_file_path:
             raise FunctionExecutionException("Please provide a local file path to upload.")
@@ -424,7 +433,8 @@ class SessionsPythonTool(KernelBaseModel):
         """Download a file from the session pool.
 
         Args:
-            remote_file_name: The name of the file to download, relative to `/mnt/data`.
+            remote_file_name: The unescaped name of the file to download, relative to `/mnt/data`.
+                Must not contain `.` or `..` path segments.
             local_file_path: The path to save the downloaded file to. Should include the extension.
                 If not provided, the file is returned as a BytesIO object.
 
@@ -432,8 +442,12 @@ class SessionsPythonTool(KernelBaseModel):
             BytesIO | None: The file content as BytesIO if no local_file_path provided, otherwise None.
 
         Raises:
-            FunctionExecutionException: If local_file_path is not in allowed directories.
+            FunctionExecutionException: If remote_file_name contains `.` or `..` path segments,
+                or local_file_path is not in allowed directories.
         """
+        if any(segment in (".", "..") for segment in remote_file_name.split("/")):
+            raise FunctionExecutionException("The remote file name must not contain '.' or '..' path segments.")
+
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update({
             "Authorization": f"Bearer {auth_token}",
@@ -442,7 +456,7 @@ class SessionsPythonTool(KernelBaseModel):
 
         url = self._build_url_with_version(
             base_url=str(self.pool_management_endpoint),
-            endpoint=f"files/content/{remote_file_name}",
+            endpoint=f"files/content/{quote(remote_file_name, safe='/')}",
             params={"identifier": self.settings.session_id},
         )
 

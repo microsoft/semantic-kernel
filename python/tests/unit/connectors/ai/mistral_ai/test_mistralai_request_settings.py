@@ -123,3 +123,18 @@ def test_create_options_with_function_choice_behavior():
         },
     )
     assert settings.function_choice_behavior
+
+
+def test_prepare_settings_dict_maps_seed_to_random_seed():
+    # The Mistral SDK has no `seed` parameter, only `random_seed`
+    settings = MistralAIChatPromptExecutionSettings(seed=42)
+    options = settings.prepare_settings_dict()
+    assert "seed" not in options
+    assert options["random_seed"] == 42
+
+
+def test_prepare_settings_dict_keeps_explicit_random_seed():
+    settings = MistralAIChatPromptExecutionSettings(seed=42, random_seed=7)
+    options = settings.prepare_settings_dict()
+    assert "seed" not in options
+    assert options["random_seed"] == 7

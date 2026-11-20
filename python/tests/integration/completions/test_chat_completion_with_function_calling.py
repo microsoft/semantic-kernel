@@ -75,6 +75,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_tool_call_auto",
         ),
         pytest.param(
@@ -97,6 +98,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_tool_call_non_auto",
         ),
         pytest.param(
@@ -123,6 +125,7 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_tool_call_flow",
         ),
         pytest.param(
@@ -141,6 +144,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai_tool_call_auto_complex_return_type",
         ),
         # endregion

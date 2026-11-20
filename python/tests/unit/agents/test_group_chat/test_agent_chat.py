@@ -200,6 +200,25 @@ async def test_add_chat_messages_throws_exception_for_system_role(agent_chat):
         await agent_chat.add_chat_messages([system_message])
 
 
+async def test_add_chat_messages_releases_activity_signal_when_a_message_is_rejected(agent_chat):
+    system_message = MagicMock(spec=ChatMessageContent)
+    system_message.role = AuthorRole.SYSTEM
+
+    with pytest.raises(AgentChatException, match="System messages cannot be added to the chat history."):
+        await agent_chat.add_chat_messages([system_message])
+
+    # The rejected message must not leave the chat active, otherwise every
+    # following operation fails with "Unable to proceed while another agent is active."
+    assert not agent_chat.is_active
+
+    # The chat is usable again and the rejected message was not added to the history.
+    user_message = MagicMock(spec=ChatMessageContent)
+    user_message.role = AuthorRole.USER
+    await agent_chat.add_chat_messages([user_message])
+
+    assert agent_chat.history.messages == [user_message]
+
+
 async def test_get_or_create_channel_creates_new_channel(agent_chat, agent):
     agent_chat.history.messages = [MagicMock(spec=ChatMessageContent)]
     channel_key = "test_channel_key"

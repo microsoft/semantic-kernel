@@ -31,11 +31,9 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// used to opt specific intranet hosts back in.
 /// </para>
 /// <para>
-/// <b>Known limitation:</b> URL validation is performed before the HTTP request is sent. If the
-/// <see cref="System.Net.Http.HttpClient"/> used to invoke the plugin has automatic redirect
-/// following enabled (the default), an attacker that controls a public host may redirect the
-/// request to a private address. Configure your <see cref="System.Net.Http.HttpClient"/> with
-/// <c>AllowAutoRedirect = false</c> when consuming OpenAPI documents from untrusted sources.
+/// The OpenAPI plugin's default HTTP client does not follow redirects, preventing redirects
+/// from bypassing this validation. Caller-provided HTTP clients must also be configured with
+/// <c>AllowAutoRedirect = false</c> to preserve this guarantee.
 /// </para>
 /// </remarks>
 [Experimental("SKEXP0040")]
@@ -44,7 +42,10 @@ public class RestApiOperationServerUrlValidationOptions
     /// <summary>
     /// Gets or sets the explicit allowlist of base URLs. A request whose final URL matches one
     /// of these entries (same scheme, host, port, and path prefix) is permitted regardless of
-    /// the implicit scheme and private-IP gates.
+    /// the implicit scheme and private-IP gates. Scheme and host are compared case-insensitively;
+    /// the path is compared case-sensitively. Request URLs whose path contains a <c>.</c> or
+    /// <c>..</c> segment, including percent-encoded forms such as <c>%2e%2e</c> or <c>..%2f</c>,
+    /// never match an entry.
     /// </summary>
     /// <remarks>
     /// For example, with <c>AllowedBaseUrls = [new Uri("https://api.example.com/v1")]</c>:

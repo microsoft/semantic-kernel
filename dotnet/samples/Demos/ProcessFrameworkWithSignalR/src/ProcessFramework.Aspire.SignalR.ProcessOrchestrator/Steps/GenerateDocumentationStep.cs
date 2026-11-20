@@ -12,7 +12,7 @@ namespace ProcessFramework.Aspire.SignalR.ProcessOrchestrator.Steps;
 public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentationState>
 {
     /// <summary>
-    /// Function names of the steps, to be refereced when hooking up the step in a SK process
+    /// Function names of the steps, to be referenced when hooking up the step in a SK process
     /// </summary>
     public static class ProcessFunctions
     {

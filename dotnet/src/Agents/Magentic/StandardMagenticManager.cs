@@ -150,7 +150,10 @@ public sealed class StandardMagenticManager : MagenticManager
             };
         string ledger = await this.GetMessageAsync(MagenticPrompts.LedgerTemplate, arguments).ConfigureAwait(false);
 
-        return [new ChatMessageContent(AuthorRole.System, ledger)];
+        // The ledger interpolates the input task along with fact and plan content derived from the
+        // conversation, which may include externally sourced agent or tool output. Keeping it out of
+        // the system role avoids presenting that content to the model as a trusted instruction.
+        return [new ChatMessageContent(AuthorRole.User, ledger)];
     }
 
     private async ValueTask<string> GetMessageAsync(IPromptTemplate template, KernelArguments arguments)
