@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
+from openai import AsyncOpenAI
 from openai.resources.chat.completions import AsyncCompletions
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -175,6 +178,47 @@ class TestNvidiaChatCompletion:
             "repetition_penalty": 1.1,
             "guided_json": TestModel.model_json_schema(),
         }
+
+    @pytest.mark.asyncio
+    async def test_get_streaming_chat_message_contents(self, nvidia_unit_test_env):
+        """Test streaming chat completion with the AsyncStream returned by the OpenAI client."""
+        chunks = [
+            {"role": "assistant", "content": "Hello"},
+            {"content": " world"},
+        ]
+        sse = "".join(
+            "data: "
+            + json.dumps({
+                "id": "test-id",
+                "object": "chat.completion.chunk",
+                "created": 1234567890,
+                "model": "meta/llama-3.1-8b-instruct",
+                "choices": [{"index": 0, "delta": delta, "finish_reason": None}],
+            })
+            + "\n\n"
+            for delta in chunks
+        )
+        sse += "data: [DONE]\n\n"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, headers={"content-type": "text/event-stream"}, content=sse.encode())
+
+        client = AsyncOpenAI(
+            api_key="test_api_key",
+            base_url="http://nvidia.test/v1",
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+        )
+        service = NvidiaChatCompletion(client=client)
+        chat_history = ChatHistory()
+        chat_history.add_user_message("Hello")
+
+        texts = []
+        async for messages in service.get_streaming_chat_message_contents(
+            chat_history, NvidiaChatPromptExecutionSettings()
+        ):
+            texts.extend(str(message) for message in messages)
+
+        assert "".join(texts) == "Hello world"
 
     @pytest.mark.asyncio
     @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
