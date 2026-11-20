@@ -1473,7 +1473,7 @@ class VectorStoreCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey
         """
         batch = True
         options = None
-        if not keys and key:
+        if not keys and key is not None:
             if not isinstance(key, list):
                 keys = [key]
                 batch = False
