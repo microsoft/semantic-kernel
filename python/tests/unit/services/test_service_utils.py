@@ -440,3 +440,31 @@ def test_datetime_parameter(setup_kernel):
     }
 
     assert complex_schema == expected_schema
+
+
+def test_mixed_enum_tool_parameter():
+    class Choice(Enum):
+        AUTO = None
+        FAST = "fast"
+        COUNT = 2
+
+    @kernel_function
+    def choose(value: Annotated[Choice, "Available choices"]) -> str:
+        return value.name
+
+    kernel = Kernel()
+    function = kernel.add_function(plugin_name="choices", function=choose)
+
+    tool = kernel_function_metadata_to_function_call_format(function.metadata)
+
+    assert tool["function"]["parameters"] == {
+        "type": "object",
+        "properties": {
+            "value": {
+                "type": ["integer", "string", "null"],
+                "enum": [None, "fast", 2],
+                "description": "Available choices",
+            }
+        },
+        "required": ["value"],
+    }
