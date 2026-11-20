@@ -575,6 +575,8 @@ internal partial class ClientCore
                 "LOW" => ChatReasoningEffortLevel.Low,
                 "MEDIUM" => ChatReasoningEffortLevel.Medium,
                 "HIGH" => ChatReasoningEffortLevel.High,
+                "XHIGH" => new("xhigh"),
+                "MAX" => new("max"),
                 _ => throw new NotSupportedException($"The provided reasoning effort '{textEffortLevel}' is not supported.")
             };
         }
