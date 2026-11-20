@@ -678,7 +678,7 @@ async def test_send_audio(OpenAIWebsocket):
         assert len(mock_send.await_args_list) == 1
         mock_send.assert_any_await(
             InputAudioBufferAppendEvent(
-                audio="audio data",
+                audio="YXVkaW8gZGF0YQ==",
                 type="input_audio_buffer.append",
             )
         )

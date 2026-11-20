@@ -310,3 +310,29 @@ def test_array():
 def test__data_str(data_bytes, data_str, data_array, data_format, expected_output):
     data_uri = DataUri(data_bytes=data_bytes, data_str=data_str, data_array=data_array, data_format=data_format)
     assert data_uri._data_str() == expected_output
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        pytest.param({"data_bytes": b"\x89PNG\r\n\x1a\n"}, id="bytes"),
+        pytest.param({"data_array": np.array([0x89, 0xFF, 0x00], dtype=np.uint8)}, id="array"),
+    ],
+)
+def test_raw_data_without_format_defaults_to_base64(kwargs: dict[str, Any]):
+    data_uri = DataUri(mime_type="application/octet-stream", **kwargs)
+    assert data_uri.data_format == "base64"
+    restored = DataUri.from_data_uri(data_uri.to_string())
+    assert restored == data_uri
+
+
+def test_string_without_format_stays_text():
+    data_uri = DataUri(data_str="plain_data", mime_type="text/plain")
+    assert data_uri.data_format is None
+    assert data_uri.to_string() == "data:text/plain;,plain_data"
+
+
+def test_update_data_with_bytes_defaults_to_base64():
+    data_uri = DataUri(data_str="plain_data", mime_type="text/plain")
+    data_uri.update_data(b"\xff\xfe")
+    assert data_uri.to_string() == "data:text/plain;base64,//4="
