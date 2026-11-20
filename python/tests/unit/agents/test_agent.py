@@ -187,6 +187,18 @@ def test_merge_arguments_both_not_none():
     assert merged["param2"] == "override_param", "Should include param from override"
 
 
+def test_merge_arguments_with_settings_key():
+    agent = MockAgent()
+    agent.arguments = KernelArguments(settings={"key1": "val1"}, tone="calm")
+    override = KernelArguments()
+    override["settings"] = "dark"
+
+    merged = agent._merge_arguments(override)
+
+    assert dict(merged) == {"tone": "calm", "settings": "dark"}
+    assert merged.execution_settings == {"key1": "val1"}
+
+
 # region Declarative Spec tests
 
 

@@ -167,6 +167,30 @@ def test_to_kernel_arguments_none():
     assert fc.to_kernel_arguments() == KernelArguments()
 
 
+@pytest.mark.parametrize(
+    "arguments, expected",
+    [
+        ('{"settings": "dark"}', "dark"),
+        ('{"settings": {"mode": "dark"}}', {"mode": "dark"}),
+        ({"settings": "dark"}, "dark"),
+    ],
+)
+def test_to_kernel_arguments_with_settings_argument(arguments, expected):
+    # An argument named settings is a function argument, not execution settings
+    fc = FunctionCallContent(id="test", name="Test-Function", arguments=arguments)
+    kernel_arguments = fc.to_kernel_arguments()
+    assert dict(kernel_arguments) == {"settings": expected}
+    assert kernel_arguments.execution_settings is None
+
+
+@pytest.mark.parametrize("arguments", ['"{\\"settings\\": \\"dark\\"}"', '["ab"]', '[["settings", "dark"]]'])
+def test_to_kernel_arguments_not_an_object(arguments):
+    # Arguments that are not a JSON object raise TypeError, which invoke_function_call reports as malformed
+    fc = FunctionCallContent(id="test", name="Test-Function", arguments=arguments)
+    with pytest.raises(TypeError):
+        fc.to_kernel_arguments()
+
+
 def test_split_name(function_call: FunctionCallContent):
     # Test splitting the name into plugin and function name
     assert function_call.split_name() == ["Test", "Function"]

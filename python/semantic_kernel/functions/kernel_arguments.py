@@ -71,8 +71,10 @@ class KernelArguments(dict):
         new_execution_settings = (self.execution_settings or {}).copy()
         if isinstance(value, KernelArguments) and value.execution_settings:
             new_execution_settings |= value.execution_settings
-        # Create a new KernelArguments with merged dict values
-        return KernelArguments(settings=new_execution_settings, **(dict(self) | dict(value)))
+        # Create a new KernelArguments with merged dict values, a `settings` key stays an argument
+        result = KernelArguments(settings=new_execution_settings)
+        result.update(**(dict(self) | dict(value)))
+        return result
 
     def __ror__(self, value: dict) -> "KernelArguments":
         """Merges a dict with a KernelArguments.
@@ -91,8 +93,10 @@ class KernelArguments(dict):
         if self.execution_settings:
             new_execution_settings |= self.execution_settings
 
-        # Create a new KernelArguments with merged dict values
-        return KernelArguments(settings=new_execution_settings, **(dict(value) | dict(self)))
+        # Create a new KernelArguments with merged dict values, a `settings` key stays an argument
+        result = KernelArguments(settings=new_execution_settings)
+        result.update(**(dict(value) | dict(self)))
+        return result
 
     def __ior__(self, value: "SupportsKeysAndGetItem[Any, Any] | Iterable[tuple[Any, Any]]") -> "KernelArguments":
         """Merges into this KernelArguments with another KernelArguments or dict (in-place)."""
