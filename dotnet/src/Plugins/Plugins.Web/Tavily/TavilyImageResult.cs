@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// Represents an image result.
 /// </summary>
 #pragma warning disable CA1812 // Instantiated by reflection
+[JsonConverter(typeof(TavilyImageResultConverter))]
 internal sealed class TavilyImageResult
 {
     /// <summary>
