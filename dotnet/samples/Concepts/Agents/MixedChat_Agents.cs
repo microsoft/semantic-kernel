@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 /// <summary>
-/// Demonstrate that two different agent types are able to participate in the same conversation.
-/// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
+/// Demonstrate that agents backed by different services are able to participate in the same conversation.
+/// In this case a <see cref="ChatCompletionAgent"/> that uses a chat completion service and a <see cref="ChatCompletionAgent"/>
+/// that uses a Microsoft Foundry Prompt Agent participate.
 /// </summary>
-public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -36,9 +36,9 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(bool useChatClient)
+    public async Task ChatWithFoundryPromptAgentAndChatCompletionAgent(bool useChatClient)
     {
-        // Define the agents: one of each type
+        // Define the agents: one for each service
         ChatCompletionAgent agentReviewer =
             new()
             {
@@ -47,16 +47,19 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: CopyWriterName,
-                instructions: CopyWriterInstructions,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                CopyWriterName,
+                new DeclarativeAgentDefinition(DeploymentName) { Instructions = CopyWriterInstructions });
 
-        // Create the agent
-        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient);
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent agentWriter =
+            new()
+            {
+                Name = CopyWriterName,
+                Kernel = this.CreateKernel(promptAgent),
+            };
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -78,17 +81,24 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
                     }
             };
 
-        // Invoke chat and display messages.
-        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
-        chat.AddChatMessage(input);
-        this.WriteAgentChatMessage(input);
-
-        await foreach (ChatMessageContent response in chat.InvokeAsync())
+        try
         {
-            this.WriteAgentChatMessage(response);
-        }
+            // Invoke chat and display messages.
+            ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+            chat.AddChatMessage(input);
+            this.WriteAgentChatMessage(input);
 
-        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+            await foreach (ChatMessageContent response in chat.InvokeAsync())
+            {
+                this.WriteAgentChatMessage(response);
+            }
+
+            Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+        }
+        finally
+        {
+            await this.DeletePromptAgentAsync(promptAgent);
+        }
 
         chatClient?.Dispose();
     }

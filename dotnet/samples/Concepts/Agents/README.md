@@ -17,7 +17,7 @@ The concept agents examples are grouped by prefix:
 
 Prefix|Description
 ---|---
-OpenAIAssistant|How to use agents based on the [Open AI Assistant API](https://platform.openai.com/docs/assistants).
+FoundryPromptAgent|How to use a `ChatCompletionAgent` with a [Microsoft Foundry Prompt Agent](https://learn.microsoft.com/azure/ai-foundry/agents/overview).
 MixedChat|How to combine different agent types.
 ComplexChat|How to develop complex agent chat solutions.
 Legacy|How to use the legacy _Experimental Agent API_.
@@ -27,7 +27,7 @@ Legacy|How to use the legacy _Experimental Agent API_.
 Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
 [Microsoft.SemanticKernel.Experimental.Agents](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Experimental/Agents)
 
-This package has been superseded by _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
+This package was superseded by _Semantic Kernel Agents_. OpenAI shut down the Assistants API on August 26, 2026, so the Open AI Assistant agent was removed. The `FoundryPromptAgent` samples show the replacement: a Microsoft Foundry Prompt Agent used through a `ChatCompletionAgent`.
 
 ## Running Examples
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
@@ -37,7 +37,7 @@ You can also run specific examples via the command-line by using test filters (`
 Example:
     
 ```
-dotnet test --filter OpenAIAssistant_CodeInterpreter
+dotnet test --filter FoundryPromptAgent_ChartMaker
 ```
 
 ## Configuring Secrets
@@ -80,6 +80,13 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
     dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
     dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+    ```
+
+6. The `FoundryPromptAgent` and `MixedChat` examples also require a Microsoft Foundry project (authenticated with the Azure CLI):
+
+    ```
+    dotnet user-secrets set "AzureAI:Endpoint" "https://... .services.ai.azure.com/api/projects/..."
+    dotnet user-secrets set "AzureAI:ChatModelId" "gpt-4o"
     ```
 
 > NOTE: Azure secrets will take precedence, if both Open AI and Azure Open AI secrets are defined, unless `ForceOpenAI` is set:

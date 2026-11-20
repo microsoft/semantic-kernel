@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
-/// Demonstrate consuming "streaming" message for <see cref="ChatCompletionAgent"/> and
-/// <see cref="OpenAIAssistantAgent"/> both participating in an <see cref="AgentChat"/>.
+/// Demonstrate consuming "streaming" message for a <see cref="ChatCompletionAgent"/> that uses a chat completion service and
+/// a <see cref="ChatCompletionAgent"/> that uses a Microsoft Foundry Prompt Agent, both participating in an <see cref="AgentChat"/>.
 /// </summary>
-public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Streaming(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -39,7 +38,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
     [InlineData(false)]
     public async Task UseStreamingAgentChat(bool useChatClient)
     {
-        // Define the agents: one of each type
+        // Define the agents: one for each service
         ChatCompletionAgent agentReviewer =
             new()
             {
@@ -48,16 +47,19 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: CopyWriterName,
-                instructions: CopyWriterInstructions,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                CopyWriterName,
+                new DeclarativeAgentDefinition(DeploymentName) { Instructions = CopyWriterInstructions });
 
-        // Create the agent
-        OpenAIAssistantAgent agentWriter = new(assistant, this.AssistantClient);
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent agentWriter =
+            new()
+            {
+                Name = CopyWriterName,
+                Kernel = this.CreateKernel(promptAgent),
+            };
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -79,41 +81,48 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
                     }
             };
 
-        // Invoke chat and display messages.
-        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
-        chat.AddChatMessage(input);
-        this.WriteAgentChatMessage(input);
-
-        string lastAgent = string.Empty;
-        await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync())
+        try
         {
-            if (string.IsNullOrEmpty(response.Content))
+            // Invoke chat and display messages.
+            ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+            chat.AddChatMessage(input);
+            this.WriteAgentChatMessage(input);
+
+            string lastAgent = string.Empty;
+            await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync())
             {
-                continue;
+                if (string.IsNullOrEmpty(response.Content))
+                {
+                    continue;
+                }
+
+                if (!lastAgent.Equals(response.AuthorName, StringComparison.Ordinal))
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                    lastAgent = response.AuthorName ?? string.Empty;
+                }
+
+                Console.WriteLine($"\t > streamed: '{response.Content}'");
             }
 
-            if (!lastAgent.Equals(response.AuthorName, StringComparison.Ordinal))
+            // Display the chat history.
+            Console.WriteLine("================================");
+            Console.WriteLine("CHAT HISTORY");
+            Console.WriteLine("================================");
+
+            ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
+
+            for (int index = 0; index < history.Length; index++)
             {
-                Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
-                lastAgent = response.AuthorName ?? string.Empty;
+                this.WriteAgentChatMessage(history[index]);
             }
 
-            Console.WriteLine($"\t > streamed: '{response.Content}'");
+            Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
         }
-
-        // Display the chat history.
-        Console.WriteLine("================================");
-        Console.WriteLine("CHAT HISTORY");
-        Console.WriteLine("================================");
-
-        ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
-
-        for (int index = 0; index < history.Length; index++)
+        finally
         {
-            this.WriteAgentChatMessage(history[index]);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
-
-        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
 
         chatClient?.Dispose();
     }

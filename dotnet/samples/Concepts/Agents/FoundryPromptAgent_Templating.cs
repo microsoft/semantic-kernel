@@ -1,17 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
-using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
-/// Demonstrate parameterized template instruction  for <see cref="OpenAIAssistantAgent"/>.
+/// Demonstrate parameterized template instruction for an agent that uses a Microsoft Foundry Prompt Agent.
 /// </summary>
-public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistantTest(output)
+/// <remarks>
+/// The Prompt Agent definition is fixed when the version is created, so Semantic Kernel renders the
+/// templated instructions on every invocation and sends them as a system message.
+/// </remarks>
+public class FoundryPromptAgent_Templating(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private static readonly (string Input, string? Style)[] s_inputs =
         [
@@ -24,34 +28,33 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
     [Fact]
     public async Task InvokeAgentWithInstructionsAsync()
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                instructions:
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent = await this.CreatePromptAgentAsync("Poet", new DeclarativeAgentDefinition(DeploymentName));
+
+        // Create the agent
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions =
                     """
                     Write a one verse poem on the requested topic in the styles of {{$style}}.
                     Always state the requested style of the poem.
                     """,
-                metadata: SampleMetadata);
+                Kernel = this.CreateKernel(promptAgent),
+                Arguments = new()
+                {
+                    {"style", "haiku"}
+                },
+            };
 
-        // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient)
-        {
-            Arguments = new()
-            {
-                {"style", "haiku"}
-            },
-        };
-
-        await InvokeAssistantAgentWithTemplateAsync(agent);
+        await InvokeAgentWithTemplateAsync(agent, promptAgent);
     }
 
     [Fact]
     public async Task InvokeAgentWithKernelTemplateAsync()
     {
         // Default factory is KernelPromptTemplateFactory
-        await InvokeAssistantAgentWithTemplateAsync(
+        await InvokeAgentWithTemplateAsync(
             """
             Write a one verse poem on the requested topic in the styles of {{$style}}.
             Always state the requested style of the poem.
@@ -63,7 +66,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
     [Fact]
     public async Task InvokeAgentWithHandlebarsTemplateAsync()
     {
-        await InvokeAssistantAgentWithTemplateAsync(
+        await InvokeAgentWithTemplateAsync(
             """
             Write a one verse poem on the requested topic in the styles of {{style}}.
             Always state the requested style of the poem.
@@ -75,7 +78,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
     [Fact]
     public async Task InvokeAgentWithLiquidTemplateAsync()
     {
-        await InvokeAssistantAgentWithTemplateAsync(
+        await InvokeAgentWithTemplateAsync(
             """
             Write a one verse poem on the requested topic in the styles of {{style}}.
             Always state the requested style of the poem.
@@ -84,7 +87,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
             new LiquidPromptTemplateFactory());
     }
 
-    private async Task InvokeAssistantAgentWithTemplateAsync(
+    private async Task InvokeAgentWithTemplateAsync(
         string instructionTemplate,
         string templateFormat,
         IPromptTemplateFactory templateFactory)
@@ -95,29 +98,27 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
             TemplateFormat = templateFormat,
         };
 
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantFromTemplateAsync(
-                this.Model,
-                config,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent = await this.CreatePromptAgentAsync("Poet", new DeclarativeAgentDefinition(DeploymentName));
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, plugins: null, templateFactory, templateFormat)
-        {
-            Arguments = new()
+        ChatCompletionAgent agent =
+            new(config, templateFactory)
             {
-                {"style", "haiku"}
-            },
-        };
+                Kernel = this.CreateKernel(promptAgent),
+                Arguments = new()
+                {
+                    {"style", "haiku"}
+                },
+            };
 
-        await InvokeAssistantAgentWithTemplateAsync(agent);
+        await InvokeAgentWithTemplateAsync(agent, promptAgent);
     }
 
-    private async Task InvokeAssistantAgentWithTemplateAsync(OpenAIAssistantAgent agent)
+    private async Task InvokeAgentWithTemplateAsync(ChatCompletionAgent agent, ProjectsAgentVersion promptAgent)
     {
         // Create a thread for the agent conversation.
-        OpenAIAssistantAgentThread thread = new(this.AssistantClient, metadata: SampleMetadata);
+        ChatHistoryAgentThread thread = new();
 
         try
         {
@@ -143,7 +144,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         finally
         {
             await thread.DeleteAsync();
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
     }
 }

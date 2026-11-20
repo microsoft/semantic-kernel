@@ -11,11 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel.Agents.OpenAI;
-using OpenAI;
 using SemanticKernel.Agents.UnitTests.AzureAI.Definition;
-using SemanticKernel.Agents.UnitTests.OpenAI;
-using SemanticKernel.Agents.UnitTests.OpenAI.Definition;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Yaml;
@@ -30,7 +26,7 @@ public class AgentYamlTests : IDisposable
     private readonly Kernel _kernel;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
+    /// Initializes a new instance of the <see cref="AgentYamlTests"/> class.
     /// </summary>
     public AgentYamlTests()
     {
@@ -38,10 +34,6 @@ public class AgentYamlTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
         var builder = Kernel.CreateBuilder();
-
-        // Add OpenAI client
-        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new System.ClientModel.ApiKeyCredential("fakekey"), httpClient: this._httpClient);
-        builder.Services.AddSingleton(openAIClient);
 
         // Add Azure AI agents client
         var client = new PersistentAgentsClient(
@@ -155,40 +147,6 @@ public class AgentYamlTests : IDisposable
         Assert.Equal("ChatCompletionAgent", agent.Name);
         Assert.Equal("ChatCompletionAgent Description", agent.Description);
         Assert.Equal("ChatCompletionAgent Instructions", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
-    }
-
-    /// <summary>
-    /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
-    /// </summary>
-    [Fact]
-    public async Task VerifyCanCreateOpenAIAssistantAsync()
-    {
-        // Arrange
-        var text =
-            """
-            type: openai_assistant
-            name: OpenAIAssistantAgent
-            description: OpenAIAssistantAgent Description
-            instructions: OpenAIAssistantAgent Instructions
-            model:
-              id: gpt-4o-mini
-            tools:
-                - id: tool1
-                  type: code_interpreter
-            """;
-        OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantCreateResponse);
-
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(agent);
-        Assert.True(agent is OpenAIAssistantAgent);
-        Assert.Equal("OpenAIAssistantAgent", agent.Name);
-        Assert.Equal("OpenAIAssistantAgent Description", agent.Description);
-        Assert.Equal("OpenAIAssistantAgent Instructions", agent.Instructions);
         Assert.Equal(this._kernel, agent.Kernel);
     }
 

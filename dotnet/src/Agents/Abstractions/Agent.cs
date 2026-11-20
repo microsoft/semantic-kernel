@@ -291,7 +291,7 @@ public abstract class Agent
     /// <remarks>
     /// Two specific agents of the same type may each require their own channel.  This is
     /// why the channel type alone is insufficient.
-    /// For example, two OpenAI Assistant agents each targeting a different Azure OpenAI endpoint
+    /// For example, two Azure AI agents each targeting a different Foundry project endpoint
     /// would require their own channel. In this case, the endpoint could be expressed as an additional key.
     /// </remarks>
     [Experimental("SKEXP0110")]

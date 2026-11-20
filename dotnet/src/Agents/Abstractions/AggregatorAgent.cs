@@ -92,7 +92,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     /// <inheritdoc/>
     protected internal override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        this.Logger.LogAggregatorAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AgentChatState agentChatState =
@@ -102,7 +102,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
         AggregatorChannel channel = new(chat);
 
-        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        this.Logger.LogAggregatorAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         return channel;
     }

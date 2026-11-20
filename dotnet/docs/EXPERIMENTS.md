@@ -77,7 +77,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0080 | Process Framework |
 | SKEXP0081 | Process Framework - Foundry Process
 | | | | | | | |
-| SKEXP0101 | Experiment with Assistants |
 | SKEXP0101 | Experiment with Flow Orchestration |
 | | | | | | | |
 | SKEXP0110 | Agent Framework |

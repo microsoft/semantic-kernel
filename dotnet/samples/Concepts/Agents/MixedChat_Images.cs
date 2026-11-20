@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
+using OpenAI.Responses;
 
 namespace Agents;
 
 /// <summary>
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
-/// <see cref="OpenAIAssistantAgent"/> when it produces image output.
+/// an agent that uses a Microsoft Foundry Prompt Agent when it produces image output.
 /// </summary>
-public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Images(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private const string AnalystName = "Analyst";
     private const string AnalystInstructions = "Create charts as requested without explanation.";
@@ -24,24 +24,31 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
     [InlineData(false)]
     public async Task AnalyzeDataAndGenerateChartAsync(bool useChatClient)
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                name: AnalystName,
-                instructions: AnalystInstructions,
-                enableCodeInterpreter: true,
-                metadata: SampleMetadata);
-
-        // Create the agent
-        OpenAIAssistantAgent analystAgent = new(assistant, this.AssistantClient);
-
         ChatCompletionAgent summaryAgent =
             new()
             {
                 Instructions = SummarizerInstructions,
                 Name = SummarizerName,
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
+            };
+
+        // Define the Prompt Agent with the code-interpreter tool.
+        DeclarativeAgentDefinition definition = new(DeploymentName)
+        {
+            Instructions = AnalystInstructions,
+        };
+        definition.Tools.Add(
+            ResponseTool.CreateCodeInterpreterTool(
+                new CodeInterpreterToolContainer(
+                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration())));
+        ProjectsAgentVersion promptAgent = await this.CreatePromptAgentAsync(AnalystName, definition);
+
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent analystAgent =
+            new()
+            {
+                Name = AnalystName,
+                Kernel = this.CreateKernel(promptAgent),
             };
 
         // Create a chat for agent interaction.
@@ -72,7 +79,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
         }
         finally
         {
-            await this.AssistantClient.DeleteAssistantAsync(analystAgent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
 
         chatClient?.Dispose();
@@ -90,7 +97,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseImageAsync(response);
+                await this.DownloadGeneratedFilesAsync(response, launchViewer: true);
             }
         }
     }
