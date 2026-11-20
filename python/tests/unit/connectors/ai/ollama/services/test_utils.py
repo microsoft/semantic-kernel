@@ -166,6 +166,23 @@ def test_message_converters_assistant_with_tool_calls() -> None:
     )
 
 
+def test_message_converters_assistant_with_qualified_tool_call_name() -> None:
+    """Test that a tool call created with a fully qualified name preserves it."""
+    # Arrange — the name includes the plugin prefix, as the kernel sets it
+    tool_call = FunctionCallContent(name="Weather-get_weather", arguments='{"city": "Paris"}')
+
+    content = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[tool_call])
+
+    # Act
+    converter = MESSAGE_CONVERTERS[AuthorRole.ASSISTANT]
+    result = converter(content)
+
+    # Assert — the serialized name must be the fully qualified one
+    assert result["tool_calls"][0]["function"]["name"] == "Weather-get_weather", (
+        "Expected the fully qualified name (plugin-function), not just the function name."
+    )
+
+
 def test_message_converters_tool_with_result() -> None:
     """Test tool message with a FunctionResultContent, verifying the message content is set."""
     # Arrange
