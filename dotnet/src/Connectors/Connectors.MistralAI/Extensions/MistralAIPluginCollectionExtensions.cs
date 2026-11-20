@@ -30,7 +30,7 @@ internal static class MistralAIPluginCollectionExtensions
         {
             // Add parameters to arguments
             arguments = null;
-            if (functionToolCall.Arguments is not null)
+            if (!string.IsNullOrWhiteSpace(functionToolCall.Arguments))
             {
                 // TODO user serializer options from the Kernel
                 var functionArguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionToolCall.Arguments);
