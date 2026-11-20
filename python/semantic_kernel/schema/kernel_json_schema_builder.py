@@ -3,7 +3,7 @@
 import sys
 import types
 from enum import Enum
-from typing import Any, ClassVar, Literal, Union, get_args, get_origin, get_type_hints
+from typing import Annotated, Any, ClassVar, ForwardRef, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
@@ -36,7 +36,13 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def build(
-        cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
+        cls,
+        parameter_type: type | str | Any,
+        description: str | None = None,
+        structured_output: bool = False,
+        _defs: dict[str, Any] | None = None,
+        _in_progress: "set[type] | None" = None,
+        _ref_needed: "set[type] | None" = None,
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
@@ -48,26 +54,55 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
         """
+        is_root = _defs is None
+        if _defs is None:
+            _defs = {}
+        if _in_progress is None:
+            _in_progress = set()
+        if _ref_needed is None:
+            _ref_needed = set()
+
         if isinstance(parameter_type, str):
-            return cls.build_from_type_name(parameter_type, description)
-        if isinstance(parameter_type, KernelBaseModel):
-            return cls.build_model_schema(parameter_type, description, structured_output)
-        if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
-            return cls.build_enum_schema(parameter_type, description)
-        if hasattr(parameter_type, "__annotations__"):
-            return cls.build_model_schema(parameter_type, description, structured_output)
-        if hasattr(parameter_type, "__args__"):
-            return cls.handle_complex_type(parameter_type, description, structured_output)
-        schema = cls.get_json_schema(parameter_type)
-        if description:
-            schema["description"] = description
+            schema = cls.build_from_type_name(parameter_type, description)
+        elif isinstance(parameter_type, KernelBaseModel):
+            schema = cls.build_model_schema(
+                parameter_type, description, structured_output, _defs, _in_progress, _ref_needed
+            )
+        elif isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
+            schema = cls.build_enum_schema(parameter_type, description)
+        elif hasattr(parameter_type, "__annotations__"):
+            schema = cls.build_model_schema(
+                parameter_type, description, structured_output, _defs, _in_progress, _ref_needed
+            )
+        elif hasattr(parameter_type, "__args__"):
+            schema = cls.handle_complex_type(
+                parameter_type, description, structured_output, _defs, _in_progress, _ref_needed
+            )
+        else:
+            schema = cls.get_json_schema(parameter_type)
+            if description:
+                schema["description"] = description
+
+        if is_root and _defs:
+            schema["$defs"] = _defs
         return schema
 
     @classmethod
     def build_model_schema(
-        cls, model: type | KernelBaseModel, description: str | None = None, structured_output: bool = False
+        cls,
+        model: type | KernelBaseModel,
+        description: str | None = None,
+        structured_output: bool = False,
+        _defs: dict[str, Any] | None = None,
+        _in_progress: "set[type] | None" = None,
+        _ref_needed: "set[type] | None" = None,
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
+
+        Supports forward references, including self-referential and mutually recursive
+        models (e.g. tree or linked-list style structures). A model that is still being
+        built further up the call stack (a cycle) is emitted as a "$ref" into "$defs"
+        instead of being recursed into again, which would otherwise recurse forever.
 
         Args:
             model: The model type.
@@ -77,55 +112,133 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the model.
         """
-        # TODO (moonbox3): add support for handling forward references, which is not currently tested
-        # https://github.com/microsoft/semantic-kernel/issues/6464
-        properties = {}
-        required = []
+        is_root = _defs is None
+        if _defs is None:
+            _defs = {}
+        if _in_progress is None:
+            _in_progress = set()
+        if _ref_needed is None:
+            _ref_needed = set()
 
         if not isinstance(model, type):
             model = type(model)
-        model_module_globals = vars(sys.modules[model.__module__])
-        hints = get_type_hints(model, globalns=model_module_globals, localns={})
+        model_name = getattr(model, "__qualname__", model.__name__)
 
-        for field_name, field_type in hints.items():
-            if field_type is ClassVar or get_origin(field_type) is ClassVar:
-                # ClassVar annotations are class-level constants: pydantic
-                # excludes them from model fields and serialized instances,
-                # so they must not become (required) schema properties.
-                continue
-            field_description = None
-            if hasattr(model, "model_fields") and field_name in model.model_fields:
-                field_info = model.model_fields[field_name]
-                field_description = getattr(field_info, "description", None)
-                if field_description is None:
-                    metadata = getattr(field_info, "metadata", None)
-                    if isinstance(metadata, dict):
-                        field_description = metadata.get("description")
-                    elif isinstance(metadata, (list, tuple)):
-                        for item in metadata:
-                            if isinstance(item, str):
-                                field_description = item
-                                break
-                            if isinstance(item, dict) and isinstance(item.get("description"), str):
-                                field_description = item["description"]
-                                break
-            if not cls._is_optional(field_type):
-                required.append(field_name)
-            properties[field_name] = cls.build(field_type, field_description, structured_output)
+        if model in _in_progress:
+            _ref_needed.add(model)
+            return {"$ref": f"#/$defs/{model_name}"}
 
-        schema = {"type": "object", "properties": properties}
-        if required:
-            schema["required"] = required
-        if structured_output:
-            schema["additionalProperties"] = False  # type: ignore
-        if description:
-            schema["description"] = description
+        _in_progress.add(model)
+        try:
+            properties: dict[str, Any] = {}
+            required: list[str] = []
 
+            model_module_globals = vars(sys.modules[model.__module__])
+            hints = get_type_hints(model, globalns=model_module_globals, localns={})
+
+            for field_name, field_type in hints.items():
+                # get_type_hints evaluates an annotation that *is* a string, but it does not
+                # descend into a generic alias that already exists as an object: list["TreeNode"]
+                # keeps the raw string in its args, which would otherwise fall through to a
+                # generic object schema. Resolve those nested forward references against the
+                # model module globals before recursing, so the cycle machinery sees the
+                # real model type.
+                field_type = cls._resolve_forward_refs(field_type, model_module_globals)
+                if field_type is ClassVar or get_origin(field_type) is ClassVar:
+                    # ClassVar annotations are class-level constants: pydantic
+                    # excludes them from model fields and serialized instances,
+                    # so they must not become (required) schema properties.
+                    continue
+                field_description = None
+                if hasattr(model, "model_fields") and field_name in model.model_fields:
+                    field_info = model.model_fields[field_name]
+                    field_description = getattr(field_info, "description", None)
+                    if field_description is None:
+                        metadata = getattr(field_info, "metadata", None)
+                        if isinstance(metadata, dict):
+                            field_description = metadata.get("description")
+                        elif isinstance(metadata, (list, tuple)):
+                            for item in metadata:
+                                if isinstance(item, str):
+                                    field_description = item
+                                    break
+                                if isinstance(item, dict) and isinstance(item.get("description"), str):
+                                    field_description = item["description"]
+                                    break
+                if not cls._is_optional(field_type):
+                    required.append(field_name)
+                properties[field_name] = cls.build(
+                    field_type, field_description, structured_output, _defs, _in_progress, _ref_needed
+                )
+
+            schema = {"type": "object", "properties": properties}
+            if required:
+                schema["required"] = required
+            if structured_output:
+                schema["additionalProperties"] = False  # type: ignore
+            if description:
+                schema["description"] = description
+        finally:
+            _in_progress.discard(model)
+
+        if model in _ref_needed:
+            _defs[model_name] = schema
+            if is_root:
+                # Keep the top-level shape consistent with build(): a $ref into $defs,
+                # which is resolvable as long as $defs is included.
+                return {"$ref": f"#/$defs/{model_name}", "$defs": _defs}
+            return {"$ref": f"#/$defs/{model_name}"}
+
+        if is_root and _defs:
+            schema["$defs"] = _defs
         return schema
 
     @classmethod
     def _is_optional(cls, field_type: Any) -> bool:
         return get_origin(field_type) in {types.UnionType, Union} and type(None) in get_args(field_type)
+
+    @classmethod
+    def _resolve_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
+        """Resolve string/ForwardRef arguments nested inside generic aliases.
+
+        `get_type_hints` evaluates an annotation that *is* a string, but it does not
+        descend into a generic alias that already exists as an object: `list["TreeNode"]`
+        keeps the raw string in its `__args__`, so the builder would treat it as an
+        unknown type and emit a generic object schema instead of recursing into the
+        model. Resolve those nested references against the given globals before
+        recursing, so e.g. `list["TreeNode"]` becomes `list[TreeNode]`.
+
+        Literal values and Annotated metadata are left untouched: their string args
+        are values, not type references. An unresolvable name is left as-is, preserving
+        today's generic-object fallback instead of raising.
+        """
+        if isinstance(annotation, str):
+            return globalns.get(annotation, annotation)
+        if isinstance(annotation, ForwardRef):
+            return globalns.get(annotation.__forward_arg__, annotation)
+        origin = get_origin(annotation)
+        if origin is None or origin is Literal or origin is ClassVar:
+            return annotation
+        args = get_args(annotation)
+        if not args:
+            return annotation
+        if origin is Annotated:
+            # Only the first arg is a type; the rest is metadata, not references.
+            resolved_first = cls._resolve_forward_refs(args[0], globalns)
+            if resolved_first is args[0]:
+                return annotation
+            return Annotated[resolved_first, *args[1:]]
+        resolved = tuple(cls._resolve_forward_refs(arg, globalns) for arg in args)
+        if resolved == args:
+            return annotation
+        try:
+            if origin is types.UnionType:
+                # types.UnionType is not subscriptable; typing.Union is equivalent
+                # here and the builder handles both origins the same way.
+                return Union[*resolved]
+            return origin[resolved[0]] if len(resolved) == 1 else origin[*resolved]
+        except Exception:
+            return annotation
 
     @classmethod
     def build_from_type_name(cls, parameter_type: str, description: str | None = None) -> dict[str, Any]:
@@ -156,7 +269,7 @@ class KernelJsonSchemaBuilder:
         """Gets JSON schema for a given parameter type.
 
         Args:
-            parameter_type (type): The parameter type.
+            parameter_type: The parameter type.
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -166,7 +279,13 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def handle_complex_type(
-        cls, parameter_type: type, description: str | None = None, structured_output: bool = False
+        cls,
+        parameter_type: type,
+        description: str | None = None,
+        structured_output: bool = False,
+        _defs: dict[str, Any] | None = None,
+        _in_progress: "set[type] | None" = None,
+        _ref_needed: "set[type] | None" = None,
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
@@ -186,14 +305,26 @@ class KernelJsonSchemaBuilder:
             item_type = args[0]
             schema = {
                 "type": "array",
-                "items": cls.build(item_type, structured_output=structured_output),
+                "items": cls.build(
+                    item_type,
+                    structured_output=structured_output,
+                    _defs=_defs,
+                    _in_progress=_in_progress,
+                    _ref_needed=_ref_needed,
+                ),
             }
             if description:
                 schema["description"] = description
             return schema
         if origin is dict:
             _, value_type = args
-            additional_properties = cls.build(value_type, structured_output=structured_output)
+            additional_properties = cls.build(
+                value_type,
+                structured_output=structured_output,
+                _defs=_defs,
+                _in_progress=_in_progress,
+                _ref_needed=_ref_needed,
+            )
             if additional_properties == {"type": "object"}:
                 additional_properties["properties"] = {}
             schema = {"type": "object", "additionalProperties": additional_properties}
@@ -205,9 +336,27 @@ class KernelJsonSchemaBuilder:
         if origin is tuple:
             if len(args) == 2 and args[1] is Ellipsis:
                 # tuple[X, ...] holds any number of X, like list[X]
-                schema = {"type": "array", "items": cls.build(args[0], structured_output=structured_output)}
+                schema = {
+                    "type": "array",
+                    "items": cls.build(
+                        args[0],
+                        structured_output=structured_output,
+                        _defs=_defs,
+                        _in_progress=_in_progress,
+                        _ref_needed=_ref_needed,
+                    ),
+                }
             else:
-                items = [cls.build(arg, structured_output=structured_output) for arg in args]
+                items = [
+                    cls.build(
+                        arg,
+                        structured_output=structured_output,
+                        _defs=_defs,
+                        _in_progress=_in_progress,
+                        _ref_needed=_ref_needed,
+                    )
+                    for arg in args
+                ]
                 schema = {"type": "array", "items": items}
             if description:
                 schema["description"] = description
@@ -226,7 +375,20 @@ class KernelJsonSchemaBuilder:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
-                schema = cls.build(non_none_type, structured_output=structured_output)
+                schema = cls.build(
+                    non_none_type,
+                    structured_output=structured_output,
+                    _defs=_defs,
+                    _in_progress=_in_progress,
+                    _ref_needed=_ref_needed,
+                )
+                if "$ref" in schema:
+                    # A $ref has no "type" key to make nullable in place, and "additionalProperties"
+                    # is not a valid sibling of "anyOf", so wrap it without either.
+                    schema = {"anyOf": [schema, {"type": "null"}]}
+                    if description:
+                        schema["description"] = description
+                    return schema
                 schema_types = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
                 schema["type"] = schema_types if "null" in schema_types else [*schema_types, "null"]
                 if "enum" in schema and None not in schema["enum"]:
@@ -236,7 +398,17 @@ class KernelJsonSchemaBuilder:
                 if structured_output:
                     schema["additionalProperties"] = False
                 return schema
-            schemas = [cls.build(arg, description, structured_output=structured_output) for arg in args]
+            schemas = [
+                cls.build(
+                    arg,
+                    description,
+                    structured_output=structured_output,
+                    _defs=_defs,
+                    _in_progress=_in_progress,
+                    _ref_needed=_ref_needed,
+                )
+                for arg in args
+            ]
             return {"anyOf": schemas}
         schema = cls.get_json_schema(parameter_type)
         if description:
@@ -250,11 +422,11 @@ class KernelJsonSchemaBuilder:
         """Builds the JSON schema for an enum type.
 
         Args:
-            enum_type (type): The enum type.
+            enum_type (str): The enum type.
             description (str, optional): The description of the enum. Defaults to None.
 
         Returns:
-            dict[str, Any]: The JSON schema for the enum type.
+            dict[str, Any]: The JSON schema for the parameter type.
         """
         if not issubclass(enum_type, Enum):
             raise FunctionInvalidParameterConfiguration(f"{enum_type} is not a valid Enum type")
