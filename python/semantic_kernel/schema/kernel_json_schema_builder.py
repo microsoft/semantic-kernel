@@ -109,7 +109,8 @@ class KernelJsonSchemaBuilder:
                             if isinstance(item, dict) and isinstance(item.get("description"), str):
                                 field_description = item["description"]
                                 break
-            if not cls._is_optional(field_type):
+            # Strict structured outputs require every property to be listed; optional ones stay nullable.
+            if structured_output or not cls._is_optional(field_type):
                 required.append(field_name)
             properties[field_name] = cls.build(field_type, field_description, structured_output)
 
