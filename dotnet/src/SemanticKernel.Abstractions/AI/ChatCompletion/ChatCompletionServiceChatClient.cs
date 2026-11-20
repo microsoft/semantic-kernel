@@ -70,13 +70,21 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(messages);
 
+        StreamingChatMessageContentConverter converter = new();
+
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
             new ChatHistory(messages.Select(m => m.ToChatMessageContent())),
             options.ToPromptExecutionSettings(),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
         {
-            yield return update.ToChatResponseUpdate();
+            yield return converter.ConvertNext(update);
+        }
+
+        // Streamed function call arguments arrive as fragments, so complete function calls are only available after the stream ends.
+        if (converter.Complete() is { } functionCallUpdate)
+        {
+            yield return functionCallUpdate;
         }
     }
 

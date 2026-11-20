@@ -262,6 +262,49 @@ public sealed class SemanticKernelAIAgentTests
     }
 
     [Fact]
+    public async Task RunStreaming_CombinesFunctionCallFragmentsAsync()
+    {
+        // Arrange
+        var innerThread = Mock.Of<AgentThread>();
+        var agentMock = new Mock<Agent>();
+        agentMock.Setup(a => a.InvokeStreamingAsync(
+            It.IsAny<List<ChatMessageContent>>(),
+            It.IsAny<AgentThread>(),
+            It.IsAny<AgentInvokeOptions>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(GetAsyncEnumerable());
+        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => innerThread, (e, o) => innerThread, (t, o) => default);
+
+        async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> GetAsyncEnumerable()
+        {
+            // Function call arguments are streamed as fragments, one per update, like the Azure AI agent does.
+            yield return new(new StreamingChatMessageContent(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent("call1", "GetWeather", "{\"", functionCallIndex: 0)] }, innerThread);
+            yield return new(new StreamingChatMessageContent(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "location\":\"Amst", functionCallIndex: 0)] }, innerThread);
+            yield return new(new StreamingChatMessageContent(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "erdam\"}", functionCallIndex: 0)] }, innerThread);
+            yield return new(new StreamingChatMessageContent(AuthorRole.Assistant, "Sunny"), innerThread);
+        }
+
+        // Act
+        var results = await adapter.RunStreamingAsync("What is the weather in Amsterdam?", new SemanticKernelAIAgentSession(innerThread)).ToListAsync();
+
+        // Assert
+        Assert.Equal(5, results.Count);
+        Assert.All(results.Take(4), update => Assert.DoesNotContain(update.Contents, c => c is MEAI.FunctionCallContent));
+        Assert.Equal("Sunny", results[3].Text);
+
+        var functionCallUpdate = results[4];
+        Assert.Equal(agentMock.Object.Id, functionCallUpdate.AgentId);
+        Assert.Equal(MEAI.ChatRole.Assistant, functionCallUpdate.Role);
+        Assert.Null(functionCallUpdate.RawRepresentation);
+
+        var functionCall = Assert.IsType<MEAI.FunctionCallContent>(Assert.Single(functionCallUpdate.Contents));
+        Assert.Equal("call1", functionCall.CallId);
+        Assert.Equal("GetWeather", functionCall.Name);
+        Assert.Null(functionCall.Exception);
+        Assert.Equal("Amsterdam", functionCall.Arguments?["location"]?.ToString());
+    }
+
+    [Fact]
     public async Task RunAsync_RemovesDuplicateTextContentInToolMessage()
     {
         // Arrange
