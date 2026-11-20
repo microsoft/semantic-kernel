@@ -541,15 +541,10 @@ class PineconeCollection(
                     case ast.Not():
                         operand = self._lambda_parser(node.operand)
                         # Pinecone only supports $not over $in (becomes $nin)
-                        if (
-                            isinstance(operand, dict)
-                            and len(operand) == 1
-                            and isinstance(next(operand.values()), dict)  # type: ignore
-                            and "$in" in next(operand.values())  # type: ignore
-                        ):
-                            field = next(operand.keys())  # type: ignore
-                            values = next(operand.values())["$in"]  # type: ignore
-                            return {field: {"$nin": values}}
+                        if isinstance(operand, dict) and len(operand) == 1:
+                            field, condition = next(iter(operand.items()))
+                            if isinstance(condition, dict) and "$in" in condition:
+                                return {field: {"$nin": condition["$in"]}}
                         raise NotImplementedError(
                             "$not is only supported over $in (i.e., for ![...].contains(field)). "
                             "Other NOT expressions are not supported by Pinecone."
@@ -574,6 +569,8 @@ class PineconeCollection(
                 if node.value is None:
                     raise NotImplementedError("Pinecone does not support null checks in vector search pre-filters.")
                 return node.value
+            case ast.List():
+                return [self._lambda_parser(elt) for elt in node.elts]
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
