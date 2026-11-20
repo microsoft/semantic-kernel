@@ -48,7 +48,12 @@ class AIServiceSelector:
 
             type_ = (TextCompletionClientBase, ChatCompletionClientBase, TextToAudioClientBase, TextToImageClientBase)  # type: ignore
 
-        execution_settings_dict = arguments.execution_settings if arguments and arguments.execution_settings else {}
+        # Copy the caller's settings: the function's own settings are merged in below, and that must not
+        # leak back into the KernelArguments (or the dict they were built from), otherwise a later call
+        # with the same arguments is resolved against this function's service and settings.
+        execution_settings_dict = (
+            dict(arguments.execution_settings) if arguments and arguments.execution_settings else {}
+        )
         if func_exec_settings := getattr(function, "prompt_execution_settings", None):
             for id, settings in func_exec_settings.items():
                 if id not in execution_settings_dict:

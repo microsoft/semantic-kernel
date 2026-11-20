@@ -109,3 +109,34 @@ def test_select_ai_service_settings_through_function(kernel_with_service: Kernel
     )
     assert service is not None
     assert settings is not None
+
+
+def test_select_ai_service_does_not_mutate_arguments_settings(kernel: Kernel):
+    """Selecting a service must not write the function's settings into the caller's arguments."""
+    first_service = AIServiceClientBase(service_id="service-a", ai_model_id="ai_model_id")
+    second_service = AIServiceClientBase(service_id="service-b", ai_model_id="ai_model_id")
+    kernel.add_service(first_service)
+    kernel.add_service(second_service)
+
+    first_function = CustomFunction(
+        metadata=KernelFunctionMetadata(name="first", plugin_name="test", description="test", is_prompt=True),
+        prompt_execution_settings={"service-a": PromptExecutionSettings(service_id="service-a")},
+    )
+    second_function = CustomFunction(
+        metadata=KernelFunctionMetadata(name="second", plugin_name="test", description="test", is_prompt=True),
+        prompt_execution_settings={"service-b": PromptExecutionSettings(service_id="service-b")},
+    )
+
+    caller_settings = {"unrelated": PromptExecutionSettings()}
+    arguments = KernelArguments(settings=caller_settings)
+    service_selector = kernel.ai_service_selector
+
+    first_selected, _ = service_selector.select_ai_service(kernel, first_function, arguments, type_=AIServiceClientBase)
+    second_selected, _ = service_selector.select_ai_service(
+        kernel, second_function, arguments, type_=AIServiceClientBase
+    )
+
+    assert first_selected.service_id == "service-a"
+    assert second_selected.service_id == "service-b"
+    assert list(arguments.execution_settings) == ["unrelated"]
+    assert list(caller_settings) == ["unrelated"]
