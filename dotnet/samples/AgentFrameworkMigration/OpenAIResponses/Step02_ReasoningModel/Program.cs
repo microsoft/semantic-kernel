@@ -12,7 +12,7 @@ using OpenAI.Responses;
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
-var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "o4-mini";
+var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.6-terra";
 var userInput =
     """
     Instructions:
@@ -50,7 +50,7 @@ async Task SKAgentAsync()
     Console.WriteLine("\n=== SK Agent ===\n");
 
     var responseClient = new OpenAIClient(apiKey).GetResponsesClient();
-    OpenAIResponseAgent agent = new(responseClient)
+    OpenAIResponseAgent agent = new(responseClient, model)
     {
         Name = "Thinker",
         Instructions = "You are good at thinking hard before answering.",
@@ -121,7 +121,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    OpenAIResponseAgent skAgent = new(responseClient)
+    OpenAIResponseAgent skAgent = new(responseClient, model)
     {
         Name = "Thinker",
         Instructions = "You are at thinking hard before answering.",

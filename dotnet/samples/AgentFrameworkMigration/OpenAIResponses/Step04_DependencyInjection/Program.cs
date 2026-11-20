@@ -11,7 +11,7 @@ using OpenAI.Responses;
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
-var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
+var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.6-sol";
 var userInput = "Tell me a joke about a pirate.";
 
 Console.WriteLine($"User Input: {userInput}");
@@ -65,7 +65,7 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddTransient((sp) => new OpenAIClient(apiKey)
+    serviceCollection.AddTransient<AIAgent>((sp) => new OpenAIClient(apiKey)
         .GetResponsesClient()
         .AsAIAgent(model: model, name: "Joker", instructions: "You are good at telling jokes."));
 
