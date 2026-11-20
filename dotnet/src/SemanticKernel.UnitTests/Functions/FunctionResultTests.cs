@@ -289,7 +289,7 @@ public class FunctionResultTests
         Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<MEAI.TextContent>());
         Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<MEAI.AIContent>());
 
-        // Check the the content list is returned
+        // Check the content list is returned
         Assert.Same(valueType.Messages[0].Contents, target.GetValue<IList<MEAI.AIContent>>()!);
         Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<IList<MEAI.AIContent>>()![0]);
         Assert.IsType<MEAI.TextContent>(target.GetValue<IList<MEAI.AIContent>>()![0]);
