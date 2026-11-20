@@ -6,7 +6,7 @@ import sys
 from collections.abc import AsyncIterable, Callable
 from inspect import getsource
 from typing import Any, ClassVar, Final, Literal
-from urllib.parse import quote_plus
+from urllib.parse import parse_qsl, quote_plus, urlencode, urlparse, urlunparse
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
@@ -144,6 +144,7 @@ class GoogleSearchSettings(KernelBaseSettings):
 
     api_key: SecretStr
     engine_id: str | None = None
+    custom_url: str | None = None
 
 
 @experimental
@@ -158,6 +159,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         search_engine_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        custom_url: str | None = None,
     ) -> None:
         """Initializes a new instance of the Google Search class.
 
@@ -174,6 +176,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             settings = GoogleSearchSettings(
                 api_key=api_key,
                 engine_id=search_engine_id,
+                custom_url=custom_url,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
@@ -261,7 +264,13 @@ class GoogleSearch(KernelBaseModel, TextSearch):
                 params:\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
-        full_url = f"{CUSTOM_SEARCH_URL}{self._build_query(query, options)}"
+        base_url = self.settings.custom_url or CUSTOM_SEARCH_URL
+        query_string = self._build_query(query, options).lstrip("?")
+        parsed_url = urlparse(base_url)
+        existing_params = parse_qsl(parsed_url.query, keep_blank_values=True)
+        new_params = parse_qsl(query_string, keep_blank_values=True)
+        merged_query = urlencode(existing_params + new_params)
+        full_url = urlunparse(parsed_url._replace(query=merged_query))
         headers = {"user_agent": SEMANTIC_KERNEL_USER_AGENT}
         try:
             async with AsyncClient(timeout=5) as client:
