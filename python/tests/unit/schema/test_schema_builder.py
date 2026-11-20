@@ -114,6 +114,12 @@ def test_build_with_model_with_optional_attributes():
     assert result == expected_schema
 
 
+def test_build_structured_output_requires_optional_attributes():
+    result = KernelJsonSchemaBuilder.build(ModelWithOptionalAttributes, structured_output=True)
+    assert result["required"] == ["name"]
+    assert result["properties"]["name"]["type"] == ["string", "null"]
+
+
 def test_build_with_model_with_union_attributes():
     expected_schema = {
         "type": "object",
