@@ -2,6 +2,7 @@
 
 import sys
 import types
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from enum import Enum
 from typing import Any, ClassVar, Literal, Union, get_args, get_origin, get_type_hints
 
@@ -54,10 +55,10 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description, structured_output)
         if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
             return cls.build_enum_schema(parameter_type, description)
+        if get_origin(parameter_type) is not None or hasattr(parameter_type, "__args__"):
+            return cls.handle_complex_type(parameter_type, description, structured_output)
         if hasattr(parameter_type, "__annotations__"):
             return cls.build_model_schema(parameter_type, description, structured_output)
-        if hasattr(parameter_type, "__args__"):
-            return cls.handle_complex_type(parameter_type, description, structured_output)
         schema = cls.get_json_schema(parameter_type)
         if description:
             schema["description"] = description
@@ -170,6 +171,9 @@ class KernelJsonSchemaBuilder:
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
+        Supports standard generic containers including list, set, Sequence,
+        MutableSequence, dict, Mapping, MutableMapping, tuple, Literal, and Union.
+
         Args:
             parameter_type: The parameter type.
             description: The description of the parameter. Defaults to None.
@@ -182,7 +186,7 @@ class KernelJsonSchemaBuilder:
         args = get_args(parameter_type)
 
         schema: dict[str, Any] = {}
-        if origin is list or origin is set:
+        if origin is list or origin is set or origin is Sequence or origin is MutableSequence:
             item_type = args[0]
             schema = {
                 "type": "array",
@@ -191,7 +195,7 @@ class KernelJsonSchemaBuilder:
             if description:
                 schema["description"] = description
             return schema
-        if origin is dict:
+        if origin is dict or origin is Mapping or origin is MutableMapping:
             _, value_type = args
             additional_properties = cls.build(value_type, structured_output=structured_output)
             if additional_properties == {"type": "object"}:
