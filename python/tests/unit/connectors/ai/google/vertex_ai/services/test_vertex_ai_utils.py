@@ -2,12 +2,14 @@
 
 import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Candidate
-from vertexai.generative_models import FunctionDeclaration, Part
+from google.cloud.aiplatform_v1beta1.types.prediction_service import GenerateContentResponse
+from vertexai.generative_models import FunctionDeclaration, GenerationResponse, Part
 
 from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     finish_reason_from_vertex_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
+    get_completion_token_count,
     kernel_function_metadata_to_vertex_ai_function_call_format,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -221,3 +223,47 @@ def test_vertex_ai_function_call_format_skips_params_excluded_from_function_choi
     schema = type(result).to_dict(result)["parameters"]
     assert list(schema["properties"]) == ["query"]
     assert schema["required"] == ["query"]
+
+
+def _usage_response(candidates_tokens, thoughts_tokens) -> GenerationResponse:
+    return GenerationResponse._from_gapic(
+        GenerateContentResponse(
+            usage_metadata=GenerateContentResponse.UsageMetadata(
+                prompt_token_count=5,
+                candidates_token_count=candidates_tokens,
+                thoughts_token_count=thoughts_tokens,
+                total_token_count=55,
+            )
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("candidates_tokens", "thoughts_tokens", "expected"),
+    [(10, 40, 50), (10, 0, 10), (0, 40, 40), (0, 0, 0)],
+)
+def test_get_completion_token_count_includes_thinking_tokens(candidates_tokens, thoughts_tokens, expected) -> None:
+    usage_metadata = _usage_response(candidates_tokens, thoughts_tokens).usage_metadata
+    assert get_completion_token_count(usage_metadata) == expected
+
+
+def test_get_completion_token_count_without_usage_metadata() -> None:
+    assert get_completion_token_count(None) is None
+
+
+def test_chat_completion_usage_counts_thinking_tokens(vertex_ai_unit_test_env) -> None:
+    from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import (
+        VertexAIChatCompletion,
+    )
+
+    usage = VertexAIChatCompletion()._get_metadata_from_response(_usage_response(10, 40))["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)
+
+
+def test_text_completion_usage_counts_thinking_tokens(vertex_ai_unit_test_env) -> None:
+    from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import (
+        VertexAITextCompletion,
+    )
+
+    usage = VertexAITextCompletion()._get_metadata_from_response(_usage_response(10, 40))["usage"]
+    assert (usage.prompt_tokens, usage.completion_tokens) == (5, 50)
