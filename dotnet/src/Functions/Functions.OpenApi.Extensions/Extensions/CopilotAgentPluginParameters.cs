@@ -20,6 +20,12 @@ public sealed class CopilotAgentPluginParameters
     public string? UserAgent { get; init; }
 
     /// <summary>
+    /// Gets the options used to validate the URLs of the OpenAPI documents loaded in plugin initialization phase.
+    /// If <see langword="null"/>, the default policy is applied: only HTTPS URLs that resolve to public addresses are allowed.
+    /// </summary>
+    public RestApiOperationServerUrlValidationOptions? ServerUrlValidationOptions { get; init; }
+
+    /// <summary>
     /// A map of function execution parameters, where the key is the api dependency key from api manifest
     /// and the value is OpenApiFunctionExecutionParameters specific to that dependency.
     /// </summary>

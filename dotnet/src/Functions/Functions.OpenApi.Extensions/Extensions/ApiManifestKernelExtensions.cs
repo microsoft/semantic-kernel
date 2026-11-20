@@ -142,6 +142,7 @@ public static class ApiManifestKernelExtensions
                     httpClient,
                     authCallback: null,
                     pluginParameters?.UserAgent,
+                    pluginParameters?.ServerUrlValidationOptions,
                     cancellationToken).ConfigureAwait(false) :
                 DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
                     logger);
@@ -194,7 +195,8 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false,
+                serverUrlValidationOptions: openApiFunctionExecutionParameters?.ServerUrlValidationOptions);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
             if (server?.Url is null)
