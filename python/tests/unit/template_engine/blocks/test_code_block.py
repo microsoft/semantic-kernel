@@ -483,3 +483,99 @@ def test_edge_cases(case, result):
 def test_no_tokens():
     with raises(CodeBlockTokenError):
         CodeBlock(content="", tokens=[])
+
+
+class TestNonStringArguments:
+    """Test that non-string KernelArguments are preserved when passed to functions in templates."""
+
+    async def test_function_receives_int_type(self, kernel: Kernel):
+        """Test that an integer argument is passed as int, not converted to string."""
+        received_value = None
+        received_type = None
+
+        @kernel_function(name="check_type")
+        def check_type(value: int):
+            nonlocal received_value, received_type
+            received_value = value
+            received_type = type(value)
+            return f"Received {type(value).__name__}: {value}"
+
+        function = KernelFunctionFromMethod(method=check_type, plugin_name="test")
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+
+        code_block = CodeBlock(content="test.check_type value=$my_int")
+        arguments = KernelArguments(my_int=42)
+
+        await code_block.render_code(kernel, arguments)
+
+        assert received_value == 42
+        assert isinstance(received_value, int), f"Expected int but got {received_type}"
+
+    async def test_function_receives_list_type(self, kernel: Kernel):
+        """Test that a list argument is passed as list, not converted to string."""
+        received_value = None
+        received_type = None
+
+        @kernel_function(name="check_type")
+        def check_type(items: list):
+            nonlocal received_value, received_type
+            received_value = items
+            received_type = type(items)
+            return f"Received {len(items)} items"
+
+        function = KernelFunctionFromMethod(method=check_type, plugin_name="test")
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+
+        code_block = CodeBlock(content="test.check_type items=$my_list")
+        arguments = KernelArguments(my_list=[1, 2, 3])
+
+        await code_block.render_code(kernel, arguments)
+
+        assert received_value == [1, 2, 3]
+        assert isinstance(received_value, list), f"Expected list but got {received_type}"
+
+    async def test_function_receives_dict_type(self, kernel: Kernel):
+        """Test that a dict argument is passed as dict, not converted to string."""
+        received_value = None
+        received_type = None
+
+        @kernel_function(name="check_type")
+        def check_type(data: dict):
+            nonlocal received_value, received_type
+            received_value = data
+            received_type = type(data)
+            return f"Received dict with keys: {list(data.keys())}"
+
+        function = KernelFunctionFromMethod(method=check_type, plugin_name="test")
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+
+        code_block = CodeBlock(content="test.check_type data=$my_dict")
+        arguments = KernelArguments(my_dict={"key": "value", "num": 123})
+
+        await code_block.render_code(kernel, arguments)
+
+        assert received_value == {"key": "value", "num": 123}
+        assert isinstance(received_value, dict), f"Expected dict but got {received_type}"
+
+    async def test_named_arg_with_non_string_type(self, kernel: Kernel):
+        """Test that named arguments with non-string types are preserved."""
+        received_count = None
+        received_type = None
+
+        @kernel_function(name="process")
+        def process(text: str, count: int):
+            nonlocal received_count, received_type
+            received_count = count
+            received_type = type(count)
+            return f"{text} x {count}"
+
+        function = KernelFunctionFromMethod(method=process, plugin_name="test")
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+
+        code_block = CodeBlock(content="test.process 'hello' count=$repetitions")
+        arguments = KernelArguments(repetitions=5)
+
+        await code_block.render_code(kernel, arguments)
+
+        assert received_count == 5
+        assert isinstance(received_count, int), f"Expected int but got {received_type}"

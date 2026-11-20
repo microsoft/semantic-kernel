@@ -8,6 +8,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.IntegrationTests;
+
 public class BaseIntegrationTest
 {
     protected IKernelBuilder CreateKernelBuilder()

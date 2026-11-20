@@ -150,7 +150,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
         try:
             response: ImagesResponse = await self.client.images.edit(
                 image=image,
-                mask=mask,
+                mask=mask,  # type: ignore
                 **settings.prepare_settings_dict(),
             )
             self.store_usage(response)

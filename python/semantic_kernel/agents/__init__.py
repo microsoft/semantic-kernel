@@ -15,6 +15,8 @@ _AGENTS = {
     "AzureAIAgent": ".azure_ai.azure_ai_agent",
     "AzureAIAgentSettings": ".azure_ai.azure_ai_agent_settings",
     "AzureAIAgentThread": ".azure_ai.azure_ai_agent",
+    "MCPToolApprovalCallback": ".azure_ai.mcp_tool_approval",
+    "MCPToolApprovalRequest": ".azure_ai.mcp_tool_approval",
     "AzureAssistantAgent": ".open_ai.azure_assistant_agent",
     "AssistantAgentThread": ".open_ai.openai_assistant_agent",
     "AzureResponsesAgent": ".open_ai.azure_responses_agent",

@@ -141,3 +141,20 @@ def test_to_dict_call(annotation):
         "text": expected_text,
     }
     assert annotation.to_dict() == expected_dict
+
+
+def test_element_roundtrip_through_serialized_xml():
+    """Citation types must survive serialize -> parse, not just memory (#14590)."""
+    from xml.etree.ElementTree import fromstring, tostring
+
+    annotation = AnnotationContent(
+        file_id="file-1",
+        quote="q",
+        start_index=4,
+        end_index=7,
+        type=CitationType.FILE_CITATION.value,
+    )
+    element = annotation.to_element()
+    assert element.get("type") == "file_citation"
+    reparsed = AnnotationContent.from_element(fromstring(tostring(element)))
+    assert reparsed == annotation

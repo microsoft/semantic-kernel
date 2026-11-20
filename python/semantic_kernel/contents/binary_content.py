@@ -236,8 +236,21 @@ class BinaryContent(KernelContent):
 
         return cls(uri=element.get("uri", None))
 
-    def write_to_file(self, path: str | FilePath) -> None:
-        """Write the data to a file."""
+    def write_to_file(self, path: str | FilePath, *, overwrite: bool = False) -> None:
+        """Write the data to a file.
+
+        Args:
+            path: The path to write the file to.
+            overwrite: If True, overwrite existing files. If False, raise an error if file exists.
+                Defaults to False.
+
+        Raises:
+            FileExistsError: If overwrite is False and the file already exists.
+        """
+        file_path = Path(path)
+        if not overwrite and file_path.exists():
+            raise FileExistsError(f"File already exists and overwrite is disabled: {path}")
+
         if self._data_uri and self._data_uri.data_array is not None:
             self._data_uri.data_array.tofile(path)
             return

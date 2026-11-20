@@ -92,22 +92,30 @@ public abstract class AgentActor : OrchestrationActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected async ValueTask<ChatMessageContent> InvokeAsync(IList<ChatMessageContent> input, CancellationToken cancellationToken)
     {
-        this.Context.Cancellation.ThrowIfCancellationRequested();
-
-        this._lastResponse = null;
-
-        AgentInvokeOptions options = this.GetInvokeOptions(HandleMessageAsync);
-        if (this.Context.StreamingResponseCallback == null)
+        try
         {
-            // No need to utilize streaming if no callback is provided
-            await this.InvokeAsync(input, options, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
-        }
+            this.Context.Cancellation.ThrowIfCancellationRequested();
 
-        return this._lastResponse ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
+            this._lastResponse = null;
+
+            AgentInvokeOptions options = this.GetInvokeOptions(HandleMessageAsync);
+            if (this.Context.StreamingResponseCallback == null)
+            {
+                // No need to utilize streaming if no callback is provided
+                await this.InvokeAsync(input, options, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await this.InvokeStreamingAsync(input, options, cancellationToken).ConfigureAwait(false);
+            }
+
+            return this._lastResponse ?? new ChatMessageContent(AuthorRole.Assistant, string.Empty);
+        }
+        catch (Exception exception)
+        {
+            this.Context.FailureCallback.Invoke(exception);
+            throw;
+        }
 
         async Task HandleMessageAsync(ChatMessageContent message)
         {

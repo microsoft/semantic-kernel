@@ -66,7 +66,7 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>(),
+            AdditionalModelResponseFieldPaths = [],
             GuardrailConfig = null,
             ToolConfig = null
         };
@@ -110,7 +110,7 @@ internal sealed class MetaService : IBedrockTextGenerationService, IBedrockChatC
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>(),
+            AdditionalModelResponseFieldPaths = [],
             GuardrailConfig = null,
             ToolConfig = null
         };

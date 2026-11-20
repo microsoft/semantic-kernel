@@ -1,13 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from abc import ABC, abstractmethod
-from typing import Any
-
-if sys.version < "3.11":
-    from typing_extensions import Self  # pragma: no cover
-else:
-    from typing import Self  # type: ignore # pragma: no cover
+from typing import Any, Self
 
 from pydantic import Field
 

@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
+
 public class StreamingChatMessageContentTests
 {
     [Fact]

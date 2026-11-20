@@ -5,13 +5,14 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
+from contextlib import aclosing, closing
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
 
 from opentelemetry import metrics, trace
 from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -34,6 +35,9 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.telemetry.model_diagnostics import function_tracer
 from semantic_kernel.utils.telemetry.model_diagnostics.gen_ai_attributes import TOOL_CALL_ARGUMENTS, TOOL_CALL_RESULT
+
+from ..contents.chat_message_content import ChatMessageContent
+from ..contents.text_content import TextContent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -223,7 +227,7 @@ class KernelFunction(KernelBaseModel):
 
     @abstractmethod
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
-        """Internal invoke method of the the function with the given arguments.
+        """Internal invoke method of the function with the given arguments.
 
         This function should be implemented by the subclass.
         It relies on updating the context with the result from the function.
@@ -295,7 +299,7 @@ class KernelFunction(KernelBaseModel):
 
     @abstractmethod
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
-        """Internal invoke method of the the function with the given arguments.
+        """Internal invoke method of the function with the given arguments.
 
         The abstract method is defined without async because otherwise the typing fails.
         A implementation of this function should be async.
@@ -349,13 +353,15 @@ class KernelFunction(KernelBaseModel):
                 function_results: list[Any] = []
                 if function_context.result is not None:
                     if isasyncgen(function_context.result.value):
-                        async for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        async with aclosing(function_context.result.value) as async_stream:
+                            async for partial in async_stream:
+                                function_results.append(partial)
+                                yield partial
                     elif isgenerator(function_context.result.value):
-                        for partial in function_context.result.value:
-                            function_results.append(partial)
-                            yield partial
+                        with closing(function_context.result.value) as stream:
+                            for partial in stream:
+                                function_results.append(partial)
+                                yield partial
                     else:
                         function_results.append(function_context.result.value)
                         yield function_context.result
@@ -398,10 +404,87 @@ class KernelFunction(KernelBaseModel):
             exception (Exception): The exception.
             attributes (Attributes): The attributes to be modified.
         """
-        attributes[ERROR_TYPE] = type(exception).__name__
+        error_type = type(exception).__name__
+        attributes[ERROR_TYPE] = error_type
 
-        current_span.record_exception(exception)
-        current_span.set_attribute(ERROR_TYPE, type(exception).__name__)
-        current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        current_span.set_attribute(ERROR_TYPE, error_type)
+        if function_tracer.are_sensitive_events_enabled():
+            current_span.record_exception(exception)
+            current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+        else:
+            current_span.set_status(trace.StatusCode.ERROR)
 
         KernelFunctionLogMessages.log_function_error(logger, exception)
+
+    def as_agent_framework_tool(
+        self,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        kernel: "Kernel | None" = None,
+    ) -> Any:
+        """Convert the function to an agent framework tool.
+
+        Args:
+            name: The name of the tool, if None, the function name is used.
+            description: The description of the tool, if None, the tool description is used.
+            kernel: The kernel to use, if None, a kernel is created.
+
+        Returns:
+            AIFunction: The agent framework tool.
+        """
+        import json
+
+        from pydantic import Field, create_model
+
+        from semantic_kernel.kernel import Kernel
+
+        try:
+            from agent_framework import AIFunction
+
+        except ImportError as e:
+            raise ImportError(
+                "agent_framework is not installed. Please install it with 'pip install agent-framework-core'"
+            ) from e
+
+        if not kernel:
+            kernel = Kernel()
+        name = name or self.name
+        description = description or self.description
+        fields = {}
+        for param in self.parameters:
+            if param.include_in_function_choices:
+                if param.default_value is not None:
+                    fields[param.name] = (
+                        param.type_,
+                        Field(description=param.description, default=param.default_value),
+                    )
+                fields[param.name] = (param.type_, Field(description=param.description))
+        input_model = create_model("InputModel", **fields)  # type: ignore
+
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            result = await self.invoke(kernel, *args, **kwargs)
+            if result and result.value is not None:
+                if isinstance(result.value, list):
+                    results: list[Any] = []
+                    for value in result.value:
+                        if isinstance(value, ChatMessageContent):
+                            results.append(str(value))
+                            continue
+                        if isinstance(value, TextContent):
+                            results.append(value.text)
+                            continue
+                        if isinstance(value, BaseModel):
+                            results.append(value.model_dump())
+                            continue
+                        results.append(value)
+                    return json.dumps(results) if len(results) > 1 else json.dumps(results[0])
+                return json.dumps(result.value)
+            return "The function did not return a result."
+
+        return AIFunction(
+            name=name,
+            description=description,
+            input_model=input_model,
+            func=wrapper,
+        )

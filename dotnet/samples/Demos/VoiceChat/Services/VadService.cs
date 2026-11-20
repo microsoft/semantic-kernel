@@ -14,7 +14,7 @@ public class VadService : IDisposable
 
     // State for pipeline processing
     private readonly Queue<byte[]> _preroll = new();
-    private readonly List<byte> _speech = new();
+    private readonly List<byte> _speech = [];
     private int _silenceFrames = 0;
     private bool _inSpeech = false;
 

@@ -77,7 +77,7 @@ internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockCha
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            AdditionalModelResponseFieldPaths = []
         };
 
         return converseRequest;
@@ -118,7 +118,7 @@ internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockCha
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            AdditionalModelResponseFieldPaths = []
         };
 
         return converseRequest;

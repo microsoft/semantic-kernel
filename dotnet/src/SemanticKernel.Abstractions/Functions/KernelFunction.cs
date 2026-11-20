@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction : FullyQualifiedAIFunction
 {
-    private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+    private static readonly JsonElement s_defaultSchema = JsonElement.Parse("{}");
 
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
@@ -79,7 +79,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public virtual new string Name => this.Metadata.Name;
+    public new virtual string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -697,7 +697,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction
     [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     private sealed class KernelAIFunction : AIFunction
     {
-        private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+        private static readonly JsonElement s_defaultSchema = JsonElement.Parse("{}");
         private readonly KernelFunction _kernelFunction;
         private readonly Kernel? _kernel;
 

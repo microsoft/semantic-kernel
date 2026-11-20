@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.OpenAI.UnitTests</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>

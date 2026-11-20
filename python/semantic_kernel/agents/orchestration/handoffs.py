@@ -7,6 +7,7 @@ import logging
 import sys
 from collections.abc import Awaitable, Callable
 from functools import partial
+from typing import Self
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
@@ -36,11 +37,6 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
 
 
 logger: logging.Logger = logging.getLogger(__name__)

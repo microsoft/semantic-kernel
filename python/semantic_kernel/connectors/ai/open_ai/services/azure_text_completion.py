@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import Mapping
 from typing import Any
 
@@ -15,9 +16,20 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated(
+    "The AzureTextCompletion class is deprecated and will be removed after 01/01/2026. "
+    "There won't be a replacement because all text completion models on Azure OpenAI "
+    "have retired. Please migrate to chat completion models before the deprecation date."
+)
 class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     """Azure Text Completion class."""
 

@@ -114,6 +114,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
     /// <remarks>
     /// This <paramref name="bearerTokenProvider"/> will be called on every request,
@@ -129,7 +130,8 @@ public static class VertexAIKernelBuilderExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -145,7 +147,8 @@ public static class VertexAIKernelBuilderExtensions
                 projectId: projectId,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
         return builder;
     }
 
@@ -160,6 +163,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
     [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
@@ -170,7 +174,8 @@ public static class VertexAIKernelBuilderExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -186,7 +191,8 @@ public static class VertexAIKernelBuilderExtensions
                 projectId: projectId,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
         return builder;
     }
 
@@ -201,6 +207,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
     /// <remarks>
     /// This <paramref name="bearerTokenProvider"/> will be called on every request,
@@ -215,7 +222,8 @@ public static class VertexAIKernelBuilderExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -223,7 +231,7 @@ public static class VertexAIKernelBuilderExtensions
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
-        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerTokenProvider, location, projectId, apiVersion, serviceId, httpClient);
+        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerTokenProvider, location, projectId, apiVersion, serviceId, httpClient, dimensions);
 
         return builder;
     }
@@ -239,6 +247,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddVertexAIEmbeddingGenerator(
         this IKernelBuilder builder,
@@ -248,7 +257,8 @@ public static class VertexAIKernelBuilderExtensions
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -256,7 +266,7 @@ public static class VertexAIKernelBuilderExtensions
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
-        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerKey, location, projectId, apiVersion, serviceId, httpClient);
+        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerKey, location, projectId, apiVersion, serviceId, httpClient, dimensions);
 
         return builder;
     }

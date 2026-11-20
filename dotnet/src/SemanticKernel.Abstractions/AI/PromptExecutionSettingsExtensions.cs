@@ -23,6 +23,10 @@ public static class PromptExecutionSettingsExtensions
             return null;
         }
 
+        // Preserve the original (potentially derived) settings instance so derived hooks can run after the
+        // base-type roundtrip below replaces 'settings' with a base PromptExecutionSettings.
+        PromptExecutionSettings derivedSettings = settings;
+
         if (settings.GetType() != typeof(PromptExecutionSettings))
         {
             var originalFunctionChoiceBehavior = settings.FunctionChoiceBehavior;
@@ -113,6 +117,18 @@ public static class PromptExecutionSettingsExtensions
                         options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
                     }
                 }
+                else if (entry.Key.Equals("reasoning_effort", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out string? reasoningEffort))
+                {
+                    (options.Reasoning ??= new()).Effort = reasoningEffort.ToUpperInvariant() switch
+                    {
+                        "LOW" => ReasoningEffort.Low,
+                        "MEDIUM" => ReasoningEffort.Medium,
+                        "HIGH" => ReasoningEffort.High,
+                        "XHIGH" => ReasoningEffort.ExtraHigh,
+                        _ => null,
+                    };
+                }
                 else
                 {
                     // Roundtripping a derived PromptExecutionSettings through the base type will have put all the
@@ -164,16 +180,16 @@ public static class PromptExecutionSettingsExtensions
                 options.AllowMultipleToolCalls = autoChoiceBehavior.Options?.AllowParallelCalls;
             }
             else
-            if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
-            {
-                options.ToolMode = ChatToolMode.None;
-            }
-            else
-            if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
-            {
-                options.ToolMode = ChatToolMode.RequireAny;
-                options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
-            }
+                if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
+                {
+                    options.ToolMode = ChatToolMode.None;
+                }
+                else
+                    if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
+                    {
+                        options.ToolMode = ChatToolMode.RequireAny;
+                        options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
+                    }
 
             options.Tools = [];
             foreach (var function in functions)
@@ -183,6 +199,11 @@ public static class PromptExecutionSettingsExtensions
                 options.Tools.Add(functionClone);
             }
         }
+
+        // Allow derived PromptExecutionSettings to perform post-processing on the produced ChatOptions
+        // (for example, setting ChatOptions.RawRepresentationFactory). Invoke on the original derived instance
+        // since 'settings' may have been replaced with a base-type clone above.
+        derivedSettings.ChatClientPrepareChatOptionsForRequest(options);
 
         // Enables usage of AutoFunctionInvocationFilters
         return kernel is null

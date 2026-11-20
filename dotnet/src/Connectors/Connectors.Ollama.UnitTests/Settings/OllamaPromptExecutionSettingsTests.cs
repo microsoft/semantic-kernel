@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -42,6 +41,7 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Null(ollamaExecutionSettings.Temperature);
         Assert.Null(ollamaExecutionSettings.TopP);
         Assert.Null(ollamaExecutionSettings.TopK);
+        Assert.Null(ollamaExecutionSettings.Think);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class OllamaPromptExecutionSettingsTests
             TopP = 0.85f,
             TopK = 50,
             NumPredict = 100,
-            Stop = new List<string> { "END", "STOP" },
+            Stop = ["END", "STOP"],
             ModelId = "llama2"
         };
 
@@ -188,6 +188,45 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(testSettings.Temperature, cloned.Temperature);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ThinkPropertyRoundTripsViaSerialization(bool thinkValue)
+    {
+        // Arrange
+        string jsonSettings = $$"""{ "think": {{thinkValue.ToString().ToLowerInvariant()}} }""";
+
+        // Act
+        var executionSettings = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(jsonSettings);
+
+        // Assert
+        Assert.Equal(thinkValue, executionSettings!.Think);
+    }
+
+    [Fact]
+    public void ThinkPropertyIsPreservedByClone()
+    {
+        // Arrange
+        var settings = new OllamaPromptExecutionSettings { Think = false };
+
+        // Act
+        var clone = (OllamaPromptExecutionSettings)settings.Clone();
+
+        // Assert
+        Assert.Equal(false, clone.Think);
+    }
+
+    [Fact]
+    public void ThinkPropertyThrowsWhenFrozen()
+    {
+        // Arrange
+        var settings = new OllamaPromptExecutionSettings();
+        settings.Freeze();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => settings.Think = true);
+    }
+
     [Fact]
     public void PromptExecutionSettingsFreezeWorksAsExpected()
     {
@@ -198,7 +237,7 @@ public class OllamaPromptExecutionSettingsTests
             TopP = 0.9f,
             TopK = 100,
             NumPredict = 50,
-            Stop = new List<string> { "STOP" }
+            Stop = ["STOP"]
         };
 
         // Act

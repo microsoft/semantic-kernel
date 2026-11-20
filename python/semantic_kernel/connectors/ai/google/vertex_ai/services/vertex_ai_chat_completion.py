@@ -4,15 +4,10 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import vertexai
-from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
-from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
+from typing_extensions import deprecated
+from vertexai.generative_models import Candidate, Content, GenerationResponse, GenerativeModel
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
@@ -52,11 +47,20 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_streaming_chat_completion,
 )
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
+@deprecated(
+    "VertexAIChatCompletion is deprecated and will be removed after 01/01/2026. "
+    "Use `semantic_kernel.connectors.ai.google.GoogleAIChatCompletion` connectors instead."
+)
 class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     """Google Vertex AI Chat Completion Service."""
 
@@ -125,6 +129,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
@@ -154,6 +159,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
+        assert self.service_settings.gemini_model_id is not None  # nosec
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
@@ -246,6 +252,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             if "text" in part_dict:
                 items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
             elif "function_call" in part_dict:
+                fc_metadata: dict[str, Any] = {}
+                thought_sig = part_dict.get("thought_signature")
+                if thought_sig:
+                    fc_metadata["thought_signature"] = thought_sig
                 items.append(
                     FunctionCallContent(
                         id=f"{part.function_call.name}_{idx!s}",
@@ -253,6 +263,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                             part.function_call.name
                         ),
                         arguments={k: v for k, v in part.function_call.args.items()},
+                        metadata=fc_metadata if fc_metadata else None,
                     )
                 )
 
@@ -303,6 +314,10 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                     )
                 )
             elif "function_call" in part_dict:
+                fc_metadata_s: dict[str, Any] = {}
+                thought_sig_s = part_dict.get("thought_signature")
+                if thought_sig_s:
+                    fc_metadata_s["thought_signature"] = thought_sig_s
                 items.append(
                     FunctionCallContent(
                         id=f"{part.function_call.name}_{idx!s}",
@@ -310,6 +325,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
                             part.function_call.name
                         ),
                         arguments={k: v for k, v in part.function_call.args.items()},
+                        metadata=fc_metadata_s if fc_metadata_s else None,
                     )
                 )
 

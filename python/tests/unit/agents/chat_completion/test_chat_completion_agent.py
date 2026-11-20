@@ -279,7 +279,10 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
         arguments: KernelArguments,
     ):
         responses = [
-            ChatMessageContent(role=AuthorRole.TOOL, content="Tool Call Result"),
+            ChatMessageContent(
+                role=AuthorRole.TOOL,
+                items=[FunctionResultContent(result="Tool Call Result")],
+            ),
         ]
         chat_history.messages.extend(responses)
         return responses
@@ -289,7 +292,7 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
     messages = [message async for message in agent.invoke(messages="test", thread=thread)]
 
     assert len(messages) == 1
-    assert messages[0].message.content == "Tool Call Result"
+    assert messages[0].message.items[0].result == "Tool Call Result"
     assert messages[0].message.role == AuthorRole.TOOL
     assert messages[0].message.name == "TestAgent"
 
@@ -298,7 +301,7 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
 
     assert len(thread_messages) == 2
     assert thread_messages[0].content == "test"
-    assert thread_messages[1].content == "Tool Call Result"
+    assert thread_messages[1].items[0].result == "Tool Call Result"
     assert thread_messages[1].name == "TestAgent"
     assert thread_messages[1].role == AuthorRole.TOOL
 
@@ -466,3 +469,95 @@ async def test_prepare_agent_chat_history_without_formatted_instructions():
         mock_format_instructions.assert_awaited_once_with(dummy_kernel, dummy_args)
         assert len(result_history.messages) == 1
         assert result_history.messages[0] == user_message
+
+
+async def test_chat_completion_agent_with_chat_history_reducer():
+    mock_service = AsyncMock(spec=ChatCompletionClientBase)
+    mock_service.service_id = "test_service"
+    mock_service.get_prompt_execution_settings_class.return_value = PromptExecutionSettings
+    mock_service.get_chat_message_contents.return_value = [
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Agent answer")
+    ]
+
+    reducer = ChatHistoryTruncationReducer(
+        target_count=2,
+        threshold_count=0,
+        auto_reduce=True,
+    )
+
+    thread = ChatHistoryAgentThread(chat_history=reducer)
+    for i in range(5):
+        await thread.on_new_message(ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}"))
+
+    agent = ChatCompletionAgent(
+        name="ReducerAgent",
+        service=mock_service,
+    )
+
+    response = await agent.get_response(thread=thread)
+    assert response.message.content == "Agent answer"
+
+    # Verify that the chat_history passed to get_chat_message_contents was reduced
+    passed_history = mock_service.get_chat_message_contents.call_args.kwargs["chat_history"]
+    user_messages = [m.content for m in passed_history.messages if m.role == AuthorRole.USER]
+    assert user_messages == ["Message 3", "Message 4"]
+
+
+async def test_chat_completion_agent_auto_reduce_via_arguments():
+    mock_service = AsyncMock(spec=ChatCompletionClientBase)
+    mock_service.service_id = "test_service"
+    mock_service.get_prompt_execution_settings_class.return_value = PromptExecutionSettings
+    mock_service.get_chat_message_contents.return_value = [
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Agent answer")
+    ]
+
+    reducer = ChatHistoryTruncationReducer(
+        target_count=2,
+        threshold_count=0,
+        auto_reduce=False,
+    )
+
+    for i in range(6):
+        reducer.add_message(ChatMessageContent(role=AuthorRole.USER, content=f"Msg {i}"))
+
+    agent = ChatCompletionAgent(
+        name="ReducerAgentArguments",
+        service=mock_service,
+    )
+
+    response = await agent.get_response(arguments=KernelArguments(chat_history=reducer))
+    assert response.message.content == "Agent answer"
+
+    passed_history = mock_service.get_chat_message_contents.call_args.kwargs["chat_history"]
+    user_messages = [m.content for m in passed_history.messages if m.role == AuthorRole.USER]
+    assert user_messages == ["Msg 4", "Msg 5"]
+
+
+async def test_chat_completion_agent_with_constructor_arguments_reducer():
+    mock_service = AsyncMock(spec=ChatCompletionClientBase)
+    mock_service.service_id = "test_service"
+    mock_service.get_prompt_execution_settings_class.return_value = PromptExecutionSettings
+    mock_service.get_chat_message_contents.return_value = [
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Agent answer")
+    ]
+
+    reducer = ChatHistoryTruncationReducer(
+        target_count=2,
+        threshold_count=0,
+        auto_reduce=False,
+    )
+    for i in range(4):
+        reducer.add_message(ChatMessageContent(role=AuthorRole.USER, content=f"ConstMsg {i}"))
+
+    agent = ChatCompletionAgent(
+        name="ReducerAgentConstructorArgs",
+        service=mock_service,
+        arguments=KernelArguments(chat_history=reducer),
+    )
+
+    response = await agent.get_response()
+    assert response.message.content == "Agent answer"
+
+    passed_history = mock_service.get_chat_message_contents.call_args.kwargs["chat_history"]
+    user_messages = [m.content for m in passed_history.messages if m.role == AuthorRole.USER]
+    assert user_messages == ["ConstMsg 2", "ConstMsg 3"]

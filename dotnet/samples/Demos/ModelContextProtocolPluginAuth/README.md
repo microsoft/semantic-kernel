@@ -17,7 +17,7 @@ The sample shows:
 ## Installing Prerequisites
 
 - A self-signed certificate to enable HTTPS use in development, see [dotnet dev-certs](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-dev-certs)
-- .NET 9.0 or later
+- .NET 10.0 or later
 - A running TestOAuthServer (for OAuth authentication), see [Start the Test OAuth Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMCPClient#step-1-start-the-test-oauth-server)
 - A running ProtectedMCPServer (for MCP services), see [Start the Protected MCP Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMCPClient#step-2-start-the-protected-mcp-server)
  
@@ -57,7 +57,7 @@ First, you need to start the TestOAuthServer which provides OAuth authentication
 
 ```bash
 cd <MCP CSHARP-SDK>\tests\ModelContextProtocol.TestOAuthServer
-dotnet run --framework net9.0
+dotnet run --framework net10.0
 ```
 
 The OAuth server will start at `https://localhost:7029`

@@ -3,7 +3,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenApi</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0040</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
@@ -28,9 +28,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
   </ItemGroup>
 </Project>

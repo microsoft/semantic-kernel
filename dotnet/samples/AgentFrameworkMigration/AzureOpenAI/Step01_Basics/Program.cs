@@ -6,7 +6,7 @@ using Microsoft.Agents.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI;
+using OpenAI.Chat;
 
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = System.Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-4o";
@@ -65,7 +65,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -83,9 +83,9 @@ async Task AFAgent()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential()).GetChatClient(deploymentName)
-        .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
+        .AsAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);

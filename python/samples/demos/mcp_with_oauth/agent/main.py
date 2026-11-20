@@ -4,14 +4,13 @@ import asyncio
 import threading
 import time
 import webbrowser
-from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from azure.identity import AzureCliCredential
 from mcp.client.auth import OAuthClientProvider, TokenStorage
 from mcp.shared.auth import OAuthClientInformationFull, OAuthClientMetadata, OAuthToken
-from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
+from semantic_kernel.agents import AgentThread, ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.mcp import MCPStreamableHttpPlugin
 
@@ -200,20 +199,20 @@ async def main():
         description="Auth Server Plugin",
         url="http://localhost:8001/mcp",
         auth=oauth_auth,
-        timeout=timedelta(seconds=60),
-    ) as oath_plugin:
+        timeout=60.0,
+    ) as oauth_plugin:
         agent = ChatCompletionAgent(
             service=AzureChatCompletion(credential=AzureCliCredential()),
             name="ProtectedAgent",
             instructions="Answer the users questions.",
-            plugins=[oath_plugin],
+            plugins=[oauth_plugin],
         )
 
         for user_input in USER_INPUTS:
             # 2. Create a thread to hold the conversation
             # If no thread is provided, a new thread will be
             # created and returned with the initial response
-            thread: ChatHistoryAgentThread | None = None
+            thread: AgentThread | None = None
 
             print(f"# User: {user_input}")
             # 3. Invoke the agent for a response

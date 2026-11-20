@@ -1,14 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Callable, Coroutine
-from typing import Any, ClassVar
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
+from typing import Any, ClassVar, Self
 
 from numpy import ndarray
 from pydantic import ConfigDict, PrivateAttr
