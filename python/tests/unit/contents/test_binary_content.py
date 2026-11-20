@@ -7,7 +7,10 @@ from pathlib import Path
 import pytest
 from numpy import array
 
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 test_cases = [
@@ -269,3 +272,29 @@ def test_write_to_file_overwrite_false_new_file():
         temp_file_path = Path(temp_dir) / "new_file.txt"
         binary.write_to_file(temp_file_path, overwrite=False)
         assert temp_file_path.read_bytes() == test_data
+
+
+@pytest.mark.parametrize(
+    "content_class, mime_type",
+    [
+        pytest.param(BinaryContent, "application/octet-stream", id="binary"),
+        pytest.param(ImageContent, "image/png", id="image"),
+        pytest.param(AudioContent, "audio/wav", id="audio"),
+    ],
+)
+def test_non_utf8_bytes_serialize_without_data_format(content_class: type[BinaryContent], mime_type: str):
+    data = b"\x89PNG\r\n\x1a\n\x00\xff"
+    content = content_class(data=data, mime_type=mime_type)
+    assert content.data_uri.startswith(f"data:{mime_type};base64,")
+    assert content == content_class(data=data, mime_type=mime_type)
+    restored = content_class(data_uri=content.data_uri)
+    assert restored.data == data
+
+
+def test_image_bytes_round_trip_through_prompt():
+    image = ImageContent(data=b"\x89PNG\r\n\x1a\n\x00\xff", mime_type="image/png")
+    history = ChatHistory()
+    history.add_user_message([image])
+    restored = ChatHistory.from_rendered_prompt(history.to_prompt()).messages[0].items[0]
+    assert isinstance(restored, ImageContent)
+    assert restored.data == image.data
