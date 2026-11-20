@@ -442,3 +442,84 @@ async def test_validate_server_url_preserves_empty_segment_in_allowlist():
     assert await validate_server_url("https://api.example.com/api//users", options) == []
     with pytest.raises(FunctionExecutionException, match="allowed base URLs"):
         await validate_server_url("https://api.example.com/api/users", options)
+
+
+def _wrap_ipv4(form: str, target: str) -> ipaddress.IPv6Address:
+    """Carry an IPv4 address inside an IPv6 one using the encoding named by `form`."""
+    packed = ipaddress.IPv4Address(target).packed
+    if form == "mapped":  # RFC 4291
+        return ipaddress.IPv6Address(b"\x00" * 10 + b"\xff\xff" + packed)
+    if form == "nat64":  # RFC 6052, well-known prefix 64:ff9b::/96
+        return ipaddress.IPv6Address(b"\x00\x64\xff\x9b" + b"\x00" * 8 + packed)
+    if form == "6to4":  # RFC 3056, the IPv4 address is bits 16-47
+        return ipaddress.IPv6Address(b"\x20\x02" + packed + b"\x00" * 10)
+    if form == "teredo":  # RFC 4380, the client IPv4 is stored with its bits inverted
+        return ipaddress.IPv6Address(b"\x20\x01\x00\x00" + b"\x00" * 8 + bytes(byte ^ 0xFF for byte in packed))
+    raise ValueError(form)
+
+
+IPV6_WRAPPER_FORMS = ["mapped", "nat64", "6to4", "teredo"]
+
+
+def test_azure_wireserver_is_blocked():
+    """168.63.129.16 is publicly routable, so no range check reaches it."""
+    assert try_categorize_non_public_address("168.63.129.16") == (True, "cloud metadata (Azure WireServer)")
+
+
+@pytest.mark.parametrize("form", IPV6_WRAPPER_FORMS)
+@pytest.mark.parametrize(
+    "target",
+    ["169.254.169.254", "168.63.129.16", "100.100.100.200", "192.0.0.192", "10.0.0.5", "127.0.0.1"],
+)
+def test_ipv6_wrapper_carrying_a_blocked_ipv4_is_blocked(form: str, target: str):
+    blocked, _ = try_categorize_non_public_address(_wrap_ipv4(form, target))
+
+    assert blocked is True
+
+
+@pytest.mark.parametrize("form", IPV6_WRAPPER_FORMS)
+@pytest.mark.parametrize("target", ["1.1.1.1", "8.8.8.8", "93.184.216.34"])
+def test_ipv6_wrapper_carrying_a_public_ipv4_is_allowed(form: str, target: str):
+    assert try_categorize_non_public_address(_wrap_ipv4(form, target)) == (False, "")
+
+
+def _nat64_local_use(prefix_length: int, target: str) -> ipaddress.IPv6Address:
+    """Embed an IPv4 address in the RFC 8215 local-use prefix at one of RFC 6052's lengths."""
+    packed = ipaddress.IPv4Address(target).packed
+    address = bytearray(16)
+    address[0:6] = b"\x00\x64\xff\x9b\x00\x01"
+    if prefix_length == 96:
+        address[12:16] = packed
+    elif prefix_length == 64:
+        address[9:13] = packed
+    elif prefix_length == 56:
+        address[7] = packed[0]
+        address[9:12] = packed[1:4]
+    elif prefix_length == 48:
+        address[6:8] = packed[0:2]
+        address[9:11] = packed[2:4]
+    return ipaddress.IPv6Address(bytes(address))
+
+
+@pytest.mark.parametrize("prefix_length", [96, 64, 56, 48])
+@pytest.mark.parametrize("target", ["1.1.1.1", "169.254.169.254"])
+def test_nat64_local_use_prefix_is_blocked_at_every_embedding_length(prefix_length: int, target: str):
+    """The translator's prefix length is configuration, so the whole prefix is refused, not decoded."""
+    blocked, category = try_categorize_non_public_address(_nat64_local_use(prefix_length, target))
+
+    assert (blocked, category) == (True, "NAT64 local-use prefix")
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "https://168.63.129.16/machine/",
+        "https://[::ffff:168.63.129.16]/machine/",
+        "https://[64:ff9b::169.254.169.254]/latest/meta-data/",
+        "https://[2002:a9fe:a9fe::]/latest/meta-data/",
+        "https://[2001:0:4136:e378:8000:63bf:3fff:fdd2]/",
+    ],
+)
+async def test_validate_server_url_rejects_metadata_forms(address: str):
+    with pytest.raises(FunctionExecutionException):
+        await validate_server_url(address)
