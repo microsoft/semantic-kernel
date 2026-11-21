@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from asyncio import Event
 from collections.abc import Sequence
@@ -23,6 +24,60 @@ from semantic_kernel.agents.runtime.in_process.default_subscription import defau
 from semantic_kernel.agents.runtime.in_process.default_topic import DefaultTopicId
 from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
 from semantic_kernel.agents.runtime.in_process.type_subscription import TypeSubscription
+
+
+@pytest.mark.parametrize("failure_source", ["handler", "factory"])
+@pytest.mark.parametrize("cancel_sender", [False, True])
+async def test_late_send_failure_after_sender_cancellation(failure_source: str, cancel_sender: bool) -> None:
+    started = Event()
+    release = Event()
+    finished = Event()
+
+    async def fail() -> None:
+        started.set()
+        await release.wait()
+        finished.set()
+        raise RuntimeError("late agent failure")
+
+    class FailingAgent(BaseAgent):
+        def __init__(self) -> None:
+            super().__init__("An agent that fails after the sender can cancel.")
+
+        async def on_message_impl(self, message: Any, ctx: MessageContext) -> Any:
+            await fail()
+
+    async def factory() -> FailingAgent:
+        if failure_source == "factory":
+            await fail()
+        return FailingAgent()
+
+    runtime = InProcessRuntime()
+    await FailingAgent.register(runtime, "failing", factory)
+    runtime.start()
+    request = asyncio.create_task(runtime.send_message("message", CoreAgentId("failing", "default")))
+    idle_stop = None
+    try:
+        await asyncio.wait_for(started.wait(), timeout=5)
+        if cancel_sender:
+            request.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await request
+        release.set()
+        if not cancel_sender:
+            with pytest.raises(RuntimeError, match="late agent failure"):
+                await request
+        await asyncio.wait_for(finished.wait(), timeout=5)
+        idle_stop = asyncio.create_task(runtime.stop_when_idle())
+        await asyncio.wait_for(asyncio.shield(idle_stop), timeout=5)
+    finally:
+        release.set()
+        request.cancel()
+        await asyncio.gather(request, return_exceptions=True)
+        # Keep a timed-out idle stop alive until close can stop its message loop.
+        await runtime.close()
+        if idle_stop is not None:
+            idle_stop.cancel()
+            await asyncio.gather(idle_stop, return_exceptions=True)
 
 
 @dataclass
