@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,15 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatClient
 {
+    /// <summary>
+    /// Metadata of completed function invocations, keyed by the function call that each one answers.
+    /// </summary>
+    /// <remarks>
+    /// The value returned by <see cref="InvokeFunctionAsync"/> is the function output, which is also what telemetry records,
+    /// so the metadata cannot travel inside it. It waits here until <see cref="CreateResponseMessages"/> builds the result content.
+    /// </remarks>
+    private readonly ConditionalWeakTable<FunctionCallContent, IReadOnlyDictionary<string, object?>> _resultMetadata = new();
+
     /// <inheritdoc/>
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerClient, loggerFactory, functionInvocationServices)
@@ -107,7 +117,83 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
         context.Terminate = autoContext.Terminate;
 
+        // The function output is returned unchanged. Its metadata is attached to the result content in CreateResponseMessages.
+        // Any entry left by an earlier invocation of the same call is removed first, so stale metadata is never attached.
+        this._resultMetadata.Remove(context.CallContent);
+        if (autoContext.Result.Metadata is { } metadata)
+        {
+            this._resultMetadata.Add(context.CallContent, metadata);
+        }
+
         return result;
+    }
+
+    /// <inheritdoc/>
+    protected override IList<ChatMessage> CreateResponseMessages(ReadOnlySpan<FunctionInvocationResult> results)
+    {
+        IList<ChatMessage> messages = base.CreateResponseMessages(results);
+
+        // Several calls can share one call ID (an empty one, for example), so each result content receives metadata only once.
+        HashSet<FunctionResultContent>? updatedContents = null;
+
+        foreach (FunctionInvocationResult result in results)
+        {
+            if (this._resultMetadata.TryGetValue(result.CallContent, out var metadata))
+            {
+                this._resultMetadata.Remove(result.CallContent);
+                AddMetadataToResultContent(messages, result, metadata, updatedContents ??= []);
+            }
+        }
+
+        return messages;
+    }
+
+    /// <summary>
+    /// Adds the function result metadata to the result content that answers the function call of <paramref name="result"/>.
+    /// </summary>
+    private static void AddMetadataToResultContent(
+        IList<ChatMessage> messages,
+        FunctionInvocationResult result,
+        IReadOnlyDictionary<string, object?> metadata,
+        HashSet<FunctionResultContent> updatedContents)
+    {
+        foreach (ChatMessage message in messages)
+        {
+            for (int i = 0; i < message.Contents.Count; i++)
+            {
+                if (message.Contents[i] is not FunctionResultContent content ||
+                    content.CallId != result.CallContent.CallId ||
+                    updatedContents.Contains(content))
+                {
+                    continue;
+                }
+
+                // A function can return the result content itself. That object is the function output,
+                // so the message receives a copy and the object owned by the function stays unchanged.
+                if (ReferenceEquals(content, result.Result))
+                {
+                    content = new FunctionResultContent(content.CallId, content.Result)
+                    {
+                        AdditionalProperties = content.AdditionalProperties?.Clone(),
+                        Annotations = content.Annotations,
+                        Exception = content.Exception,
+                        RawRepresentation = content.RawRepresentation
+                    };
+                    message.Contents[i] = content;
+                }
+
+                // Entries are set one at a time because this dictionary ignores letter case
+                // and its copy constructor throws for keys that differ only by case.
+                content.AdditionalProperties ??= [];
+                foreach (var entry in metadata)
+                {
+                    content.AdditionalProperties[entry.Key] = entry.Value;
+                }
+
+                updatedContents.Add(content);
+                return;
+            }
+        }
     }
 
     public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)

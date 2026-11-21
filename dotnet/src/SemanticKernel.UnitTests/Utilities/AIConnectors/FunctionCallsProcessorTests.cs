@@ -856,15 +856,13 @@ public class FunctionCallsProcessorTests
         Assert.Equal("{\"Text\":\"ﾃｽﾄ\"}", result);
     }
 
-    [Fact]
-    public async Task ItShouldPropagateFunctionResultMetadataToChatHistoryAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldPropagateFunctionResultMetadataToChatHistoryAsync(bool invokeConcurrently)
     {
         // Arrange
-        var expectedMetadata = new Dictionary<string, object?>
-        {
-            ["key1"] = "value1",
-            ["key2"] = 42
-        };
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
@@ -873,12 +871,17 @@ public class FunctionCallsProcessorTests
         {
             await next(context);
 
-            // Filter sets metadata on the FunctionResult
-            context.Result = new FunctionResult(context.Function, context.Result.GetValue<object>(), context.Result.Culture, expectedMetadata);
+            var value = context.Result.GetValue<object>();
+            context.Result = new FunctionResult(context.Function, value, context.Result.Culture, new Dictionary<string, object?>
+            {
+                ["key"] = value,
+                ["ChatCompletionsToolCall.Id"] = "unrelated-id"
+            });
         });
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", arguments: new KernelArguments() { ["parameter"] = "function1-result" }));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call1", arguments: new KernelArguments() { ["parameter"] = "result1" }));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call2", arguments: new KernelArguments() { ["parameter"] = "result2" }));
 
         var chatHistory = new ChatHistory();
 
@@ -895,13 +898,41 @@ public class FunctionCallsProcessorTests
                 cancellationToken: CancellationToken.None);
 
         // Assert
-        Assert.Equal(2, chatHistory.Count);
+        Assert.Equal(3, chatHistory.Count);
 
-        var toolMessage = chatHistory[1]; // First is the assistant message, second is the tool result
-        Assert.Equal(AuthorRole.Tool, toolMessage.Role);
-        Assert.NotNull(toolMessage.Metadata);
-        Assert.Equal("value1", toolMessage.Metadata["key1"]);
-        Assert.Equal(42, toolMessage.Metadata["key2"]);
+        for (int i = 1; i <= 2; i++)
+        {
+            var toolMessage = chatHistory[i];
+            Assert.Equal(AuthorRole.Tool, toolMessage.Role);
+            Assert.Null(toolMessage.Metadata);
+            var result = Assert.Single(toolMessage.Items.OfType<FunctionResultContent>());
+            Assert.Equal($"call{i}", result.CallId);
+            Assert.Equal($"result{i}", result.Result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal($"result{i}", result.Metadata["key"]);
+            Assert.Equal("unrelated-id", result.Metadata["ChatCompletionsToolCall.Id"]);
+            Assert.All(toolMessage.Items.OfType<TextContent>(), item => Assert.Null(item.Metadata));
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateFunctionResultMetadataWithoutChatHistoryAsync()
+    {
+        var function = KernelFunctionFactory.CreateFromMethod(() => "result", "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+        var kernel = CreateKernel(plugin, async (context, next) =>
+        {
+            await next(context);
+            context.Result = new FunctionResult(context.Function, context.Result.GetValue<object>(), context.Result.Culture, new Dictionary<string, object?> { ["key"] = "value" });
+        });
+        var message = new ChatMessageContent();
+        message.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call1"));
+
+        var results = await this._sut.InvokeFunctionCallsAsync(message, _ => true, this._functionChoiceBehaviorOptions, kernel, false, CancellationToken.None);
+
+        var result = Assert.Single(results);
+        Assert.Equal("result", result.Result);
+        Assert.Equal("value", result.Metadata?["key"]);
     }
 
     [Fact]

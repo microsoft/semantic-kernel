@@ -389,7 +389,6 @@ internal sealed class FunctionCallsProcessor
     private void AddFunctionCallResultToChatHistory(ChatHistory chatHistory, FunctionResultContext resultContext)
     {
         var message = new ChatMessageContent(role: AuthorRole.Tool, content: resultContext.Result);
-        message.Metadata = resultContext.Context.Result.Metadata;
         message.Items.Add(this.GenerateResultContent(resultContext));
         chatHistory.Add(message);
     }
@@ -413,7 +412,9 @@ internal sealed class FunctionCallsProcessor
     /// <param name="resultContext">The function result context.</param>
     private FunctionResultContent GenerateResultContent(FunctionResultContext resultContext)
     {
-        return this.GenerateResultContent(resultContext.FunctionCall, resultContext.Result, resultContext.ErrorMessage);
+        var result = this.GenerateResultContent(resultContext.FunctionCall, resultContext.Result, resultContext.ErrorMessage);
+        result.Metadata = resultContext.Context.Result.Metadata;
+        return result;
     }
 
     /// <summary>

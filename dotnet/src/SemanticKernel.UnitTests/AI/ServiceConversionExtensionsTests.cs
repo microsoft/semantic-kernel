@@ -3,15 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
+using Moq;
+using SemanticKernel.UnitTests.Utilities;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.AI;
@@ -642,6 +646,210 @@ public class ServiceConversionExtensionsTests
         Assert.Equal(["hello"], actualOptions.StopSequences);
         Assert.Equal(42, actualOptions.Seed);
         Assert.Equal("user123", actualOptions.AdditionalProperties?["User"]);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task ChatClientFunctionResultPreservesMetadataAsync(bool includeMetadata, bool returnNull)
+    {
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => returnNull ? null : "result", "TestFunction");
+        kernel.Plugins.AddFromFunctions("test", [function]);
+        kernel.AutoFunctionInvocationFilters.Add(new MetadataFilter(includeMetadata));
+
+        var (toolMessage, history) = await InvokeFunctionThroughChatClientAsync(kernel);
+
+        Assert.Null(toolMessage.AdditionalProperties);
+        var aiResult = Assert.IsType<Microsoft.Extensions.AI.FunctionResultContent>(Assert.Single(toolMessage.Contents));
+        Assert.Equal("call1", aiResult.CallId);
+        Assert.Equal(returnNull ? "Success: Function completed." : "result", aiResult.Result);
+        Assert.Equal(includeMetadata ? "value" : null, aiResult.AdditionalProperties?["key"]);
+
+        var historyMessage = Assert.Single(history, message => message.Role == AuthorRole.Tool);
+        Assert.False(historyMessage.Metadata?.ContainsKey("key") ?? false);
+        var result = Assert.Single(historyMessage.Items.OfType<Microsoft.SemanticKernel.FunctionResultContent>());
+        Assert.Equal(aiResult.Result, result.Result);
+        Assert.Equal(includeMetadata ? "value" : null, result.Metadata?["key"]);
+    }
+
+    [Fact]
+    public async Task ChatClientFunctionResultMetadataDoesNotChangeFunctionOutputAsync()
+    {
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("test", [KernelFunctionFactory.CreateFromMethod(() => "result", "TestFunction")]);
+        kernel.AutoFunctionInvocationFilters.Add(new MetadataFilter(true, new Dictionary<string, object?> { ["key"] = "metadata-marker" }));
+
+        // The function invoking client writes the function output to its trace log, which is the same text it records in telemetry.
+        var logger = new FakeLogger();
+        var loggerFactory = new Mock<ILoggerFactory>();
+        loggerFactory.Setup(factory => factory.CreateLogger(It.IsAny<string>())).Returns(logger);
+
+        var (toolMessage, _) = await InvokeFunctionThroughChatClientAsync(kernel, loggerFactory.Object);
+
+        Assert.Contains(logger.Logs, log => log.Message.Contains("\"result\"", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Logs, log => log.Message.Contains("metadata-marker", StringComparison.Ordinal));
+        var result = Assert.IsType<Microsoft.Extensions.AI.FunctionResultContent>(Assert.Single(toolMessage.Contents));
+        Assert.Equal("result", result.Result);
+        Assert.Equal("metadata-marker", result.AdditionalProperties?["key"]);
+    }
+
+    [Fact]
+    public async Task ChatClientFunctionResultAcceptsMetadataKeysDifferingOnlyByCaseAsync()
+    {
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("test", [KernelFunctionFactory.CreateFromMethod(() => "result", "TestFunction")]);
+        kernel.AutoFunctionInvocationFilters.Add(new MetadataFilter(true, new Dictionary<string, object?> { ["Id"] = 1, ["id"] = 2 }));
+
+        var (toolMessage, _) = await InvokeFunctionThroughChatClientAsync(kernel);
+
+        var result = Assert.IsType<Microsoft.Extensions.AI.FunctionResultContent>(Assert.Single(toolMessage.Contents));
+        Assert.Equal("result", result.Result);
+        Assert.Null(result.Exception);
+        Assert.Equal("id", Assert.Single(result.AdditionalProperties!).Key, ignoreCase: true);
+    }
+
+    [Fact]
+    public async Task ChatClientFunctionResultMetadataStaysWithItsCallWhenCallIdsRepeatAsync()
+    {
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(
+            (KernelFunction function, string input) => new FunctionResult(function, input, metadata: new Dictionary<string, object?> { ["key"] = input }),
+            "TestFunction");
+        kernel.Plugins.AddFromFunctions("test", [function]);
+
+        // Some providers do not supply call IDs, so both calls carry the same empty ID.
+        var (toolMessage, _) = await InvokeFunctionThroughChatClientAsync(kernel, createFunctionCalls: tool =>
+        [
+            new Microsoft.Extensions.AI.FunctionCallContent(string.Empty, tool.Name, new Dictionary<string, object?> { ["input"] = "first" }),
+            new Microsoft.Extensions.AI.FunctionCallContent(string.Empty, tool.Name, new Dictionary<string, object?> { ["input"] = "second" }),
+        ]);
+
+        var results = toolMessage.Contents.OfType<Microsoft.Extensions.AI.FunctionResultContent>().ToArray();
+        Assert.Equal(2, results.Length);
+        Assert.Equal("first", results[0].Result?.ToString());
+        Assert.Equal("first", results[0].AdditionalProperties?["key"]);
+        Assert.Equal("second", results[1].Result?.ToString());
+        Assert.Equal("second", results[1].AdditionalProperties?["key"]);
+    }
+
+    [Fact]
+    public async Task ChatClientFunctionResultPreservesExistingResultContentAsync()
+    {
+        var kernel = new Kernel();
+        var existingResult = new Microsoft.Extensions.AI.FunctionResultContent("call1", "result")
+        {
+            AdditionalProperties = new() { ["existing"] = "original", ["key"] = "old" }
+        };
+        var function = KernelFunctionFactory.CreateFromMethod(() => existingResult, "TestFunction");
+        kernel.Plugins.AddFromFunctions("test", [function]);
+        kernel.AutoFunctionInvocationFilters.Add(new MetadataFilter(true));
+
+        var (toolMessage, _) = await InvokeFunctionThroughChatClientAsync(kernel);
+
+        var result = Assert.IsType<Microsoft.Extensions.AI.FunctionResultContent>(Assert.Single(toolMessage.Contents));
+        Assert.NotSame(existingResult, result);
+        Assert.Equal("result", result.Result);
+        Assert.Equal("original", result.AdditionalProperties?["existing"]);
+        Assert.Equal("value", result.AdditionalProperties?["key"]);
+        Assert.Equal("old", existingResult.AdditionalProperties?["key"]);
+    }
+
+    [Fact]
+    public async Task StreamingChatClientFunctionResultPreservesMetadataAsync()
+    {
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "result", "TestFunction");
+        kernel.Plugins.AddFromFunctions("test", [function]);
+        kernel.AutoFunctionInvocationFilters.Add(new MetadataFilter(true));
+
+        ChatMessage? toolMessage = null;
+        int requests = 0;
+        async IAsyncEnumerable<ChatResponseUpdate> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken _)
+        {
+            await Task.Yield();
+            if (requests++ == 0)
+            {
+                var tool = Assert.Single(options!.Tools!.OfType<AIFunction>());
+                yield return new ChatResponseUpdate(ChatRole.Assistant, [new Microsoft.Extensions.AI.FunctionCallContent("call1", tool.Name)]);
+            }
+            else
+            {
+                toolMessage = Assert.Single(messages, message => message.Role == ChatRole.Tool);
+                yield return new ChatResponseUpdate(ChatRole.Assistant, "done");
+            }
+        }
+
+        using var innerClient = new TestChatClient { CompleteStreamingAsyncDelegate = GetResponseAsync };
+        using var client = new ChatClientBuilder(innerClient).UseKernelFunctionInvocation().Build();
+        var service = client.AsChatCompletionService();
+        ChatHistory history = [new ChatMessageContent(AuthorRole.User, "hello")];
+
+        await foreach (var _ in service.GetStreamingChatMessageContentsAsync(history, new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }, kernel))
+        {
+        }
+
+        Assert.NotNull(toolMessage);
+        Assert.Null(toolMessage.AdditionalProperties);
+        var aiResult = Assert.IsType<Microsoft.Extensions.AI.FunctionResultContent>(Assert.Single(toolMessage.Contents));
+        Assert.Equal("result", aiResult.Result);
+        Assert.Equal("value", aiResult.AdditionalProperties?["key"]);
+        var historyMessage = Assert.Single(history, message => message.Role == AuthorRole.Tool);
+        Assert.False(historyMessage.Metadata?.ContainsKey("key") ?? false);
+        var result = Assert.Single(historyMessage.Items.OfType<Microsoft.SemanticKernel.FunctionResultContent>());
+        Assert.Equal("result", result.Result);
+        Assert.Equal("value", result.Metadata?["key"]);
+    }
+
+    /// <summary>
+    /// Runs one chat request in which the model calls the only function of the kernel.
+    /// Returns the tool message sent back to the model and the resulting chat history.
+    /// </summary>
+    private static async Task<(ChatMessage ToolMessage, ChatHistory History)> InvokeFunctionThroughChatClientAsync(
+        Kernel kernel,
+        ILoggerFactory? loggerFactory = null,
+        Func<AIFunction, IList<AIContent>>? createFunctionCalls = null)
+    {
+        ChatMessage? toolMessage = null;
+        int requests = 0;
+        using var innerClient = new TestChatClient
+        {
+            CompleteAsyncDelegate = (messages, options, _) =>
+            {
+                if (requests++ == 0)
+                {
+                    var tool = Assert.Single(options!.Tools!.OfType<AIFunction>());
+                    var functionCalls = createFunctionCalls?.Invoke(tool) ?? [new Microsoft.Extensions.AI.FunctionCallContent("call1", tool.Name)];
+                    return Task.FromResult(new Microsoft.Extensions.AI.ChatResponse(new ChatMessage(ChatRole.Assistant, functionCalls)));
+                }
+
+                toolMessage = Assert.Single(messages, message => message.Role == ChatRole.Tool);
+                return Task.FromResult(new Microsoft.Extensions.AI.ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+            }
+        };
+        using var client = new ChatClientBuilder(innerClient).UseKernelFunctionInvocation(loggerFactory).Build();
+        var service = client.AsChatCompletionService();
+        ChatHistory history = [new ChatMessageContent(AuthorRole.User, "hello")];
+
+        await service.GetChatMessageContentsAsync(history, new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }, kernel);
+
+        Assert.NotNull(toolMessage);
+        return (toolMessage, history);
+    }
+
+    private sealed class MetadataFilter(bool includeMetadata, IReadOnlyDictionary<string, object?>? metadata = null) : IAutoFunctionInvocationFilter
+    {
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            await next(context);
+            if (includeMetadata)
+            {
+                context.Result = new FunctionResult(context.Function, context.Result.GetValue<object>(), context.Result.Culture,
+                    metadata ?? new Dictionary<string, object?> { ["key"] = "value" });
+            }
+        }
     }
 
     private sealed class TestChatCompletionService : IChatCompletionService
