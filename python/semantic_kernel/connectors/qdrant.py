@@ -440,24 +440,38 @@ class QdrantCollection(
                 return [self._lambda_parser(elt) for elt in node.elts]
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
+    def _storage_keyed(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Return the record keyed by storage names.
+
+        Dict and dataclass records arrive keyed by storage name, pydantic models keyed by field name.
+        """
+        keyed = dict(record)
+        for field in self.definition.fields:
+            storage_name = field.storage_name or field.name
+            if storage_name != field.name and storage_name not in keyed and field.name in keyed:
+                keyed[storage_name] = keyed.pop(field.name)
+        return keyed
+
     @override
     def _serialize_dicts_to_store_models(
         self,
         records: Sequence[dict[str, Any]],
         **kwargs: Any,
     ) -> Sequence[PointStruct]:
-        return [
-            PointStruct(
-                id=record.pop(self._key_field_name),
-                vector=record.pop(self.definition.vector_field_names[0])
-                if not self.named_vectors
-                else {
-                    field.storage_name or field.name: record.pop(field.name) for field in self.definition.vector_fields
-                },
-                payload=record,
+        key_name = self.definition.key_field_storage_name
+        vector_names = [field.storage_name or field.name for field in self.definition.vector_fields]
+        points = []
+        for record in map(self._storage_keyed, records):
+            points.append(
+                PointStruct(
+                    id=record.pop(key_name),
+                    vector=record.pop(vector_names[0])
+                    if not self.named_vectors
+                    else {name: record.pop(name) for name in vector_names},
+                    payload=record,
+                )
             )
-            for record in records
-        ]
+        return points
 
     @override
     def _deserialize_store_models_to_dicts(
@@ -465,16 +479,18 @@ class QdrantCollection(
         records: Sequence[PointStruct] | Sequence[ScoredPoint],
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
+        key_name = self.definition.key_field_storage_name
+        vector_name = self.definition.vector_fields[0].storage_name or self.definition.vector_field_names[0]
         return [
             {
-                self._key_field_name: record.id,
+                key_name: record.id,
                 **(record.payload if record.payload else {}),
                 **(
                     {}
                     if not record.vector
                     else record.vector
                     if isinstance(record.vector, dict)
-                    else {self.definition.vector_field_names[0]: record.vector}
+                    else {vector_name: record.vector}
                 ),
             }
             for record in records
