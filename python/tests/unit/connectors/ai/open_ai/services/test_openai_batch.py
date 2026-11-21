@@ -42,6 +42,7 @@ def _provider_job(**kwargs):
     job.id = kwargs.get("id", "batch_abc")
     job.status = kwargs.get("status", "completed")
     job.output_file_id = kwargs.get("output_file_id", "file-out")
+    job.error_file_id = kwargs.get("error_file_id")
     job.expired_requests = kwargs.get("expired_requests")
     job.errors = kwargs.get("errors")
     request_counts = MagicMock()
@@ -69,6 +70,15 @@ def test_encode_produces_provider_payloads():
     assert lines[0]["custom_id"] == "r1"
     assert lines[0]["url"] == "/v1/chat/completions"
     assert lines[0]["body"]["model"] == "gpt-4o-mini"
+
+
+def test_encode_rejects_malformed_entries():
+    with pytest.raises(ServiceInvalidRequestError):
+        open_ai_batch_encode([{"body": {}}])
+    with pytest.raises(ServiceInvalidRequestError):
+        open_ai_batch_encode([{"custom_id": "x"}])
+    with pytest.raises(ServiceInvalidRequestError):
+        open_ai_batch_encode([{"custom_id": "x", "body": "not-a-dict"}])
 
 
 def test_grouped_by_credential_separates_keys():
@@ -114,7 +124,50 @@ async def test_create_batch_rejects_empty():
 
 
 @pytest.mark.asyncio
-async def test_status_merge_prefers_worst():
+async def test_create_batch_rejects_duplicate_custom_ids():
+    batch = Batch(
+        requests=[
+            BatchRequest(custom_id="dup", endpoint="/v1/chat/completions", payload={}),
+            BatchRequest(custom_id="dup", endpoint="/v1/chat/completions", payload={}, credential_key="other"),
+        ]
+    )
+    with pytest.raises(ServiceInvalidRequestError, match="Duplicate custom_id"):
+        await _service().create_batch(batch)
+
+
+@pytest.mark.asyncio
+async def test_create_batch_rejects_mixed_endpoints():
+    batch = Batch(
+        requests=[
+            BatchRequest(custom_id="a", endpoint="/v1/chat/completions", payload={}),
+            BatchRequest(custom_id="b", endpoint="/v1/embeddings", payload={}),
+        ]
+    )
+    with pytest.raises(ServiceInvalidRequestError, match="share an endpoint"):
+        await _service().create_batch(batch)
+
+
+@pytest.mark.asyncio
+async def test_partial_submit_failure_cancels_earlier_jobs():
+    service = _service()
+    service.client.files.create.return_value = MagicMock(id="file-1")
+    service.client.batches.create.side_effect = [
+        _provider_job(id="batch_ok", status="validating"),
+        RuntimeError("second group exploded"),
+    ]
+    batch = Batch(
+        requests=[
+            BatchRequest(custom_id="a", endpoint="/v1/chat/completions", payload={}, credential_key="k1"),
+            BatchRequest(custom_id="b", endpoint="/v1/chat/completions", payload={}, credential_key="k2"),
+        ]
+    )
+    with pytest.raises(ServiceResponseException):
+        await service.create_batch(batch)
+    service.client.batches.cancel.assert_awaited_once_with("batch_ok")
+
+
+@pytest.mark.asyncio
+async def test_status_stays_nonterminal_while_any_child_runs():
     service = _service()
     service.client.batches.retrieve.side_effect = [
         _provider_job(id="b1", status="in_progress", total=3, completed=1, failed=0),
@@ -122,9 +175,22 @@ async def test_status_merge_prefers_worst():
     ]
     job = BatchJob(job_id="b1+b2", request_ids=["a", "b"])
     merged = await service.get_batch_status(job)
-    assert merged.status == BatchStatus.FAILED
+    # b1 is still running, so the aggregate must not report FAILED (terminal).
+    assert merged.status == BatchStatus.IN_PROGRESS
+    assert not merged.status.is_terminal
     assert merged.request_counts["total"] == 5
     assert merged.request_counts["failed"] == 2
+
+
+@pytest.mark.asyncio
+async def test_status_terminal_reports_worst():
+    service = _service()
+    service.client.batches.retrieve.side_effect = [
+        _provider_job(id="b1", status="completed", total=3, completed=3, failed=0),
+        _provider_job(id="b2", status="failed", total=2, completed=0, failed=2),
+    ]
+    merged = await service.get_batch_status(BatchJob(job_id="b1+b2"))
+    assert merged.status == BatchStatus.FAILED
 
 
 @pytest.mark.asyncio
@@ -137,9 +203,17 @@ async def test_cancel_marks_status():
 
 
 @pytest.mark.asyncio
+async def test_results_rejected_while_jobs_running():
+    service = _service()
+    service.client.batches.retrieve.return_value = _provider_job(id="b1", status="in_progress")
+    with pytest.raises(ServiceInvalidRequestError, match="still running"):
+        await service.get_batch_results(BatchJob(job_id="b1", request_ids=["a"]))
+
+
+@pytest.mark.asyncio
 async def test_results_surface_typed_per_request_errors():
     service = _service()
-    provider_job = _provider_job(id="b1", status="completed", output_file_id="file-out")
+    provider_job = _provider_job(id="b1", status="completed", output_file_id="file-out", error_file_id="file-err")
     service.client.batches.retrieve.return_value = provider_job
     output_lines = "\n".join(
         [
@@ -151,21 +225,29 @@ async def test_results_surface_typed_per_request_errors():
             ),
             json.dumps(
                 {
-                    "custom_id": "bad",
-                    "error": {"code": "context_length_exceeded", "message": "too long"},
+                    "custom_id": "http_error",
+                    "response": {"status_code": 400, "body": {"error": {"message": "bad request"}}},
                 }
             ),
         ]
     )
-    service.client.files.content.return_value = MagicMock(text=output_lines)
+    error_lines = json.dumps({"custom_id": "bad", "error": {"code": "context_length_exceeded", "message": "too long"}})
+    service.client.files.content.side_effect = [
+        MagicMock(text=output_lines),
+        MagicMock(text=error_lines),
+    ]
 
-    job = BatchJob(job_id="b1", request_ids=["ok", "bad", "unrun"], status=BatchStatus.COMPLETED)
+    job = BatchJob(job_id="b1", request_ids=["ok", "bad", "http_error", "unrun"], status=BatchStatus.COMPLETED)
     results = {r.custom_id: r for r in await service.get_batch_results(job)}
 
     assert results["ok"].succeeded
     assert results["ok"].response["choices"][0]["message"]["content"] == "done"
+    # Error file parsed for real error payloads.
     assert not results["bad"].succeeded
     assert "context_length_exceeded" in results["bad"].error
+    # A 4xx body is not a usable result even without a top-level error.
+    assert not results["http_error"].succeeded
+    assert results["http_error"].response is None
     # An unrun/cancelled request must surface a typed result, not be dropped.
     assert not results["unrun"].succeeded
     assert results["unrun"].error is not None
@@ -181,12 +263,20 @@ async def test_expired_requests_reported():
         expired_requests={"requests": ["stale"]},
     )
     service.client.batches.retrieve.return_value = provider_job
-    service.client.files.content.return_value = MagicMock(text="")
 
     job = BatchJob(job_id="b1", request_ids=["stale"], status=BatchStatus.EXPIRED)
     results = await service.get_batch_results(job)
     assert len(results) == 1
     assert results[0].error == "request expired before it ran"
+
+
+@pytest.mark.asyncio
+async def test_result_download_failure_wrapped():
+    service = _service()
+    service.client.batches.retrieve.return_value = _provider_job(id="b1", status="completed", output_file_id="f1")
+    service.client.files.content.side_effect = RuntimeError("download boom")
+    with pytest.raises(ServiceResponseException):
+        await service.get_batch_results(BatchJob(job_id="b1", request_ids=["a"], status=BatchStatus.COMPLETED))
 
 
 @pytest.mark.asyncio
