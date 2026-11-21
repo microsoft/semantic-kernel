@@ -18,8 +18,8 @@ The sample shows:
 
 - A self-signed certificate to enable HTTPS use in development, see [dotnet dev-certs](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-dev-certs)
 - .NET 10.0 or later
-- A running TestOAuthServer (for OAuth authentication), see [Start the Test OAuth Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMCPClient#step-1-start-the-test-oauth-server)
-- A running ProtectedMCPServer (for MCP services), see [Start the Protected MCP Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMCPClient#step-2-start-the-protected-mcp-server)
+- A running TestOAuthServer (for OAuth authentication), see [Start the Test OAuth Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMcpClient#step-1-start-the-test-oauth-server)
+- A running ProtectedMCPServer (for MCP services), see [Start the Protected MCP Server](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMcpClient#step-2-start-the-protected-mcp-server)
  
 ## Configuring Secrets or Environment Variables
 

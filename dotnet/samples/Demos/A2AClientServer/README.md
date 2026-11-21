@@ -1,7 +1,7 @@
 # A2A Client and Server samples
 
 > **Warning**
-> The [A2A protocol](https://google.github.io/A2A/) is still under development and changing fast.
+> The [A2A protocol](https://a2a-protocol.org/latest/) is still under development and changing fast.
 > We will try to keep these samples updated as the protocol evolves.
 
 These samples are built with [SharpA2A.Core](https://www.nuget.org/packages/SharpA2A.Core) and demonstrate:
