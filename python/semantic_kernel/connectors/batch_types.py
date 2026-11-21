@@ -121,8 +121,17 @@ class BatchRequestResult(KernelBaseModel):
 
     @property
     def succeeded(self) -> bool:
-        """Whether the request produced a usable response."""
-        return self.error is None and self.response is not None
+        """Whether the request produced a usable response.
+
+        When the provider reports an HTTP status for the request, it must be a
+        successful one; error bodies with failing status codes are not usable
+        results even when the provider still returns a body.
+        """
+        if self.error is not None or self.response is None:
+            return False
+        if self.status_code is not None and self.status_code >= 400:
+            return False
+        return True
 
 
 class SupportsBatch(ABC):
