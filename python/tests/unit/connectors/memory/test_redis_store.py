@@ -277,6 +277,16 @@ async def test_delete(collection_hash, collection_json, type_):
     await collection._inner_delete(["id1"])
 
 
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_delete_with_prefix(collection_with_prefix_hash, collection_with_prefix_json, type_):
+    collection = collection_with_prefix_hash if type_ == "hashset" else collection_with_prefix_json
+    await collection._inner_delete(["id1"])
+    if type_ == "json":
+        collection.redis_database.json().delete.assert_called_with("test:id1")
+    else:
+        collection.redis_database.delete.assert_called_with("test:id1")
+
+
 async def test_collection_exists(collection_hash, mock_collection_exists):
     await collection_hash.collection_exists()
 
