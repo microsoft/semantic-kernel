@@ -7,6 +7,7 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_batch import OpenAIBatchMixin
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
@@ -17,7 +18,9 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
+class OpenAIChatCompletion(
+    OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase, OpenAIBatchMixin
+):
     """OpenAI Chat completion class."""
 
     def __init__(
