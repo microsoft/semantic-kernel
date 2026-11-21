@@ -883,3 +883,122 @@ def test_function_model_dump_json(get_custom_type_function_pydantic):
     model_dump = func.model_dump_json()
     assert isinstance(model_dump, str)
     assert "metadata" in model_dump
+
+
+async def test_function_invoke_accepts_valid_typed_dict_argument(kernel: Kernel):
+    @kernel_function
+    def typed_dict_function(value: dict[str, int]) -> dict[str, int]:
+        return value
+
+    function = KernelFunction.from_method(typed_dict_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value={"first": 1, "second": 2}))
+
+    assert result.value == {"first": 1, "second": 2}
+
+
+async def test_function_invoke_rejects_invalid_typed_dict_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def typed_dict_function(value: dict[str, int]) -> dict[str, int]:
+        nonlocal invoked
+        invoked = True
+        return value
+
+    function = KernelFunction.from_method(typed_dict_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(
+            kernel=kernel,
+            arguments=KernelArguments(value={"first": "not-an-integer"}),
+        )
+
+    assert not invoked
+
+
+async def test_function_invoke_rejects_invalid_union_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def union_function(value: int | str) -> int | str:
+        nonlocal invoked
+        invoked = True
+        return value
+
+    function = KernelFunction.from_method(union_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(
+            kernel=kernel,
+            arguments=KernelArguments(value={"unexpected": "value"}),
+        )
+
+    assert not invoked
+
+
+@pytest.mark.parametrize("value", [42, "valid"])
+async def test_function_invoke_accepts_valid_union_argument(kernel: Kernel, value: int | str):
+    @kernel_function
+    def union_function(value: int | str) -> int | str:
+        return value
+
+    function = KernelFunction.from_method(union_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value=value))
+
+    assert result.value == value
+
+
+class CustomArgument:
+    """Plain Python class used to verify arbitrary types survive union validation."""
+
+    def __init__(self, label: str) -> None:
+        self.label = label
+
+
+async def test_function_invoke_accepts_valid_primitive_in_custom_union(kernel: Kernel):
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value="plain"))
+
+    assert result.value == "plain"
+
+
+async def test_function_invoke_accepts_custom_instance_in_custom_union(kernel: Kernel):
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+    instance = CustomArgument("instance")
+    result = await function.invoke(kernel=kernel, arguments=KernelArguments(value=instance))
+
+    assert result.value == "instance"
+
+
+async def test_function_invoke_rejects_invalid_custom_union_argument(kernel: Kernel):
+    invoked = False
+
+    @kernel_function
+    def custom_union_function(value: CustomArgument | str) -> str:
+        nonlocal invoked
+        invoked = True
+        return value if isinstance(value, str) else value.label
+
+    function = KernelFunction.from_method(custom_union_function, "test")
+
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter value is expected to be parsed to .* but is not\.",
+    ):
+        await function.invoke(kernel=kernel, arguments=KernelArguments(value={"unexpected": "value"}))
+
+    assert not invoked
