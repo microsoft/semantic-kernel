@@ -166,6 +166,20 @@ def test_message_converters_assistant_with_tool_calls() -> None:
     )
 
 
+def test_message_converters_assistant_tool_calls_keep_plugin_name() -> None:
+    """Test assistant tool calls are sent back with the fully qualified name used in the tool definitions."""
+    tool_call_1 = FunctionCallContent(name="Weather-get_weather", arguments={"city": "Paris"})
+    tool_call_2 = FunctionCallContent(plugin_name="Time", function_name="get_time", arguments='{"zone": "Tokyo"}')
+    content = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[tool_call_1, tool_call_2])
+
+    result = MESSAGE_CONVERTERS[AuthorRole.ASSISTANT](content)
+
+    assert [tool_call["function"]["name"] for tool_call in result["tool_calls"]] == [
+        "Weather-get_weather",
+        "Time-get_time",
+    ]
+
+
 def test_message_converters_tool_with_result() -> None:
     """Test tool message with a FunctionResultContent, verifying the message content is set."""
     # Arrange

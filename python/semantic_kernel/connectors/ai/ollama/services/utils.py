@@ -76,7 +76,7 @@ def _format_assistant_message(message: ChatMessageContent) -> Message:
         assistant_message["tool_calls"] = [
             {
                 "function": {
-                    "name": tool_call.function_name,
+                    "name": tool_call.name or tool_call.function_name,
                     "arguments": tool_call.arguments
                     if isinstance(tool_call.arguments, Mapping)
                     else json.loads(tool_call.arguments or "{}"),
