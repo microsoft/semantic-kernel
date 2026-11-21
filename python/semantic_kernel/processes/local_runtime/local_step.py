@@ -149,6 +149,10 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         if function is None:
             raise ProcessFunctionNotFoundException(f"Function {target_function} not found in plugin {self.name}")
 
+        # Consume the complete input set before invoking. Concurrent messages must
+        # populate a fresh buffer, which this invocation must not reset on completion.
+        self.inputs[target_function] = self.initial_inputs.get(target_function, {}).copy()
+
         invoke_result = None
         event_name: str = ""
         event_value = None
@@ -168,9 +172,6 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             event_value = str(ex)
         finally:
             await self.emit_event(KernelProcessEvent(id=event_name, data=event_value))
-
-            # Reset the inputs for the function that was just executed
-            self.inputs[target_function] = self.initial_inputs.get(target_function, {}).copy()
 
     async def invoke_function(self, function: "KernelFunction", kernel: "Kernel", arguments: dict[str, Any]):
         """Invokes the function."""
