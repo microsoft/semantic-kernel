@@ -72,6 +72,7 @@ public sealed class FunctionResultContent : KernelContent
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;
+        this.Metadata = result.Metadata;
     }
 
     /// <summary>
