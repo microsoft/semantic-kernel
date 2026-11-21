@@ -13,6 +13,7 @@ from typing_extensions import deprecated
 from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions import (
     ContentAdditionException,
     ContentInitializationError,
@@ -226,7 +227,7 @@ class FunctionCallContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function call content."""
-        args_hashable = frozenset(self.arguments.items()) if isinstance(self.arguments, Mapping) else None
+        args_hashable = make_hashable(dict(self.arguments)) if isinstance(self.arguments, Mapping) else self.arguments
         return hash((
             self.tag,
             self.id,

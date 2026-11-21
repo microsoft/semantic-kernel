@@ -210,3 +210,20 @@ def test_fc_dump_json(function_call: FunctionCallContent):
         dumped
         == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","function_name":"Function","plugin_name":"Test","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )
+
+
+def test_hash_with_nested_dict_arguments():
+    fc = FunctionCallContent(
+        id="test",
+        name="Test-Function",
+        arguments={"cities": ["Paris", "Rome"], "options": {"units": "metric"}},
+    )
+    same = FunctionCallContent(
+        id="test",
+        name="Test-Function",
+        arguments={"options": {"units": "metric"}, "cities": ["Paris", "Rome"]},
+    )
+    other = FunctionCallContent(id="test", name="Test-Function", arguments={"cities": ["Oslo"]})
+    assert hash(fc) == hash(same)
+    assert hash(fc) != hash(other)
+    assert len({fc, same, other}) == 2
