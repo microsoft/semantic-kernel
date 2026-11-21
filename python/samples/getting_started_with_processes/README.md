@@ -119,7 +119,7 @@ The processes in this subsection contain the following modifications/additions t
 ###### Potato Fries Preparation With Knife Sharpening and Ingredient Stock Process
 
 The following processes is a modification on the process [Potato Fries Preparation](#potato-fries-preparation-process) 
-with the the stateful steps mentioned previously.
+with the stateful steps mentioned previously.
 
 ``` mermaid
 flowchart LR
@@ -154,7 +154,7 @@ flowchart LR
 ###### Fried Fish Preparation With Knife Sharpening and Ingredient Stock Process
 
 The following process is a modification on the process [Fried Fish Preparation](#fried-fish-preparation-process) 
-with the the stateful steps mentioned previously.
+with the stateful steps mentioned previously.
 
 ``` mermaid
 flowchart LR

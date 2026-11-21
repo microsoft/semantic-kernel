@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <PackageReference Include="OData2Linq" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

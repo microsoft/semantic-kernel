@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -32,12 +32,11 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             })
         );
 
-        var sqliteCollection = new SqliteCollection<string, Record>(
-            "Data Source=./../../../Sqlite.sqlite",
+        var inMemoryCollection = new InMemoryCollection<string, Record>(
             name: "Test",
             new() { EmbeddingGenerator = hf.AsEmbeddingGenerator() });
 
-        await sqliteCollection.UpsertAsync(new Record
+        await inMemoryCollection.UpsertAsync(new Record
         {
             Id = "1",
             Text = "THIS IS A SAMPLE",
@@ -53,7 +52,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
         [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreVector(Dimensions: 768)]
+        [VectorStoreVector(768)]
         public string Embedding { get; set; }
     }
 

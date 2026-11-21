@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
+using OpenAI.Responses;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -131,7 +132,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
@@ -176,10 +177,10 @@ async Task AFAgentAsync()
 {
     Console.WriteLine("\n=== AF Agent ===\n");
 
-    var agent = new OpenAIClient(apiKey).GetResponsesClient().AsIChatClient(model)
-        .CreateAIAgent(name: "Thinker", instructions: "You are at thinking hard before answering.");
+    var agent = new OpenAIClient(apiKey).GetResponsesClient()
+        .AsAIAgent(model: model, name: "Thinker", instructions: "You are at thinking hard before answering.");
 
-    var thread = agent.GetNewThread();
+    var session = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new()
     {
         MaxOutputTokens = 8000,
@@ -190,7 +191,7 @@ async Task AFAgentAsync()
         }
     });
 
-    var result = await agent.RunAsync(userInput, thread, agentOptions);
+    var result = await agent.RunAsync(userInput, session, agentOptions);
 
     // Retrieve the thinking as a full text block requires flattening multiple TextReasoningContents from multiple messages content lists.
     string assistantThinking = string.Join("\n", result.Messages
@@ -203,7 +204,7 @@ async Task AFAgentAsync()
     Console.WriteLine($"Assistant: \n{assistantText}\n---\n");
 
     Console.WriteLine("---");
-    await foreach (var update in agent.RunStreamingAsync(userInput, thread, agentOptions))
+    await foreach (var update in agent.RunStreamingAsync(userInput, session, agentOptions))
     {
         var thinkingContents = update.Contents
             .OfType<TextReasoningContent>()

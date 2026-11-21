@@ -13,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />

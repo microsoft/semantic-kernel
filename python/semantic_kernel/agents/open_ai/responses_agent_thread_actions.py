@@ -215,7 +215,7 @@ class ResponsesAgentThreadActions:
                     cls._poll_until_completed(agent, response, polling_options or agent.polling_options),
                     timeout=agent.polling_options.run_polling_timeout.total_seconds(),
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 raise AgentInvokeException("Polling timed out before completion.")
 
             # Type narrowing for subsequent usage
@@ -1111,11 +1111,17 @@ class ResponsesAgentThreadActions:
 
     @classmethod
     async def _invoke_function_calls(
-        cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+        cls: type[_T],
+        kernel: "Kernel",
+        fccs: list["FunctionCallContent"],
+        chat_history: "ChatHistory",
+        function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> list[Any]:
         """Invoke the function calls."""
         tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
+            kernel.invoke_function_call(
+                function_call=function_call, chat_history=chat_history, function_behavior=function_behavior
+            )
             for function_call in fccs
         ]
         return await asyncio.gather(*tasks)

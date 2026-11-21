@@ -20,9 +20,9 @@
     
     <!-- Microsoft.Graph.Core is referencing really old versions of these libraries that pin old System dependencies.
          These package references can be removed once Microsoft.Graph updates. -->
-    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" VersionOverride="1.21.0" />
-    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" VersionOverride="1.21.0" />
-    <PackageReference Include="Microsoft.Kiota.Serialization.Json" VersionOverride="1.21.0" />
+    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" />
   </ItemGroup>
 
   <ItemGroup>

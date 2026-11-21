@@ -8,7 +8,7 @@ namespace Plugins;
 // This example shows how to use gRPC plugins.
 public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 {
-    [Fact(Skip = "Setup crendentials")]
+    [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()
     {
         Kernel kernel = new();

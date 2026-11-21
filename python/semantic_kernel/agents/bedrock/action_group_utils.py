@@ -29,6 +29,7 @@ def kernel_function_metadata_to_bedrock_function_schema(function_metadata: Kerne
         "parameters": {
             parameter.name: kernel_function_parameter_to_bedrock_function_parameter(parameter)
             for parameter in function_metadata.parameters
+            if parameter.include_in_function_choices
         },
         # This field controls whether user confirmation is required to invoke the function.
         # If this is set to "ENABLED", the user will be prompted to confirm the function invocation.

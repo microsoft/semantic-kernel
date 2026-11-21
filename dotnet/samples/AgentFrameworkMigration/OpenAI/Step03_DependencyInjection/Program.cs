@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using OpenAI;
+using OpenAI.Chat;
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
 var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
@@ -70,7 +71,7 @@ async Task AFAgentAsync()
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddTransient<AIAgent>((sp) => new OpenAIClient(apiKey)
         .GetChatClient(model)
-        .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
+        .AsAIAgent(name: "Joker", instructions: "You are good at telling jokes."));
 
     await using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
     var agent = serviceProvider.GetRequiredService<AIAgent>();

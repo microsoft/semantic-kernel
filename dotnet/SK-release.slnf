@@ -32,22 +32,6 @@
       "src\\Connectors\\Connectors.Onnx\\Connectors.Onnx.csproj",
       "src\\Connectors\\Connectors.OpenAI\\Connectors.OpenAI.csproj",
 
-      "src\\VectorData\\AzureAISearch\\AzureAISearch.csproj",
-      "src\\VectorData\\Chroma\\Chroma.csproj",
-      "src\\VectorData\\CosmosMongoDB\\CosmosMongoDB.csproj",
-      "src\\VectorData\\CosmosNoSql\\CosmosNoSql.csproj",
-      "src\\VectorData\\InMemory\\InMemory.csproj",
-      "src\\VectorData\\Milvus\\Milvus.csproj",
-      "src\\VectorData\\MongoDB\\MongoDB.csproj",
-      "src\\VectorData\\PgVector\\PgVector.csproj",
-      "src\\VectorData\\Pinecone\\Pinecone.csproj",
-      "src\\VectorData\\Qdrant\\Qdrant.csproj",
-      "src\\VectorData\\Redis\\Redis.csproj",
-      "src\\VectorData\\SqliteVec\\SqliteVec.csproj",
-      "src\\VectorData\\SqlServer\\SqlServer.csproj",
-      "src\\VectorData\\VectorData.Abstractions\\VectorData.Abstractions.csproj",
-      "src\\VectorData\\Weaviate\\Weaviate.csproj",
-
       "src\\Experimental\\Orchestration.Flow\\Experimental.Orchestration.Flow.csproj",
 
       "src\\Experimental\\Process.Abstractions\\Process.Abstractions.csproj",

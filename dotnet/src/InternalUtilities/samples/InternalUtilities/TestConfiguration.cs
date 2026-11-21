@@ -48,7 +48,7 @@ public sealed class TestConfiguration
     public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
-    public static CosmosMongoConfig CosmosMongo => LoadSection<CosmosMongoConfig>();
+    public static AzureDocumentDbConfig AzureDocumentDb => LoadSection<AzureDocumentDbConfig>();
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockConfig Bedrock => LoadSection<BedrockConfig>();
@@ -278,7 +278,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; } = "http://localhost:11434";
     }
 
-    public class CosmosMongoConfig
+    public class AzureDocumentDbConfig
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }

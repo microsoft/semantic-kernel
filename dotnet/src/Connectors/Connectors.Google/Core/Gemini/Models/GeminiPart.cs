@@ -185,6 +185,14 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonRequired]
         public FunctionResponseEntity Response { get; set; } = null!;
 
+        /// <summary>
+        /// Optional. Nested parts for multimodal function responses (Gemini 3+ only).
+        /// Contains inlineData with image/binary data as part of tool results.
+        /// </summary>
+        [JsonPropertyName("parts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public FunctionResponsePartContent[]? Parts { get; set; }
+
         internal sealed class FunctionResponseEntity
         {
             [JsonConstructor]
@@ -201,6 +209,17 @@ internal sealed class GeminiPart : IJsonOnDeserialized
             [JsonPropertyName("content")]
             [JsonRequired]
             public JsonNode Arguments { get; set; } = null!;
+        }
+
+        /// <summary>
+        /// Represents a part within a Gemini function response (for multimodal content).
+        /// Used in Gemini 3+ to include images/binary data as part of tool results.
+        /// </summary>
+        internal sealed class FunctionResponsePartContent
+        {
+            [JsonPropertyName("inlineData")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public InlineDataPart? InlineData { get; set; }
         }
     }
 }

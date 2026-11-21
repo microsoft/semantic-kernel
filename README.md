@@ -1,5 +1,10 @@
 # Semantic Kernel
 
+> [!IMPORTANT]
+> Semantic Kernel is now [Microsoft Agent Framework](https://github.com/microsoft/agent-framework)! Microsoft Agent Framework (MAF) is the enterprise‑ready successor to Semantic Kernel. Microsoft Agent Framework is now available at version 1.0 as a production-ready release: stable APIs, and a commitment to long-term support. Whether you're building a single assistant or orchestrating a fleet of specialized agents, Microsoft Agent Framework 1.0 gives you enterprise-grade multi-agent orchestration, multi-provider model support, and cross-runtime interoperability via A2A and MCP.
+>
+> Learn more about Semantic Kernel and Agent Framework here: [Semantic Kernel and Microsoft Agent Framework on the Agent Framework blog](https://devblogs.microsoft.com/agent-framework/semantic-kernel-and-microsoft-agent-framework/), and try out the [Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel).
+
 **Build intelligent AI agents and multi-agent systems with this enterprise-ready orchestration framework**
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
@@ -7,14 +12,13 @@
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-
 ## What is Semantic Kernel?
 
 Semantic Kernel is a model-agnostic SDK that empowers developers to build, orchestrate, and deploy AI agents and multi-agent systems. Whether you're building a simple chatbot or a complex multi-agent workflow, Semantic Kernel provides the tools you need with enterprise-grade reliability and flexibility.
 
 ## System Requirements
 
-- **Python**: 3.10+
+- **Python**: 3.11 through 3.14
 - **.NET**: .NET 10.0+ 
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux

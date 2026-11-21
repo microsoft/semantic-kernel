@@ -168,7 +168,42 @@ public sealed class RestApiOperation
 
         var path = this.BuildPath(this.Path, arguments);
 
-        return new Uri(serverUrl, $"{path.TrimStart('/')}");
+        var url = new Uri(serverUrl, $"{path.TrimStart('/')}");
+
+        EnsureRequestTargetMatchesServer(serverUrl, url);
+
+        return url;
+    }
+
+    /// <summary>
+    /// Verifies that URI construction did not move the request off the configured server. A selected
+    /// operation path must resolve to a request on the same scheme, host, and port and within the
+    /// server's base path. Otherwise an absolute or authority-changing operation path (for example
+    /// "https://another-host/admin") could redirect a credential-bearing request to an unintended
+    /// target even though it carries no dot-segment. This complements <see cref="ValidatePathSegments"/>
+    /// so operation selection, path validation, and request construction share one canonical target.
+    /// </summary>
+    /// <param name="serverUrl">The configured server URL.</param>
+    /// <param name="requestUrl">The request URL produced by combining the server URL and operation path.</param>
+    private static void EnsureRequestTargetMatchesServer(Uri serverUrl, Uri requestUrl)
+    {
+        var serverAuthority = serverUrl.GetLeftPart(UriPartial.Authority);
+        var requestAuthority = requestUrl.GetLeftPart(UriPartial.Authority);
+
+        if (!string.Equals(serverAuthority, requestAuthority, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException($"The operation path resolves to '{requestAuthority}', which does not match the configured server '{serverAuthority}'.");
+        }
+
+        // GetServerUrl guarantees a trailing slash, so the server's base path always ends with '/'.
+        var basePath = serverUrl.AbsolutePath;
+        var requestPath = requestUrl.AbsolutePath;
+
+        if (!string.Equals(requestPath, basePath.TrimEnd('/'), StringComparison.Ordinal) &&
+            !requestPath.StartsWith(basePath, StringComparison.Ordinal))
+        {
+            throw new KernelException($"The operation path resolves to '{requestPath}', which is outside the configured server base path '{basePath}'.");
+        }
     }
 
     /// <summary>
@@ -308,6 +343,8 @@ public sealed class RestApiOperation
             pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
         }
 
+        ValidatePathSegments(pathTemplate);
+
         return pathTemplate;
     }
 
@@ -364,19 +401,19 @@ public sealed class RestApiOperation
                     arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
                     value is string { } argStrValue && variable.Value.IsValid(argStrValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", argStrValue);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(argStrValue));
                 }
                 // Try to get the variable value by the variable name.
                 else if (arguments.TryGetValue(variableName, out value) &&
                     value is string { } strValue &&
                     variable.Value.IsValid(strValue))
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", strValue);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", Uri.EscapeDataString(strValue));
                 }
                 // Use the default value if no argument is provided.
                 else if (variable.Value.Default is not null)
                 {
-                    serverUrlString = url.Replace($"{{{variableName}}}", variable.Value.Default);
+                    serverUrlString = serverUrlString.Replace($"{{{variableName}}}", variable.Value.Default);
                 }
                 // Throw an exception if there's no value for the variable.
                 else
@@ -408,6 +445,67 @@ public sealed class RestApiOperation
         { RestApiParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
         { RestApiParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
+
+    /// <summary>
+    /// Validates that the path does not contain dot-segments (. or ..) that could enable path traversal,
+    /// including percent-encoded forms (e.g. "%2e%2e") that <see cref="Uri"/> canonicalizes at request time.
+    /// ".." navigates up one path segment, enabling traversal to unintended endpoints.
+    /// "." refers to the current directory — harmless but unexpected, so rejected to prevent misuse.
+    /// </summary>
+    /// <param name="path">The path to validate.</param>
+    private static void ValidatePathSegments(string path)
+    {
+        if (ContainsDotSegment(path))
+        {
+            throw new KernelException($"Path '{path}' contains a dot-segment, which could lead to path traversal.");
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the supplied path contains a dot-segment (. or ..), including percent-encoded
+    /// forms (e.g. "%2e%2e") that <see cref="Uri"/> canonicalizes at request time. This is used both to
+    /// reject such paths when building a request URL and to exclude them during operation selection so an
+    /// encoded dot-segment cannot bypass an include/exclude operation-selection filter.
+    /// </summary>
+    /// <param name="path">The path to inspect.</param>
+    /// <returns><see langword="true"/> if the path contains a dot-segment; otherwise, <see langword="false"/>.</returns>
+    internal static bool ContainsDotSegment(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        // Split on the structural path separator first.
+        foreach (var rawSegment in path.Split('/'))
+        {
+            // Decode percent-encoding until stable to catch encoded ("%2e") and
+            // double-encoded ("%252e") dot-segments before URI canonicalization.
+            var decoded = rawSegment;
+            for (int i = 0; i < 5; i++)
+            {
+                var unescaped = Uri.UnescapeDataString(decoded);
+                if (string.Equals(unescaped, decoded, StringComparison.Ordinal))
+                {
+                    break;
+                }
+
+                decoded = unescaped;
+            }
+
+            // A decoded segment may itself contain encoded separators ("%2f"/"%5c"),
+            // so re-split on both '/' and '\' and reject any resulting dot-segment.
+            foreach (var segment in decoded.Split('/', '\\'))
+            {
+                if (segment == "." || segment == "..")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private IDictionary<string, object?> _extensions = s_emptyDictionary;
     private readonly Freezable _freezable = new();

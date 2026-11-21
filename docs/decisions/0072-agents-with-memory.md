@@ -68,7 +68,7 @@ Building a service to host an agent comes with challenges.
 It's hard to build a stateful service, but service consumers expect an experience that looks stateful from the outside.
 E.g. on each invocation, the user expects that the service can continue a conversation they are having.
 
-This means that where the the service is exposing a local agent with local conversation state management (e.g. via `ChatHistory`)
+This means that where the service is exposing a local agent with local conversation state management (e.g. via `ChatHistory`)
 that conversation state needs to be loaded and persisted for each invocation of the service.
 
 It also means that any memory components that may have some in-memory state will need to be loaded and persisted too.
@@ -170,7 +170,7 @@ await ragStore.UpsertDocumentsAsync(
 var agentThread = new ChatHistoryAgentThread();
 agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 
-// Inovke the agent.
+// Invoke the agent.
 var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
 // Expected response contains the 174M income from the document.
 ```

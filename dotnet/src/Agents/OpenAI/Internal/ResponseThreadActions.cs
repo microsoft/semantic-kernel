@@ -93,7 +93,7 @@ internal static class ResponseThreadActions
                     agent.GetKernel(options),
                     isStreaming: false,
                     cancellationToken).ConfigureAwait(false);
-            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
+            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, GetFunctionResultAsString(fr.Result))).ToList();
 
             // If store is enabled we only need to send the function output items
             if (agent.StoreEnabled)
@@ -267,7 +267,7 @@ internal static class ResponseThreadActions
                     agent.GetKernel(options),
                     isStreaming: true,
                     cancellationToken).ConfigureAwait(false);
-            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
+            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, GetFunctionResultAsString(fr.Result))).ToList();
 
             // If store is enabled we only need to send the function output items
             if (agent.StoreEnabled)
@@ -316,6 +316,22 @@ internal static class ResponseThreadActions
             throw new KernelException(
                 $"Run failed with status: `{response.Status}` for agent `{agent.Name}` with error: {response.Error.Message} or incomplete details: {response.IncompleteStatusDetails.Reason}");
         }
+    }
+
+    /// <summary>
+    /// Processes a function result and returns a string representation.
+    /// The OpenAI Responses API does not support multimodal tool results, so ImageContent returns an error message.
+    /// </summary>
+    internal static string GetFunctionResultAsString(object? result)
+    {
+        var processed = FunctionCallsProcessor.ProcessFunctionResult(result ?? string.Empty);
+
+        if (processed is ImageContent)
+        {
+            return FunctionCallsProcessor.ImageContentNotSupportedErrorMessage;
+        }
+
+        return (string?)processed ?? string.Empty;
     }
 
     /// <summary>POCO representing function calling info.</summary>

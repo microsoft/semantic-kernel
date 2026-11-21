@@ -15,7 +15,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
-/// Unit tests for prompt execution settings confirgurations for different Bedrock Models.
+/// Unit tests for prompt execution settings configurations for different Bedrock Models.
 /// </summary>
 public class BedrockChatCompletionModelExecutionSettingsTests
 {

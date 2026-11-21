@@ -13,24 +13,15 @@ jobs:
   python-unit-tests:
     name: Python Unit Tests
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        experimental: [false]
         test-suite: ["unit-all-except-dapr", "dapr"]
         exclude:
-          - python-version: "3.10"
-            os: macos-latest
           - python-version: "3.11"
             os: macos-latest
-        include:
-          - python-version: "3.13"
-            os: "ubuntu-latest"
-            experimental: true
-            test-suite: "unit-all-except-dapr"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     permissions:
@@ -39,33 +30,56 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v5
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          version: "0.5.x"
+          python-version: ${{ matrix.python-version }}
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          version: "0.13.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
-      - name: Install the project (all extras)
+      - name: Install the project (supported extras)
         if: matrix.test-suite == 'unit-all-except-dapr'
-        run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+        shell: bash
+        run: |
+          uv venv
+          extras=$(python - <<'PY'
+          import sys
+          import tomllib
+          from pathlib import Path
+
+          extras = set(tomllib.loads(Path("pyproject.toml").read_text())["project"]["optional-dependencies"])
+          if sys.version_info >= (3, 14) or (sys.platform == "win32" and sys.version_info[:2] == (3, 13)):
+              extras.discard("autogen")
+          print(",".join(sorted(extras)))
+          PY
+          )
+          uv pip install --editable ".[$extras]" --group dev --upgrade --prerelease=if-necessary-or-explicit
       - name: Install the project (dapr tests)
         if: matrix.test-suite == 'dapr'
-        run: uv sync --extra pandas --dev -U --prerelease=if-necessary-or-explicit && uv pip install "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
+        shell: bash
+        run: |
+          uv venv
+          uv pip install --editable ".[pandas]" --group dev --upgrade --prerelease=if-necessary-or-explicit "dapr>=1.14.0" "dapr-ext-fastapi>=1.14.0" "flask-dapr>=1.14.0"
       - name: Test with pytest (all except dapr)
         if: matrix.test-suite == 'unit-all-except-dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+        run: >-
+          uv run --no-sync python -u -X faulthandler -m pytest --junitxml=pytest.xml ./tests/unit --ignore=tests/unit/processes/dapr_runtime
+          ${{ (matrix.python-version == '3.14' || (matrix.python-version == '3.13' && runner.os == 'Windows')) && '--ignore=tests/unit/agents/autogen_conversable_agent' || '' }}
       - name: Test dapr with pytest
         if: matrix.test-suite == 'dapr'
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run --frozen pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
+        run: uv run --no-sync python -u -X faulthandler -m pytest --junitxml=pytest-dapr.xml ./tests/unit/processes/dapr_runtime
       - name: Surface failing tests
-        if: ${{ !matrix.experimental && matrix.test-suite == 'unit-all-except-dapr' }}
-        uses: pmeier/pytest-results-action@v0.7.2
+        if: matrix.test-suite == 'unit-all-except-dapr'
+        uses: pmeier/pytest-results-action@fdc7f18d9934e38aca411ca9557e6577bd25ca9c # v0.9.0
         with:
           path: python/pytest.xml
           summary: true

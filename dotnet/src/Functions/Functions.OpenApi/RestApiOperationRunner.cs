@@ -121,11 +121,6 @@ internal sealed class RestApiOperationRunner
     private readonly RestApiOperationServerUrlValidationOptions? _serverUrlValidationOptions;
 
     /// <summary>
-    /// Default allowed schemes when none are explicitly configured.
-    /// </summary>
-    private static readonly IReadOnlyList<string> s_defaultAllowedSchemes = ["https"];
-
-    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -191,7 +186,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<RestApiOperationResponse> RunAsync(
+    public async Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         KernelArguments arguments,
         RestApiOperationRunOptions? options = null,
@@ -199,73 +194,17 @@ internal sealed class RestApiOperationRunner
     {
         var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        this.ValidateUrl(url);
+        var validatedAddresses = await ServerUrlValidator.ValidateAsync(
+            url, this._serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
 
         var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
+        return await this.SendAsync(operation, url, headers, Payload, Content, options, validatedAddresses, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
-
-    /// <summary>
-    /// Validates the resolved URL against the configured server URL validation options.
-    /// </summary>
-    /// <param name="url">The resolved URL to validate.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the URL violates the validation rules.</exception>
-    private void ValidateUrl(Uri url)
-    {
-        if (this._serverUrlValidationOptions is null)
-        {
-            return;
-        }
-
-        // Validate the URI scheme.
-        var allowedSchemes = this._serverUrlValidationOptions.AllowedSchemes ?? s_defaultAllowedSchemes;
-        if (allowedSchemes.Count > 0)
-        {
-            bool schemeAllowed = false;
-            foreach (var scheme in allowedSchemes)
-            {
-                if (string.Equals(url.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    schemeAllowed = true;
-                    break;
-                }
-            }
-
-            if (!schemeAllowed)
-            {
-                throw new InvalidOperationException(
-                    $"The request URI scheme '{url.Scheme}' is not allowed. Allowed schemes: {string.Join(", ", allowedSchemes)}.");
-            }
-        }
-
-        // Validate the URL against the allowed base URLs.
-        if (this._serverUrlValidationOptions.AllowedBaseUrls is { Count: > 0 } allowedBaseUrls)
-        {
-            bool baseUrlAllowed = false;
-            var urlString = url.AbsoluteUri;
-
-            foreach (var baseUrl in allowedBaseUrls)
-            {
-                var baseUrlString = baseUrl.AbsoluteUri;
-                if (urlString.StartsWith(baseUrlString, StringComparison.OrdinalIgnoreCase))
-                {
-                    baseUrlAllowed = true;
-                    break;
-                }
-            }
-
-            if (!baseUrlAllowed)
-            {
-                throw new InvalidOperationException(
-                    $"The request URI '{url}' is not allowed. It does not match any of the allowed base URLs.");
-            }
-        }
-    }
 
     /// <summary>
     /// Sends an HTTP request.
@@ -276,6 +215,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
     /// <param name="options">Options for REST API operation run.</param>
+    /// <param name="validatedAddresses">DNS addresses validated for this request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
@@ -285,12 +225,17 @@ internal sealed class RestApiOperationRunner
         object? payload = null,
         HttpContent? requestContent = null,
         RestApiOperationRunOptions? options = null,
+        IPAddress[]? validatedAddresses = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
 #if NET
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+        if (validatedAddresses is { Length: > 0 })
+        {
+            requestMessage.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, validatedAddresses);
+        }
 #else
         requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
 #endif

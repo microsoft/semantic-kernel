@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
+using OpenAI.Chat;
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
 var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
@@ -64,7 +65,7 @@ async Task SKAgent_As_AFAgentAsync()
 
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);
@@ -83,9 +84,9 @@ async Task AFAgentAsync()
     Console.WriteLine("\n=== AF Agent ===\n");
 
     var agent = new OpenAIClient(apiKey).GetChatClient(model)
-        .CreateAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
+        .AsAIAgent(name: "Joker", instructions: "You are good at telling jokes.");
 
-    var thread = agent.GetNewThread();
+    var thread = await agent.CreateSessionAsync();
     var agentOptions = new ChatClientAgentRunOptions(new() { MaxOutputTokens = 1000 });
 
     var result = await agent.RunAsync(userInput, thread, agentOptions);

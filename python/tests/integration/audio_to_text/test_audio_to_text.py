@@ -15,6 +15,7 @@ pytestmark = pytest.mark.parametrize(
             "openai",
             AudioContent.from_audio_file(os.path.join(os.path.dirname(__file__), "../../", "assets/sample_audio.mp3")),
             ["hi", "how", "are", "you", "doing"],
+            marks=pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
             id="openai",
         ),
         pytest.param(

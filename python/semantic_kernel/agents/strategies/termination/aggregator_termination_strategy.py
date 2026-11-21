@@ -8,7 +8,6 @@ from pydantic import Field
 
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
@@ -24,13 +23,13 @@ class AggregateTerminationCondition(str, Enum):
 
 
 @experimental
-class AggregatorTerminationStrategy(KernelBaseModel):
+class AggregatorTerminationStrategy(TerminationStrategy):
     """A strategy that aggregates multiple termination strategies."""
 
     strategies: list[TerminationStrategy]
     condition: AggregateTerminationCondition = Field(default=AggregateTerminationCondition.ALL)
 
-    async def should_terminate_async(
+    async def should_agent_terminate(
         self,
         agent: "Agent",
         history: list[ChatMessageContent],
@@ -50,3 +49,19 @@ class AggregatorTerminationStrategy(KernelBaseModel):
         if self.condition == AggregateTerminationCondition.ALL:
             return all(results)
         return any(results)
+
+    async def should_terminate_async(
+        self,
+        agent: "Agent",
+        history: list[ChatMessageContent],
+    ) -> bool:
+        """Check if the agent should terminate.
+
+        Args:
+            agent: The agent to check.
+            history: The history of messages in the conversation.
+
+        Returns:
+            True if the agent should terminate, False otherwise
+        """
+        return await self.should_agent_terminate(agent=agent, history=history)

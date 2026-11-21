@@ -17,6 +17,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
+    private const string TempOAIKeySkipReason = "Temporarily disabled until the OpenAI API key and credits are restored.";
+
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
     private readonly IChatCompletionService _chatCompletionService;
@@ -71,7 +73,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
     //    Assert.Contains("GetCurrentDate", invokedFunctions);
     //}
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeRequiredFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -99,7 +101,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -134,7 +136,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -211,7 +213,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
     //    Assert.Contains("GetCurrentDate", invokedFunctions);
     //}
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -239,7 +241,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingAsync()
     {
         // Arrange
@@ -278,7 +280,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange
@@ -314,7 +316,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Empty(invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -350,7 +352,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Equal("GetCurrentDate", functionCall.FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = TempOAIKeySkipReason)]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyForStreamingAsync()
     {
         // Arrange

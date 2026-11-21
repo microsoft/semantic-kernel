@@ -21,14 +21,6 @@ def is_optional(t: object) -> bool:
     return origin is Optional
 
 
-# Special type to avoid the 3.10 vs 3.11+ difference of typing._SpecialForm vs typing.Any
-@experimental
-class AnyType:
-    """Special type to represent Any."""
-
-    pass
-
-
 @experimental
 def get_types(t: object) -> Sequence[type[Any]] | None:
     """Get the types from a Union or Optional type."""
@@ -36,8 +28,6 @@ def get_types(t: object) -> Sequence[type[Any]] | None:
         return get_args(t)
     if is_optional(t):
         return tuple([*list(get_args(t)), NoneType])
-    if t is Any:
-        return (AnyType,)
     if isinstance(t, type):
         return (t,)
     if isinstance(t, NoneType):

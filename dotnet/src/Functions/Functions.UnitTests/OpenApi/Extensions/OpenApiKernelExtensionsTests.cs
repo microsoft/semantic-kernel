@@ -45,7 +45,18 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
     {
         this._kernel = new Kernel();
 
-        this._executionParameters = new OpenApiFunctionExecutionParameters() { EnableDynamicPayload = false };
+        this._executionParameters = new OpenApiFunctionExecutionParameters()
+        {
+            EnableDynamicPayload = false,
+            ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+            {
+                AllowedBaseUrls =
+                [
+                    new Uri("https://my-key-vault.vault.azure.net"),
+                    new Uri("https://server-override.com")
+                ]
+            }
+        };
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
@@ -170,6 +181,12 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         this._executionParameters.HttpClient = httpClient;
+        // Permit the test scenario URLs (including http://localhost:3001/) under the
+        // secure-by-default SSRF policy by explicitly allowlisting the expected base.
+        this._executionParameters.ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri(expectedServerUrl)]
+        };
 
         var arguments = this.GetFakeFunctionArguments();
 
