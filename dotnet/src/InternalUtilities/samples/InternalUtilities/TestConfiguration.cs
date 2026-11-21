@@ -41,7 +41,6 @@ public sealed class TestConfiguration
     public static PostgresConfig Postgres => LoadSection<PostgresConfig>();
     public static RedisConfig Redis => LoadSection<RedisConfig>();
     public static JiraConfig Jira => LoadSection<JiraConfig>();
-    public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
@@ -217,11 +216,6 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
         public string Email { get; set; }
         public string Domain { get; set; }
-    }
-
-    public class ChromaConfig
-    {
-        public string Endpoint { get; set; }
     }
 
     public class MongoDBConfig

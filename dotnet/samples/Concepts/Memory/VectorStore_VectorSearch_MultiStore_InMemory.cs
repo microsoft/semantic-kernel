@@ -20,6 +20,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Chroma"/></para>
 /// </summary>
 public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper output) : BaseTest(output)
 {
