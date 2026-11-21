@@ -15,9 +15,12 @@ import logging
 from io import BytesIO
 from typing import Any
 
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.batch_types import (
     Batch,
     BatchJob,
+    BatchRequest,
     BatchRequestResult,
     BatchStatus,
     SupportsBatch,
@@ -40,16 +43,21 @@ _OPENAI_STATUS_MAP = {
     "cancelling": BatchStatus.CANCELLING,
 }
 
-# Lower number wins when merging multi-credential jobs.
-_STATUS_SEVERITY = {
+# Only applied once every child job is terminal; lower number wins.
+_TERMINAL_SEVERITY = {
     BatchStatus.FAILED: 0,
     BatchStatus.EXPIRED: 1,
     BatchStatus.CANCELLED: 2,
-    BatchStatus.IN_PROGRESS: 3,
-    BatchStatus.VALIDATING: 3,
-    BatchStatus.FINALIZING: 3,
+    BatchStatus.COMPLETED: 3,
+}
+
+# While any child is still active the aggregate must stay non-terminal, or a
+# caller polling on is_terminal would stop early and collect partial results.
+_ACTIVE_SEVERITY = {
+    BatchStatus.FINALIZING: 0,
+    BatchStatus.IN_PROGRESS: 1,
+    BatchStatus.VALIDATING: 2,
     BatchStatus.CANCELLING: 3,
-    BatchStatus.COMPLETED: 4,
 }
 
 
@@ -61,24 +69,36 @@ def open_ai_batch_encode(requests: list[dict[str, Any]], endpoint: str = _OPENAI
             ``body`` is the same dict a normal ``chat.completions.create``
             call would take (``model``, ``messages``, …). An optional
             ``credential_key`` groups requests that must share a credential.
-        endpoint: The batch endpoint path; defaults to chat completions.
+        endpoint: The batch endpoint path applied to every request; defaults
+            to chat completions.
 
     Returns:
         The encoded ``Batch`` ready for ``create_batch``.
-    """
-    from semantic_kernel.connectors.batch_types import BatchRequest
 
-    return Batch(
-        requests=[
-            BatchRequest(
-                custom_id=entry["custom_id"],
-                endpoint=endpoint,
-                payload=entry["body"],
-                credential_key=entry.get("credential_key", "default"),
+    Raises:
+        ServiceInvalidRequestError: When an entry is missing ``custom_id`` or
+            ``body``, or carries values that cannot form a ``BatchRequest``.
+    """
+    encoded = []
+    for index, entry in enumerate(requests):
+        try:
+            encoded.append(
+                BatchRequest(
+                    custom_id=entry["custom_id"],
+                    endpoint=endpoint,
+                    payload=entry["body"],
+                    credential_key=entry.get("credential_key", "default"),
+                )
             )
-            for entry in requests
-        ]
-    )
+        except (KeyError, TypeError) as ex:
+            raise ServiceInvalidRequestError(
+                f"Batch entry #{index} is malformed (needs 'custom_id' and 'body'): {entry!r}"
+            ) from ex
+        except ValidationError as ex:
+            raise ServiceInvalidRequestError(
+                f"Batch entry #{index} has invalid fields: {ex}"
+            ) from ex
+    return Batch(requests=encoded)
 
 
 class OpenAIBatchMixin(SupportsBatch):
@@ -98,11 +118,29 @@ class OpenAIBatchMixin(SupportsBatch):
         Requests with different ``credential_key`` values are never mixed:
         each credential group is submitted as its own provider batch job and
         the provider ids are joined with ``+`` on the returned ``BatchJob``.
+        When a later group fails to submit, earlier provider jobs are cancelled
+        best-effort so no untracked work keeps running (and billing) behind
+        the caller's back.
         """
-        groups = batch.grouped_by_credential()
-        if not groups:
+        if not batch.requests:
             raise ServiceInvalidRequestError("Cannot create a batch job with zero requests.")
 
+        seen: set[str] = set()
+        duplicates = sorted(
+            {request.custom_id for request in batch.requests if request.custom_id in seen or seen.add(request.custom_id)}
+        )
+        if duplicates:
+            raise ServiceInvalidRequestError(
+                f"Duplicate custom_id values in batch: {', '.join(duplicates)}"
+            )
+
+        endpoints = {request.endpoint for request in batch.requests}
+        if len(endpoints) != 1:
+            raise ServiceInvalidRequestError(
+                f"All requests in one provider batch must share an endpoint, got {sorted(endpoints)}"
+            )
+
+        groups = batch.grouped_by_credential()
         job_ids: list[str] = []
         request_ids: list[str] = []
         status = BatchStatus.VALIDATING
@@ -115,12 +153,15 @@ class OpenAIBatchMixin(SupportsBatch):
                 )
                 created = await self.client.batches.create(  # type: ignore[attr-defined]
                     input_file_id=uploaded.id,
-                    endpoint=_OPENAI_BATCH_ENDPOINT,
+                    endpoint=group.requests[0].endpoint,
                     completion_window=_OPENAI_COMPLETION_WINDOW,
                 )
             except Exception as ex:
+                if job_ids:
+                    await self._cancel_submitted_quietly(job_ids)
                 raise ServiceResponseException(
-                    f"{type(self)} failed to submit a batch job",
+                    f"{type(self)} failed to submit a batch job"
+                    + (f" (cancelled already-submitted jobs {job_ids} best-effort)" if job_ids else ""),
                     ex,
                 ) from ex
             job_ids.append(created.id)
@@ -148,31 +189,64 @@ class OpenAIBatchMixin(SupportsBatch):
         return self._merge_jobs(job.job_id, provider_jobs, job.request_ids)
 
     async def get_batch_results(self, job: BatchJob) -> list[BatchRequestResult]:
-        """Per-request results, including explicit unrun/cancelled entries.
+        """Per-request results for a finished job.
+
+        Every provider job must be terminal before collection — while any
+        child is still validating/running/finalizing, this raises
+        ``ServiceInvalidRequestError`` rather than fabricating "did not run"
+        results for work still in flight.
 
         Requests in ``job.request_ids`` that produced no output (expired
         before running, or dropped by a cancelled job) are reported with an
         explicit ``error`` instead of being silently omitted.
         """
         provider_jobs = await self._retrieve_all(job)
-        results: dict[str, BatchRequestResult] = {}
+        if not provider_jobs:
+            raise ServiceInvalidRequestError(f"No provider jobs found for {job.job_id!r}")
+        pending = [pj.id for pj in provider_jobs if not _OPENAI_STATUS_MAP.get(pj.status, BatchStatus.FAILED).is_terminal]
+        if pending:
+            raise ServiceInvalidRequestError(
+                f"Batch job(s) {pending} are still running; collect results only after they finish."
+            )
 
+        results: dict[str, BatchRequestResult] = {}
         for provider_job in provider_jobs:
             status = _OPENAI_STATUS_MAP.get(provider_job.status, BatchStatus.FAILED)
-            if provider_job.output_file_id:
-                content = await self.client.files.content(provider_job.output_file_id)  # type: ignore[attr-defined]
+            for file_id, is_error_file in (
+                (getattr(provider_job, "output_file_id", None), False),
+                (getattr(provider_job, "error_file_id", None), True),
+            ):
+                if not file_id:
+                    continue
+                try:
+                    content = await self.client.files.content(file_id)  # type: ignore[attr-defined]
+                except Exception as ex:
+                    raise ServiceResponseException(
+                        f"{type(self)} failed to download batch {'error' if is_error_file else 'output'} file {file_id}",
+                        ex,
+                    ) from ex
                 for line in content.text.splitlines():
                     line = line.strip()
                     if not line:
                         continue
-                    entry = json.loads(line)
+                    try:
+                        entry = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
                     custom_id = entry.get("custom_id", "")
                     response = entry.get("response") or {}
                     error = entry.get("error")
+                    status_code = response.get("status_code")
+                    body = response.get("body")
+                    if error is None and isinstance(status_code, int) and status_code >= 400:
+                        # The provider ran the request and got an HTTP error;
+                        # the body is an error payload, not a usable result.
+                        error = body if body is not None else {"code": status_code}
+                        body = None
                     results[custom_id] = BatchRequestResult(
                         custom_id=custom_id,
-                        status_code=response.get("status_code"),
-                        response=response.get("body") if error is None else None,
+                        status_code=status_code,
+                        response=body if error is None else None,
                         error=json.dumps(error) if error else None,
                     )
 
@@ -186,17 +260,25 @@ class OpenAIBatchMixin(SupportsBatch):
                     )
 
         if job.request_ids:
+            aggregate = self._merge_jobs(job.job_id, provider_jobs, job.request_ids)
+            placeholder = (
+                "request did not run (job expired)"
+                if aggregate.status == BatchStatus.EXPIRED
+                else "request did not run (job cancelled or result unavailable)"
+            )
             for custom_id in job.request_ids:
                 if custom_id not in results:
-                    aggregate = self._merge_jobs(job.job_id, provider_jobs, job.request_ids)
-                    placeholder = (
-                        "request did not run (job expired)"
-                        if aggregate.status == BatchStatus.EXPIRED
-                        else "request did not run (job cancelled or result unavailable)"
-                    )
                     results[custom_id] = BatchRequestResult(custom_id=custom_id, error=placeholder)
+            return [results[custom_id] for custom_id in job.request_ids]
+        return list(results.values())
 
-        return [results[custom_id] for custom_id in job.request_ids] if job.request_ids else list(results.values())
+    async def _cancel_submitted_quietly(self, job_ids: list[str]) -> None:
+        """Best-effort cancel of already-submitted provider jobs on partial failure."""
+        for job_id in job_ids:
+            try:
+                await self.client.batches.cancel(job_id)  # type: ignore[attr-defined]
+            except Exception:
+                logger.warning("Failed to cancel provider batch job %s after a partial submission failure", job_id)
 
     async def _retrieve_all(self, job: BatchJob):
         provider_jobs = []
@@ -211,14 +293,20 @@ class OpenAIBatchMixin(SupportsBatch):
         return provider_jobs
 
     def _merge_jobs(self, job_id: str, provider_jobs, request_ids: list[str]) -> BatchJob:
-        """Merge several provider jobs (one per credential group) into one."""
+        """Merge several provider jobs (one per credential group) into one.
+
+        The aggregate stays non-terminal while any child is still running so
+        polling never finishes early; once every child is terminal the worst
+        terminal state wins (failed > expired > cancelled > completed).
+        """
         counts: dict[str, int] = {}
-        merged_status = BatchStatus.COMPLETED
         error = None
+        statuses = [_OPENAI_STATUS_MAP.get(pj.status, BatchStatus.FAILED) for pj in provider_jobs]
+        if all(status.is_terminal for status in statuses):
+            merged_status = min(statuses, key=lambda s: _TERMINAL_SEVERITY.get(s, 99), default=BatchStatus.COMPLETED)
+        else:
+            merged_status = min(statuses, key=lambda s: _ACTIVE_SEVERITY.get(s, 99), default=BatchStatus.IN_PROGRESS)
         for provider_job in provider_jobs:
-            status = _OPENAI_STATUS_MAP.get(provider_job.status, BatchStatus.FAILED)
-            if _STATUS_SEVERITY.get(status, 0) < _STATUS_SEVERITY.get(merged_status, 4):
-                merged_status = status
             request_counts = getattr(provider_job, "request_counts", None)
             if request_counts:
                 for key in ("total", "completed", "failed"):
