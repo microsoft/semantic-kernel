@@ -393,7 +393,8 @@ class InProcessRuntime(CoreRuntime):
                 )
                 return
             except BaseException as e:
-                message_envelope.future.set_exception(e)
+                if not message_envelope.future.cancelled():
+                    message_envelope.future.set_exception(e)
                 self._message_queue.task_done()
                 event_logger.info(
                     MessageHandlerExceptionEvent(
