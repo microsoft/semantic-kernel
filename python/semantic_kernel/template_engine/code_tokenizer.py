@@ -48,6 +48,9 @@ class CodeTokenizer:
         space_separator_found = False
         skip_next_char = False
         next_char = ""
+        # True while reading the quoted value of a named argument (name='value'),
+        # so the token is flushed as a NamedArgBlock instead of a ValBlock.
+        named_arg_value = False
         blocks: list[Block] = []
 
         for index, current_char in enumerate(text[:-1]):
@@ -89,7 +92,11 @@ class CodeTokenizer:
 
                 # When we reach the end of the value, we add the block
                 if current_char == text_value_delimiter:
-                    blocks.append(ValBlock(content="".join(current_token_content)))
+                    if named_arg_value:
+                        blocks.append(NamedArgBlock(content="".join(current_token_content)))
+                        named_arg_value = False
+                    else:
+                        blocks.append(ValBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                     current_token_type = None
                     space_separator_found = False
@@ -119,6 +126,21 @@ class CodeTokenizer:
 
                 continue
 
+            # A quote directly after the "=" of a named argument starts a quoted
+            # value, e.g. "arg1='a b'". Entering value mode keeps spaces inside
+            # the quotes part of the same token instead of splitting it there.
+            if (
+                current_token_type == BlockTypes.FUNCTION_ID
+                and current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE)
+                and current_token_content
+                and current_token_content[-1] == Symbols.NAMED_ARG_BLOCK_SEPARATOR
+            ):
+                current_token_content.append(current_char)
+                current_token_type = BlockTypes.VALUE
+                text_value_delimiter = current_char
+                named_arg_value = True
+                continue
+
             # If we're not inside a quoted value, and we're not processing a space
             current_token_content.append(current_char)
 
@@ -143,7 +165,10 @@ class CodeTokenizer:
         current_token_content.append(next_char)
 
         if current_token_type == BlockTypes.VALUE:
-            blocks.append(ValBlock(content="".join(current_token_content)))
+            if named_arg_value:
+                blocks.append(NamedArgBlock(content="".join(current_token_content)))
+            else:
+                blocks.append(ValBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.VARIABLE:
             blocks.append(VarBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.FUNCTION_ID:
