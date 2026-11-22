@@ -12,10 +12,7 @@ from pydantic import Field, model_validator
 
 from semantic_kernel import Kernel
 from semantic_kernel.exceptions import KernelException
-from semantic_kernel.exceptions.process_exceptions import (
-    ProcessFunctionNotFoundException,
-    ProcessTargetFunctionNameMismatchException,
-)
+from semantic_kernel.exceptions.process_exceptions import ProcessFunctionNotFoundException
 from semantic_kernel.functions import KernelFunction
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
@@ -114,36 +111,21 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
 
             self.inputs[message.function_name][k] = v
 
-        invocable_functions = [
-            k
-            for k, v in self.inputs.items()
-            if v is not None and (v == {} or all(val is not None for val in v.values()))
-        ]
-        missing_keys = [
-            f"{outer_key}.{inner_key}"
-            for outer_key, outer_value in self.inputs.items()
-            for inner_key, inner_value in outer_value.items()
-            if inner_value is None
-        ]
+        # Only the targeted function can become invocable from this message. A sibling that needs no
+        # input (or only step context) is always ready and must not trigger a mismatch while we wait.
+        target_function = message.function_name
+        arguments = self.inputs.get(target_function, {})
+        missing_keys = [f"{target_function}.{key}" for key, value in arguments.items() if value is None]
 
-        if not invocable_functions:
-            logger.info(f"No invocable functions, missing keys: {', '.join(missing_keys)}")
+        if missing_keys:
+            logger.info(f"Function `{target_function}` is not invocable yet, missing keys: {', '.join(missing_keys)}")
             return
-
-        target_function = next((name for name in invocable_functions if name == message.function_name), None)
-
-        if not target_function:
-            raise ProcessTargetFunctionNameMismatchException(
-                f"A message targeting function `{message.function_name}` has resulted in a different function "
-                f"`{invocable_functions[0]}` becoming invocable. Check the function names."
-            )
 
         logger.info(
             f"Step with Id '{self.id}' received all required input for function [{target_function}] and is executing."
         )
 
         # Concatenate all inputs and run the function
-        arguments = self.inputs[target_function]
         function = self.functions.get(target_function)
 
         if function is None:
