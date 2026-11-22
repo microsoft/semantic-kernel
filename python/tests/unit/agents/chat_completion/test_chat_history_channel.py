@@ -5,11 +5,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.agents.agent import AgentResponseItem
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
+from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -52,6 +55,25 @@ class AsyncIterableMock:
 
     def __aiter__(self):
         return self.async_gen()
+
+
+@pytest.mark.parametrize("streaming", [False, True])
+async def test_group_chat_starts_without_messages(kernel_with_ai_service, streaming):
+    kernel, service = kernel_with_ai_service
+    service.get_chat_message_contents.return_value = [ChatMessageContent(role=AuthorRole.ASSISTANT, content="Hello")]
+
+    async def stream_response(*args, **kwargs):
+        yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="Hello", choice_index=0)]
+
+    service.get_streaming_chat_message_contents.side_effect = stream_response
+    agent = ChatCompletionAgent(kernel=kernel, name="Greeter", instructions="Greet the user.")
+    group = AgentGroupChat(agents=[agent])
+
+    responses = group.invoke_stream(agent) if streaming else group.invoke(agent)
+    messages = [message async for message in responses]
+
+    assert "".join(message.content for message in messages) == "Hello"
+    assert group.history.messages[-1].content == "Hello"
 
 
 async def test_invoke(chat_history_channel):
