@@ -110,9 +110,11 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             An async iterable of ChatMessageContent.
         """
         message_count = len(self.messages)
+        thread_message_count = len(self.thread)
+        input_message = self.messages[-1] if self.messages else None
 
         async for response_message in agent.invoke_stream(
-            messages=self.messages[-1] if self.messages else None,
+            messages=input_message,
             thread=self.thread,
         ):
             if response_message.message.content:
@@ -120,7 +122,10 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 
         if len(self.messages) == message_count:
             thread_messages = [message async for message in self.thread.get_messages()]
-            self.messages.extend(thread_messages[message_count:])
+            new_messages = thread_messages[thread_message_count:]
+            if new_messages and new_messages[0] is input_message:
+                new_messages = new_messages[1:]
+            self.messages.extend(new_messages)
 
         for message_index in range(message_count, len(self.messages)):
             messages.append(self.messages[message_index])

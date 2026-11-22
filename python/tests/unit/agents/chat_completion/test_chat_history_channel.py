@@ -76,6 +76,34 @@ async def test_group_chat_starts_without_messages(kernel_with_ai_service, stream
     assert group.history.messages[-1].content == "Hello"
 
 
+@pytest.mark.parametrize("initial_message_count", [0, 1, 2])
+@pytest.mark.parametrize("repeat_reply", [False, True])
+async def test_group_chat_retains_consecutive_streamed_replies(
+    kernel_with_ai_service, initial_message_count, repeat_reply
+):
+    kernel, service = kernel_with_ai_service
+    replies = ["First reply", "First reply" if repeat_reply else "Second reply"]
+    reply_iterator = iter(replies)
+
+    async def stream_response(*args, **kwargs):
+        reply = next(reply_iterator)
+        yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content=reply[:5], choice_index=0)]
+        yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content=reply[5:], choice_index=0)]
+
+    service.get_streaming_chat_message_contents.side_effect = stream_response
+    agent = ChatCompletionAgent(kernel=kernel, name="Greeter", instructions="Greet the user.")
+    group = AgentGroupChat(agents=[agent])
+    expected_history = [f"Input {index}" for index in range(initial_message_count)]
+    for message in expected_history:
+        await group.add_chat_message(message)
+
+    for reply in replies:
+        chunks = [message async for message in group.invoke_stream(agent)]
+        assert "".join(message.content for message in chunks) == reply
+        expected_history.append(reply)
+        assert [message.content for message in group.history.messages] == expected_history
+
+
 async def test_invoke(chat_history_channel):
     channel = chat_history_channel
     agent = AsyncMock(spec=MockChatHistoryHandler)
