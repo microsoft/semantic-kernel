@@ -167,6 +167,55 @@ async def test_partial_submit_failure_cancels_earlier_jobs():
 
 
 @pytest.mark.asyncio
+async def test_partial_submit_failure_reports_uncancelled_jobs():
+    """A failed cleanup cancel must surface retryable ids, not claim success."""
+    service = _service()
+    service.client.files.create.return_value = MagicMock(id="file-1")
+    service.client.batches.create.side_effect = [
+        _provider_job(id="batch_stuck", status="validating"),
+        RuntimeError("second group exploded"),
+    ]
+    service.client.batches.cancel.side_effect = RuntimeError("cancel endpoint down")
+    batch = Batch(
+        requests=[
+            BatchRequest(custom_id="a", endpoint="/v1/chat/completions", payload={}, credential_key="k1"),
+            BatchRequest(custom_id="b", endpoint="/v1/chat/completions", payload={}, credential_key="k2"),
+        ]
+    )
+    with pytest.raises(ServiceResponseException, match="batch_stuck") as exc_info:
+        await service.create_batch(batch)
+    # The exception must distinguish "cancel requested" from "cancel failed"
+    # and keep the still-running job id so the caller can retry cancel_batch.
+    assert "could NOT be cancelled" in str(exc_info.value)
+    assert "cancellation requested" not in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_partial_submit_failure_mixed_cancel_outcome():
+    """With several submitted jobs, the exception separates cancelled from stuck ids."""
+    service = _service()
+    service.client.files.create.return_value = MagicMock(id="file-1")
+    service.client.batches.create.side_effect = [
+        _provider_job(id="batch_a", status="validating"),
+        _provider_job(id="batch_b", status="validating"),
+        RuntimeError("third group exploded"),
+    ]
+    service.client.batches.cancel.side_effect = [MagicMock(id="batch_a"), RuntimeError("boom")]
+    batch = Batch(
+        requests=[
+            BatchRequest(custom_id="a", endpoint="/v1/chat/completions", payload={}, credential_key="k1"),
+            BatchRequest(custom_id="b", endpoint="/v1/chat/completions", payload={}, credential_key="k2"),
+            BatchRequest(custom_id="c", endpoint="/v1/chat/completions", payload={}, credential_key="k3"),
+        ]
+    )
+    with pytest.raises(ServiceResponseException) as exc_info:
+        await service.create_batch(batch)
+    message = str(exc_info.value)
+    assert "cancellation requested for already-submitted jobs ['batch_a']" in message
+    assert "still running" in message and "batch_b" in message
+
+
+@pytest.mark.asyncio
 async def test_status_stays_nonterminal_while_any_child_runs():
     service = _service()
     service.client.batches.retrieve.side_effect = [

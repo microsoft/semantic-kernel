@@ -157,11 +157,22 @@ class OpenAIBatchMixin(SupportsBatch):
                     completion_window=_OPENAI_COMPLETION_WINDOW,
                 )
             except Exception as ex:
+                cleanup_note = ""
                 if job_ids:
-                    await self._cancel_submitted_quietly(job_ids)
+                    cancelled, cancel_failed = await self._cancel_submitted_quietly(job_ids)
+                    parts = []
+                    if cancelled:
+                        parts.append(f"cancellation requested for already-submitted jobs {cancelled}")
+                    if cancel_failed:
+                        # Surface the ids whose cancel call itself failed so
+                        # the caller can retry via cancel_batch — these jobs
+                        # may still be running (and billing) on the provider.
+                        parts.append(
+                            f"could NOT be cancelled, still running — retry via cancel_batch: {cancel_failed}"
+                        )
+                    cleanup_note = f" ({'; '.join(parts)})" if parts else ""
                 raise ServiceResponseException(
-                    f"{type(self)} failed to submit a batch job"
-                    + (f" (cancelled already-submitted jobs {job_ids} best-effort)" if job_ids else ""),
+                    f"{type(self)} failed to submit a batch job{cleanup_note}",
                     ex,
                 ) from ex
             job_ids.append(created.id)
@@ -272,13 +283,25 @@ class OpenAIBatchMixin(SupportsBatch):
             return [results[custom_id] for custom_id in job.request_ids]
         return list(results.values())
 
-    async def _cancel_submitted_quietly(self, job_ids: list[str]) -> None:
-        """Best-effort cancel of already-submitted provider jobs on partial failure."""
+    async def _cancel_submitted_quietly(self, job_ids: list[str]) -> tuple[list[str], list[str]]:
+        """Best-effort cancel of already-submitted provider jobs on partial failure.
+
+        Returns:
+            A ``(cancelled, failed)`` pair of provider job ids: ``cancelled``
+            received the cancel request, ``failed`` are the ids whose cancel
+            call itself errored and may still be running — the caller surfaces
+            them so they can be retried via ``cancel_batch``.
+        """
+        cancelled: list[str] = []
+        failed: list[str] = []
         for job_id in job_ids:
             try:
                 await self.client.batches.cancel(job_id)  # type: ignore[attr-defined]
+                cancelled.append(job_id)
             except Exception:
                 logger.warning("Failed to cancel provider batch job %s after a partial submission failure", job_id)
+                failed.append(job_id)
+        return cancelled, failed
 
     async def _retrieve_all(self, job: BatchJob):
         provider_jobs = []
