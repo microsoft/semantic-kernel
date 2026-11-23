@@ -22,6 +22,7 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     format_assistant_message,
     format_tool_message,
     format_user_message,
+    get_completion_token_count,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
@@ -171,10 +172,14 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options=self._get_http_options(),
             ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
+                http_options=self._get_http_options(),
+            ) as client:
                 response: GenerateContentResponse = await _generate_content(client)  # type: ignore[no-redef]
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]  # type: ignore
@@ -218,6 +223,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 vertexai=True,
                 project=self.service_settings.cloud_project_id,
                 location=self.service_settings.cloud_region,
+                http_options=self._get_http_options(),
             ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [
@@ -225,7 +231,10 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                         for candidate in chunk.candidates  # type: ignore
                     ]
         else:
-            with Client(api_key=self.service_settings.api_key.get_secret_value()) as client:  # type: ignore[union-attr]
+            with Client(
+                api_key=self.service_settings.api_key.get_secret_value(),  # type: ignore[union-attr]
+                http_options=self._get_http_options(),
+            ) as client:
                 async for chunk in _generate_content_stream(client):
                     yield [
                         self._create_streaming_chat_message_content(chunk, candidate, function_invoke_attempt)
@@ -408,7 +417,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count if response.usage_metadata else None,
-                completion_tokens=response.usage_metadata.candidates_token_count if response.usage_metadata else None,
+                completion_tokens=get_completion_token_count(response.usage_metadata),
             ),
         }
 

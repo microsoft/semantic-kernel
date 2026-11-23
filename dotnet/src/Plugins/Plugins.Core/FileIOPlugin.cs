@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,6 +32,7 @@ public sealed class FileIOPlugin
     /// Defaults to an empty collection (no folders allowed). Must be explicitly populated
     /// with trusted directory paths before any file operations will succeed.
     /// Paths are canonicalized before validation to prevent directory traversal.
+    /// Requested file paths that cannot be safely resolved are denied.
     /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
@@ -62,7 +64,9 @@ public sealed class FileIOPlugin
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var reader = File.OpenText(canonicalPath);
+        using var stream = SecureFileSystem.OpenRead(
+            canonicalPath, this._allowedFolders, out _, rejectReadOnly: true);
+        using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
@@ -85,14 +89,9 @@ public sealed class FileIOPlugin
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
-        if (this.DisableFileOverwrite && File.Exists(canonicalPath))
-        {
-            throw new InvalidOperationException("Overwriting existing files is disabled.");
-        }
-
         byte[] text = Encoding.UTF8.GetBytes(content);
         var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
-        using var writer = new FileStream(canonicalPath, fileMode, FileAccess.Write, FileShare.None);
+        using var writer = this.OpenWrite(canonicalPath, fileMode);
         await writer.WriteAsync(text
 #if !NET
             , 0, text.Length
@@ -102,6 +101,18 @@ public sealed class FileIOPlugin
 
     #region private
     private HashSet<string>? _allowedFolders = [];
+
+    private FileStream OpenWrite(string path, FileMode mode)
+    {
+        try
+        {
+            return SecureFileSystem.OpenWrite(path, this._allowedFolders, out _, mode, FileShare.None);
+        }
+        catch (SecureFileSystem.FileAlreadyExistsException ex)
+        {
+            throw new InvalidOperationException("Overwriting existing files is disabled.", ex);
+        }
+    }
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -113,7 +124,7 @@ public sealed class FileIOPlugin
         Verify.NotNullOrWhiteSpace(path);
         canonicalPath = string.Empty;
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -125,16 +136,29 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
-        canonicalPath = PathUtilities.GetSafeFullPath(path);
-
-        if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        canonicalPath = Path.GetFullPath(path);
+        if (IsUncOrExtendedPath(canonicalPath))
         {
-            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {canonicalPath}");
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
+        // Avoid probing the filesystem when no folders are allowed.
         if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
+            return false;
+        }
+
+        try
+        {
+            canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or SecurityException)
+        {
+            // Caller-path resolution failures must not disclose filesystem details.
             return false;
         }
 
@@ -162,5 +186,10 @@ public sealed class FileIOPlugin
 
         return false;
     }
+
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
     #endregion
 }

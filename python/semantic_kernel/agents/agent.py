@@ -257,7 +257,8 @@ class Agent(KernelBaseModel, ABC):
         description: The description of the agent
         id: The unique identifier of the agent  If no id is provided,
             a new UUID will be generated.
-        instructions: The instructions for the agent (optional)
+        instructions: The instructions for the agent (optional). Instructions are rendered as a prompt template and
+            may invoke functions registered in the kernel, so the template source must be trusted.
         kernel: The kernel instance for the agent
         name: The name of the agent
         prompt_template: The prompt template for the agent
@@ -564,6 +565,7 @@ class Agent(KernelBaseModel, ABC):
         version: str | None = None,
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+        use_plugin_names: bool = False,
     ) -> "Server[LifespanResultT]":
         """Convert the agent to an MCP server.
 
@@ -572,6 +574,7 @@ class Agent(KernelBaseModel, ABC):
 
         By default, the server name will be the same as the agent name.
         If a server name is provided, it will be used instead.
+        Set `use_plugin_names=True` to prefix the tool name with its plugin name.
 
         Returns:
             The MCP server instance.
@@ -585,6 +588,7 @@ class Agent(KernelBaseModel, ABC):
             version=version,
             instructions=instructions,
             lifespan=lifespan,
+            use_plugin_names=use_plugin_names,
         )
 
 

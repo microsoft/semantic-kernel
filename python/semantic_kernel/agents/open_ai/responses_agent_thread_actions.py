@@ -215,7 +215,7 @@ class ResponsesAgentThreadActions:
                     cls._poll_until_completed(agent, response, polling_options or agent.polling_options),
                     timeout=agent.polling_options.run_polling_timeout.total_seconds(),
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 raise AgentInvokeException("Polling timed out before completion.")
 
             # Type narrowing for subsequent usage

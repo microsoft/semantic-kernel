@@ -15,6 +15,8 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
 
+openai_api_key_skip = pytest.mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401).")
+
 
 class WeatherPlugin:
     """A sample Mock weather plugin."""
@@ -57,7 +59,12 @@ class TestChatCompletionAgentIntegration:
 
     # region Simple 'Hello' messages tests
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_get_response(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent."""
         response = await agent_test_base.get_response_with_retry(chat_completion_agent, messages="Hello")
@@ -65,7 +72,12 @@ class TestChatCompletionAgentIntegration:
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_get_response_with_thread(
         self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase
     ):
@@ -85,7 +97,12 @@ class TestChatCompletionAgentIntegration:
             assert response.message.content is not None
         await thread.delete() if thread else None
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent."""
         responses = await agent_test_base.get_invoke_with_retry(chat_completion_agent, messages="Hello")
@@ -100,7 +117,12 @@ class TestChatCompletionAgentIntegration:
         assert usage.prompt_tokens > 0
         assert usage.completion_tokens > 0
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_with_thread(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent with a thread."""
         thread = None
@@ -119,7 +141,12 @@ class TestChatCompletionAgentIntegration:
 
         await thread.delete() if thread else None
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_stream(self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase):
         """Test invoke stream of the agent."""
         responses = await agent_test_base.get_invoke_stream_with_retry(chat_completion_agent, messages="Hello")
@@ -134,7 +161,12 @@ class TestChatCompletionAgentIntegration:
         assert usage.prompt_tokens > 0
         assert usage.completion_tokens > 0
 
-    @pytest.mark.parametrize("chat_completion_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
+    @pytest.mark.parametrize(
+        "chat_completion_agent",
+        ["azure", pytest.param("openai", marks=openai_api_key_skip)],
+        indirect=True,
+        ids=["azure", "openai"],
+    )
     async def test_invoke_stream_with_thread(
         self, chat_completion_agent: ChatCompletionAgent, agent_test_base: AgentTestBase
     ):
@@ -163,7 +195,7 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-function-calling", "openai-function-calling"],
@@ -185,7 +217,7 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-function-calling", "openai-function-calling"],
@@ -209,7 +241,7 @@ class TestChatCompletionAgentIntegration:
         "chat_completion_agent",
         [
             ("azure", {"enable_kernel_function": True}),
-            ("openai", {"enable_kernel_function": True}),
+            pytest.param(("openai", {"enable_kernel_function": True}), marks=openai_api_key_skip),
         ],
         indirect=["chat_completion_agent"],
         ids=["azure-function-calling", "openai-function-calling"],
@@ -240,7 +272,10 @@ class TestChatCompletionAgentIntegration:
             ("azure", {"enable_kernel_function": True}),
             pytest.param(
                 ("openai", {"enable_kernel_function": True}),
-                marks=pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
+                marks=[
+                    pytest.mark.xfail(reason="OpenAI service raise error for downloading image from URL"),
+                    openai_api_key_skip,
+                ],
             ),
         ],
         indirect=["chat_completion_agent"],

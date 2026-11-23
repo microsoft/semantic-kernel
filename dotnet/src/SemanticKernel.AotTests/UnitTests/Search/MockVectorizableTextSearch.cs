@@ -5,6 +5,7 @@ using Microsoft.Extensions.VectorData;
 namespace SemanticKernel.AotTests.UnitTests.Search;
 
 internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearchable<TRecord>
+    where TRecord : class
 {
     private readonly IAsyncEnumerable<VectorSearchResult<TRecord>> _searchResults;
 

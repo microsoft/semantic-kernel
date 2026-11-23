@@ -20,38 +20,66 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v5
-      - name: Download coverage report
-        uses: actions/download-artifact@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - name: Read and set PR number
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            if (run.event !== 'pull_request') {
+              core.warning('Coverage reporting requires a pull request workflow run.');
+              return;
+            }
+            const matchesRun = (pr) =>
+              pr.state === 'open' &&
+              pr.base.repo.id === context.payload.repository.id &&
+              pr.head.sha === run.head_sha &&
+              pr.head.ref === run.head_branch &&
+              pr.head.repo?.id != null &&
+              pr.head.repo.id === run.head_repository?.id;
+            let candidates = run.pull_requests ?? [];
+            if (candidates.length === 0) {
+              candidates = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                { ...context.repo, commit_sha: run.head_sha, per_page: 100 },
+              );
+              candidates = candidates.filter(matchesRun);
+            }
+            if (candidates.length !== 1) {
+              core.warning('Coverage reporting requires exactly one matching pull request.');
+              return;
+            }
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: candidates[0].number,
+            });
+            if (!matchesRun(pr)) {
+              core.warning('The pull request no longer matches the coverage run.');
+              return;
+            }
+            core.setOutput('pr_number', pr.number);
+      - name: Download coverage report
+        if: steps.pr.outputs.pr_number != ''
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: python-test-coverage
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
-          path: ./python
-          merge-multiple: true
-      - name: Display structure of downloaded files
-        run: ls
-      - name: Read and set PR number
-        # Need to read the PR number from the file saved in the previous workflow
-        # because the workflow_run event does not have access to the PR number
-        # The PR number is needed to post the comment on the PR
-        run: |
-          PR_NUMBER=$(cat pr_number)
-          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
-            echo "::error::PR number file contains invalid content"
-            exit 1
-          fi
-          echo "PR number: $PR_NUMBER"
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          path: ./python/coverage-report
       - name: Pytest coverage comment
+        if: steps.pr.outputs.pr_number != ''
         id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@v1.1.57
+        uses: MishaKav/pytest-coverage-comment@1bdbba85fb74a2fdc1ec66383acec1091610f82b # v1.1.57
         with:
           github-token: ${{ github.token }}
-          issue-number: ${{ env.PR_NUMBER }}
-          pytest-xml-coverage-path: python/python-coverage.xml
+          issue-number: ${{ steps.pr.outputs.pr_number }}
+          pytest-xml-coverage-path: python/coverage-report/python-coverage.xml
           title: "Python Test Coverage Report"
           badge-title: "Python Test Coverage"
           junitxml-title: "Python Unit Test Overview"
-          junitxml-path: python/pytest.xml
+          junitxml-path: python/coverage-report/pytest.xml
           default-branch: "main"
           report-only-changed-files: true

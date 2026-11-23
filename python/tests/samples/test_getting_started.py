@@ -81,15 +81,17 @@ notebooks = [
     ),
     param(
         "09-multiple-results-per-prompt.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
+        ],
     ),
     param(
         "10-streaming-completions.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.skip(reason="Temporarily disabled due to invalid OpenAI API key (HTTP 401)."),
+        ],
     ),
 ]
 

@@ -12,7 +12,7 @@ informed:
 
 ## Context and Problem Statement
 
-Today, Semantic Kernel only retains a small amount of information about the parameters of SKFunctions, and no information at all about the output of an SKFunction. This has a large negative impact on the effectiveness of our planners because it is not possible to adequately describe the schema of the the plugin function's inputs and outputs.
+Today, Semantic Kernel only retains a small amount of information about the parameters of SKFunctions, and no information at all about the output of an SKFunction. This has a large negative impact on the effectiveness of our planners because it is not possible to adequately describe the schema of the plugin function's inputs and outputs.
 
 Planners depend on a description of the plugins available to it, which we refer to as a Functions Manual. Think of this as the user manual that is provided to the LLM and is intended to explain to the LLM the functions that are available to it and how they can be used. An example of a current Functions Manual from our Sequential planner looks like this:
 
@@ -98,7 +98,7 @@ One way that we could provide the missing type information is to use Json Schema
 ]
 ```
 
-This Functions Manual provides much more information about the the inputs and outputs of the functions that the LLM has access to. It allows to see that the output of the first functions is a complex objects that contain the information required by the second function. This also comes with an increase in the amount of tokens used, however the increase in functionality derived the type information outweighs this expense. With this information we can now expect the LLM to generate a plan that includes an understanding of how values should be extracted from outputs and passed to inputs. One effective method that we've used in testing is to ask the LLM to specify inputs as a Json Path into the appropriate output. An equivalent plan shown in pseudo code would look like this:
+This Functions Manual provides much more information about the inputs and outputs of the functions that the LLM has access to. It allows to see that the output of the first functions is a complex objects that contain the information required by the second function. This also comes with an increase in the amount of tokens used, however the increase in functionality derived the type information outweighs this expense. With this information we can now expect the LLM to generate a plan that includes an understanding of how values should be extracted from outputs and passed to inputs. One effective method that we've used in testing is to ask the LLM to specify inputs as a Json Path into the appropriate output. An equivalent plan shown in pseudo code would look like this:
 
 ```csharp
 var dateResponse = DatePluginSimpleComplex.GetDate1(1);
@@ -151,7 +151,7 @@ public sealed record FunctionView(
 | Type                      | Pros                                                         | Cons                                                       |
 | ------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
 | JsonSchema.Net.JsonSchema | Popular and has frequent updates, built on top of System.Net | Takes a dependency on OSS in SK core                       |
-| NJsonShema.JsonSchema     | Very popular, frequent updates, long term project            | Built on top of Json.Net (Newtonsoft)                      |
+| NJsonSchema.JsonSchema    | Very popular, frequent updates, long term project            | Built on top of Json.Net (Newtonsoft)                      |
 | JsonDocument              | Native C# type, fast and flexible                            | Not a Json Schema, but a Json DOM container for the schema |
 | String                    | Native C# type                                               | Not a Json Schema or Json DOM, very poor type hinting      |
 

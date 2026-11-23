@@ -374,8 +374,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>
     /// Currently, you need to use one of these models to use web search in Chat Completions:
     /// <list type="bullet">
-    /// <item>gpt-4o-search-preview</item>
-    /// <item>gpt-4o-mini-search-preview</item>
+    /// <item>gpt-5-search-api</item>
     /// </list>
     /// </para>
     /// </remarks>

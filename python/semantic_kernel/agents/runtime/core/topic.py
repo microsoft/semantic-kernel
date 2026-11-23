@@ -2,8 +2,7 @@
 
 import re
 from dataclasses import dataclass
-
-from typing_extensions import Self
+from typing import Self
 
 from semantic_kernel.utils.feature_stage_decorator import experimental
 

@@ -38,6 +38,7 @@ from semantic_kernel.agents import (
 )
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
+from semantic_kernel.agents.azure_ai.mcp_tool_approval import MCPToolApprovalCallback
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
@@ -355,6 +356,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     client: AIProjectClient
     definition: AzureAIAgentModel
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
+    mcp_tool_approval_callback: MCPToolApprovalCallback | None = None
 
     channel_type: ClassVar[type[AgentChannel]] = AzureAIChannel
 
@@ -368,6 +370,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        mcp_tool_approval_callback: MCPToolApprovalCallback | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Azure AI Agent.
@@ -384,6 +387,10 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             polling_options: The polling options for the agent.
             prompt_template_config: The prompt template configuration. If this is provided along with
                 instructions, the prompt template will be used in place of the instructions.
+            mcp_tool_approval_callback: A callback invoked for every MCP tool call that the Azure AI Foundry
+                Agent Service asks the caller to approve. It receives an `MCPToolApprovalRequest` and returns
+                True to approve the call, either synchronously or asynchronously. When no callback is
+                provided, such MCP tool calls are denied.
             **kwargs: Additional keyword arguments
         """
         args: dict[str, Any] = {
@@ -423,6 +430,8 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 args["instructions"] = prompt_template_config.template
         if polling_options is not None:
             args["polling_options"] = polling_options
+        if mcp_tool_approval_callback is not None:
+            args["mcp_tool_approval_callback"] = mcp_tool_approval_callback
         if kwargs:
             args.update(kwargs)
 
