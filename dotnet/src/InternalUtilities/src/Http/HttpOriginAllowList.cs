@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// Validates allowed HTTP origins and checks whether requests match them.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class HttpOriginAllowList
 {
     /// <summary>
