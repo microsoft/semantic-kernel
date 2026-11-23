@@ -39,7 +39,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
-            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
             AllowedFolders = [folderPath]
         };
 
@@ -60,8 +60,140 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("https://api.example.com/resource", true)]
+    [InlineData("HTTPS://API.EXAMPLE.COM:443/resource?value=test#fragment", true)]
+    [InlineData("http://legacy.example.com:8080/file", true)]
+    [InlineData("http://api.example.com/resource", false)]
+    [InlineData("https://api.example.com:8443/resource", false)]
+    [InlineData("http://api.example.com:8080/file", false)]
+    [InlineData("https://legacy.example.com:8080/file", false)]
+    [InlineData("https://other.example.com/resource", false)]
+    [InlineData("https://sub.api.example.com/resource", false)]
+    public async Task DownloadToFileChecksExactOriginsAsync(string url, bool isAllowed)
+    {
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var filePath = Path.Combine(folderPath, "file.png");
+        Directory.CreateDirectory(folderPath);
+        this._messageHandlerStub.AddImageResponse([0x89, 0x50, 0x4E, 0x47]);
+        var uri = new Uri(url);
+        var plugin = new WebFileDownloadPlugin(this._httpClient)
+        {
+            AllowedOrigins = [new Uri("https://api.example.com"), new Uri("http://legacy.example.com:8080")],
+            AllowedFolders = [folderPath]
+        };
+
+        try
+        {
+            if (isAllowed)
+            {
+                await plugin.DownloadToFileAsync(uri, filePath);
+                Assert.Equal([0x89, 0x50, 0x4E, 0x47], await File.ReadAllBytesAsync(filePath));
+                Assert.Equal(uri, Assert.Single(this._messageHandlerStub.RequestUris));
+            }
+            else
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.DownloadToFileAsync(uri, filePath));
+                Assert.Empty(this._messageHandlerStub.RequestUris);
+                Assert.False(File.Exists(filePath));
+            }
+        }
+        finally
+        {
+            Directory.Delete(folderPath, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("http://api.example.com:8080/file")]
+    [InlineData("https://api.example.com:8443/file")]
+    public async Task DownloadToFileDeniesEmptyAndNullOriginsAsync(string url)
+    {
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var filePath = Path.Combine(folderPath, "file.png");
+        var uri = new Uri(url);
+        var plugin = new WebFileDownloadPlugin(this._httpClient)
+        {
+            AllowedOrigins = [],
+            AllowedFolders = [folderPath]
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.DownloadToFileAsync(uri, filePath));
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+        Assert.False(File.Exists(filePath));
+
+        plugin.AllowedOrigins = null;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.DownloadToFileAsync(uri, filePath));
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+        Assert.False(File.Exists(filePath));
+    }
+
+    [Theory]
+    [InlineData("http://1.1.1.1", "http://1.1.1.1:80/resource")]
+    [InlineData("http://1.1.1.1:80", "http://1.1.1.1/resource")]
+    [InlineData("https://1.1.1.1:443", "https://1.1.1.1/resource")]
+    [InlineData("https://[2606:4700:4700::1111]", "https://[2606:4700:4700::1111]:443/resource")]
+    public async Task DownloadToFileMatchesDefaultPortsAndIpOriginsAsync(string origin, string url)
+    {
+        var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var filePath = Path.Combine(folderPath, "file.png");
+        Directory.CreateDirectory(folderPath);
+        this._messageHandlerStub.AddImageResponse([0x89, 0x50, 0x4E, 0x47]);
+        var uri = new Uri(url);
+        var plugin = new WebFileDownloadPlugin(this._httpClient)
+        {
+            AllowedOrigins = [new Uri(origin)],
+            AllowedFolders = [folderPath]
+        };
+
+        try
+        {
+            await plugin.DownloadToFileAsync(uri, filePath);
+            Assert.Equal(uri, Assert.Single(this._messageHandlerStub.RequestUris));
+            Assert.True(File.Exists(filePath));
+        }
+        finally
+        {
+            Directory.Delete(folderPath, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("relative/path")]
+    [InlineData("ftp://example.com")]
+    [InlineData("https://user:password@example.com")]
+    [InlineData("https://example.com/path")]
+    [InlineData("https://example.com?query=value")]
+    [InlineData("https://example.com#fragment")]
+    public void DownloadToFileRejectsInvalidOriginConfigurationWithoutChangingPolicy(string? origin)
+    {
+        var plugin = new WebFileDownloadPlugin(this._httpClient) { AllowedOrigins = [new Uri("https://api.example.com")] };
+        var invalidOrigin = origin is null ? null! : new Uri(origin, UriKind.RelativeOrAbsolute);
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => plugin.AllowedOrigins = [new Uri("https://other.example.com"), invalidOrigin]);
+        Assert.Equal(nameof(WebFileDownloadPlugin.AllowedOrigins), exception.ParamName);
+
+        Assert.Equal(new Uri("https://api.example.com"), Assert.Single(plugin.AllowedOrigins!));
+    }
+
     [Fact]
-    public async Task DownloadToFileFailsForInvalidDomainAsync()
+    public async Task DownloadToFileStillRequiresAllowedFoldersWithAllowedOriginsAsync()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var plugin = new WebFileDownloadPlugin(this._httpClient) { AllowedOrigins = [new Uri("https://api.example.com")] };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.DownloadToFileAsync(new Uri("https://api.example.com/file"), filePath));
+
+        Assert.Equal("Downloading to the provided location is not allowed.", exception.Message);
+        Assert.Empty(this._messageHandlerStub.RequestUris);
+        Assert.False(File.Exists(filePath));
+    }
+
+    [Fact]
+    public async Task DownloadToFileFailsForDisallowedOriginAsync()
     {
         // Arrange
         this._messageHandlerStub.AddImageResponse(File.ReadAllBytes(SKLogoPng));
@@ -72,7 +204,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin()
         {
-            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
             AllowedFolders = [folderPath]
         };
 
@@ -92,7 +224,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin()
         {
-            AllowedDomains = [server.BaseUri.Host],
+            AllowedOrigins = [new Uri(server.BaseUri.GetLeftPart(UriPartial.Authority))],
             AllowedFolders = [folderPath]
         };
 
@@ -126,7 +258,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         try
         {
-            // Act & Assert - default config denies all domains
+            // Act & Assert - default config denies all origins
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await webFileDownload.DownloadToFileAsync(uri, filePath));
         }
         finally
@@ -145,7 +277,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var defaultPlugin = new WebFileDownloadPlugin();
 
         // Assert - defaults are deny-all
-        Assert.Empty(defaultPlugin.AllowedDomains!);
+        Assert.Empty(defaultPlugin.AllowedOrigins!);
         Assert.Empty(defaultPlugin.AllowedFolders!);
         Assert.True(defaultPlugin.DisableFileOverwrite);
         Assert.Equal(10 * 1024 * 1024, defaultPlugin.MaximumDownloadSize);
@@ -155,14 +287,14 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin()
         {
-            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
             AllowedFolders = [folderPath],
             MaximumDownloadSize = 100,
             DisableFileOverwrite = true
         };
 
         // Assert
-        Assert.Equal(["raw.githubusercontent.com"], webFileDownload.AllowedDomains);
+        Assert.Equal([new Uri("https://raw.githubusercontent.com")], webFileDownload.AllowedOrigins);
         Assert.Equal([folderPath], webFileDownload.AllowedFolders);
         Assert.Equal(100, webFileDownload.MaximumDownloadSize);
         Assert.True(webFileDownload.DisableFileOverwrite);
@@ -182,7 +314,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
 
         var webFileDownload = new WebFileDownloadPlugin(this._httpClient)
         {
-            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
             AllowedFolders = [folderPath],
             MaximumDownloadSize = 100
         };
@@ -212,7 +344,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         var folderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var webFileDownload = new WebFileDownloadPlugin()
         {
-            AllowedDomains = ["raw.githubusercontent.com"],
+            AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
             AllowedFolders = [folderPath]
         };
 
@@ -241,7 +373,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
         {
             var webFileDownload = new WebFileDownloadPlugin()
             {
-                AllowedDomains = ["raw.githubusercontent.com"],
+                AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
                 AllowedFolders = [allowedDir]
             };
 
@@ -294,7 +426,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
             using var client = new HttpClient(handler);
             var plugin = new WebFileDownloadPlugin(client)
             {
-                AllowedDomains = ["localhost"],
+                AllowedOrigins = [new Uri("http://localhost")],
                 AllowedFolders = [allowed],
                 DisableFileOverwrite = false
             };
@@ -325,7 +457,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
             using var client = new HttpClient(handler);
             var plugin = new WebFileDownloadPlugin(client)
             {
-                AllowedDomains = ["localhost"],
+                AllowedOrigins = [new Uri("http://localhost")],
                 AllowedFolders = [directory]
             };
 
@@ -358,7 +490,7 @@ public sealed class WebFileDownloadPluginTests : IDisposable
             using var client = new HttpClient(handler);
             var plugin = new WebFileDownloadPlugin(client)
             {
-                AllowedDomains = ["localhost"],
+                AllowedOrigins = [new Uri("http://localhost")],
                 AllowedFolders = [directory],
                 DisableFileOverwrite = false,
                 MaximumDownloadSize = maximumSize

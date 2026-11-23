@@ -50,7 +50,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(this._uriString)] };
 
         // Act
         var result = await plugin.GetAsync(this._uriString);
@@ -66,7 +66,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(this._uriString)] };
 
         // Act
         var result = await plugin.PostAsync(this._uriString, this._content);
@@ -82,7 +82,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(this._uriString)] };
 
         // Act
         var result = await plugin.PutAsync(this._uriString, this._content);
@@ -98,7 +98,7 @@ public sealed class HttpPluginTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["1.1.1.1"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(this._uriString)] };
 
         // Act
         var result = await plugin.DeleteAsync(this._uriString);
@@ -109,26 +109,26 @@ public sealed class HttpPluginTests : IDisposable
     }
 
     [Fact]
-    public async Task ItDeniesAllDomainsWithDefaultConfigAsync()
+    public async Task ItDeniesAllOriginsWithDefaultConfigAsync()
     {
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client);
 
-        // Act & Assert - default config denies all domains
+        // Act & Assert - default config denies all origins
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(this._uriString));
     }
 
     [Fact]
-    public async Task ItThrowsInvalidOperationExceptionForInvalidDomainAsync()
+    public async Task ItThrowsInvalidOperationExceptionForDisallowedOriginAsync()
     {
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client)
         {
-            AllowedDomains = ["www.example.com"]
+            AllowedOrigins = [new Uri("http://www.example.com")]
         };
         var invalidUri = "http://www.notexample.com";
 
@@ -139,6 +139,158 @@ public sealed class HttpPluginTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.DeleteAsync(invalidUri));
     }
 
+    [Theory]
+    [InlineData("https://api.example.com/resource", true)]
+    [InlineData("HTTPS://API.EXAMPLE.COM:443/resource?value=test#fragment", true)]
+    [InlineData("http://legacy.example.com:8080/file", true)]
+    [InlineData("http://api.example.com/resource", false)]
+    [InlineData("https://api.example.com:8443/resource", false)]
+    [InlineData("http://api.example.com:8080/file", false)]
+    [InlineData("https://legacy.example.com:8080/file", false)]
+    [InlineData("https://other.example.com/resource", false)]
+    [InlineData("https://sub.api.example.com/resource", false)]
+    public async Task ItChecksExactOriginsAsync(string uri, bool isAllowed)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client)
+        {
+            AllowedOrigins = [new Uri("https://api.example.com"), new Uri("http://legacy.example.com:8080")],
+            AllowPrivateNetworkAccess = true
+        };
+
+        if (isAllowed)
+        {
+            Assert.Equal(this._content, await plugin.GetAsync(uri));
+            mockHandler.Protected().Verify(
+                "SendAsync", Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(request => request.RequestUri == new Uri(uri)),
+                ItExpr.IsAny<CancellationToken>());
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync(uri));
+            VerifyNoRequest(mockHandler);
+        }
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    public async Task ItEnforcesOriginsForAllHttpMethodsAsync(string method)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri("https://1.1.1.1")] };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(plugin, method, "http://1.1.1.1"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(plugin, method, "https://1.1.1.1:8443"));
+        VerifyNoRequest(mockHandler);
+
+        Assert.Equal(this._content, await SendAsync(plugin, method, "https://1.1.1.1:443/resource"));
+    }
+
+    [Theory]
+    [InlineData("http://1.1.1.1:8080/resource")]
+    [InlineData("https://1.1.1.1:8443/resource")]
+    public async Task ItDeniesEmptyAndNullOriginsAsync(string uri)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client)
+        {
+            AllowedOrigins = []
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync(uri));
+        VerifyNoRequest(mockHandler);
+
+        plugin.AllowedOrigins = null;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync(uri));
+        VerifyNoRequest(mockHandler);
+    }
+
+    [Theory]
+    [InlineData("http://1.1.1.1", "http://1.1.1.1:80/resource")]
+    [InlineData("http://1.1.1.1:80", "http://1.1.1.1/resource")]
+    [InlineData("https://1.1.1.1:443", "https://1.1.1.1/resource")]
+    [InlineData("https://[2606:4700:4700::1111]", "https://[2606:4700:4700::1111]:443/resource")]
+    public async Task ItMatchesDefaultPortsAndIpOriginsAsync(string origin, string uri)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(origin)] };
+
+        Assert.Equal(this._content, await plugin.GetAsync(uri));
+    }
+
+    [Theory]
+    [InlineData("https://bücher.example", "https://xn--bcher-kva.example/resource")]
+    [InlineData("https://xn--bcher-kva.example", "https://bücher.example/resource")]
+    public async Task ItMatchesInternationalizedHostsByAsciiFormAsync(string origin, string uri)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(origin)], AllowPrivateNetworkAccess = true };
+
+        Assert.Equal(this._content, await plugin.GetAsync(uri));
+    }
+
+    [Fact]
+    public async Task ItRejectsHostThatCannotBeConvertedToAsciiAsync()
+    {
+        // The label fits in the URI, but its ASCII form exceeds the DNS label limit.
+        var uri = new Uri($"https://{new string('\u00fc', 59)}.example");
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri("https://1.1.1.1")] };
+
+        var exception = Assert.Throws<ArgumentException>(() => plugin.AllowedOrigins = [uri]);
+        Assert.Equal(nameof(HttpPlugin.AllowedOrigins), exception.ParamName);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync(uri.AbsoluteUri));
+        VerifyNoRequest(mockHandler);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("relative/path")]
+    [InlineData("ftp://example.com")]
+    [InlineData("https://user:password@example.com")]
+    [InlineData("https://example.com/path")]
+    [InlineData("https://example.com?query=value")]
+    [InlineData("https://example.com#fragment")]
+    public async Task ItRejectsInvalidOriginConfigurationWithoutChangingPolicyAsync(string? origin)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri("https://1.1.1.1")] };
+        var invalidOrigin = origin is null ? null! : new Uri(origin, UriKind.RelativeOrAbsolute);
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => plugin.AllowedOrigins = [new Uri("https://other.example.com"), invalidOrigin]);
+        Assert.Equal(nameof(HttpPlugin.AllowedOrigins), exception.ParamName);
+
+        Assert.Equal(this._content, await plugin.GetAsync("https://1.1.1.1/resource"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync("https://other.example.com"));
+    }
+
+    [Theory]
+    [InlineData("http://127.0.0.1")]
+    [InlineData("https://[::1]")]
+    public async Task ItStillBlocksPrivateAddressesForAllowedOriginsAsync(string origin)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(origin)] };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync(origin));
+
+        Assert.Contains("host resolves to", exception.Message, StringComparison.Ordinal);
+        VerifyNoRequest(mockHandler);
+    }
+
     [Fact]
     public async Task ItDoesNotFollowRedirectsAsync()
     {
@@ -147,7 +299,7 @@ public sealed class HttpPluginTests : IDisposable
 
         var plugin = new HttpPlugin()
         {
-            AllowedDomains = [server.BaseUri.Host],
+            AllowedOrigins = [new Uri(server.BaseUri.GetLeftPart(UriPartial.Authority))],
             AllowPrivateNetworkAccess = true
         };
 
@@ -177,7 +329,7 @@ public sealed class HttpPluginTests : IDisposable
             using var client = new HttpClient(mockHandler.Object);
             var host = address.Contains(':') ? $"[{address}]" : address;
             var uri = new Uri($"http://{host}/");
-            var plugin = new HttpPlugin(client) { AllowedDomains = [uri.Host] };
+            var plugin = new HttpPlugin(client) { AllowedOrigins = [uri] };
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => SendAsync(plugin, method, uri.AbsoluteUri));
@@ -196,7 +348,7 @@ public sealed class HttpPluginTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var uri = new Uri($"http://{address}/");
-        var plugin = new HttpPlugin(client) { AllowedDomains = [uri.Host] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [uri] };
 
         Assert.Equal(this._content, await plugin.GetAsync(uri.AbsoluteUri));
     }
@@ -221,7 +373,7 @@ public sealed class HttpPluginTests : IDisposable
             (_, _) => Task.FromResult(new[] { validatedAddress }),
             clientSupportsValidatedAddresses: true)
         {
-            AllowedDomains = ["example.test"]
+            AllowedOrigins = [new Uri("http://example.test")]
         };
 
         // Act
@@ -241,7 +393,7 @@ public sealed class HttpPluginTests : IDisposable
             client,
             (_, _) => Task.FromResult(new[] { validatedAddress }))
         {
-            AllowedDomains = ["example.test"]
+            AllowedOrigins = [new Uri("http://example.test")]
         };
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -371,7 +523,7 @@ public sealed class HttpPluginTests : IDisposable
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client)
         {
-            AllowedDomains = [host],
+            AllowedOrigins = [new Uri($"http://{host}")],
             AllowPrivateNetworkAccess = true
         };
 
@@ -379,13 +531,13 @@ public sealed class HttpPluginTests : IDisposable
     }
 
     [Fact]
-    public async Task ItStillRestrictsDomainsWithPrivateNetworkAccessEnabledAsync()
+    public async Task ItStillRestrictsOriginsWithPrivateNetworkAccessEnabledAsync()
     {
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client)
         {
-            AllowedDomains = ["www.example.com"],
+            AllowedOrigins = [new Uri("http://www.example.com")],
             AllowPrivateNetworkAccess = true
         };
 
@@ -394,11 +546,11 @@ public sealed class HttpPluginTests : IDisposable
     }
 
     [Fact]
-    public async Task ItRejectsDisallowedDomainBeforeSendingAsync()
+    public async Task ItRejectsDisallowedOriginBeforeSendingAsync()
     {
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri("http://www.example.com")] };
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.GetAsync("http://notallowed.example.invalid/"));
         Assert.Equal("Sending requests to the provided location is not allowed.", exception.Message);
@@ -414,7 +566,7 @@ public sealed class HttpPluginTests : IDisposable
     {
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client) { AllowedDomains = ["localhost"] };
+        var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri("http://localhost")] };
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(plugin, method, "http://localhost/"));
 

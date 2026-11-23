@@ -19,13 +19,12 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This plugin is secure by default. Both <see cref="AllowedDomains"/> and <see cref="AllowedFolders"/>
-/// must be explicitly configured before any downloads are permitted. By default, all domains and all
-/// file paths are denied.
+/// Downloads are denied by default. Configure <see cref="AllowedFolders"/> and
+/// <see cref="AllowedOrigins"/> before downloading.
 /// </para>
 /// <para>
 /// When exposing this plugin to an LLM via auto function calling, ensure that
-/// <see cref="AllowedDomains"/> and <see cref="AllowedFolders"/> are restricted to trusted
+/// <see cref="AllowedOrigins"/> and <see cref="AllowedFolders"/> are restricted to trusted
 /// values only. Unrestricted configuration may allow unintended downloads to
 /// local paths.
 /// </para>
@@ -55,7 +54,7 @@ public sealed class WebFileDownloadPlugin
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the origin restrictions.
     /// </remarks>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
@@ -64,17 +63,27 @@ public sealed class WebFileDownloadPlugin
     }
 
     /// <summary>
-    /// List of allowed domains to download from.
+    /// Gets or sets the allowed combinations of scheme, host, and port for downloads.
     /// </summary>
     /// <remarks>
-    /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
-    /// with trusted domains before any downloads will succeed.
-    /// HTTP redirects are not followed to prevent bypassing the allow-list.
+    /// <para>
+    /// Defaults to an empty collection. A <see langword="null"/> or empty collection denies all downloads.
+    /// </para>
+    /// <para>
+    /// Each origin must be an absolute HTTP or HTTPS URI, such as <c>https://api.example.com:8443</c>,
+    /// without credentials, a resource path, a query, or a fragment.
+    /// An omitted port means 80 for HTTP or 443 for HTTPS.
+    /// </para>
+    /// <para>
+    /// Scheme and host comparisons ignore case. All resource paths on a matching origin are permitted.
+    /// <see cref="AllowedFolders"/> must still permit the destination file path.
+    /// </para>
     /// </remarks>
-    public IEnumerable<string>? AllowedDomains
+    /// <exception cref="ArgumentException">An entry is not a valid HTTP or HTTPS origin.</exception>
+    public IEnumerable<Uri>? AllowedOrigins
     {
-        get => this._allowedDomains;
-        set => this._allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => this._allowedOrigins;
+        set => this._allowedOrigins = HttpOriginAllowList.Create(value, nameof(this.AllowedOrigins));
     }
 
     /// <summary>
@@ -190,7 +199,7 @@ public sealed class WebFileDownloadPlugin
     #region private
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private HashSet<string>? _allowedDomains = [];
+    private IReadOnlyList<Uri>? _allowedOrigins = [];
     private HashSet<string>? _allowedFolders = [];
 
     private FileStream OpenDestination(string path, FileMode mode)
@@ -206,16 +215,15 @@ public sealed class WebFileDownloadPlugin
     }
 
     /// <summary>
-    /// If a list of allowed domains has been provided, the host of the provided uri is checked
-    /// to verify it is in the allowed domain list.
+    /// Checks whether the request destination matches an allowed origin.
     /// </summary>
+    /// <param name="uri">The request URI to check.</param>
+    /// <returns><see langword="true"/> if the destination is permitted; otherwise, <see langword="false"/>.</returns>
     private bool IsUriAllowed(Uri uri)
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is not null
-            && this._allowedDomains.Count > 0
-            && this._allowedDomains.Contains(uri.Host);
+        return HttpOriginAllowList.Contains(this._allowedOrigins, uri);
     }
 
     private static string CanonicalizePath(string path)
