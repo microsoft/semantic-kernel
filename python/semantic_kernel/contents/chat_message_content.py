@@ -316,9 +316,16 @@ class ChatMessageContent(KernelContent):
         if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
             # The text of an assistant turn is its own content: a message may carry both tool calls and
             # text, and dropping the text loses what the model said in that turn.
-            text_content = "".join(item.text for item in self.items if isinstance(item, TextContent))
-            if text_content:
-                ret[content_key] = text_content
+            # Separate ``TextContent`` items are separate blocks, so keep them on their own lines
+            # (streamed chunks are already merged into one item before this runs). Whitespace-only
+            # text says nothing, so it is dropped the same way empty text is.
+            text_parts = [
+                item.text
+                for item in self.items
+                if isinstance(item, TextContent) and item.text and item.text.strip()
+            ]
+            if text_parts:
+                ret[content_key] = "\n".join(text_parts)
             ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionCallContent)]
         else:
             ret[content_key] = self._parse_items()
