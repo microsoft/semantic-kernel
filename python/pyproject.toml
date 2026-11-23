@@ -191,7 +191,8 @@ filterwarnings = [
 timeout = 120
 markers = [
     "ollama: mark a test as requiring the Ollama service (use \"not ollama\" to skip those tests)",
-    "onnx: mark a test as requiring the Onnx service (use \"not onnx\" to skip those tests)"
+    "onnx: mark a test as requiring the Onnx service (use \"not onnx\" to skip those tests)",
+    "azure: mark a test as requiring an Azure login (use \"not azure\" to skip those tests)"
 ]
 
 [tool.ruff]

@@ -72,6 +72,9 @@ from tests.utils import retry
 COMPLETIONS_CONCEPT_SAMPLE = "COMPLETIONS_CONCEPT_SAMPLE"
 MEMORY_CONCEPT_SAMPLE = "MEMORY_CONCEPT_SAMPLE"
 
+# Many of the samples imported above connect to Azure OpenAI when loaded, so they need an Azure login.
+pytestmark = mark.azure
+
 concepts = [
     param(
         semantic_caching,

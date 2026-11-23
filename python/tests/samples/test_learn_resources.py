@@ -20,6 +20,9 @@ from tests.utils import retry
 # This has to do with the setup of the tests and the services they depend on.
 COMPLETIONS_CONCEPT_SAMPLE = "COMPLETIONS_CONCEPT_SAMPLE"
 
+# The samples imported above connect to Azure OpenAI when loaded, so they need an Azure login.
+pytestmark = mark.azure
+
 learn_resources = [
     param(
         ai_services,

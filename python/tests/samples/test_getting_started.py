@@ -27,39 +27,47 @@ def run_notebook(notebook_name: str):
 notebooks = [
     param(
         "00-getting-started.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "01-basic-loading-the-kernel.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "02-running-prompts-from-file.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "03-prompt-function-inline.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "04-kernel-arguments-chat.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "05-memory-and-embeddings.ipynb",
-        marks=mark.skipif(
-            True, reason="Issue with missing property. Need to investigate and fix. Skip to unblock CI/CD pipeline."
-        ),
+        marks=[
+            mark.skipif(
+                True, reason="Issue with missing property. Need to investigate and fix. Skip to unblock CI/CD pipeline."
+            ),
+            mark.azure,
+        ],
     ),
     param(
         "06-hugging-face-for-plugins.ipynb",
@@ -69,15 +77,17 @@ notebooks = [
     ),
     param(
         "07-native-function-inline.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "08-groundedness-checking.ipynb",
-        marks=mark.skipif(
-            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
-        ),
+        marks=[
+            mark.skipif(os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."),
+            mark.azure,
+        ],
     ),
     param(
         "09-multiple-results-per-prompt.ipynb",
