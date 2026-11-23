@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.6.5-preview.1.26559.7" />
-    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
