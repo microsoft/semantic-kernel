@@ -4,17 +4,16 @@ import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_batch import (
+    OpenAIBatchMixin,
+    open_ai_batch_encode,
+)
 from semantic_kernel.connectors.batch_types import (
     Batch,
     BatchJob,
     BatchRequest,
     BatchStatus,
     SupportsBatch,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_batch import (
-    OpenAIBatchMixin,
-    open_ai_batch_encode,
 )
 from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
 
@@ -58,12 +57,10 @@ def test_mixin_implements_supports_batch():
 
 
 def test_encode_produces_provider_payloads():
-    batch = open_ai_batch_encode(
-        [
-            {"custom_id": "r1", "body": {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "hi"}]}},
-            {"custom_id": "r2", "body": {"model": "gpt-4o-mini", "messages": []}},
-        ]
-    )
+    batch = open_ai_batch_encode([
+        {"custom_id": "r1", "body": {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "hi"}]}},
+        {"custom_id": "r2", "body": {"model": "gpt-4o-mini", "messages": []}},
+    ])
     encoded = batch.encode().decode()
     lines = [json.loads(line) for line in encoded.strip().splitlines()]
     assert len(lines) == 2
@@ -264,22 +261,16 @@ async def test_results_surface_typed_per_request_errors():
     service = _service()
     provider_job = _provider_job(id="b1", status="completed", output_file_id="file-out", error_file_id="file-err")
     service.client.batches.retrieve.return_value = provider_job
-    output_lines = "\n".join(
-        [
-            json.dumps(
-                {
-                    "custom_id": "ok",
-                    "response": {"status_code": 200, "body": {"choices": [{"message": {"content": "done"}}]}},
-                }
-            ),
-            json.dumps(
-                {
-                    "custom_id": "http_error",
-                    "response": {"status_code": 400, "body": {"error": {"message": "bad request"}}},
-                }
-            ),
-        ]
-    )
+    output_lines = "\n".join([
+        json.dumps({
+            "custom_id": "ok",
+            "response": {"status_code": 200, "body": {"choices": [{"message": {"content": "done"}}]}},
+        }),
+        json.dumps({
+            "custom_id": "http_error",
+            "response": {"status_code": 400, "body": {"error": {"message": "bad request"}}},
+        }),
+    ])
     error_lines = json.dumps({"custom_id": "bad", "error": {"code": "context_length_exceeded", "message": "too long"}})
     service.client.files.content.side_effect = [
         MagicMock(text=output_lines),

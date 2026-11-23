@@ -19,6 +19,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any
 
+from pydantic import Field
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -65,21 +67,19 @@ class BatchRequest(KernelBaseModel):
 class Batch(KernelBaseModel):
     """An encoded batch of requests plus helpers for grouping and encoding."""
 
-    requests: list[BatchRequest] = []
+    requests: list[BatchRequest] = Field(default_factory=list)
 
     def encode(self) -> bytes:
         """Encode the requests as JSON Lines, one provider payload per line."""
         import json
 
         return "".join(
-            json.dumps(
-                {
-                    "custom_id": request.custom_id,
-                    "method": "POST",
-                    "url": request.endpoint,
-                    "body": request.payload,
-                }
-            )
+            json.dumps({
+                "custom_id": request.custom_id,
+                "method": "POST",
+                "url": request.endpoint,
+                "body": request.payload,
+            })
             + "\n"
             for request in self.requests
         ).encode()
@@ -99,9 +99,9 @@ class BatchJob(KernelBaseModel):
     """Provider-side batch identifier (multi-credential submissions join ids with ``+``)."""
     status: BatchStatus = BatchStatus.VALIDATING
     """Latest known lifecycle state."""
-    request_counts: dict[str, int] = {}
+    request_counts: dict[str, int] = Field(default_factory=dict)
     """Provider-reported counters, e.g. ``{"total": 10, "completed": 4, "failed": 1}``."""
-    request_ids: list[str] = []
+    request_ids: list[str] = Field(default_factory=list)
     """The ``custom_id``s submitted with this job; used to report unrun/cancelled requests."""
     error: str | None = None
     """Top-level job error when the job itself failed."""
@@ -129,9 +129,7 @@ class BatchRequestResult(KernelBaseModel):
         """
         if self.error is not None or self.response is None:
             return False
-        if self.status_code is not None and self.status_code >= 400:
-            return False
-        return True
+        return not (self.status_code is not None and self.status_code >= 400)
 
 
 class SupportsBatch(ABC):

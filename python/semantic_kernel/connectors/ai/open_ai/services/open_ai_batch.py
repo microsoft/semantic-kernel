@@ -95,9 +95,7 @@ def open_ai_batch_encode(requests: list[dict[str, Any]], endpoint: str = _OPENAI
                 f"Batch entry #{index} is malformed (needs 'custom_id' and 'body'): {entry!r}"
             ) from ex
         except ValidationError as ex:
-            raise ServiceInvalidRequestError(
-                f"Batch entry #{index} has invalid fields: {ex}"
-            ) from ex
+            raise ServiceInvalidRequestError(f"Batch entry #{index} has invalid fields: {ex}") from ex
     return Batch(requests=encoded)
 
 
@@ -126,13 +124,11 @@ class OpenAIBatchMixin(SupportsBatch):
             raise ServiceInvalidRequestError("Cannot create a batch job with zero requests.")
 
         seen: set[str] = set()
-        duplicates = sorted(
-            {request.custom_id for request in batch.requests if request.custom_id in seen or seen.add(request.custom_id)}
-        )
+        duplicates = sorted({
+            request.custom_id for request in batch.requests if request.custom_id in seen or seen.add(request.custom_id)
+        })
         if duplicates:
-            raise ServiceInvalidRequestError(
-                f"Duplicate custom_id values in batch: {', '.join(duplicates)}"
-            )
+            raise ServiceInvalidRequestError(f"Duplicate custom_id values in batch: {', '.join(duplicates)}")
 
         endpoints = {request.endpoint for request in batch.requests}
         if len(endpoints) != 1:
@@ -167,9 +163,7 @@ class OpenAIBatchMixin(SupportsBatch):
                         # Surface the ids whose cancel call itself failed so
                         # the caller can retry via cancel_batch — these jobs
                         # may still be running (and billing) on the provider.
-                        parts.append(
-                            f"could NOT be cancelled, still running — retry via cancel_batch: {cancel_failed}"
-                        )
+                        parts.append(f"could NOT be cancelled, still running — retry via cancel_batch: {cancel_failed}")
                     cleanup_note = f" ({'; '.join(parts)})" if parts else ""
                 raise ServiceResponseException(
                     f"{type(self)} failed to submit a batch job{cleanup_note}",
@@ -214,7 +208,9 @@ class OpenAIBatchMixin(SupportsBatch):
         provider_jobs = await self._retrieve_all(job)
         if not provider_jobs:
             raise ServiceInvalidRequestError(f"No provider jobs found for {job.job_id!r}")
-        pending = [pj.id for pj in provider_jobs if not _OPENAI_STATUS_MAP.get(pj.status, BatchStatus.FAILED).is_terminal]
+        pending = [
+            pj.id for pj in provider_jobs if not _OPENAI_STATUS_MAP.get(pj.status, BatchStatus.FAILED).is_terminal
+        ]
         if pending:
             raise ServiceInvalidRequestError(
                 f"Batch job(s) {pending} are still running; collect results only after they finish."
@@ -232,8 +228,9 @@ class OpenAIBatchMixin(SupportsBatch):
                 try:
                     content = await self.client.files.content(file_id)  # type: ignore[attr-defined]
                 except Exception as ex:
+                    kind = "error" if is_error_file else "output"
                     raise ServiceResponseException(
-                        f"{type(self)} failed to download batch {'error' if is_error_file else 'output'} file {file_id}",
+                        f"{type(self)} failed to download batch {kind} file {file_id}",
                         ex,
                     ) from ex
                 for line in content.text.splitlines():
