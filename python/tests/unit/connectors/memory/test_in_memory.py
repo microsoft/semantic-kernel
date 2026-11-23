@@ -252,6 +252,19 @@ async def test_get_missing(collection):
     assert result is None
 
 
+async def test_get_excludes_vectors_by_default(collection):
+    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await collection.upsert(record)
+
+    result = await collection.get(key="testid")
+    assert result["id"] == record["id"]
+    assert result["content"] == record["content"]
+    assert "vector" not in result
+
+    with_vectors = await collection.get(key="testid", include_vectors=True)
+    assert with_vectors == record
+
+
 async def test_delete(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
