@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -236,6 +237,19 @@ public sealed class HttpPluginTests : IDisposable
         var plugin = new HttpPlugin(client) { AllowedOrigins = [new Uri(origin)], AllowPrivateNetworkAccess = true };
 
         Assert.Equal(this._content, await plugin.GetAsync(uri));
+    }
+
+    [Fact]
+    public void ItExposesDistinctOriginsAsAReadOnlySnapshot()
+    {
+        var plugin = new HttpPlugin
+        {
+            AllowedOrigins = [new Uri("https://bücher.example"), new Uri("https://XN--BCHER-KVA.EXAMPLE:443/")]
+        };
+
+        var snapshot = Assert.IsAssignableFrom<ICollection<Uri>>(plugin.AllowedOrigins);
+        Assert.Single(snapshot);
+        Assert.Throws<NotSupportedException>(snapshot.Clear);
     }
 
     [Fact]

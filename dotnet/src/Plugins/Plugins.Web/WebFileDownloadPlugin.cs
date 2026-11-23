@@ -68,6 +68,7 @@ public sealed class WebFileDownloadPlugin
     /// <remarks>
     /// <para>
     /// Defaults to an empty collection. A <see langword="null"/> or empty collection denies all downloads.
+    /// Reading this property returns a read-only snapshot with one entry per origin.
     /// </para>
     /// <para>
     /// Each origin must be an absolute HTTP or HTTPS URI, such as <c>https://api.example.com:8443</c>,
@@ -82,7 +83,7 @@ public sealed class WebFileDownloadPlugin
     /// <exception cref="ArgumentException">An entry is not a valid HTTP or HTTPS origin.</exception>
     public IEnumerable<Uri>? AllowedOrigins
     {
-        get => this._allowedOrigins;
+        get => this._allowedOrigins is { } origins ? new List<Uri>(origins).AsReadOnly() : null;
         set => this._allowedOrigins = HttpOriginAllowList.Create(value, nameof(this.AllowedOrigins));
     }
 
@@ -199,7 +200,7 @@ public sealed class WebFileDownloadPlugin
     #region private
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private IReadOnlyList<Uri>? _allowedOrigins = [];
+    private HashSet<Uri>? _allowedOrigins = [];
     private HashSet<string>? _allowedFolders = [];
 
     private FileStream OpenDestination(string path, FileMode mode)

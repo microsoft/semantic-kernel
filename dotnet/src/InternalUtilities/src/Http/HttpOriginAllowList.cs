@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Http;
 internal static class HttpOriginAllowList
 {
     /// <summary>
-    /// Creates a validated, read-only copy of the allowed HTTP origins.
+    /// Validates and collects the allowed HTTP origins, keeping one entry per origin.
     /// </summary>
     /// <param name="origins">The origins to allow, or <see langword="null"/> when no origin policy is configured.</param>
     /// <param name="paramName">The name of the setting being configured, reported in validation errors.</param>
@@ -19,14 +19,14 @@ internal static class HttpOriginAllowList
     /// <exception cref="ArgumentException">
     /// An entry is null or is not an absolute HTTP or HTTPS URI containing only a scheme, valid host, and optional port.
     /// </exception>
-    public static IReadOnlyList<Uri>? Create(IEnumerable<Uri>? origins, string paramName)
+    public static HashSet<Uri>? Create(IEnumerable<Uri>? origins, string paramName)
     {
         if (origins is null)
         {
             return null;
         }
 
-        var allowedOrigins = new List<Uri>();
+        var allowedOrigins = new HashSet<Uri>(OriginComparer.Instance);
         foreach (var origin in origins)
         {
             if (origin is null ||
@@ -46,7 +46,7 @@ internal static class HttpOriginAllowList
             allowedOrigins.Add(origin);
         }
 
-        return allowedOrigins.AsReadOnly();
+        return allowedOrigins;
     }
 
     /// <summary>
@@ -59,24 +59,14 @@ internal static class HttpOriginAllowList
     /// Scheme and host comparisons ignore case. Internationalized host names match their ASCII (punycode) form.
     /// Omitted ports use their scheme's default. Request paths do not affect matching.
     /// </remarks>
-    public static bool Contains(IReadOnlyList<Uri>? allowedOrigins, Uri uri)
+    public static bool Contains(HashSet<Uri>? allowedOrigins, Uri uri)
     {
-        if (allowedOrigins is not { Count: > 0 } || !uri.IsAbsoluteUri || GetAsciiHost(uri) is not { } host)
+        if (allowedOrigins is not { Count: > 0 } || !uri.IsAbsoluteUri || GetAsciiHost(uri) is null)
         {
             return false;
         }
 
-        foreach (var origin in allowedOrigins)
-        {
-            if (string.Equals(uri.Scheme, origin.Scheme, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(host, origin.IdnHost, StringComparison.OrdinalIgnoreCase) &&
-                uri.Port == origin.Port)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return allowedOrigins.Contains(uri);
     }
 
     /// <summary>
@@ -91,6 +81,33 @@ internal static class HttpOriginAllowList
         catch (UriFormatException)
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Compares validated URIs by origin, ignoring paths, queries, and fragments.
+    /// </summary>
+    private sealed class OriginComparer : IEqualityComparer<Uri>
+    {
+        internal static OriginComparer Instance { get; } = new();
+
+        public bool Equals(Uri? x, Uri? y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            return x is not null && y is not null &&
+                x.Port == y.Port &&
+                string.Equals(x.Scheme, y.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.IdnHost, y.IdnHost, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetHashCode(Uri obj)
+        {
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            return (comparer.GetHashCode(obj.Scheme), comparer.GetHashCode(obj.IdnHost), obj.Port).GetHashCode();
         }
     }
 }
