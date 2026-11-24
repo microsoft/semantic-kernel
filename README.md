@@ -18,7 +18,7 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 
 ## System Requirements
 
-- **Python**: 3.10+
+- **Python**: 3.11 through 3.14
 - **.NET**: .NET 10.0+ 
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux

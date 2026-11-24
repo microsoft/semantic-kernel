@@ -112,3 +112,41 @@ async def test_should_agent_terminate_result_parser_awaitable():
 
     assert result is True
     mock_function.invoke.assert_awaited_once()
+
+
+async def test_should_agent_terminate_default_result_parser_true():
+    """Default result_parser must accept the function result (regression for #14589)."""
+    agent = MockAgent(id="test-agent-id")
+    history = [MagicMock(spec=ChatMessageContent)]
+
+    mock_function = AsyncMock(spec=KernelFunction)
+    mock_result = MagicMock()
+    mock_result.__str__.return_value = "true"
+    mock_function.invoke.return_value = mock_result
+    mock_kernel = MagicMock(spec=Kernel)
+
+    strategy = KernelFunctionTerminationStrategy(agents=[agent], function=mock_function, kernel=mock_kernel)
+
+    result = await strategy.should_agent_terminate(agent, history)
+
+    assert result is True
+    mock_function.invoke.assert_awaited_once()
+
+
+async def test_should_agent_terminate_default_result_parser_false():
+    """Default result_parser treats non-true strings as continue."""
+    agent = MockAgent(id="test-agent-id")
+    history = [MagicMock(spec=ChatMessageContent)]
+
+    mock_function = AsyncMock(spec=KernelFunction)
+    mock_result = MagicMock()
+    mock_result.__str__.return_value = "no"
+    mock_function.invoke.return_value = mock_result
+    mock_kernel = MagicMock(spec=Kernel)
+
+    strategy = KernelFunctionTerminationStrategy(agents=[agent], function=mock_function, kernel=mock_kernel)
+
+    result = await strategy.should_agent_terminate(agent, history)
+
+    assert result is False
+    mock_function.invoke.assert_awaited_once()

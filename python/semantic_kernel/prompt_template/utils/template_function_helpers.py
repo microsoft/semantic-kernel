@@ -6,7 +6,7 @@ from collections.abc import Callable
 from html import escape
 from typing import TYPE_CHECKING, Any
 
-import nest_asyncio
+import nest_asyncio2
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import (
@@ -79,7 +79,7 @@ def _create_sync_template_helper_from_function(
         raise ValueError(f"Invalid template format: {template_format}")
 
     if not getattr(asyncio, "_nest_patched", False):
-        nest_asyncio.apply()
+        nest_asyncio2.apply()
 
     def func(*args, **kwargs):
         arguments = KernelArguments()
