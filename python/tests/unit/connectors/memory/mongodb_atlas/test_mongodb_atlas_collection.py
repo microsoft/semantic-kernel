@@ -91,3 +91,22 @@ async def test_mongodb_atlas_collection_collection_exists(mongodb_atlas_unit_tes
     with patch.object(collection, "_get_database", new=mock_get_database) as mock_get:
         mock_get.return_value.list_collection_names.return_value = ["test_collection"]
         assert await collection.collection_exists()
+
+
+@mark.parametrize(
+    "filter_str, expected",
+    [
+        ("lambda x: x.content in ['a', 'b']", {"content": {"$in": ["a", "b"]}}),
+        ("lambda x: x.content not in ['a', 'b']", {"content": {"$nin": ["a", "b"]}}),
+    ],
+)
+def test_mongodb_atlas_collection_build_filter_list(
+    mongodb_atlas_unit_test_env, definition, mock_mongo_client, filter_str, expected
+):
+    collection = MongoDBAtlasCollection(
+        record_type=dict,
+        definition=definition,
+        collection_name="test_collection",
+        mongo_client=mock_mongo_client,
+    )
+    assert collection._build_filter(filter_str) == expected
