@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from unittest.mock import MagicMock, patch
 
 import pytest
+from ollama._types import GenerateResponse
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
@@ -176,3 +177,111 @@ async def test_streaming_completion_wrong_return_type(
             OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
         ):
             pass
+
+
+@pytest.mark.parametrize("as_object", [False, True], ids=["mapping", "generate_response"])
+@patch("ollama.AsyncClient.generate")
+async def test_completion_usage_metadata(
+    mock_completion_client, as_object, model_id, service_id, prompt, default_options
+):
+    """Test that token usage is reported in the metadata of the text content."""
+    payload = {"model": model_id, "response": "test_response", "prompt_eval_count": 3, "eval_count": 5}
+    mock_completion_client.return_value = GenerateResponse(**payload) if as_object else payload
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    response = await ollama.get_text_contents(
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].metadata["model"] == model_id
+    assert response[0].metadata["usage"].prompt_tokens == 3
+    assert response[0].metadata["usage"].completion_tokens == 5
+
+
+@pytest.mark.parametrize("as_object", [False, True], ids=["mapping", "generate_response"])
+@patch("ollama.AsyncClient.generate")
+async def test_completion_without_usage_counts(
+    mock_completion_client, as_object, model_id, service_id, prompt, default_options
+):
+    """Test that no usage is reported when the response carries no token counts."""
+    payload = {"model": model_id, "response": "test_response"}
+    mock_completion_client.return_value = GenerateResponse(**payload) if as_object else payload
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    response = await ollama.get_text_contents(
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].text == "test_response"
+    assert "usage" not in response[0].metadata
+
+
+@pytest.mark.parametrize("as_object", [False, True], ids=["mapping", "generate_response"])
+@patch("ollama.AsyncClient.generate")
+async def test_completion_zero_usage_counts_are_kept(
+    mock_completion_client, as_object, model_id, service_id, prompt, default_options
+):
+    """Test that explicit zero token counts are reported rather than dropped."""
+    payload = {"model": model_id, "response": "test_response", "prompt_eval_count": 0, "eval_count": 0}
+    mock_completion_client.return_value = GenerateResponse(**payload) if as_object else payload
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    response = await ollama.get_text_contents(
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert response[0].metadata["usage"].prompt_tokens == 0
+    assert response[0].metadata["usage"].completion_tokens == 0
+
+
+@pytest.mark.parametrize("as_object", [False, True], ids=["mapping", "generate_response"])
+@pytest.mark.parametrize("counts", [{"prompt_eval_count": 3}, {"eval_count": 5}], ids=["prompt_only", "eval_only"])
+@patch("ollama.AsyncClient.generate")
+async def test_completion_with_one_usage_count_reports_no_usage(
+    mock_completion_client, counts, as_object, model_id, service_id, prompt, default_options
+):
+    """Test that usage is only reported when both token counts are present."""
+    payload = {"model": model_id, "response": "test_response", **counts}
+    mock_completion_client.return_value = GenerateResponse(**payload) if as_object else payload
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    response = await ollama.get_text_contents(
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+    )
+
+    assert "usage" not in response[0].metadata
+
+
+@pytest.mark.parametrize("as_object", [False, True], ids=["mapping", "generate_response"])
+@patch("ollama.AsyncClient.generate")
+async def test_streaming_completion_usage_metadata(
+    mock_completion_client, as_object, model_id, service_id, prompt, default_options
+):
+    """Test that token usage is reported only on the final streamed chunk."""
+    payloads = [
+        {"model": model_id, "response": "test_", "done": False},
+        {"model": model_id, "response": "response", "done": True, "prompt_eval_count": 3, "eval_count": 5},
+    ]
+    chunks = [GenerateResponse(**p) for p in payloads] if as_object else payloads
+    streaming_response = MagicMock(spec=AsyncGenerator)
+    streaming_response.__aiter__.return_value = chunks
+    mock_completion_client.return_value = streaming_response
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    responses = [
+        line[0]
+        async for line in ollama.get_streaming_text_contents(
+            prompt,
+            OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+    ]
+
+    assert len(responses) == 2
+    assert "usage" not in responses[0].metadata
+    assert responses[-1].metadata["model"] == model_id
+    assert responses[-1].metadata["usage"].prompt_tokens == 3
+    assert responses[-1].metadata["usage"].completion_tokens == 5
