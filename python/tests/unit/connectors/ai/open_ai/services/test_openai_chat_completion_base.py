@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import operator
 from copy import deepcopy
+from functools import reduce
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -11,6 +13,7 @@ from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from openai.types.chat.chat_completion_chunk import ChoiceDelta as ChunkChoiceDelta
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.completion_usage import CompletionUsage
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -528,6 +531,53 @@ async def test_scmc_prompt_execution_settings(
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
+
+
+@pytest.mark.parametrize(
+    ("service_model_id", "settings_model_id"),
+    [("a", "b"), ("service-model", "override-model")],
+)
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_scmc_usage_chunk_uses_service_model_id_when_settings_override(
+    mock_create,
+    service_model_id,
+    settings_model_id,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+):
+    content_chunk = ChatCompletionChunk(
+        id="test_id",
+        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        created=0,
+        model=settings_model_id,
+        object="chat.completion.chunk",
+    )
+    usage_chunk = ChatCompletionChunk(
+        id="test_id",
+        choices=[],
+        created=0,
+        model=settings_model_id,
+        object="chat.completion.chunk",
+        usage=CompletionUsage(prompt_tokens=1, completion_tokens=1, total_tokens=2),
+    )
+    stream = MagicMock(spec=AsyncStream)
+    stream.__aiter__.return_value = [content_chunk, usage_chunk]
+    mock_create.return_value = stream
+    chat_history.add_user_message("hello world")
+    settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id", ai_model_id=settings_model_id)
+
+    openai_chat_completion = OpenAIChatCompletion(ai_model_id=service_model_id)
+    chunks = [
+        msg[0]
+        async for msg in openai_chat_completion.get_streaming_chat_message_contents(
+            chat_history=chat_history, settings=settings, kernel=kernel
+        )
+    ]
+
+    assert len(chunks) == 2
+    assert all(chunk.ai_model_id == service_model_id for chunk in chunks)
+    assert reduce(operator.add, chunks).ai_model_id == service_model_id
 
 
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock, side_effect=Exception)

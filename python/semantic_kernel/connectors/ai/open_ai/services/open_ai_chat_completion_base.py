@@ -125,7 +125,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         content="",
                         choice_index=i,
                         inner_content=chunk,
-                        ai_model_id=settings.ai_model_id,
+                        ai_model_id=self.ai_model_id,
                         metadata=chunk_metadata,
                         function_invoke_attempt=function_invoke_attempt,
                     )
