@@ -157,11 +157,15 @@ async def test_trace_streaming_chat_completion(
         # Not all connectors return the same metadata
         if mock_response[0].metadata.get("id") is not None:
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.RESPONSE_ID, mock_response[0].metadata["id"])
-        if any(completion.finish_reason is not None for completion in mock_response):
-            mock_span.set_attribute.assert_any_call(
-                gen_ai_attributes.FINISH_REASON,
-                ",".join([str(completion.finish_reason) for completion in mock_response]),
-            )
+        finish_reasons = [
+            completion.finish_reason.value for completion in mock_response if completion.finish_reason is not None
+        ]
+        if finish_reasons:
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.FINISH_REASON, ",".join(finish_reasons))
+        else:
+            assert gen_ai_attributes.FINISH_REASON not in [
+                args[0] for args, _ in mock_span.set_attribute.call_args_list
+            ]
 
         mock_logger.info.assert_any_call(
             json.dumps({

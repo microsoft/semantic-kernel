@@ -16,6 +16,7 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics import gen_ai_attributes
 from semantic_kernel.utils.telemetry.model_diagnostics.model_diagnostics_settings import ModelDiagnosticSettings
@@ -413,7 +414,11 @@ def _set_completion_response(
 
     # Set the finish reason
     finish_reasons = [
-        str(completion.finish_reason) for completion in completions if isinstance(completion, ChatMessageContent)
+        completion.finish_reason.value
+        if isinstance(completion.finish_reason, FinishReason)
+        else str(completion.finish_reason)
+        for completion in completions
+        if isinstance(completion, ChatMessageContent) and completion.finish_reason is not None
     ]
     if finish_reasons:
         current_span.set_attribute(gen_ai_attributes.FINISH_REASON, ",".join(finish_reasons))
