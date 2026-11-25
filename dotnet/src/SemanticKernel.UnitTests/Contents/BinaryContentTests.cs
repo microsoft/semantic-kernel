@@ -311,4 +311,18 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         // Act & Assert
         Assert.Equal("01-02-03-04", Encoding.UTF8.GetString(content.Data!.Value.ToArray()));
     }
+
+    [Theory]
+    [InlineData("data:,A%20brief%20note", new byte[] { 0x41, 0x20, 0x62, 0x72, 0x69, 0x65, 0x66, 0x20, 0x6E, 0x6F, 0x74, 0x65 })]
+    [InlineData("data:application/octet-stream,%FF%00%80", new byte[] { 0xFF, 0x00, 0x80 })]
+    [InlineData("data:text/plain;charset=iso-8859-1,caf%E9", new byte[] { 0x63, 0x61, 0x66, 0xE9 })]
+    [InlineData("data:text/plain,1+1=2", new byte[] { 0x31, 0x2B, 0x31, 0x3D, 0x32 })]
+    public void ReturnPercentDecodedOctetsWhenDataIsNotBase64(string path, byte[] expectedData)
+    {
+        // Arrange
+        var content = new BinaryContent(path);
+
+        // Act & Assert
+        Assert.Equal(expectedData, content.Data!.Value.ToArray());
+    }
 }

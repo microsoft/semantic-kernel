@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -306,8 +307,10 @@ public class BinaryContent : KernelContent
             }
             else
             {
-                // Defaults to UTF8 encoding if format is not provided.
-                this._data = Encoding.UTF8.GetBytes(parsedDataUri.Data!);
+                // Defaults to UTF8 encoding if format is not provided. Per RFC 2397, each %xx escape is the octet it names,
+                // and '+' is a literal plus, not a space as in form encoding.
+                byte[] bytes = Encoding.UTF8.GetBytes(parsedDataUri.Data!.Replace("+", "%2B"));
+                this._data = WebUtility.UrlDecodeToBytes(bytes, 0, bytes.Length);
             }
         }
 
