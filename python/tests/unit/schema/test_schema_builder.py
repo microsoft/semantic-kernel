@@ -42,6 +42,16 @@ class EnumTest(Enum):
     OPTION_C = "OptionC"
 
 
+class MixedEnumTest(Enum):
+    AUTO = None
+    FAST = "fast"
+    COUNT = 2
+
+
+class NoneEnumTest(Enum):
+    ONLY = None
+
+
 class MockModel:
     __annotations__ = {
         "id": int,
@@ -416,6 +426,19 @@ def test_enum_schema_without_description():
     schema = KernelJsonSchemaBuilder.build(EnumTest)
     expected_schema = {"type": "string", "enum": ["OptionA", "OptionB", "OptionC"]}
     assert schema == expected_schema
+
+
+def test_enum_schema_infers_all_member_types():
+    schema = KernelJsonSchemaBuilder.build(MixedEnumTest)
+    assert schema == {
+        "type": ["integer", "string", "null"],
+        "enum": [None, "fast", 2],
+    }
+
+
+def test_enum_schema_with_only_none_member():
+    schema = KernelJsonSchemaBuilder.build(NoneEnumTest)
+    assert schema == {"type": "null", "enum": [None]}
 
 
 def test_handle_complex_type():
