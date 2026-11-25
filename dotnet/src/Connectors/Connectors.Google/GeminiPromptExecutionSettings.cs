@@ -326,6 +326,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         return new GeminiPromptExecutionSettings()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
             Temperature = this.Temperature,
             TopP = this.TopP,
@@ -338,6 +340,8 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             AudioTimestamp = this.AudioTimestamp,
             ResponseMimeType = this.ResponseMimeType,
             ResponseSchema = this.ResponseSchema,
+            Labels = this.Labels is not null ? new Dictionary<string, string>(this.Labels) : null,
+            CachedContent = this.CachedContent,
             ThinkingConfig = this.ThinkingConfig?.Clone()
         };
     }
