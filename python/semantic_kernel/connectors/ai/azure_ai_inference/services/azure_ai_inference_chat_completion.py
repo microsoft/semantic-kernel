@@ -309,6 +309,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                     )
 
         return ChatMessageContent(
+            ai_model_id=self.ai_model_id,
             role=AuthorRole(choice.message.role),
             items=items,
             inner_content=response,
