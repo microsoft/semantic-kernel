@@ -161,3 +161,30 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
     )
+
+
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceTextEmbedding.__name__],
+    indirect=True,
+)
+@patch.object(EmbeddingsClient, "embed", new_callable=AsyncMock)
+async def test_azure_ai_inference_text_embedding_with_non_string_extra_parameters(
+    mock_embed,
+    azure_ai_inference_service,
+    model_id,
+) -> None:
+    """Test that non-string extra parameters reach the client unchanged"""
+    texts = ["hello", "world"]
+    extra_parameters = {"truncate": True, "dimensions": 256}
+    settings = AzureAIInferenceEmbeddingPromptExecutionSettings(extra_parameters=extra_parameters)
+    await azure_ai_inference_service.generate_embeddings(texts, settings)
+
+    mock_embed.assert_awaited_once_with(
+        input=texts,
+        model=model_id,
+        model_extras=extra_parameters,
+        dimensions=settings.dimensions,
+        encoding_format=settings.encoding_format,
+        input_type=settings.input_type,
+    )

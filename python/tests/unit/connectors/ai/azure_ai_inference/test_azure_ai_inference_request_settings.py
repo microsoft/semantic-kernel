@@ -141,3 +141,12 @@ def test_default_azure_ai_inference_embedding_prompt_execution_settings():
     assert settings.encoding_format is None
     assert settings.input_type is None
     assert settings.extra_parameters is None
+
+
+def test_azure_ai_inference_embedding_prompt_execution_settings_non_string_extra_parameters():
+    extra_parameters = {"truncate": True, "dimensions": 256}
+    settings = AzureAIInferenceEmbeddingPromptExecutionSettings(extra_parameters=extra_parameters)
+
+    assert settings.extra_parameters == extra_parameters
+    assert settings.extra_parameters["truncate"] is True
+    assert settings.extra_parameters["dimensions"] == 256
