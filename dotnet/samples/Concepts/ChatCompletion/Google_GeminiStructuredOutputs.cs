@@ -27,7 +27,8 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     [InlineData(false)]
     public async Task StructuredOutputsWithTypeInExecutionSettings(bool useGoogleAI)
     {
-        var kernel = this.InitializeKernel(useGoogleAI);
+        using var googleClient = this.CreateGoogleClient(useGoogleAI);
+        var kernel = this.InitializeKernel(googleClient, useGoogleAI);
 
         PromptExecutionSettings executionSettings = new()
         {
@@ -65,7 +66,8 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     public async Task StructuredOutputsWithFunctionCalling(bool useGoogleAI)
     {
         // Initialize kernel.
-        var kernel = this.InitializeKernel(useGoogleAI);
+        using var googleClient = this.CreateGoogleClient(useGoogleAI);
+        var kernel = this.InitializeKernel(googleClient, useGoogleAI);
 
         kernel.ImportPluginFromType<EmailPlugin>();
 
@@ -99,7 +101,8 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     public async Task StructuredOutputsWithFunctionsFromPrompt(bool useGoogleAI)
     {
         // Initialize kernel.
-        var kernel = this.InitializeKernel(useGoogleAI);
+        using var googleClient = this.CreateGoogleClient(useGoogleAI);
+        var kernel = this.InitializeKernel(googleClient, useGoogleAI);
 
         // Initialize a path to plugin directory: Resources/Plugins/MoviePlugins/MoviePluginPrompt.
         var pluginDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Plugins", "MoviePlugins", "MoviePluginPrompt");
@@ -134,7 +137,8 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     public async Task StructuredOutputsWithFunctionsFromYaml(bool useGoogleAI)
     {
         // Initialize kernel.
-        var kernel = this.InitializeKernel(useGoogleAI);
+        using var googleClient = this.CreateGoogleClient(useGoogleAI);
+        var kernel = this.InitializeKernel(googleClient, useGoogleAI);
 
         // Initialize a path to YAML function: Resources/Plugins/MoviePlugins/MoviePluginYaml.
         var functionPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Plugins", "MoviePlugins", "MoviePluginYaml", "TopMovies.yaml");
@@ -297,9 +301,8 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
                 """);
     }
 
-    private Kernel InitializeKernel(bool useGoogleAI)
+    private Google.GenAI.Client CreateGoogleClient(bool useGoogleAI)
     {
-        IChatClient chatClient;
         if (useGoogleAI)
         {
             this.Console.WriteLine("============= Google AI - Gemini Chat Completion Structured Outputs =============");
@@ -307,27 +310,27 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
             Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
             Assert.NotNull(TestConfiguration.GoogleAI.Gemini.ModelId);
 
-            chatClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey)
-                .AsIChatClient(TestConfiguration.GoogleAI.Gemini.ModelId);
-        }
-        else
-        {
-            this.Console.WriteLine("============= Vertex AI - Gemini Chat Completion Structured Outputs =============");
-
-            Assert.NotNull(TestConfiguration.VertexAI.Location);
-            Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
-            Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
-
-            // The Google SDK discovers application default credentials and refreshes tokens automatically.
-            chatClient = new Google.GenAI.Client(
-                    vertexAI: true,
-                    project: TestConfiguration.VertexAI.ProjectId,
-                    location: TestConfiguration.VertexAI.Location)
-                .AsIChatClient(TestConfiguration.VertexAI.Gemini.ModelId);
+            return new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
         }
 
+        this.Console.WriteLine("============= Vertex AI - Gemini Chat Completion Structured Outputs =============");
+
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
+
+        // The Google SDK discovers application default credentials and refreshes tokens automatically.
+        return new Google.GenAI.Client(
+            vertexAI: true,
+            project: TestConfiguration.VertexAI.ProjectId,
+            location: TestConfiguration.VertexAI.Location);
+    }
+
+    private Kernel InitializeKernel(Google.GenAI.Client googleClient, bool useGoogleAI)
+    {
+        string modelId = useGoogleAI ? TestConfiguration.GoogleAI.Gemini.ModelId : TestConfiguration.VertexAI.Gemini.ModelId;
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddChatClient(chatClient).UseKernelFunctionInvocation();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(modelId)).UseKernelFunctionInvocation();
         return builder.Build();
     }
     #endregion
