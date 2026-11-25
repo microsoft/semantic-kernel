@@ -105,6 +105,8 @@ class FunctionResultContent(KernelContent):
         element = Element(self.tag)
         if self.id:
             element.set("id", self.id)
+        if self.call_id:
+            element.set("call_id", self.call_id)
         if self.name:
             element.set("name", self.name)
         element.text = str(self.result)
@@ -117,7 +119,12 @@ class FunctionResultContent(KernelContent):
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
         # An empty result renders as a self-closing element, whose text parses back as None.
         result = element.text if element.text is not None else ""
-        return cls(id=element.get("id", ""), result=result, name=element.get("name", None))
+        return cls(
+            id=element.get("id", ""),
+            call_id=element.get("call_id"),
+            result=result,
+            name=element.get("name", None),
+        )
 
     @classmethod
     def from_function_call_content_and_result(

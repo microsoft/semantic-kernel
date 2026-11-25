@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from xml.etree.ElementTree import XML, tostring  # nosec
+
 import pytest
 
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -210,3 +212,23 @@ def test_fc_dump_json(function_call: FunctionCallContent):
         dumped
         == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","function_name":"Function","plugin_name":"Test","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )
+
+
+def test_element_round_trip_keeps_call_id_and_index():
+    fc = FunctionCallContent(id="id1", call_id="call1", index=0, name="p.f", arguments="{}")
+    restored = FunctionCallContent.from_element(XML(tostring(fc.to_element(), encoding="unicode")))
+    assert restored.id == "id1"
+    assert restored.call_id == "call1"
+    assert restored.index == 0
+    assert restored.name == "p.f"
+    assert restored.arguments == "{}"
+
+
+def test_element_round_trip_leaves_call_id_and_index_unset():
+    fc = FunctionCallContent(id="id1", name="p.f", arguments="{}")
+    element = fc.to_element()
+    assert element.get("call_id") is None
+    assert element.get("index") is None
+    restored = FunctionCallContent.from_element(element)
+    assert restored.call_id is None
+    assert restored.index is None
