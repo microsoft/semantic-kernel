@@ -43,6 +43,26 @@ def test_custom_azure_ai_inference_prompt_execution_settings():
     assert settings.extra_parameters == {"key": "value"}
 
 
+def test_azure_ai_inference_prompt_execution_settings_stop_accepts_list():
+    settings = AzureAIInferencePromptExecutionSettings(stop=["a", "b"])
+
+    assert settings.stop == ["a", "b"]
+    assert settings.prepare_settings_dict()["stop"] == ["a", "b"]
+
+
+def test_azure_ai_inference_prompt_execution_settings_stop_string_is_sent_as_list():
+    settings = AzureAIInferencePromptExecutionSettings(stop="END")
+
+    assert settings.prepare_settings_dict()["stop"] == ["END"]
+    assert settings.stop == "END"
+
+
+def test_azure_ai_inference_prompt_execution_settings_stop_none_is_omitted():
+    settings = AzureAIInferencePromptExecutionSettings()
+
+    assert "stop" not in settings.prepare_settings_dict()
+
+
 def test_azure_ai_inference_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
     chat_settings = AzureAIInferenceChatPromptExecutionSettings.from_prompt_execution_settings(settings)
@@ -126,7 +146,7 @@ def test_create_options():
     assert options["max_tokens"] == 128
     assert options["presence_penalty"] == 0.5
     assert options["seed"] == 1
-    assert options["stop"] == "world"
+    assert options["stop"] == ["world"]
     assert options["temperature"] == 0.5
     assert options["top_p"] == 0.5
     assert options["extra_parameters"] == {"key": "value"}

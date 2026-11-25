@@ -21,10 +21,17 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     max_tokens: Annotated[int | None, Field(gt=0)] = None
     presence_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
     seed: int | None = None
-    stop: str | None = None
+    stop: str | list[str] | None = None
     temperature: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     extra_parameters: dict[str, Any] | None = None
+
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary, sending `stop` as a list as the SDK expects."""
+        settings_dict = super().prepare_settings_dict(**kwargs)
+        if isinstance(settings_dict.get("stop"), str):
+            settings_dict["stop"] = [settings_dict["stop"]]
+        return settings_dict
 
 
 @experimental
