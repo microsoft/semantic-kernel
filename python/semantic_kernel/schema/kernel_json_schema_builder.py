@@ -263,6 +263,8 @@ class KernelJsonSchemaBuilder:
             enum_values = [item.value for item in enum_type]
         except TypeError as ex:
             raise FunctionInvalidParameterConfiguration(f"Failed to get enum values for {enum_type}") from ex
+        if not enum_values:
+            raise FunctionInvalidParameterConfiguration(f"Enum type {enum_type} must define at least one member")
         value_types = {"null" if value is None else TYPE_MAPPING.get(type(value), "string") for value in enum_values}
         ordered_types = sorted(value_types, key=lambda value_type: (value_type == "null", value_type))
         schema = {
