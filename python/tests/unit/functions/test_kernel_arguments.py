@@ -179,3 +179,47 @@ def test_kernel_arguments_ror_operator_with_invalid_type(lhs):
     """Test the __ror__ operator with an invalid type raises TypeError."""
     with pytest.raises(TypeError):
         lhs | KernelArguments()
+
+
+def test_kernel_arguments_dumps_basic():
+    """Test basic dumps serialization."""
+    kargs = KernelArguments(name="test", value=42)
+    result = kargs.dumps()
+    import json
+
+    parsed = json.loads(result)
+    assert parsed == {"name": "test", "value": 42}
+
+
+def test_kernel_arguments_dumps_with_pydantic_model():
+    """Test dumps serialization with a Pydantic model argument."""
+    from pydantic import BaseModel
+
+    class SimpleModel(BaseModel):
+        field: str = "hello"
+
+    kargs = KernelArguments(model=SimpleModel())
+    result = kargs.dumps()
+    import json
+
+    parsed = json.loads(result)
+    assert parsed == {"model": {"field": "hello"}}
+
+
+def test_kernel_arguments_dumps_with_circular_reference():
+    """Test dumps handles arguments with circular references gracefully.
+
+    This reproduces the bug from issue #13393 where KernelProcessStepContext
+    (which contains a step_message_channel that references back to the process
+    graph) caused 'Circular reference detected' errors during OTel diagnostics.
+    """
+    # Create a dict with a circular reference to simulate what happens
+    # when model_dump() produces circular structures
+    circular: dict = {"key": "value"}
+    circular["self"] = circular
+
+    kargs = KernelArguments(data=circular)
+    # This should not raise ValueError: Circular reference detected
+    result = kargs.dumps()
+    assert isinstance(result, str)
+    assert "data" in result
