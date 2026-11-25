@@ -88,7 +88,7 @@ To use the [Claude desktop app](https://claude.ai/) to access the MCP server, fo
    {
        "mcpServers": {
            "demo_mcp_server": {
-               "command": "<Path to SK repo>/dotnet/samples/Demos/ModelContextProtocolClientServer/MCPServer/bin/Debug/net8.0/MCPServer.exe",
+               "command": "<Path to SK repo>/dotnet/samples/Demos/ModelContextProtocolClientServer/MCPServer/bin/Debug/net10.0/MCPServer.exe",
                "args": []
            }
        }

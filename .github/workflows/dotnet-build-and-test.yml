@@ -61,7 +61,7 @@ jobs:
               configuration: Release,
             }
           - { dotnet: "10.0", os: "windows-latest", configuration: Debug }
-          - { dotnet: "9.0", os: "windows-latest", configuration: Release }
+          - { dotnet: "10.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
     steps:

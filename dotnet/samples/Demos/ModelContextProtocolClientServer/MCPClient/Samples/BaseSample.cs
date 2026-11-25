@@ -128,6 +128,6 @@ internal abstract class BaseSample
         configuration = "Release";
 #endif
 
-        return Path.Combine("..", "..", "..", "..", "MCPServer", "bin", configuration, "net8.0", "MCPServer.exe");
+        return Path.Combine("..", "..", "..", "..", "MCPServer", "bin", configuration, "net10.0", "MCPServer.exe");
     }
 }

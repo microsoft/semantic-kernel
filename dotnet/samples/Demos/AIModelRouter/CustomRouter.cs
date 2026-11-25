@@ -35,7 +35,7 @@ internal sealed class CustomRouter()
         return serviceIds[0];
     }
 
-    // Ensure compatibility with both netstandard2.0 and net8.0 by using IndexOf instead of Contains
+    // Ensure compatibility with both netstandard2.0 and net10.0 by using IndexOf instead of Contains
     private static bool Contains(string prompt, string pattern)
         => prompt.IndexOf(pattern, StringComparison.CurrentCultureIgnoreCase) >= 0;
 }

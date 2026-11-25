@@ -4,7 +4,7 @@ This application demonstrates how to use the Semantic Kernel Native-AOT compatib
 ## Running Samples
 The samples be run either in a debug mode by just setting a break point and pressing `F5` in Visual Studio (make sure the `AotCompatibility` project is set as the startup project) in which case they are run in a regular CoreCLR application and not in Native-AOT one. This might be useful to understand how the API works and how to use it.
 
-To run the samples in a Native-AOT application, first publish it using the following command: `dotnet publish -r win-x64`. Then, execute the application by running the following command in the terminal: `.\bin\Release\net8.0\win-x64\publish\AotCompatibility.exe`.  
+To run the samples in a Native-AOT application, first publish it using the following command: `dotnet publish -r win-x64`. Then, execute the application by running the following command in the terminal: `.\bin\Release\net10.0\win-x64\publish\AotCompatibility.exe`.  
 
 ## Samples
 Most of the samples don't require any additional setup, and can be run as is. However, some of them might require additional configuration.

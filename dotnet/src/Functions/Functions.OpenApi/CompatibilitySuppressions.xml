@@ -4,7 +4,28 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Microsoft.SemanticKernel.Plugins.OpenApi.OpenApiKernelFunctionContext.KernelFunctionContextKey</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Microsoft.SemanticKernel.Plugins.OpenApi.OpenApiKernelFunctionContext.KernelFunctionContextKey</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
-    <Right>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <Right>lib/net10.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiParameterLocation</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Plugins.OpenApi.RestApiParameterStyle</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Plugins.OpenApi.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
 </Suppressions>

@@ -151,7 +151,7 @@ public partial class FormMain : Form
     /// <returns>Returns image binary array.</returns>
     private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(PictureBox pictureBox)
     {
-        var image = pictureBox.Image;
+        var image = pictureBox.Image!;
         var fileName = pictureBox.Tag!.ToString()!;
 
         using var memoryStream = new MemoryStream();
