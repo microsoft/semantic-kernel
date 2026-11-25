@@ -4,10 +4,9 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
-using OpenAI.Chat;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -21,8 +20,7 @@ namespace ChatCompletion;
 public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// This method shows how to enable Structured Outputs feature with <see cref="ChatResponseFormat"/> object by providing
-    /// JSON schema of desired response format.
+    /// This method shows how to enable Structured Outputs by providing a JSON schema in the prompt execution settings.
     /// </summary>
     [Theory]
     [InlineData(true)]
@@ -31,26 +29,25 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     {
         var kernel = this.InitializeKernel(useGoogleAI);
 
-        GeminiPromptExecutionSettings executionSettings = new()
+        PromptExecutionSettings executionSettings = new()
         {
-            ResponseMimeType = "application/json",
             // Send a request and pass prompt execution settings with desired response schema.
-            ResponseSchema = typeof(User)
+            ExtensionData = new Dictionary<string, object> { ["response_format"] = AIJsonUtilities.CreateJsonSchema(typeof(User)) }
         };
 
         var result = await kernel.InvokePromptAsync("Extract the data from the following text: My name is Praveen", new(executionSettings));
 
-        var user = JsonSerializer.Deserialize<User>(result.ToString())!;
+        var user = JsonSerializer.Deserialize<User>(result.ToString(), AIJsonUtilities.DefaultOptions)!;
         this.OutputResult(user);
 
         // Send a request and pass prompt execution settings with desired response schema.
-        executionSettings.ResponseSchema = typeof(MovieResult);
+        executionSettings.ExtensionData["response_format"] = AIJsonUtilities.CreateJsonSchema(typeof(MovieResult));
         result = await kernel.InvokePromptAsync("What are the top 10 movies of all time?", new(executionSettings));
 
         // Deserialize string response to a strong type to access type properties.
         // At this point, the deserialization logic won't fail, because MovieResult type was described using JSON schema.
         // This ensures that response string is a serialized version of MovieResult type.
-        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString(), AIJsonUtilities.DefaultOptions)!;
 
         // Output the result.
         this.OutputResult(movieResult);
@@ -72,11 +69,10 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
 
         kernel.ImportPluginFromType<EmailPlugin>();
 
-        // Specify response format by setting Type object in prompt execution settings and enable automatic function calling.
-        var executionSettings = new GeminiPromptExecutionSettings
+        // Generate a JSON schema for the response and enable automatic function calling.
+        var executionSettings = new PromptExecutionSettings
         {
-            ResponseSchema = typeof(EmailResult),
-            ResponseMimeType = "application/json",
+            ExtensionData = new Dictionary<string, object> { ["response_format"] = AIJsonUtilities.CreateJsonSchema(typeof(EmailResult)) },
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
@@ -86,7 +82,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
         // Deserialize string response to a strong type to access type properties.
         // At this point, the deserialization logic won't fail, because EmailResult type was specified as desired response format.
         // This ensures that response string is a serialized version of EmailResult type.
-        var emailResult = JsonSerializer.Deserialize<EmailResult>(result.ToString())!;
+        var emailResult = JsonSerializer.Deserialize<EmailResult>(result.ToString(), AIJsonUtilities.DefaultOptions)!;
 
         // Output the result.
         this.OutputResult(emailResult);
@@ -95,7 +91,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     /// <summary>
     /// This method shows how to enable Structured Outputs feature with Semantic Kernel functions from prompt
     /// using Semantic Kernel template engine.
-    /// In this scenario, JSON Schema for response is specified in a prompt configuration file.
+    /// In this scenario, the function is loaded from a prompt configuration file and the JSON schema is supplied at invocation.
     /// </summary>
     [Theory]
     [InlineData(true)]
@@ -111,11 +107,9 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
         // Create a function from prompt.
         kernel.ImportPluginFromPromptDirectory(pluginDirectoryPath, pluginName: "MoviePlugin");
 
-        var executionSettings = new GeminiPromptExecutionSettings
+        var executionSettings = new PromptExecutionSettings
         {
-            ResponseSchema = typeof(MovieResult),
-            ResponseMimeType = "application/json",
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            ExtensionData = new Dictionary<string, object> { ["response_format"] = AIJsonUtilities.CreateJsonSchema(typeof(MovieResult)) }
         };
 
         var result = await kernel.InvokeAsync("MoviePlugin", "TopMovies", new(executionSettings));
@@ -123,7 +117,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
         // Deserialize string response to a strong type to access type properties.
         // At this point, the deserialization logic won't fail, because MovieResult type was specified as desired response format.
         // This ensures that response string is a serialized version of MovieResult type.
-        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString(), AIJsonUtilities.DefaultOptions)!;
 
         // Output the result.
         this.OutputResult(movieResult);
@@ -132,7 +126,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     /// <summary>
     /// This method shows how to enable Structured Outputs feature with Semantic Kernel functions from YAML
     /// using Semantic Kernel template engine.
-    /// In this scenario, JSON Schema for response is specified in YAML prompt file.
+    /// In this scenario, the function is loaded from a YAML prompt file and the JSON schema is supplied at invocation.
     /// </summary>
     [Theory]
     [InlineData(true)]
@@ -152,11 +146,9 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
         var function = kernel.CreateFunctionFromPromptYaml(topMoviesYaml);
         kernel.ImportPluginFromFunctions("MoviePlugin", [function]);
 
-        var executionSettings = new GeminiPromptExecutionSettings
+        var executionSettings = new PromptExecutionSettings
         {
-            ResponseSchema = typeof(MovieResult),
-            ResponseMimeType = "application/json",
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            ExtensionData = new Dictionary<string, object> { ["response_format"] = AIJsonUtilities.CreateJsonSchema(typeof(MovieResult)) }
         };
 
         var result = await kernel.InvokeAsync("MoviePlugin", "TopMovies", new(executionSettings));
@@ -164,7 +156,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
         // Deserialize string response to a strong type to access type properties.
         // At this point, the deserialization logic won't fail, because MovieResult type was specified as desired response format.
         // This ensures that response string is a serialized version of MovieResult type.
-        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString(), AIJsonUtilities.DefaultOptions)!;
 
         // Output the result.
         this.OutputResult(movieResult);
@@ -307,7 +299,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
 
     private Kernel InitializeKernel(bool useGoogleAI)
     {
-        Kernel kernel;
+        IChatClient chatClient;
         if (useGoogleAI)
         {
             this.Console.WriteLine("============= Google AI - Gemini Chat Completion Structured Outputs =============");
@@ -315,79 +307,28 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
             Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
             Assert.NotNull(TestConfiguration.GoogleAI.Gemini.ModelId);
 
-            kernel = Kernel.CreateBuilder()
-                .AddGoogleAIGeminiChatCompletion(
-                    modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
-                    apiKey: TestConfiguration.GoogleAI.ApiKey)
-                .Build();
+            chatClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey)
+                .AsIChatClient(TestConfiguration.GoogleAI.Gemini.ModelId);
         }
         else
         {
             this.Console.WriteLine("============= Vertex AI - Gemini Chat Completion Structured Outputs =============");
 
-            Assert.NotNull(TestConfiguration.VertexAI.ClientId);
-            Assert.NotNull(TestConfiguration.VertexAI.ClientSecret);
             Assert.NotNull(TestConfiguration.VertexAI.Location);
             Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
             Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
-            string? bearerToken = TestConfiguration.VertexAI.BearerKey;
-            kernel = Kernel.CreateBuilder()
-                .AddVertexAIGeminiChatCompletion(
-                    modelId: TestConfiguration.VertexAI.Gemini.ModelId,
-                    bearerTokenProvider: GetBearerToken,
-                    location: TestConfiguration.VertexAI.Location,
-                    projectId: TestConfiguration.VertexAI.ProjectId)
-                .Build();
-
-            // To generate bearer key, you need installed google sdk or use google web console with command:
-            //
-            //   gcloud auth print-access-token
-            //
-            // Above code pass bearer key as string, it is not recommended way in production code,
-            // especially if IChatCompletionService will be long lived, tokens generated by google sdk lives for 1 hour.
-            // You should use bearer key provider, which will be used to generate token on demand:
-            //
-            // Example:
-            //
-            // Kernel kernel = Kernel.CreateBuilder()
-            //     .AddVertexAIGeminiChatCompletion(
-            //         modelId: TestConfiguration.VertexAI.Gemini.ModelId,
-            //         bearerKeyProvider: () =>
-            //         {
-            //             // This is just example, in production we recommend using Google SDK to generate your BearerKey token.
-            //             // This delegate will be called on every request,
-            //             // when providing the token consider using caching strategy and refresh token logic when it is expired or close to expiration.
-            //             return GetBearerToken();
-            //         },
-            //         location: TestConfiguration.VertexAI.Location,
-            //         projectId: TestConfiguration.VertexAI.ProjectId);
-
-            async ValueTask<string> GetBearerToken()
-            {
-                if (!string.IsNullOrEmpty(bearerToken))
-                {
-                    return bearerToken;
-                }
-
-                var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    new ClientSecrets
-                    {
-                        ClientId = TestConfiguration.VertexAI.ClientId,
-                        ClientSecret = TestConfiguration.VertexAI.ClientSecret
-                    },
-                    ["https://www.googleapis.com/auth/cloud-platform"],
-                    "user",
-                    CancellationToken.None);
-
-                var userCredential = await credential.WaitAsync(CancellationToken.None);
-                bearerToken = userCredential.Token.AccessToken;
-
-                return bearerToken;
-            }
+            // The Google SDK discovers application default credentials and refreshes tokens automatically.
+            chatClient = new Google.GenAI.Client(
+                    vertexAI: true,
+                    project: TestConfiguration.VertexAI.ProjectId,
+                    location: TestConfiguration.VertexAI.Location)
+                .AsIChatClient(TestConfiguration.VertexAI.Gemini.ModelId);
         }
 
-        return kernel;
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(chatClient).UseKernelFunctionInvocation();
+        return builder.Build();
     }
     #endregion
 }

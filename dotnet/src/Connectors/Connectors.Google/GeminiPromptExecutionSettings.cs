@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents the settings for executing a prompt with the Gemini model.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {

@@ -13,6 +13,7 @@ using AIFunctionCallContent = Microsoft.Extensions.AI.FunctionCallContent;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
+[Obsolete("Tests the obsolete Google connector package.")]
 public sealed class GeminiGenAIFunctionCallingChatClientTests(ITestOutputHelper output) : TestsBase(output)
 {
     private const string SkipMessage = "This test is for manual verification.";

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
+using TextContent = Microsoft.Extensions.AI.TextContent;
 
 namespace ChatCompletion;
 
@@ -19,24 +21,28 @@ public class Google_GeminiChatCompletionWithFile(ITestOutputHelper output) : Bas
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
         Assert.NotNull(TestConfiguration.GoogleAI.Gemini.ModelId);
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(TestConfiguration.GoogleAI.Gemini.ModelId, TestConfiguration.GoogleAI.ApiKey)
-            .Build();
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(TestConfiguration.GoogleAI.Gemini.ModelId));
+        Kernel kernel = builder.Build();
 
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
 
-        var chatHistory = new ChatHistory("You are a friendly assistant.");
-        chatHistory.AddUserMessage(
+        List<ChatMessage> chatHistory =
         [
-            new TextContent("What's in this file?"),
-            new BinaryContent(fileBytes, "application/pdf")
-        ]);
+            new(ChatRole.System, "You are a friendly assistant."),
+            new(ChatRole.User,
+            [
+                new TextContent("What's in this file?"),
+                new DataContent(fileBytes, "application/pdf")
+            ])
+        ];
 
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatClient = kernel.GetRequiredService<IChatClient>();
 
-        var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var reply = await chatClient.GetResponseAsync(chatHistory);
 
-        Console.WriteLine(reply.Content);
+        Console.WriteLine(reply.Text);
     }
 
     [Fact]
@@ -44,33 +50,36 @@ public class Google_GeminiChatCompletionWithFile(ITestOutputHelper output) : Bas
     {
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion With Local File =============");
 
-        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
         Assert.NotNull(TestConfiguration.VertexAI.Location);
         Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
         Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
-                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
-                bearerKey: TestConfiguration.VertexAI.BearerKey,
-                location: TestConfiguration.VertexAI.Location,
-                projectId: TestConfiguration.VertexAI.ProjectId)
-            .Build();
+        // The Google SDK discovers application default credentials and refreshes tokens automatically.
+        using var googleClient = new Google.GenAI.Client(
+            vertexAI: true,
+            project: TestConfiguration.VertexAI.ProjectId,
+            location: TestConfiguration.VertexAI.Location);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(TestConfiguration.VertexAI.Gemini.ModelId));
+        Kernel kernel = builder.Build();
 
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
 
-        var chatHistory = new ChatHistory("You are a friendly assistant.");
-        chatHistory.AddUserMessage(
+        List<ChatMessage> chatHistory =
         [
-            new TextContent("What's in this file?"),
-            new BinaryContent(fileBytes, "application/pdf"),
-        ]);
+            new(ChatRole.System, "You are a friendly assistant."),
+            new(ChatRole.User,
+            [
+                new TextContent("What's in this file?"),
+                new DataContent(fileBytes, "application/pdf"),
+            ])
+        ];
 
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatClient = kernel.GetRequiredService<IChatClient>();
 
-        var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var reply = await chatClient.GetResponseAsync(chatHistory);
 
-        Console.WriteLine(reply.Content);
+        Console.WriteLine(reply.Text);
     }
 
     [Fact]
@@ -81,27 +90,31 @@ public class Google_GeminiChatCompletionWithFile(ITestOutputHelper output) : Bas
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
         Assert.NotNull(TestConfiguration.GoogleAI.Gemini.ModelId);
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(TestConfiguration.GoogleAI.Gemini.ModelId, TestConfiguration.GoogleAI.ApiKey)
-            .Build();
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(TestConfiguration.GoogleAI.Gemini.ModelId));
+        Kernel kernel = builder.Build();
 
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
         var fileBase64 = Convert.ToBase64String(fileBytes.ToArray());
         var dataUri = $"data:application/pdf;base64,{fileBase64}";
 
-        var chatHistory = new ChatHistory("You are a friendly assistant.");
-        chatHistory.AddUserMessage(
+        List<ChatMessage> chatHistory =
         [
-            new TextContent("What's in this file?"),
-            new BinaryContent(dataUri)
-            // Google AI Gemini AI does not support arbitrary URIs but we can convert a Base64 URI into InlineData with the correct mimeType.
-        ]);
+            new(ChatRole.System, "You are a friendly assistant."),
+            new(ChatRole.User,
+            [
+                new TextContent("What's in this file?"),
+                new DataContent(dataUri)
+                // Google AI Gemini API does not support arbitrary URIs, so inline Base64 data URIs are sent as inline data.
+            ])
+        ];
 
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatClient = kernel.GetRequiredService<IChatClient>();
 
-        var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var reply = await chatClient.GetResponseAsync(chatHistory);
 
-        Console.WriteLine(reply.Content);
+        Console.WriteLine(reply.Text);
     }
 
     [Fact]
@@ -109,37 +122,39 @@ public class Google_GeminiChatCompletionWithFile(ITestOutputHelper output) : Bas
     {
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion With Base64 Data Uri =============");
 
-        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
         Assert.NotNull(TestConfiguration.VertexAI.Location);
         Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
         Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
-                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
-                bearerKey: TestConfiguration.VertexAI.BearerKey,
-                location: TestConfiguration.VertexAI.Location,
-                projectId: TestConfiguration.VertexAI.ProjectId)
-            .Build();
+        // The Google SDK discovers application default credentials and refreshes tokens automatically.
+        using var googleClient = new Google.GenAI.Client(
+            vertexAI: true,
+            project: TestConfiguration.VertexAI.ProjectId,
+            location: TestConfiguration.VertexAI.Location);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(TestConfiguration.VertexAI.Gemini.ModelId));
+        Kernel kernel = builder.Build();
 
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
         var fileBase64 = Convert.ToBase64String(fileBytes.ToArray());
         var dataUri = $"data:application/pdf;base64,{fileBase64}";
 
-        var chatHistory = new ChatHistory("You are a friendly assistant.");
-        chatHistory.AddUserMessage(
+        List<ChatMessage> chatHistory =
         [
-            new TextContent("What's in this file?"),
-            new BinaryContent(dataUri)
-            // Vertex AI API does not support URIs outside of inline Base64 or GCS buckets within the same project. The bucket that stores the file must be in the same Google Cloud project that's sending the request. You must always provide the mimeType via the metadata property.
-            // var content = new BinaryContent(gs://generativeai-downloads/files/employees.pdf);
-            // content.Metadata = new Dictionary<string, object?> { { "mimeType", "application/pdf" } };
-        ]);
+            new(ChatRole.System, "You are a friendly assistant."),
+            new(ChatRole.User,
+            [
+                new TextContent("What's in this file?"),
+                new DataContent(dataUri)
+                // Vertex AI also supports GCS URIs within the same project via UriContent:
+                // new UriContent("gs://generativeai-downloads/files/employees.pdf", "application/pdf")
+            ])
+        ];
 
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatClient = kernel.GetRequiredService<IChatClient>();
 
-        var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var reply = await chatClient.GetResponseAsync(chatHistory);
 
-        Console.WriteLine(reply.Content);
+        Console.WriteLine(reply.Text);
     }
 }

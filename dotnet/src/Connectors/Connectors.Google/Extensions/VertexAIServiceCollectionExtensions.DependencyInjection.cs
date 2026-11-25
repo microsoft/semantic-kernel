@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extensions for adding VertexAI generation services to the application.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public static class VertexAIServiceCollectionExtensions
 {
     /// <summary>
@@ -34,6 +35,7 @@ public static class VertexAIServiceCollectionExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IServiceCollection AddVertexAIEmbeddingGenerator(
         this IServiceCollection services,
         string modelId,
@@ -76,6 +78,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IServiceCollection AddVertexAIEmbeddingGenerator(
         this IServiceCollection services,
         string modelId,

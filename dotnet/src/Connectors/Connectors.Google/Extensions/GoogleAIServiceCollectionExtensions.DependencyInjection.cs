@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0005 // Using directive is unnecessary
 using System;
-#pragma warning restore IDE0005 // Using directive is unnecessary
 using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -15,6 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extensions for adding GoogleAI generation services to the application.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public static class GoogleAIServiceCollectionExtensions
 {
     /// <summary>
@@ -28,6 +27,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IServiceCollection AddGoogleAIEmbeddingGenerator(
         this IServiceCollection services,
         string modelId,
@@ -62,6 +62,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IServiceCollection AddGoogleGenAIChatClient(
         this IServiceCollection services,
         string modelId,
@@ -110,6 +111,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IServiceCollection AddGoogleVertexAIChatClient(
         this IServiceCollection services,
         string modelId,
@@ -157,6 +159,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IServiceCollection AddGoogleAIChatClient(
         this IServiceCollection services,
         string modelId,

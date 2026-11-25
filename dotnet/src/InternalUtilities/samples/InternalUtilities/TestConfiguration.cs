@@ -245,28 +245,28 @@ public sealed class TestConfiguration
     public class GoogleAIConfig
     {
         public string ApiKey { get; set; }
-        public string EmbeddingModelId { get; set; }
-        public GeminiConfig Gemini { get; set; }
+        public string EmbeddingModelId { get; set; } = "gemini-embedding-001";
+        public GeminiConfig Gemini { get; set; } = new();
 
         public class GeminiConfig
         {
-            public string ModelId { get; set; }
+            public string ModelId { get; set; } = "gemini-3.5-flash-lite";
         }
     }
 
     public class VertexAIConfig
     {
         public string? BearerKey { get; set; }
-        public string EmbeddingModelId { get; set; }
+        public string EmbeddingModelId { get; set; } = "gemini-embedding-001";
         public string Location { get; set; }
         public string ProjectId { get; set; }
         public string? ClientId { get; set; }
         public string? ClientSecret { get; set; }
-        public GeminiConfig Gemini { get; set; }
+        public GeminiConfig Gemini { get; set; } = new();
 
         public class GeminiConfig
         {
-            public string ModelId { get; set; }
+            public string ModelId { get; set; } = "gemini-3.5-flash-lite";
         }
     }
 

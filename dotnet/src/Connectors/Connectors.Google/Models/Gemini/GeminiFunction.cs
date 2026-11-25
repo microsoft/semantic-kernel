@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a function parameter that can be passed to an Gemini function tool call.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiFunctionParameter
 {
     internal GeminiFunctionParameter(
@@ -49,6 +50,7 @@ public sealed class GeminiFunctionParameter
 /// <summary>
 /// Represents a function return parameter that can be returned by a tool call to Gemini.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiFunctionReturnParameter
 {
     internal GeminiFunctionReturnParameter(
@@ -74,6 +76,7 @@ public sealed class GeminiFunctionReturnParameter
 /// <summary>
 /// Represents a function that can be passed to the Gemini API
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiFunction
 {
     /// <summary>

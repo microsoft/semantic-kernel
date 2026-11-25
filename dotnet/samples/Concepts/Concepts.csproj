@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
     <PackageReference Include="Docker.DotNet" />
     <PackageReference Include="Google.Apis.Auth" />
+    <PackageReference Include="Google.GenAI" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Bcl.Memory" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
@@ -73,7 +74,6 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />

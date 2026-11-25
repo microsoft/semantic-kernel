@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for adding GoogleAI generation services to the application.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public static class GoogleAIKernelBuilderExtensions
 {
     /// <summary>
@@ -27,6 +28,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddGoogleAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -60,7 +62,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Obsolete("Use AddGoogleAIEmbeddingGenerator instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddGoogleAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -96,6 +98,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddGoogleAIEmbeddingGenerator(
         this IKernelBuilder builder,
         string modelId,
@@ -130,6 +133,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddGoogleGenAIChatClient(
         this IKernelBuilder builder,
         string modelId,
@@ -162,6 +166,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddGoogleVertexAIChatClient(
         this IKernelBuilder builder,
         string modelId,
@@ -196,6 +201,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddGoogleAIChatClient(
         this IKernelBuilder builder,
         string modelId,

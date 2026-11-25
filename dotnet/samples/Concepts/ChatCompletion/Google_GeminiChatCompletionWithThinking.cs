@@ -1,94 +1,97 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Google.GenAI.Types;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace ChatCompletion;
 
 /// <summary>
 /// These examples demonstrate different ways of using chat completion with Google AI API.
 /// <para>
-/// Currently thinking is only supported in Google AI Gemini 2.5+ models.
-/// For Gemini 2.5 models, use ThinkingBudget. For Gemini 3.0 and later, use ThinkingLevel.
-/// See: https://developers.googleblog.com/en/start-building-with-gemini-25-flash/#:~:text=thinking%20budgets
+/// Gemini 3 and later models use thinking levels instead of token budgets.
+/// See: https://aistudio.google.com/docs/thinking
 /// </para>
 /// </summary>
 public sealed class Google_GeminiChatCompletionWithThinking(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task GoogleAIChatCompletionUsingThinkingBudget()
+    public async Task GoogleAIChatCompletionUsingLowThinkingLevel()
     {
-        Console.WriteLine("============= Google AI - Gemini 2.5 Chat Completion using Thinking Budget =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion using Low Thinking Level =============");
 
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
-        string geminiModelId = "gemini-2.5-pro-exp-03-25";
+        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                apiKey: TestConfiguration.GoogleAI.ApiKey)
-            .Build();
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(geminiModelId));
+        Kernel kernel = builder.Build();
 
-        var chatHistory = new ChatHistory("You are an expert in the tool shop.");
-        var chat = kernel.GetRequiredService<IChatCompletionService>();
-        var executionSettings = new GeminiPromptExecutionSettings
+        List<ChatMessage> chatHistory = [new(ChatRole.System, "You are an expert in the tool shop.")];
+        var chatClient = kernel.GetRequiredService<IChatClient>();
+        // The native SDK configuration preserves provider-specific thinking options.
+        var chatOptions = new ChatOptions
         {
-            // This parameter gives the model how much tokens it can use during the thinking process.
-            ThinkingConfig = new() { ThinkingBudget = 2000 }
+            RawRepresentationFactory = _ => new GenerateContentConfig
+            {
+                ThinkingConfig = new() { ThinkingLevel = ThinkingLevel.Low }
+            }
         };
 
         // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for new power tools, any suggestion?");
+        chatHistory.Add(new(ChatRole.User, "Hi, I'm looking for new power tools, any suggestion?"));
         await MessageOutputAsync(chatHistory);
 
         // First assistant message
-        var reply = await chat.GetChatMessageContentAsync(chatHistory, executionSettings);
-        chatHistory.Add(reply);
+        var reply = await chatClient.GetResponseAsync(chatHistory, chatOptions);
+        chatHistory.AddMessages(reply);
         await MessageOutputAsync(chatHistory);
     }
 
     [Fact]
     public async Task GoogleAIChatCompletionUsingThinkingLevel()
     {
-        Console.WriteLine("============= Google AI - Gemini 3.0 Chat Completion using Thinking Level =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion using High Thinking Level =============");
 
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
-        string geminiModelId = "gemini-3.0-flash";
+        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                apiKey: TestConfiguration.GoogleAI.ApiKey)
-            .Build();
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(googleClient.AsIChatClient(geminiModelId));
+        Kernel kernel = builder.Build();
 
-        var chatHistory = new ChatHistory("You are an expert in the tool shop.");
-        var chat = kernel.GetRequiredService<IChatCompletionService>();
-        var executionSettings = new GeminiPromptExecutionSettings
+        List<ChatMessage> chatHistory = [new(ChatRole.System, "You are an expert in the tool shop.")];
+        var chatClient = kernel.GetRequiredService<IChatClient>();
+        // Configure a Gemini 3 or later model to use thinking levels instead of a token budget.
+        var chatOptions = new ChatOptions
         {
-            // This parameter specifies the thinking level for Gemini 3.0+ models.
-            // Possible values are "none", "low", "medium", and "high".
-            ThinkingConfig = new() { ThinkingLevel = "high" }
+            RawRepresentationFactory = _ => new GenerateContentConfig
+            {
+                ThinkingConfig = new() { ThinkingLevel = ThinkingLevel.High }
+            }
         };
 
         // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for new power tools, any suggestion?");
+        chatHistory.Add(new(ChatRole.User, "Hi, I'm looking for new power tools, any suggestion?"));
         await MessageOutputAsync(chatHistory);
 
         // First assistant message
-        var reply = await chat.GetChatMessageContentAsync(chatHistory, executionSettings);
-        chatHistory.Add(reply);
+        var reply = await chatClient.GetResponseAsync(chatHistory, chatOptions);
+        chatHistory.AddMessages(reply);
         await MessageOutputAsync(chatHistory);
     }
 
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
-    private Task MessageOutputAsync(ChatHistory chatHistory)
+    private Task MessageOutputAsync(IList<ChatMessage> chatHistory)
     {
         var message = chatHistory.Last();
 
-        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Text}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;

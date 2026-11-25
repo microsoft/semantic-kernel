@@ -12,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
+[Obsolete("Tests the obsolete Google connector package.")]
 public abstract class TestsBase
 {
     private readonly IConfigurationRoot _configuration;

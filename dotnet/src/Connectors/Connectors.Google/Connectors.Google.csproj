@@ -6,7 +6,8 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net10.0;net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
-    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <!-- Suppress CS0618 inside this deprecated connector package where internal code and wrappers reference its own obsolete public types. -->
+    <NoWarn>$(NoWarn);SKEXP0001;CS0618</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -16,7 +17,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Google Connectors</Title>
-    <Description>Semantic Kernel connectors for Google generation platforms (GoogleAI/VertexAI). Contains generation and embedding services.</Description>
+    <Description>Obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.</Description>
   </PropertyGroup>
 
   <ItemGroup>

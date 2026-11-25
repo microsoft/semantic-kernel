@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
@@ -7,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents the version of the Google AI API.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public enum GoogleAIVersion
 {
     /// <summary>

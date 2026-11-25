@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
+[Obsolete("Tests the obsolete Google connector package.")]
 public sealed class GeminiGenAIChatClientTests(ITestOutputHelper output) : TestsBase(output)
 {
     private const string SkipReason = "This test is for manual verification.";

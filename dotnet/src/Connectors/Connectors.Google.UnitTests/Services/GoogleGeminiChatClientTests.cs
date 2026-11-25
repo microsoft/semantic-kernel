@@ -3,15 +3,48 @@
 #if NET
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Google.GenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
 public sealed class GoogleGeminiChatClientTests
 {
+    [Fact]
+    public void AllPublicTypesAndExtensionMethodsAreMarkedObsolete()
+    {
+        var assembly = typeof(GoogleAIEmbeddingGenerator).Assembly;
+        var publicTypes = assembly.GetExportedTypes();
+
+        Assert.NotEmpty(publicTypes);
+        Assert.All(publicTypes, type =>
+        {
+            var obsolete = Assert.IsType<ObsoleteAttribute>(type.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.False(obsolete.IsError);
+            Assert.Contains("Google.GenAI", obsolete.Message);
+        });
+
+        // C# requires [Obsolete] directly on extension methods for extension-syntax call sites to emit CS0618.
+        var extensionMethods = publicTypes
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            .Where(method => method.IsDefined(typeof(ExtensionAttribute), inherit: false))
+            .ToArray();
+
+        Assert.NotEmpty(extensionMethods);
+        Assert.All(extensionMethods, method =>
+        {
+            var obsolete = Assert.IsType<ObsoleteAttribute>(method.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.False(obsolete.IsError);
+            Assert.Contains("Google.GenAI", obsolete.Message);
+        });
+    }
+
     [Fact]
     public void GenAIChatClientShouldBeCreatedWithApiKey()
     {

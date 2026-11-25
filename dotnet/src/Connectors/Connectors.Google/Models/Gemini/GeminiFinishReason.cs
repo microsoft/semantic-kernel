@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a Gemini Finish Reason.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 [JsonConverter(typeof(GeminiFinishReasonConverter))]
 public readonly struct GeminiFinishReason : IEquatable<GeminiFinishReason>
 {
