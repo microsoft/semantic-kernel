@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Microsoft.SemanticKernel.Connectors.Google.GeminiNativeToolCallConfig;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
@@ -23,7 +24,15 @@ internal sealed class GeminiTool
     /// a [FunctionResponse][content.part.function_response] with the [content.role] "function" generation context for the next model turn.
     /// </remarks>
     [JsonPropertyName("functionDeclarations")]
-    public IList<FunctionDeclaration> Functions { get; set; } = [];
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<FunctionDeclaration>? Functions { get; set; } = null;
+
+    /// <summary>
+    /// The specific configuration for FileSearch
+    /// </summary>
+    [JsonPropertyName("fileSearch")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiFileSearchNativeTool? FileSearch { get; set; } = null;
 
     /// <summary>
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
