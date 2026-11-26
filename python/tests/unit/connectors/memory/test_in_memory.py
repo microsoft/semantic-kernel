@@ -518,3 +518,20 @@ async def test_large_sequence_repeat_filter_is_blocked(collection):
 
     with raises(VectorStoreOperationException, match="Sequence repetition in filter expressions exceeds the maximum"):
         collection._get_filtered_records(type("opt", (), {"filter": "lambda x: [0] * 2000000000"})())
+
+
+@mark.parametrize(
+    "filter_str, record, expected",
+    [
+        ("lambda x: x.value == False", {"value": 0}, False),
+        ("lambda x: x.value == 0", {"value": False}, False),
+        ("lambda x: x.value == True", {"value": 1}, False),
+        ("lambda x: x.value != False", {"value": 0}, True),
+        ("lambda x: x.value > 0", {"value": True}, False),
+        ("lambda x: x.value < 0", {"value": "hello"}, False),
+        ("lambda x: x.value == True", {"value": True}, True),
+        ("lambda x: x.value == 1", {"value": 1.0}, True),
+    ],
+)
+def test_filter_comparisons_keep_bool_and_int_distinct(collection, filter_str, record, expected):
+    assert collection._parse_and_validate_filter(filter_str)(record) is expected
