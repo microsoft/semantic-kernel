@@ -318,8 +318,8 @@ class ChatMessageContent(KernelContent):
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
-            assert isinstance(self.items[0], FunctionResultContent)  # nosec
-            ret["tool_call_id"] = self.items[0].id or ""
+            first_item = self.items[0] if self.items else None
+            ret["tool_call_id"] = (first_item.id or "") if isinstance(first_item, FunctionResultContent) else ""
         if self.role != AuthorRole.TOOL and self.name:
             ret["name"] = self.name
         return ret

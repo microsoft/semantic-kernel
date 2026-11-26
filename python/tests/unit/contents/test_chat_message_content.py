@@ -268,6 +268,16 @@ def test_cmc_to_dict_keys():
     }
 
 
+def test_cmc_to_dict_tool_role_with_text_content():
+    """A TOOL-role message holding plain text serializes with an empty tool_call_id."""
+    message = ChatMessageContent(role=AuthorRole.TOOL, content="result")
+    assert message.to_dict() == {
+        "role": "tool",
+        "content": "result",
+        "tool_call_id": "",
+    }
+
+
 @pytest.mark.parametrize(
     "input_args, expected_dict",
     [
