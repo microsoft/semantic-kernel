@@ -69,6 +69,10 @@ class AnnotationContent(KernelContent):
             element.set("url", self.url)
         if self.title is not None:
             element.set("title", self.title)
+        if self.container_id:
+            element.set("container_id", self.container_id)
+        if self.filename:
+            element.set("filename", self.filename)
         return element
 
     @classmethod
@@ -82,6 +86,8 @@ class AnnotationContent(KernelContent):
             end_index=int(element.get("end_index")) if element.get("end_index") else None,  # type: ignore
             url=element.get("url") if element.get("url") else None,  # type: ignore
             title=element.get("title") if element.get("title") else None,  # type: ignore
+            container_id=element.get("container_id"),
+            filename=element.get("filename"),
         )
 
     def to_dict(self) -> dict[str, Any]:
