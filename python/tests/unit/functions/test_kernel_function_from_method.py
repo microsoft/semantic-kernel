@@ -251,6 +251,56 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
     assert len(native_function.parameters) == 0
 
 
+def test_as_agent_framework_tool_preserves_optional_parameter_default(monkeypatch):
+    class MockAIFunction:
+        def __init__(self, *, input_model: Any, **kwargs: Any):
+            self.input_model = input_model
+
+    monkeypatch.setitem(__import__("sys").modules, "agent_framework", Mock(AIFunction=MockAIFunction))
+
+    @kernel_function()
+    def function(count: int = 5, label: str | None = None) -> int:
+        return count
+
+    native_function = KernelFunction.from_method(method=function, plugin_name="MockPlugin")
+    tool = native_function.as_agent_framework_tool(kernel=Mock())
+    count_field = tool.input_model.model_fields["count"]
+    label_field = tool.input_model.model_fields["label"]
+
+    assert count_field.default == 5
+    assert not count_field.is_required()
+    assert label_field.default is None
+    assert not label_field.is_required()
+    assert tool.input_model().label is None
+    assert tool.input_model(label=None).label is None
+
+
+def test_as_agent_framework_tool_keeps_nullable_without_default_required(monkeypatch):
+    from pydantic import ValidationError
+
+    class MockAIFunction:
+        def __init__(self, *, input_model: Any, **kwargs: Any):
+            self.input_model = input_model
+
+    monkeypatch.setitem(__import__("sys").modules, "agent_framework", Mock(AIFunction=MockAIFunction))
+
+    @kernel_function()
+    def function(x: str | None) -> str | None:
+        return x
+
+    native_function = KernelFunction.from_method(method=function, plugin_name="MockPlugin")
+    tool = native_function.as_agent_framework_tool(kernel=Mock())
+    x_field = tool.input_model.model_fields["x"]
+    assert x_field.is_required()
+    assert tool.input_model(x=None).x is None
+    try:
+        tool.input_model()
+        raised = False
+    except ValidationError:
+        raised = True
+    assert raised, "nullable-without-default must reject a missing argument"
+
+
 def test_init_method_is_none():
     with pytest.raises(FunctionInitializationError):
         KernelFunction.from_method(method=None, plugin_name="MockPlugin")
