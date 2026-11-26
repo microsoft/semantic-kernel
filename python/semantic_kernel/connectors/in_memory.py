@@ -24,6 +24,7 @@ from semantic_kernel.data.vector import (
     VectorStore,
     VectorStoreCollection,
     VectorStoreCollectionDefinition,
+    _FoldUnaryNumericConstants,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
@@ -795,6 +796,18 @@ class InMemoryCollection(
             raise VectorStoreOperationException(
                 "Filter string must be a lambda expression, e.g. 'lambda x: x.key == 1'"
             )
+
+        # Count the nodes before folding: the fold collapses a run of unary
+        # operators into one Constant, so a chain such as "---5" would otherwise
+        # shrink below the complexity limit and skip the check below.
+        if sum(1 for _ in ast.walk(tree)) > self.max_filter_ast_node_count:
+            raise VectorStoreOperationException("Filter expression exceeds the maximum allowed complexity.")
+
+        # Fold negative numeric literals into constants, so a filter such as
+        # "lambda x: x.num_score > -20" reaches the sandbox as a plain Constant
+        # instead of a UnaryOp. This matches the other connectors (#14572) and keeps
+        # the unary operators out of the allowlist entirely.
+        tree = _FoldUnaryNumericConstants().visit(tree)
 
         # Get the lambda parameter name(s) to allow them as valid Name nodes
         lambda_node = tree.body
