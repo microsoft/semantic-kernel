@@ -16,8 +16,10 @@ from qdrant_client.models import (
     Filter,
     Fusion,
     FusionQuery,
+    IsNullCondition,
     MatchAny,
     MatchValue,
+    PayloadField,
     PointStruct,
     Prefetch,
     QueryResponse,
@@ -393,8 +395,15 @@ class QdrantCollection(
                         # NOT IN: left not in right
                         return Filter(must_not=[FieldCondition(key=left, match=MatchAny(any=right))])
                     case ast.Eq():
+                        # None cannot be passed to MatchValue; Qdrant matches missing/null payload
+                        # values with IsNullCondition, which keeps parity with the in-memory and
+                        # Postgres connectors for `field == None`.
+                        if right is None:
+                            return IsNullCondition(is_null=PayloadField(key=left))
                         return FieldCondition(key=left, match=MatchValue(value=right))
                     case ast.NotEq():
+                        if right is None:
+                            return Filter(must_not=[IsNullCondition(is_null=PayloadField(key=left))])
                         return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
                     case ast.Gt():
                         return FieldCondition(key=left, range=Range(gt=right))
