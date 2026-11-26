@@ -93,7 +93,8 @@ INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
 POSTGRES_TYPE_ALIASES: Final[dict[str, str]] = {
     "str": "TEXT",
     "text": "TEXT",
-    "int": "INTEGER",
+    # Python ints are unbounded, so map them to 64-bit BIGINT rather than 32-bit INTEGER.
+    "int": "BIGINT",
     "integer": "INTEGER",
     "bigint": "BIGINT",
     "smallint": "SMALLINT",

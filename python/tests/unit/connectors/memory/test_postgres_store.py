@@ -158,7 +158,7 @@ async def test_ensure_collection_exists_simple_model(vector_store: PostgresStore
     execute_args, _ = mock_cursor.execute.call_args_list[0]
     statement = execute_args[0]
     statement_str = statement.as_string()
-    assert statement_str == ('CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "data" VECTOR(1536))')
+    assert statement_str == ('CREATE TABLE "public"."test_collection" ("id" BIGINT PRIMARY KEY, "data" VECTOR(1536))')
 
     # Check the index creation statement
     execute_args, _ = mock_cursor.execute.call_args_list[1]
@@ -192,7 +192,7 @@ async def test_ensure_collection_exists_model_with_python_types(vector_store: Po
     statement_str = statement.as_string()
     assert statement_str == (
         'CREATE TABLE "public"."test_collection" '
-        '("name" TEXT PRIMARY KEY, "age" INTEGER, "data" JSONB, '
+        '("name" TEXT PRIMARY KEY, "age" BIGINT, "data" JSONB, '
         '"embedding" VECTOR(20), "scores" DOUBLE PRECISION[], "tags" TEXT[])'
     )
 
@@ -273,12 +273,35 @@ async def test_ensure_collection_exists_explicit_definition_with_supported_alias
     statement = mock_cursor.execute.call_args.args[0]
     assert statement.as_string() == (
         'CREATE TABLE "public"."test_collection" '
-        '("id" INTEGER PRIMARY KEY, "title" TEXT, "count" INTEGER, "large_count" BIGINT, '
+        '("id" BIGINT PRIMARY KEY, "title" TEXT, "count" INTEGER, "large_count" BIGINT, '
         '"small_count" SMALLINT, "score" DOUBLE PRECISION, "approximate_score" REAL, "enabled" BOOLEAN, '
         '"metadata" JSONB, "created_at" TIMESTAMP, "processed_at" TIMESTAMP WITH TIME ZONE, "payload" BYTEA, '
         '"summary" VARCHAR(255), "description" CHARACTER VARYING(1024), "amount" NUMERIC(10, 2), '
         '"ratio" DECIMAL(6), "tags" TEXT[], "codes" VARCHAR(12)[], "weights" DOUBLE PRECISION[], '
         '"items" JSONB, "item_history" JSONB[], "nested_item_history" JSONB[][])'
+    )
+
+
+async def test_ensure_collection_exists_maps_python_int_to_bigint(
+    vector_store: PostgresStore, mock_cursor: Mock
+) -> None:
+    @vectorstoremodel
+    @dataclass
+    class ModelWithLargeInts:
+        id: Annotated[int, VectorStoreField("key")]
+        big: Annotated[int | None, VectorStoreField("data", is_indexed=True)] = None
+        ids: Annotated[list[int] | None, VectorStoreField("data")] = None
+        small: Annotated[int | None, VectorStoreField("data", type="integer")] = None
+
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithLargeInts)
+
+    await collection.ensure_collection_exists()
+
+    mock_cursor.execute.assert_awaited_once()
+    statement = mock_cursor.execute.call_args.args[0]
+    assert statement.as_string() == (
+        'CREATE TABLE "public"."test_collection" '
+        '("id" BIGINT PRIMARY KEY, "big" BIGINT, "ids" BIGINT[], "small" INTEGER)'
     )
 
 
