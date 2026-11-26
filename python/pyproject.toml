@@ -32,6 +32,9 @@ dependencies = [
     "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.14",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
+    # imported directly by core modules (agents, prompt functions, HTTP-based plugins and connectors)
+    "httpx >= 0.27.1, < 1",
+    "pyyaml >= 5.1, < 7",
     # azure identity
     "azure-identity >= 1.13",
     # embeddings
