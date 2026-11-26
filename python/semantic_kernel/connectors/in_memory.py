@@ -24,6 +24,7 @@ from semantic_kernel.data.vector import (
     VectorStore,
     VectorStoreCollection,
     VectorStoreCollectionDefinition,
+    _FoldUnaryNumericConstants,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
@@ -789,6 +790,10 @@ class InMemoryCollection(
             tree = ast.parse(filter_str, mode="eval")
         except SyntaxError as e:
             raise VectorStoreOperationException(f"Filter string is not valid Python: {e}") from e
+
+        # Fold negative numeric literals into constants so the allowlist and evaluator see a literal,
+        # matching the other vector store connectors (#14571).
+        tree = cast(ast.Expression, _FoldUnaryNumericConstants().visit(tree))
 
         # Only allow lambda expressions at the top level
         if not (isinstance(tree, ast.Expression) and isinstance(tree.body, ast.Lambda)):

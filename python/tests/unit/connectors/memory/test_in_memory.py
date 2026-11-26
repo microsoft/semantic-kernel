@@ -7,7 +7,7 @@ from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data._shared import default_dynamic_filter_function
-from semantic_kernel.data.vector import DistanceFunction
+from semantic_kernel.data.vector import DistanceFunction, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 
@@ -401,6 +401,25 @@ async def test_multiple_filters(collection):
     results = collection._get_filtered_records(type("opt", (), {"filter": filters})())
     assert len(results) == 1
     assert "1" in results
+
+
+async def test_valid_lambda_filter_with_negative_numeric_literal():
+    definition = VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="num_score", type="float"),
+            VectorStoreField("vector", name="vector", dimensions=2, type="float"),
+        ]
+    )
+    collection = InMemoryCollection(collection_name="test", record_type=dict, definition=definition)
+    await collection.upsert([
+        {"id": "1", "num_score": -10.0, "vector": [1.0, 0.0]},
+        {"id": "2", "num_score": -30.0, "vector": [1.0, 0.0]},
+    ])
+
+    results = collection._get_filtered_records(type("opt", (), {"filter": "lambda x: x.num_score > -20"})())
+
+    assert list(results) == ["1"]
 
 
 @mark.parametrize(
