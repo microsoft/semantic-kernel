@@ -947,6 +947,13 @@ class PostgresCollection(
                             return sql.SQL("{} IS NULL" if isinstance(op, ast.Eq) else "{} IS NOT NULL").format(
                                 parse(left_node)
                             )
+                    if isinstance(op, (ast.In, ast.NotIn)) and isinstance(right_node, ast.List) and not right_node.elts:
+                        # Validate the left operand, but do not leave unused parameters
+                        # when replacing the whole comparison with a SQL constant.
+                        start = len(params)
+                        parse(left_node)
+                        del params[start:]
+                        return sql.SQL("FALSE" if isinstance(op, ast.In) else "TRUE")
                     left = parse(left_node)
                     right = parse(right_node)
                     match op:
