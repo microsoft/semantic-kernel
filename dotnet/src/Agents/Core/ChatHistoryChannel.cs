@@ -40,8 +40,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        // Pre-process history reduction.
-        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+        // Pre-process history reduction with BeforeMessagesRetrieval trigger.
+        await historyAgent.ReduceAsync(this._history, ChatReducerTriggerEvent.BeforeMessagesRetrieval, cancellationToken).ConfigureAwait(false);
 
         // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
@@ -71,6 +71,12 @@ internal sealed class ChatHistoryChannel : AgentChannel
                 messageQueue.Enqueue(responseMessage);
             }
 
+            // Check if this message contains a function result and trigger reduction if configured
+            if (responseMessage.Items.Any(i => i is FunctionResultContent))
+            {
+                await historyAgent.ReduceAsync(this._history, ChatReducerTriggerEvent.AfterToolCallResponseReceived, cancellationToken).ConfigureAwait(false);
+            }
+
             // Dequeue the next message to yield.
             yieldMessage = messageQueue.Dequeue();
             yield return (IsMessageVisible(yieldMessage), yieldMessage);
@@ -98,8 +104,8 @@ internal sealed class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        // Pre-process history reduction.
-        await historyAgent.ReduceAsync(this._history, cancellationToken).ConfigureAwait(false);
+        // Pre-process history reduction with BeforeMessagesRetrieval trigger.
+        await historyAgent.ReduceAsync(this._history, ChatReducerTriggerEvent.BeforeMessagesRetrieval, cancellationToken).ConfigureAwait(false);
 
         int messageCount = this._history.Count;
 
@@ -111,6 +117,12 @@ internal sealed class ChatHistoryChannel : AgentChannel
         for (int index = messageCount; index < this._history.Count; ++index)
         {
             messages.Add(this._history[index]);
+
+            // Check if this message contains a function result and trigger reduction if configured
+            if (this._history[index].Items.Any(i => i is FunctionResultContent))
+            {
+                await historyAgent.ReduceAsync(this._history, ChatReducerTriggerEvent.AfterToolCallResponseReceived, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
