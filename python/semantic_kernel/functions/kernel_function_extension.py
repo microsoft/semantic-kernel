@@ -157,7 +157,8 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         Args:
             plugin_name (str): The name of the plugin to add the function to
             function (KernelFunction | Callable[..., Any]): The function to add
-            function_name (str): The name of the function
+            function_name (str): The name of the function. If a function or callable is supplied, this name
+                takes precedence over its own name
             plugin_name (str): The name of the plugin
             description (str | None): The description of the function
             prompt (str | None): The prompt template.
@@ -194,8 +195,13 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 prompt_template_config=prompt_template_config,
                 prompt_execution_settings=prompt_execution_settings,
             )
-        elif not isinstance(function, KernelFunction):
-            function = KernelFunction.from_method(plugin_name=plugin_name, method=function)
+        else:
+            if not isinstance(function, KernelFunction):
+                function = KernelFunction.from_method(plugin_name=plugin_name, method=function)
+            if function_name and function.name != function_name:
+                # work on a copy, so the function the caller passed in keeps its own name
+                function = function.function_copy()
+                function.metadata.name = function_name
         if plugin_name not in self.plugins:
             plugin = KernelPlugin(name=plugin_name, functions=function)
             self.add_plugin(plugin)
