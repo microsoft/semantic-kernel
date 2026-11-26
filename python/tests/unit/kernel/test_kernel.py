@@ -1014,6 +1014,31 @@ def test_add_functions(kernel: Kernel):
     assert len(plugin.functions) == 2
 
 
+@pytest.mark.parametrize("existing_plugin", [False, True])
+async def test_add_functions_dict_key_differs_from_name(kernel: Kernel, existing_plugin: bool):
+    if existing_plugin:
+        kernel.add_plugin(KernelPlugin(name="tools"))
+
+    @kernel_function(name="get_weather")
+    def get_weather(city: str) -> str:
+        return f"sunny in {city}"
+
+    plugin = kernel.add_functions(plugin_name="tools", functions={"weather": get_weather})
+
+    assert list(plugin.functions) == ["weather"]
+    assert [m.fully_qualified_name for m in kernel.get_full_list_of_function_metadata()] == ["tools-weather"]
+    assert kernel.get_function("tools", "weather").name == "weather"
+    assert kernel.get_function_from_fully_qualified_function_name("tools-weather").name == "weather"
+
+    chat_history = ChatHistory()
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(id="1", name="tools-weather", arguments='{"city": "Oslo"}'),
+        chat_history=chat_history,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    assert chat_history.messages[-1].items[0].result == "sunny in Oslo"
+
+
 def test_add_functions_to_existing(kernel: Kernel):
     kernel.add_plugin(KernelPlugin(name="test"))
 

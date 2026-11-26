@@ -106,6 +106,34 @@ def test_init_with_kernel_functions_dict(mock_function):
     assert native_function.plugin_name == function_plugin_name
 
 
+def test_init_with_kernel_functions_dict_key_differs_from_name(mock_function):
+    native_function = KernelFunction.from_method(method=mock_function, plugin_name="other")
+
+    plugin = KernelPlugin(name="test_plugin", functions={"renamed": native_function})
+
+    assert list(plugin.functions) == ["renamed"]
+    assert plugin["renamed"].name == "renamed"
+    assert plugin["renamed"].plugin_name == "test_plugin"
+    assert [m.fully_qualified_name for m in plugin.get_functions_metadata()] == ["test_plugin-renamed"]
+    # the function that was passed in is not changed
+    assert native_function.name == "mock_function"
+    assert native_function.plugin_name == "other"
+
+
+def test_init_with_callable_functions_dict_key_differs_from_name(mock_function):
+    plugin = KernelPlugin(name="test_plugin", functions={"renamed": mock_function})
+
+    assert list(plugin.functions) == ["renamed"]
+    assert plugin["renamed"].name == "renamed"
+
+
+def test_init_with_kernel_functions_dict_invalid_key(mock_function):
+    native_function = KernelFunction.from_method(method=mock_function, plugin_name="test_plugin")
+
+    with raises(ValueError):
+        KernelPlugin(name="test_plugin", functions={"not a valid name": native_function})
+
+
 def test_init_with_callable_functions(mock_function):
     expected_plugin_name = "test_plugin"
     expected_plugin_description = "A unit test plugin"
@@ -306,6 +334,17 @@ def test_set_item(mock_function):
 
     function = plugin["mock_function"]
     assert function.name == "mock_function"
+
+
+def test_set_item_key_differs_from_name(mock_function):
+    native_function = KernelFunction.from_method(method=mock_function, plugin_name="test_plugin")
+
+    plugin = KernelPlugin(name="test_plugin")
+    plugin["renamed"] = native_function
+
+    assert list(plugin.functions) == ["renamed"]
+    assert plugin["renamed"].name == "renamed"
+    assert native_function.name == "mock_function"
 
 
 def test_set(mock_function):

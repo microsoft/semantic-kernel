@@ -31,6 +31,8 @@ def test_create_kernel_plugin(crew_ai_enterprise):
     assert "kickoff_and_wait" in plugin.functions
     assert "get_status" in plugin.functions
     assert "wait_for_completion" in plugin.functions
+    for key, function in plugin.functions.items():
+        assert function.name == key
 
 
 @patch("semantic_kernel.core_plugins.crew_ai.crew_ai_enterprise.CrewAIEnterpriseClient.kickoff")
