@@ -474,7 +474,7 @@ class KernelPlugin(KernelBaseModel):
             result = KernelFunctionFromMethod(method=function, plugin_name=plugin_name)
         else:
             raise ValueError(f"Invalid type for function: {function} (type: {type(function)})")
-        if function_name and result.metadata.name != function_name:
+        if function_name is not None and result.metadata.name != function_name:
             result.metadata.name = function_name
         return result
 

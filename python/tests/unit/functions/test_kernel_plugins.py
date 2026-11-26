@@ -127,11 +127,12 @@ def test_init_with_callable_functions_dict_key_differs_from_name(mock_function):
     assert plugin["renamed"].name == "renamed"
 
 
-def test_init_with_kernel_functions_dict_invalid_key(mock_function):
+@pytest.mark.parametrize("key", ["not a valid name", ""])
+def test_init_with_kernel_functions_dict_invalid_key(mock_function, key):
     native_function = KernelFunction.from_method(method=mock_function, plugin_name="test_plugin")
 
     with raises(ValueError):
-        KernelPlugin(name="test_plugin", functions={"not a valid name": native_function})
+        KernelPlugin(name="test_plugin", functions={key: native_function})
 
 
 def test_init_with_callable_functions(mock_function):
