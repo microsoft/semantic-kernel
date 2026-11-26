@@ -288,6 +288,18 @@ async def test_invoke_non_async(kernel: Kernel):
             pass
 
 
+async def test_invoke_method_with_variadic_parameters(kernel: Kernel):
+    @kernel_function()
+    def variadic_function(input: str, *args, **kwargs) -> str:
+        return input
+
+    native_function = KernelFunction.from_method(method=variadic_function, plugin_name="MockPlugin")
+
+    assert [param.name for param in native_function.parameters] == ["input"]
+    result = await native_function.invoke(kernel=kernel, arguments=KernelArguments(input="hello"))
+    assert result.value == "hello"
+
+
 async def test_invoke_logs_argument_count_without_values(kernel: Kernel, caplog):
     secret = "SYNTHETIC_SECRET_VALUE"
 

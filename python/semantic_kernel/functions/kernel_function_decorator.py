@@ -123,6 +123,9 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
     for arg in func_sig.parameters.values():
         if arg.name == "self":
             continue
+        # *args and **kwargs are not named parameters a caller can supply, so they are not part of the metadata.
+        if arg.kind in {Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD}:
+            continue
         annotation = arg.annotation
         # Parameter.empty means "no default"; a default of None is still a default.
         default = arg.default
