@@ -11,12 +11,14 @@ from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from qdrant_client.models import FieldCondition, Range
 
 from semantic_kernel.connectors.chroma import ChromaCollection
+from semantic_kernel.connectors.in_memory import InMemoryCollection
 from semantic_kernel.connectors.qdrant import QdrantCollection
 from semantic_kernel.data.vector import (
     VectorStoreCollectionDefinition,
     VectorStoreField,
     _FoldUnaryNumericConstants,
 )
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 
 @pytest.fixture
@@ -84,3 +86,28 @@ def test_qdrant_build_filter_accepts_negative_literal(numeric_definition, litera
     )
     parsed = collection._build_filter(f"lambda x: x.price > {literal}")
     assert parsed == FieldCondition(key="price", range=Range(gt=expected))
+
+
+@pytest.mark.parametrize("literal,expected", [("-5", -5), ("-5.5", -5.5)])
+def test_in_memory_filter_accepts_negative_literal(numeric_definition, literal, expected):
+    """InMemoryCollection runs its own sandboxed parser, so it needs the fold too (#14880)."""
+    collection = InMemoryCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+    )
+    predicate = collection._parse_and_validate_filter(f"lambda x: x.price > {literal}")
+    # A price above the negative bound matches; one below it does not.
+    assert predicate({"price": expected + 1}) is True
+    assert predicate({"price": expected - 1}) is False
+
+
+@pytest.mark.parametrize("expression", ["-True", "-False", "+True", "+False", "+5", "+5.5", "~5", "-x.price"])
+def test_in_memory_filter_rejects_other_unary_expressions(numeric_definition, expression):
+    collection = InMemoryCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+    )
+    with pytest.raises(VectorStoreOperationException, match="not allowed in filter expressions"):
+        collection._parse_and_validate_filter(f"lambda x: x.price > {expression}")

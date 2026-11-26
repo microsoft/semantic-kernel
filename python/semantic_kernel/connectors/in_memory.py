@@ -24,6 +24,7 @@ from semantic_kernel.data.vector import (
     VectorStore,
     VectorStoreCollection,
     VectorStoreCollectionDefinition,
+    _FoldUnaryNumericConstants,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
@@ -795,6 +796,12 @@ class InMemoryCollection(
             raise VectorStoreOperationException(
                 "Filter string must be a lambda expression, e.g. 'lambda x: x.key == 1'"
             )
+
+        # Fold negative numeric literals into constants, so a filter such as
+        # "lambda x: x.num_score > -20" reaches the sandbox as a plain Constant
+        # instead of a UnaryOp. This matches the other connectors (#14572) and keeps
+        # the unary operators out of the allowlist entirely.
+        tree = _FoldUnaryNumericConstants().visit(tree)
 
         # Get the lambda parameter name(s) to allow them as valid Name nodes
         lambda_node = tree.body
