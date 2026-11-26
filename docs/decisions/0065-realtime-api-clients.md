@@ -413,7 +413,7 @@ audio = AudioContent(...)
 await client.send(ServiceEvent(service_event_type='input_audio_buffer.append', service_event=audio))
 ```
 
-The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this can for instance be used to seed the conversation with completed audio snippets from a previous session, rather then just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
+The first version allows one to have the exact same code for all services, while the second version is also correct and should be handled correctly as well, this once again allows for flexibility and simplicity, when audio needs to be sent to with a different event type, that is still possible in the second way, while the first uses the "default" event type for that particular service, this can for instance be used to seed the conversation with completed audio snippets from a previous session, rather than just the transcripts, the completed audio, needs to be of event type 'conversation.item.create' for OpenAI, while a streamed 'frame' of audio would be 'input_audio_buffer.append' and that would be the default to use.
 
 The developer should document which service event types are used by default for the non-ServiceEvents.
 
