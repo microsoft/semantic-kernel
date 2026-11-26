@@ -111,3 +111,19 @@ def test_in_memory_filter_rejects_other_unary_expressions(numeric_definition, ex
     )
     with pytest.raises(VectorStoreOperationException, match="not allowed in filter expressions"):
         collection._parse_and_validate_filter(f"lambda x: x.price > {expression}")
+
+
+def test_in_memory_filter_rejects_a_node_count_that_only_the_fold_would_shrink(numeric_definition):
+    """The fold must not let a filter slip under the complexity limit.
+
+    A run of unary operators is many AST nodes before the fold and one after
+    it, so the node count has to be checked on the original tree.
+    """
+    collection = InMemoryCollection(
+        collection_name="temps",
+        record_type=dict,
+        definition=numeric_definition,
+    )
+    expression = "lambda x: x.price > " + "-" * 64 + "5"
+    with pytest.raises(VectorStoreOperationException, match="maximum allowed complexity"):
+        collection._parse_and_validate_filter(expression)
