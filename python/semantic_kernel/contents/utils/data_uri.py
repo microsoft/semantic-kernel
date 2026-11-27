@@ -18,6 +18,24 @@ logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="DataUri")
 
+_XML_INVALID_CHAR_REGEX = re.compile(
+    r"[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\U00010000-\U0010FFFF]"
+)
+
+
+def _should_encode_as_base64(data: bytes) -> bool:
+    """Check if byte data requires base64 encoding.
+
+    Data must be encoded as base64 if it cannot be decoded as valid UTF-8,
+    or if it contains control characters invalid in XML 1.0 (such as b'\\x00\\x01')
+    which break downstream prompt serialization and ChatHistory round-trips.
+    """
+    try:
+        decoded = data.decode("utf-8")
+        return bool(_XML_INVALID_CHAR_REGEX.search(decoded))
+    except UnicodeDecodeError:
+        return True
+
 
 class DataUri(KernelBaseModel, validate_assignment=True):
     """A class to represent a data uri.
@@ -69,8 +87,12 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         args: dict[str, Any] = {}
         if data_bytes is not None:
             args["data_bytes"] = data_bytes
+            if data_format is None and _should_encode_as_base64(data_bytes):
+                data_format = "base64"
         if data_array is not None:
             args["data_array"] = data_array
+            if data_format is None and _should_encode_as_base64(data_array.tobytes()):
+                data_format = "base64"
 
         if mime_type is not None:
             args["mime_type"] = mime_type
@@ -79,7 +101,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if data_format is not None:
             args["data_format"] = data_format
 
-        if data_str is not None and not data_bytes:
+        if data_str is not None and "data_array" not in args and "data_bytes" not in args:
             if data_format and data_format.lower() == "base64":
                 try:
                     args["data_bytes"] = base64.b64decode(data_str, validate=True)
@@ -96,6 +118,8 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         match value:
             case ndarray():
                 self.data_array = value
+                if self.data_format is None and _should_encode_as_base64(value.tobytes()):
+                    self.data_format = "base64"
             case str():
                 if self.data_format and self.data_format.lower() == "base64":
                     self.data_bytes = base64.b64decode(value, validate=True)
@@ -103,6 +127,8 @@ class DataUri(KernelBaseModel, validate_assignment=True):
                     self.data_bytes = value.encode("utf-8")
             case _:
                 self.data_bytes = value
+                if self.data_format is None and _should_encode_as_base64(value):
+                    self.data_format = "base64"
 
     @field_validator("parameters", mode="before")
     def _validate_parameters(cls, value: list[str] | dict[str, str] | None) -> dict[str, str]:
@@ -157,8 +183,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             parameters = f";{parameters}" if parameters else ""
         else:
             parameters = ""
+        data_str = self._data_str()
         data_format = f"{self.data_format}" if self.data_format else ""
-        return f"data:{self.mime_type or ''}{parameters};{data_format},{self._data_str()}"
+        return f"data:{self.mime_type or ''}{parameters};{data_format},{data_str}"
 
     def __eq__(self, value: object) -> bool:
         """Check if the data uri is equal to another."""
@@ -169,11 +196,28 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     def _data_str(self) -> str:
         """Return the data as a string."""
         if self.data_array is not None:
+            raw_bytes = self.data_array.tobytes()
             if self.data_format and self.data_format.lower() == "base64":
-                return base64.b64encode(self.data_array.tobytes()).decode("utf-8")
-            return self.data_array.tobytes().decode("utf-8")
+                return base64.b64encode(raw_bytes).decode("utf-8")
+            if not self.data_format:
+                if _should_encode_as_base64(raw_bytes):
+                    self.data_format = "base64"
+                    return base64.b64encode(raw_bytes).decode("utf-8")
+            try:
+                return raw_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                self.data_format = "base64"
+                return base64.b64encode(raw_bytes).decode("utf-8")
         if self.data_bytes is not None:
             if self.data_format and self.data_format.lower() == "base64":
                 return base64.b64encode(self.data_bytes).decode("utf-8")
-            return self.data_bytes.decode("utf-8")
+            if not self.data_format:
+                if _should_encode_as_base64(self.data_bytes):
+                    self.data_format = "base64"
+                    return base64.b64encode(self.data_bytes).decode("utf-8")
+            try:
+                return self.data_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                self.data_format = "base64"
+                return base64.b64encode(self.data_bytes).decode("utf-8")
         return ""
