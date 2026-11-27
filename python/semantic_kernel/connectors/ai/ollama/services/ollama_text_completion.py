@@ -15,6 +15,7 @@ from ollama import AsyncClient
 from ollama._types import GenerateResponse
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
@@ -123,6 +124,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                 text=response_object.response
                 if isinstance(response_object, GenerateResponse)
                 else response_object["response"],
+                metadata=self._get_metadata_from_response(response_object),
             )
         ]
 
@@ -157,7 +159,17 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                     inner_content=part,
                     ai_model_id=self.ai_model_id,
                     text=part.response if isinstance(part, GenerateResponse) else part.get("response"),
+                    metadata=self._get_metadata_from_response(part),
                 )
             ]
+
+    def _get_metadata_from_response(self, response: Mapping[str, Any] | GenerateResponse) -> dict[str, Any]:
+        """Get metadata from a Mapping or GenerateResponse, including token usage when available."""
+        metadata: dict[str, Any] = {"model": response.get("model")}
+        prompt_tokens = response.get("prompt_eval_count")
+        completion_tokens = response.get("eval_count")
+        if prompt_tokens is not None and completion_tokens is not None:
+            metadata["usage"] = CompletionUsage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return metadata
 
     # endregion
