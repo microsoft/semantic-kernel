@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -177,5 +178,44 @@ public class StreamingChatMessageContentTests
 
         // Assert
         Assert.Equal(Encoding.Latin1, sut.Encoding);
+    }
+
+    [Fact]
+    public void ToChatResponseUpdateShouldReportInvalidFunctionCallArgumentsWithoutThrowing()
+    {
+        // Arrange
+        var sut = new StreamingChatMessageContent(AuthorRole.Assistant, content: null)
+        {
+            Items = [new StreamingFunctionCallUpdateContent("call1", "GetWeather", "{\"location\":\"Amst")]
+        };
+
+        // Act
+        var update = sut.ToChatResponseUpdate();
+
+        // Assert
+        var functionCall = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(Assert.Single(update.Contents));
+        Assert.Equal("call1", functionCall.CallId);
+        Assert.Equal("GetWeather", functionCall.Name);
+        Assert.Null(functionCall.Arguments);
+        Assert.IsAssignableFrom<JsonException>(functionCall.Exception?.InnerException);
+    }
+
+    [Fact]
+    public void ToChatResponseUpdateShouldParseCompleteFunctionCallArguments()
+    {
+        // Arrange
+        var sut = new StreamingChatMessageContent(AuthorRole.Assistant, content: null)
+        {
+            Items = [new StreamingFunctionCallUpdateContent("call1", "GetWeather", "{\"location\":\"Amsterdam\"}")]
+        };
+
+        // Act
+        var update = sut.ToChatResponseUpdate();
+
+        // Assert
+        var functionCall = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(Assert.Single(update.Contents));
+        Assert.Same(sut, functionCall.RawRepresentation);
+        Assert.Null(functionCall.Exception);
+        Assert.Equal("Amsterdam", functionCall.Arguments?["location"]?.ToString());
     }
 }

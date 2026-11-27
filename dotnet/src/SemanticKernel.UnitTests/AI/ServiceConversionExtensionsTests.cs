@@ -460,6 +460,104 @@ public class ServiceConversionExtensionsTests
     }
 
     [Fact]
+    public async Task AsChatClientStreamingCombinesFunctionCallFragmentsAsync()
+    {
+        // Arrange
+        IChatClient client = new TestChatCompletionService()
+        {
+            GetStreamingChatMessageContentsAsyncDelegate = (chatHistory, executionSettings, kernel, cancellationToken) =>
+                new List<StreamingChatMessageContent>()
+                {
+                    new(AuthorRole.Assistant, "Checking") { ModelId = "examplemodel" },
+                    new(AuthorRole.Assistant, null) { ModelId = "examplemodel", Items = [new StreamingFunctionCallUpdateContent("call1", "WeatherPlugin-GetWeather", "{\"", functionCallIndex: 0)] },
+                    new(null, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "location\":\"Amst", functionCallIndex: 0)] },
+                    new(null, null) { Items = [new StreamingFunctionCallUpdateContent("call2", "TimePlugin-GetTime", "{}", functionCallIndex: 1)] },
+                    new(null, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "erdam\"}", functionCallIndex: 0)] },
+                }.ToAsyncEnumerable(),
+        }.AsChatClient();
+
+        // Act
+        List<ChatResponseUpdate> result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "What is the weather in Amsterdam?")]).ToListAsync();
+
+        // Assert
+        Assert.Equal(6, result.Count);
+        Assert.Equal("Checking", result[0].Text);
+        Assert.All(result.Take(5), update => Assert.DoesNotContain(update.Contents, c => c is Microsoft.Extensions.AI.FunctionCallContent));
+
+        ChatResponseUpdate functionCallUpdate = result[5];
+        Assert.Equal(ChatRole.Assistant, functionCallUpdate.Role);
+        Assert.Equal("examplemodel", functionCallUpdate.ModelId);
+        Assert.Equal(2, functionCallUpdate.Contents.Count);
+
+        var weatherCall = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(functionCallUpdate.Contents[0]);
+        Assert.Equal("call1", weatherCall.CallId);
+        Assert.Equal("WeatherPlugin-GetWeather", weatherCall.Name);
+        Assert.Null(weatherCall.Exception);
+        Assert.Equal("Amsterdam", weatherCall.Arguments?["location"]?.ToString());
+
+        var timeCall = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(functionCallUpdate.Contents[1]);
+        Assert.Equal("call2", timeCall.CallId);
+        Assert.Equal("TimePlugin-GetTime", timeCall.Name);
+        Assert.Null(timeCall.Exception);
+        Assert.Empty(timeCall.Arguments!);
+    }
+
+    [Fact]
+    public async Task AsChatClientStreamingStartsNewFunctionCallWhenCallIdChangesAtSameIndexAsync()
+    {
+        // Arrange
+        // Agent streams can span several runs whose function call indexes restart at zero.
+        IChatClient client = new TestChatCompletionService()
+        {
+            GetStreamingChatMessageContentsAsyncDelegate = (chatHistory, executionSettings, kernel, cancellationToken) =>
+                new List<StreamingChatMessageContent>()
+                {
+                    new(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent("call1", "First", "{\"a\":", functionCallIndex: 0)] },
+                    new(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent(arguments: "1}", functionCallIndex: 0)] },
+                    new(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent("call2", "Second", "{\"b\":2}", functionCallIndex: 0)] },
+                }.ToAsyncEnumerable(),
+        }.AsChatClient();
+
+        // Act
+        List<ChatResponseUpdate> result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "Hello")]).ToListAsync();
+
+        // Assert
+        var functionCalls = result.Last().Contents.OfType<Microsoft.Extensions.AI.FunctionCallContent>().ToList();
+        Assert.Equal(2, functionCalls.Count);
+
+        Assert.Equal("call1", functionCalls[0].CallId);
+        Assert.Equal("First", functionCalls[0].Name);
+        Assert.Equal("1", functionCalls[0].Arguments?["a"]?.ToString());
+
+        Assert.Equal("call2", functionCalls[1].CallId);
+        Assert.Equal("Second", functionCalls[1].Name);
+        Assert.Equal("2", functionCalls[1].Arguments?["b"]?.ToString());
+    }
+
+    [Fact]
+    public async Task AsChatClientStreamingReportsInvalidFunctionCallArgumentsWithoutThrowingAsync()
+    {
+        // Arrange
+        IChatClient client = new TestChatCompletionService()
+        {
+            GetStreamingChatMessageContentsAsyncDelegate = (chatHistory, executionSettings, kernel, cancellationToken) =>
+                new List<StreamingChatMessageContent>()
+                {
+                    new(AuthorRole.Assistant, null) { Items = [new StreamingFunctionCallUpdateContent("call1", "GetWeather", "{\"location\":\"Amst", functionCallIndex: 0)] },
+                }.ToAsyncEnumerable(),
+        }.AsChatClient();
+
+        // Act
+        List<ChatResponseUpdate> result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "Hello")]).ToListAsync();
+
+        // Assert
+        var functionCall = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(Assert.Single(result.Last().Contents));
+        Assert.Equal("call1", functionCall.CallId);
+        Assert.Null(functionCall.Arguments);
+        Assert.IsAssignableFrom<JsonException>(functionCall.Exception?.InnerException);
+    }
+
+    [Fact]
     public async Task AsChatCompletionServiceNonStreamingContentConvertedAsExpected()
     {
         List<ChatMessage>? actualChatHistory = null;
