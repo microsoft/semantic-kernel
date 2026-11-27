@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -67,6 +68,19 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.Equal("result", sut.Result);
+    }
+
+    [Fact]
+    public void ItShouldPreserveFunctionResultMetadata()
+    {
+        var function = KernelFunctionFactory.CreateFromMethod(() => { });
+        var metadata = new Dictionary<string, object?> { ["key"] = "value" };
+        var functionResult = new FunctionResult(function, "result", metadata: metadata);
+
+        var sut = new FunctionResultContent(this._callContent, functionResult);
+
+        Assert.Same(functionResult, sut.InnerContent);
+        Assert.Same(metadata, sut.Metadata);
     }
 
     [Fact]

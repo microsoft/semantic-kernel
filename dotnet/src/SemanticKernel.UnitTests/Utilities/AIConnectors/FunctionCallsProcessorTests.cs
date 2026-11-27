@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -853,6 +854,85 @@ public class FunctionCallsProcessorTests
 
         // Assert
         Assert.Equal("{\"Text\":\"ﾃｽﾄ\"}", result);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldPropagateFunctionResultMetadataToChatHistoryAsync(bool invokeConcurrently)
+    {
+        // Arrange
+        this._functionChoiceBehaviorOptions.AllowConcurrentInvocation = invokeConcurrently;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]);
+
+        var kernel = CreateKernel(plugin, async (context, next) =>
+        {
+            await next(context);
+
+            var value = context.Result.GetValue<object>();
+            context.Result = new FunctionResult(context.Function, value, context.Result.Culture, new Dictionary<string, object?>
+            {
+                ["key"] = value,
+                ["ChatCompletionsToolCall.Id"] = "unrelated-id"
+            });
+        });
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call1", arguments: new KernelArguments() { ["parameter"] = "result1" }));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call2", arguments: new KernelArguments() { ["parameter"] = "result2" }));
+
+        var chatHistory = new ChatHistory();
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
+                chatHistory: chatHistory,
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
+                kernel: kernel!,
+                isStreaming: false,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.Equal(3, chatHistory.Count);
+
+        for (int i = 1; i <= 2; i++)
+        {
+            var toolMessage = chatHistory[i];
+            Assert.Equal(AuthorRole.Tool, toolMessage.Role);
+            Assert.Null(toolMessage.Metadata);
+            var result = Assert.Single(toolMessage.Items.OfType<FunctionResultContent>());
+            Assert.Equal($"call{i}", result.CallId);
+            Assert.Equal($"result{i}", result.Result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal($"result{i}", result.Metadata["key"]);
+            Assert.Equal("unrelated-id", result.Metadata["ChatCompletionsToolCall.Id"]);
+            Assert.All(toolMessage.Items.OfType<TextContent>(), item => Assert.Null(item.Metadata));
+        }
+    }
+
+    [Fact]
+    public async Task ItShouldPropagateFunctionResultMetadataWithoutChatHistoryAsync()
+    {
+        var function = KernelFunctionFactory.CreateFromMethod(() => "result", "Function1");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+        var kernel = CreateKernel(plugin, async (context, next) =>
+        {
+            await next(context);
+            context.Result = new FunctionResult(context.Function, context.Result.GetValue<object>(), context.Result.Culture, new Dictionary<string, object?> { ["key"] = "value" });
+        });
+        var message = new ChatMessageContent();
+        message.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "call1"));
+
+        var results = await this._sut.InvokeFunctionCallsAsync(message, _ => true, this._functionChoiceBehaviorOptions, kernel, false, CancellationToken.None);
+
+        var result = Assert.Single(results);
+        Assert.Equal("result", result.Result);
+        Assert.Equal("value", result.Metadata?["key"]);
     }
 
     [Fact]

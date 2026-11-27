@@ -418,7 +418,9 @@ internal sealed class FunctionCallsProcessor
     /// <param name="resultContext">The function result context.</param>
     private FunctionResultContent GenerateResultContent(FunctionResultContext resultContext)
     {
-        return this.GenerateResultContent(resultContext.FunctionCall, resultContext.Result, resultContext.ErrorMessage);
+        var result = this.GenerateResultContent(resultContext.FunctionCall, resultContext.Result, resultContext.ErrorMessage);
+        result.Metadata = resultContext.Context.Result.Metadata;
+        return result;
     }
 
     /// <summary>
