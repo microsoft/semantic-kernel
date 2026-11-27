@@ -418,6 +418,46 @@ def test_enum_schema_without_description():
     assert schema == expected_schema
 
 
+def test_mixed_and_nullable_enum_schema():
+    class MixedEnum(Enum):
+        AUTO = None
+        FAST = "fast"
+        COUNT = 2
+
+    schema = KernelJsonSchemaBuilder.build(MixedEnum)
+    expected_schema = {
+        "type": ["integer", "string", "null"],
+        "enum": [None, "fast", 2],
+    }
+    assert schema == expected_schema
+
+
+def test_none_only_enum_schema():
+    class NoneOnlyEnum(Enum):
+        EMPTY = None
+
+    schema = KernelJsonSchemaBuilder.build(NoneOnlyEnum)
+    expected_schema = {
+        "type": "null",
+        "enum": [None],
+    }
+    assert schema == expected_schema
+
+
+def test_mixed_enum_reverse_order():
+    class ReverseMixedEnum(Enum):
+        COUNT = 2
+        FAST = "fast"
+        AUTO = None
+
+    schema = KernelJsonSchemaBuilder.build(ReverseMixedEnum)
+    expected_schema = {
+        "type": ["integer", "string", "null"],
+        "enum": [2, "fast", None],
+    }
+    assert schema == expected_schema
+
+
 def test_handle_complex_type():
     schema = KernelJsonSchemaBuilder.handle_complex_type(str, "Description")
     expected_schema = {"type": "string", "description": "Description"}
