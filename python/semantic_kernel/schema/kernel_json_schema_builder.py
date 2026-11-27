@@ -17,6 +17,7 @@ TYPE_MAPPING = {
     list: "array",
     dict: "object",
     set: "array",
+    frozenset: "array",
     tuple: "array",
     "int": "integer",
     "str": "string",
@@ -25,6 +26,7 @@ TYPE_MAPPING = {
     "list": "array",
     "dict": "object",
     "set": "array",
+    "frozenset": "array",
     "tuple": "array",
     "object": "object",
     "array": "array",
@@ -182,7 +184,7 @@ class KernelJsonSchemaBuilder:
         args = get_args(parameter_type)
 
         schema: dict[str, Any] = {}
-        if origin is list or origin is set:
+        if origin in (list, set, frozenset):
             item_type = args[0]
             schema = {
                 "type": "array",
