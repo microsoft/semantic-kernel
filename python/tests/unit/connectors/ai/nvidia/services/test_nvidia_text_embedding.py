@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
-from openai import AsyncClient
+from openai import AsyncClient, AsyncOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
 
 from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
@@ -44,6 +46,36 @@ def test_init(nvidia_unit_test_env):
     assert nvidia_text_embedding.ai_model_id == nvidia_unit_test_env["NVIDIA_EMBEDDING_MODEL_ID"]
 
     assert nvidia_text_embedding.get_prompt_execution_settings_class() == NvidiaEmbeddingPromptExecutionSettings
+
+
+async def test_embedding_input_type_override_is_local(nvidia_unit_test_env):
+    requests = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(json.loads(request.content))
+        return httpx.Response(
+            200,
+            json={
+                "object": "list",
+                "model": "NV-Embed-QA",
+                "data": [{"object": "embedding", "index": 0, "embedding": [0.1, 0.2]}],
+                "usage": {"prompt_tokens": 1, "total_tokens": 1},
+            },
+        )
+
+    settings = NvidiaEmbeddingPromptExecutionSettings(input_type="passage", extra_body={"custom": "value"})
+    original = settings.model_dump()
+    async with AsyncOpenAI(
+        api_key="test-api-key",
+        base_url="https://nvidia.test/v1",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+    ) as client:
+        service = NvidiaTextEmbedding(ai_model_id="NV-Embed-QA", client=client)
+        await service.generate_raw_embeddings(["question"], settings=settings, input_type="query")
+        await service.generate_raw_embeddings(["document"], settings=settings)
+
+    assert [request["input_type"] for request in requests] == ["query", "passage"]
+    assert settings.model_dump() == original
 
 
 def test_init_validation_fail() -> None:

@@ -119,6 +119,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             if not isinstance(settings, NvidiaEmbeddingPromptExecutionSettings):
                 settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
+        settings = settings.model_copy(deep=True)
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         for key, value in kwargs.items():
