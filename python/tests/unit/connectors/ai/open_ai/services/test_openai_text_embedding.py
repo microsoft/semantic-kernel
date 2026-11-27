@@ -14,6 +14,18 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 
 
+@pytest.mark.parametrize("batch_size", [None, 2])
+@pytest.mark.parametrize("raw", [True, False])
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_empty_embedding_input(mock_create, openai_unit_test_env, batch_size, raw) -> None:
+    service = OpenAITextEmbedding(ai_model_id="test_model_id")
+    if raw:
+        assert await service.generate_raw_embeddings([], batch_size=batch_size) == []
+    else:
+        assert (await service.generate_embeddings([], batch_size=batch_size)).size == 0
+    mock_create.assert_not_awaited()
+
+
 def test_init(openai_unit_test_env):
     openai_text_embedding = OpenAITextEmbedding()
 
