@@ -17,7 +17,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -41,6 +43,8 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Schema/*.cs" Link="%(RecursiveDir)/InternalUtilities/Schema/%(Filename)%(Extension)" />
+    <!-- Only the Foundry Prompt Agent helper is needed; the other agent sample utilities depend on agent types this project doesn't use. -->
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/samples/AgentUtilities/FoundryPromptAgentExtensions.cs" Link="InternalUtilities/FoundryPromptAgentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

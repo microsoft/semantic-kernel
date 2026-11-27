@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
 
 namespace Agents;
 
 /// <summary>
 /// Demonstrate the use of <see cref="AgentChat.ResetAsync"/>.
 /// </summary>
-public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(output)
+public class MixedChat_Reset(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     private const string AgentInstructions =
         """
@@ -23,16 +22,6 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
     [InlineData(false)]
     public async Task ResetChat(bool useChatClient)
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                instructions: AgentInstructions,
-                metadata: SampleMetadata);
-
-        // Create the agent
-        OpenAIAssistantAgent assistantAgent = new(assistant, this.AssistantClient);
-
         ChatCompletionAgent chatAgent =
             new()
             {
@@ -41,30 +30,44 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
                 Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
+        // Define the Prompt Agent
+        ProjectsAgentVersion promptAgent =
+            await this.CreatePromptAgentAsync(
+                "Recall",
+                new DeclarativeAgentDefinition(DeploymentName) { Instructions = AgentInstructions });
+
+        // Create the agent that uses the Prompt Agent
+        ChatCompletionAgent promptAgentAgent =
+            new()
+            {
+                Name = "FoundryPromptAgent",
+                Kernel = this.CreateKernel(promptAgent),
+            };
+
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
+            await InvokeAgentAsync(promptAgentAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
 
-            await InvokeAgentAsync(assistantAgent, "I like green.");
+            await InvokeAgentAsync(promptAgentAgent, "I like green.");
             await InvokeAgentAsync(chatAgent);
 
-            await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
+            await InvokeAgentAsync(promptAgentAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
 
             await chat.ResetAsync();
 
-            await InvokeAgentAsync(assistantAgent, "What is my favorite color?");
+            await InvokeAgentAsync(promptAgentAgent, "What is my favorite color?");
             await InvokeAgentAsync(chatAgent);
         }
         finally
         {
             await chat.ResetAsync();
-            await this.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
 
         chatClient?.Dispose();

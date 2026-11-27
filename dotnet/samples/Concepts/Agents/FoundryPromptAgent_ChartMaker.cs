@@ -1,32 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Projects.Agents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Assistants;
+using OpenAI.Responses;
 
 namespace Agents;
 
 /// <summary>
-/// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
+/// Demonstrate using code-interpreter with a Microsoft Foundry Prompt Agent to
 /// produce image content displays the requested charts.
 /// </summary>
-public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistantTest(output)
+public class FoundryPromptAgent_ChartMaker(ITestOutputHelper output) : BaseFoundryAgentTest(output)
 {
     [Fact]
-    public async Task GenerateChartWithOpenAIAssistantAgentAsync()
+    public async Task GenerateChartWithFoundryPromptAgentAsync()
     {
-        // Define the assistant
-        Assistant assistant =
-            await this.AssistantClient.CreateAssistantAsync(
-                this.Model,
-                "ChartMaker",
-                instructions: "Create charts as requested without explanation.",
-                enableCodeInterpreter: true,
-                metadata: SampleMetadata);
+        // Define the Prompt Agent with the code-interpreter tool.
+        DeclarativeAgentDefinition definition = new(DeploymentName)
+        {
+            Instructions = "Create charts as requested without explanation.",
+        };
+        definition.Tools.Add(
+            ResponseTool.CreateCodeInterpreterTool(
+                new CodeInterpreterToolContainer(
+                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration())));
+        ProjectsAgentVersion promptAgent = await this.CreatePromptAgentAsync("ChartMaker", definition);
 
         // Create the agent
-        OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
+        ChatCompletionAgent agent =
+            new()
+            {
+                Name = "ChartMaker",
+                Kernel = this.CreateKernel(promptAgent),
+            };
         AgentThread? agentThread = null;
 
         // Respond to user input
@@ -53,7 +60,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistan
                 await agentThread.DeleteAsync();
             }
 
-            await this.AssistantClient.DeleteAssistantAsync(agent.Id);
+            await this.DeletePromptAgentAsync(promptAgent);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -62,10 +69,10 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAssistan
             ChatMessageContent message = new(AuthorRole.User, input);
             this.WriteAgentChatMessage(message);
 
-            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message, agentThread))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseImageAsync(response);
+                await this.DownloadGeneratedFilesAsync(response, launchViewer: true);
 
                 agentThread = response.Thread;
             }
