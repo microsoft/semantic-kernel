@@ -33,3 +33,24 @@ async def test_aggregate_results():
     result = await aggregate_chunked_results(func, chunked, kernel, KernelArguments())
     print(result)
     assert result == "\n".join(chunked)
+
+
+async def test_aggregate_results_does_not_mutate_caller_arguments():
+    """The per-chunk `input` is an internal detail and must not leak into the caller's arguments."""
+    kernel = Kernel()
+
+    @kernel_function(name="func")
+    def function(input: str) -> str:
+        return f"result({input})"
+
+    func = KernelFunction.from_method(method=function, plugin_name="test")
+
+    arguments = KernelArguments(input="original input")
+    result = await aggregate_chunked_results(func, ["first", "second"], kernel, arguments)
+
+    assert result == "result(first)\nresult(second)"
+    assert arguments["input"] == "original input"
+
+    bare_arguments = KernelArguments()
+    await aggregate_chunked_results(func, ["only"], kernel, bare_arguments)
+    assert "input" not in bare_arguments
