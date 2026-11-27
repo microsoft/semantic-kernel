@@ -21,25 +21,17 @@ def get_call_result_pairs(history: list[ChatMessageContent]) -> list[tuple[int, 
 
     Return a list of (call_index, result_index) pairs for safe referencing.
     """
-    pairs: list[tuple[int, int]] = []  # Correct type: list of tuples with integers
-    call_ids_seen: dict[str, int] = {}  # Map call IDs (str) to their indices (int)
+    pairs: list[tuple[int, int]] = []
+    pending_calls: dict[str, int] = {}
 
-    # Gather all function-call IDs and their indices.
-    for i, msg in enumerate(history):
-        for item in msg.items:
+    for index, message in enumerate(history):
+        for item in message.items:
             if isinstance(item, FunctionCallContent) and item.id is not None:
-                call_ids_seen[item.id] = i
-
-    # Now, match each FunctionResultContent to the earliest call ID with the same ID.
-    for j, msg in enumerate(history):
-        for item in msg.items:
-            if isinstance(item, FunctionResultContent) and item.id is not None:
-                call_id = item.id
-                if call_id in call_ids_seen:
-                    call_index = call_ids_seen[call_id]
-                    pairs.append((call_index, j))
-                    # Remove the call ID so we don't match it a second time
-                    del call_ids_seen[call_id]
+                pending_calls[item.id] = index
+            elif isinstance(item, FunctionResultContent) and item.id is not None:
+                call_index = pending_calls.pop(item.id, None)
+                if call_index is not None:
+                    pairs.append((call_index, index))
 
     return pairs
 
