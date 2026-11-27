@@ -168,7 +168,9 @@ public sealed class HttpPluginTests : IDisposable
             "169.254.169.254", "127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.0.1",
             "100.64.0.1", "0.0.0.0", "224.0.0.1", "198.18.0.1", "192.0.2.1",
             "::1", "fe80::1", "fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-            "fc00::1", "ff02::1", "::ffff:169.254.169.254"
+            "fc00::1", "ff02::1", "::ffff:169.254.169.254",
+            "64:ff9b::a00:1", "64:ff9b:1::808:808", "::a00:1",
+            "2002:a00:1::", "2001:0:808:808:0:0:f5ff:fffe"
         ];
 
         foreach (var address in addresses)
@@ -199,6 +201,31 @@ public sealed class HttpPluginTests : IDisposable
         var plugin = new HttpPlugin(client) { AllowedDomains = [uri.Host] };
 
         Assert.Equal(this._content, await plugin.GetAsync(uri.AbsoluteUri));
+    }
+
+    [Theory]
+    [InlineData("64:ff9b::a00:1")]
+    [InlineData("64:ff9b:1::808:808")]
+    [InlineData("::a00:1")]
+    [InlineData("2002:a00:1::")]
+    [InlineData("2001:0:808:808:0:0:f5ff:fffe")]
+    public async Task ItBlocksNonPublicEmbeddedAddressesFromDnsAsync(string address)
+    {
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(
+            client,
+            (_, _) => Task.FromResult(new[] { IPAddress.Parse("8.8.8.8"), IPAddress.Parse(address) }),
+            clientSupportsValidatedAddresses: true)
+        {
+            AllowedDomains = ["example.test"]
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.GetAsync("https://example.test/"));
+
+        Assert.Contains("host resolves to", exception.Message, StringComparison.Ordinal);
+        VerifyNoRequest(mockHandler);
     }
 
     [Fact]

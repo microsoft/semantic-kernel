@@ -57,6 +57,22 @@ public class ServerUrlValidatorTests
     // IPv4-mapped IPv6 of a private address
     [InlineData("::ffff:127.0.0.1", "loopback")]
     [InlineData("::ffff:169.254.169.254", "link-local")]
+    [InlineData("64:ff9b::7f00:1", "loopback")]
+    [InlineData("64:ff9b::a00:1", "private (RFC1918)")]
+    [InlineData("64:ff9b::a9fe:1", "link-local")]
+    [InlineData("64:ff9b::", "unspecified")]
+    [InlineData("64:ff9b:1::808:808", "reserved")]
+    [InlineData("64:ff9b:1:ffff:ffff:ffff:ffff:ffff", "reserved")]
+    [InlineData("::7f00:1", "loopback")]
+    [InlineData("::a00:1", "private (RFC1918)")]
+    [InlineData("::a9fe:1", "link-local")]
+    [InlineData("2002:7f00:1::", "loopback")]
+    [InlineData("2002:a00:1::", "private (RFC1918)")]
+    [InlineData("2002:a9fe:1::", "link-local")]
+    [InlineData("2001:0:808:808:0:0:80ff:fffe", "loopback")]
+    [InlineData("2001:0:808:808:0:0:f5ff:fffe", "private (RFC1918)")]
+    [InlineData("2001:0:808:808:0:0:5601:fffe", "link-local")]
+    [InlineData("2001:0:a00:1:0:0:f7f7:f7f7", "private (RFC1918)")]
     public async Task ItShouldRejectNonPublicAddressesAsync(string address, string expectedCategory)
     {
         // Arrange
@@ -83,6 +99,14 @@ public class ServerUrlValidatorTests
     [InlineData("100.128.0.1")]      // just outside CGNAT
     // Public IPv6
     [InlineData("2606:4700:4700::1111")]   // Cloudflare DNS
+    [InlineData("::ffff:8.8.8.8")]
+    [InlineData("64:ff9b::808:808")]
+    [InlineData("::808:808")]
+    [InlineData("2002:808:808::")]
+    [InlineData("2001:0:808:808:0:0:f7f7:f7f7")]
+    [InlineData("64:ff9b:0:1::1")]
+    [InlineData("64:ff9b:2::1")]
+    [InlineData("2001:1::1")]
     public async Task ItShouldNotBlockPublicAddressesAsync(string address)
     {
         // Arrange
@@ -251,6 +275,11 @@ public class ServerUrlValidatorTests
     [InlineData("fec0::", "site-local")]
     [InlineData("fec0::1", "site-local")]
     [InlineData("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local")]
+    [InlineData("64:ff9b::7f00:1", "loopback")]
+    [InlineData("64:ff9b:1::808:808", "reserved")]
+    [InlineData("::7f00:1", "loopback")]
+    [InlineData("2002:7f00:1::", "loopback")]
+    [InlineData("2001:0:808:808:0:0:80ff:fffe", "loopback")]
     public async Task ItShouldBlockHostnameResolvingToPrivateIpAsync(string address, string expectedCategory)
     {
         var url = new Uri("https://evil.example.com/latest/meta-data/");

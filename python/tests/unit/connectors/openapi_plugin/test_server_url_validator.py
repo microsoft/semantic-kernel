@@ -51,6 +51,22 @@ from semantic_kernel.utils.public_network_address_validator import try_categoriz
         ("2001:db8::1", "reserved"),
         ("::ffff:127.0.0.1", "loopback"),
         ("::ffff:169.254.169.254", "link-local"),
+        ("64:ff9b::7f00:1", "loopback"),
+        ("64:ff9b::a00:1", "private (RFC1918)"),
+        ("64:ff9b::a9fe:1", "link-local"),
+        ("64:ff9b::", "unspecified"),
+        ("64:ff9b:1::808:808", "reserved"),
+        ("64:ff9b:1:ffff:ffff:ffff:ffff:ffff", "reserved"),
+        ("::7f00:1", "loopback"),
+        ("::a00:1", "private (RFC1918)"),
+        ("::a9fe:1", "link-local"),
+        ("2002:7f00:1::", "loopback"),
+        ("2002:a00:1::", "private (RFC1918)"),
+        ("2002:a9fe:1::", "link-local"),
+        ("2001:0:808:808:0:0:80ff:fffe", "loopback"),
+        ("2001:0:808:808:0:0:f5ff:fffe", "private (RFC1918)"),
+        ("2001:0:808:808:0:0:5601:fffe", "link-local"),
+        ("2001:0:a00:1:0:0:f7f7:f7f7", "private (RFC1918)"),
     ],
 )
 def test_try_categorize_non_public_address(address: str, expected_category: str):
@@ -73,6 +89,14 @@ def test_try_categorize_non_public_address(address: str, expected_category: str)
         "100.63.255.255",
         "100.128.0.1",
         "2606:4700:4700::1111",
+        "::ffff:8.8.8.8",
+        "64:ff9b::808:808",
+        "::808:808",
+        "2002:808:808::",
+        "2001:0:808:808:0:0:f7f7:f7f7",
+        "64:ff9b:0:1::1",
+        "64:ff9b:2::1",
+        "2001:1::1",
     ],
 )
 def test_try_categorize_non_public_address_allows_public_addresses(address: str):
@@ -95,6 +119,21 @@ async def test_validate_server_url_rejects_literal_loopback_ipv6():
 @pytest.mark.parametrize("address", ["fec0::", "fec0::1", "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"])
 async def test_validate_server_url_rejects_literal_site_local_ipv6(address):
     with pytest.raises(FunctionExecutionException, match="site-local"):
+        await validate_server_url(f"https://[{address}]/")
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "64:ff9b::a00:1",
+        "64:ff9b:1::808:808",
+        "::a00:1",
+        "2002:a00:1::",
+        "2001:0:808:808:0:0:f5ff:fffe",
+    ],
+)
+async def test_validate_server_url_rejects_non_public_embedded_addresses(address):
+    with pytest.raises(FunctionExecutionException, match="host resolves to"):
         await validate_server_url(f"https://[{address}]/")
 
 
@@ -163,6 +202,11 @@ async def test_validate_server_url_allows_private_network_access_after_scheme_ga
         ("fec0::", "site-local"),
         ("fec0::1", "site-local"),
         ("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "site-local"),
+        ("64:ff9b::7f00:1", "loopback"),
+        ("64:ff9b:1::808:808", "reserved"),
+        ("::7f00:1", "loopback"),
+        ("2002:7f00:1::", "loopback"),
+        ("2001:0:808:808:0:0:80ff:fffe", "loopback"),
     ],
 )
 async def test_validate_server_url_blocks_hostname_resolving_to_non_public_address(address, expected_category):
@@ -223,6 +267,7 @@ async def test_validate_server_url_blocks_empty_dns_response():
     [
         ["93.184.216.34", "198.41.0.4"],
         ["2606:4700:4700::1111", "93.184.216.34", "2606:4700:4700::1001"],
+        ["64:ff9b::808:808", "::808:808", "2002:808:808::", "2001:0:808:808:0:0:f7f7:f7f7"],
     ],
 )
 async def test_validate_server_url_returns_validated_addresses_for_pinning(addresses):

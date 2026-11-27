@@ -284,6 +284,52 @@ internal static class PublicNetworkAddressValidator
             return true;
         }
 
+        if (bytes[0] == 0x00 && bytes[1] == 0x64 && bytes[2] == 0xff && bytes[3] == 0x9b)
+        {
+            // 64:ff9b:1::/48 is local-use and supports multiple IPv4 layouts.
+            if (bytes[4] == 0 && bytes[5] == 1)
+            {
+                category = "reserved";
+                return true;
+            }
+
+            // 64:ff9b::/96 carries the IPv4 address in the last four bytes.
+            if (bytes[4] == 0 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0 &&
+                bytes[8] == 0 && bytes[9] == 0 && bytes[10] == 0 && bytes[11] == 0)
+            {
+                return TryClassifyIPv4(MapToIPv4(address), out category);
+            }
+        }
+
+        // ::/96 - IPv4-compatible addresses, after the loopback and unspecified checks.
+        if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 &&
+            bytes[4] == 0 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0 &&
+            bytes[8] == 0 && bytes[9] == 0 && bytes[10] == 0 && bytes[11] == 0)
+        {
+            return TryClassifyIPv4(MapToIPv4(address), out category);
+        }
+
+        // 2002::/16 - 6to4 carries the IPv4 address immediately after the prefix.
+        if (bytes[0] == 0x20 && bytes[1] == 0x02)
+        {
+            return TryClassifyIPv4(new IPAddress(new byte[] { bytes[2], bytes[3], bytes[4], bytes[5] }), out category);
+        }
+
+        // 2001::/32 - Teredo carries a server IPv4 address and a complemented client IPv4 address.
+        if (bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0 && bytes[3] == 0)
+        {
+            if (TryClassifyIPv4(new IPAddress(new byte[] { bytes[4], bytes[5], bytes[6], bytes[7] }), out category))
+            {
+                return true;
+            }
+
+            return TryClassifyIPv4(new IPAddress(new byte[]
+            {
+                (byte)(bytes[12] ^ 0xff), (byte)(bytes[13] ^ 0xff),
+                (byte)(bytes[14] ^ 0xff), (byte)(bytes[15] ^ 0xff)
+            }), out category);
+        }
+
         category = string.Empty;
         return false;
     }
