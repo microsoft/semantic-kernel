@@ -68,15 +68,13 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
             self.history_variable_name: messages,
         }
 
-        extracted_settings = {key: setting.model_dump() for key, setting in execution_settings.items()}
-
         combined_arguments = {
             **original_arguments,
-            **extracted_settings,
             **{k: v for k, v in filtered_arguments.items()},
         }
 
         arguments = KernelArguments(
+            settings=execution_settings.copy(),
             **combined_arguments,
         )
 
