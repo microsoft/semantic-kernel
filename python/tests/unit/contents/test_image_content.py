@@ -77,3 +77,26 @@ def test_image_content_raw_bytes_without_data_format():
     prompt = msg.to_prompt()
     assert "<image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==</image>" in prompt
 
+
+def test_image_content_xml_unsafe_payload_prompt_roundtrip():
+    """Test ImageContent with control characters (e.g. b'\\x00\\x01') roundtrips cleanly in chat prompt XML."""
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+    raw_payload = b"\x00\x01\x02"
+    image = ImageContent(data=raw_payload, mime_type="image/png")
+    assert image.data_uri == "data:image/png;base64,AAEC"
+
+    msg = ChatMessageContent(role="user", items=[image])
+    rendered = msg.to_prompt()
+    assert "<image>data:image/png;base64,AAEC</image>" in rendered
+
+    # Verify round-trip parsing via ChatHistory.from_rendered_prompt
+    history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(history.messages) == 1
+    assert len(history.messages[0].items) == 1
+    parsed_item = history.messages[0].items[0]
+    assert isinstance(parsed_item, ImageContent)
+    assert parsed_item.data == raw_payload
+
+

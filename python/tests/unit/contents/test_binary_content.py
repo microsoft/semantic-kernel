@@ -293,3 +293,24 @@ def test_audio_content_raw_bytes_without_data_format():
     element = audio.to_element()
     assert element.text.startswith("data:audio/mp3;base64,")
 
+
+def test_binary_content_xml_unsafe_payload_prompt_roundtrip():
+    """Test BinaryContent with control characters (e.g. b'\\x00\\x01') emits valid XML prompt."""
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+    raw_payload = b"\x00\x01\x02"
+    content = BinaryContent(data=raw_payload, mime_type="application/octet-stream")
+    assert content.data_uri == "data:application/octet-stream;base64,AAEC"
+
+    msg = ChatMessageContent(role="user", items=[content])
+    rendered = msg.to_prompt()
+    assert "data:application/octet-stream;base64,AAEC" in rendered
+
+    # Verify XML is well-formed and does not trigger ParseError in from_rendered_prompt
+    history = ChatHistory.from_rendered_prompt(rendered)
+    assert len(history.messages) == 1
+    assert "data:application/octet-stream;base64,AAEC" in str(history.messages[0])
+
+
+

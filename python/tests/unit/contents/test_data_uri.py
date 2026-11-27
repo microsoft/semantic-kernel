@@ -335,3 +335,21 @@ def test_data_uri_update_data_with_binary_bytes_auto_detects_base64():
     assert data_uri.data_format == "base64"
     assert data_uri.to_string().startswith("data:text/plain;base64,")
 
+
+def test_data_uri_array_precedence_with_data_str():
+    """Test that array precedence is preserved even if unused data_str is passed."""
+    arr = np.array([255], dtype=np.uint8)
+    data_uri = DataUri(data_array=arr, data_str="plain text", mime_type="application/octet-stream")
+    assert data_uri.data_format == "base64"
+    assert data_uri.data_array is not None
+    assert data_uri.to_string() == "data:application/octet-stream;base64,/w=="
+
+
+def test_data_uri_xml_unsafe_control_bytes_selects_base64():
+    """Test that UTF-8 decodable but XML-unsafe control characters select base64."""
+    control_bytes = b"\x00\x01\x02"
+    data_uri = DataUri(data_bytes=control_bytes, mime_type="application/octet-stream")
+    assert data_uri.data_format == "base64"
+    assert data_uri.to_string() == "data:application/octet-stream;base64,AAEC"
+
+
