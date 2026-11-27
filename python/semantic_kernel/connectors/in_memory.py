@@ -701,13 +701,17 @@ class InMemoryCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method."""
-        if not vector:
+        if vector is None:
             vector = await self._generate_vector_from_values(values, options)
         return_records: dict[TKey, float] = {}
         field = self.definition.try_get_vector_field(options.vector_property_name)
         if not field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
+            )
+        if vector is not None and len(vector) != field.dimensions:
+            raise VectorSearchExecutionException(
+                f"Query vector for field '{field.name}' must have {field.dimensions} dimensions, got {len(vector)}."
             )
         if field.distance_function not in DISTANCE_FUNCTION_MAP:
             raise VectorSearchExecutionException(
@@ -717,7 +721,7 @@ class InMemoryCollection(
         distance_func = DISTANCE_FUNCTION_MAP[field.distance_function]  # type: ignore[assignment]
 
         for key, record in self._get_filtered_records(options).items():
-            if vector and field is not None:
+            if vector is not None:
                 return_records[key] = self._calculate_vector_similarity(
                     vector,
                     record[field.storage_name or field.name],

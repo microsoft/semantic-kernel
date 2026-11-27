@@ -8,7 +8,10 @@ from pytest import fixture, mark, raises
 from semantic_kernel.connectors.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data._shared import default_dynamic_filter_function
 from semantic_kernel.data.vector import DistanceFunction
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
+from semantic_kernel.exceptions.vector_store_exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreOperationException,
+)
 
 
 @fixture
@@ -305,6 +308,14 @@ async def test_vectorized_search_similar(collection, distance_function):
     async for res in results.results:
         assert res.record == record1 if idx == 0 else record2
         idx += 1
+
+
+@mark.parametrize("vector", [[], [1.0], [1.0] * 6], ids=["empty", "too-short", "too-long"])
+async def test_vectorized_search_rejects_invalid_dimensions(collection, vector):
+    await collection.upsert({"id": "testid", "content": "test content", "vector": [1.0] * 5})
+
+    with raises(VectorSearchExecutionException, match=rf"must have 5 dimensions, got {len(vector)}"):
+        await collection.search(vector=vector, vector_property_name="vector")
 
 
 async def test_valid_lambda_filter(collection):
