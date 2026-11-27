@@ -1393,6 +1393,101 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Contains("Property2", requiredParentProperties);
     }
 
+    [Theory]
+    [InlineData("Type")]
+    [InlineData("JsonSchema")]
+    [InlineData("JsonObject")]
+    [InlineData("Text")]
+    public async Task ItSendsSameResponseFormatAfterSettingsJsonRoundTripAsync(string responseFormatKind)
+    {
+        // Arrange
+        object responseFormat = responseFormatKind switch
+        {
+            "Type" => typeof(MathReasoning),
+            "JsonSchema" => ChatResponseFormat.CreateJsonSchemaFormat(
+                jsonSchemaFormatName: "MathReasoning",
+                jsonSchema: BinaryData.FromString("""
+                    {
+                        "type": "object",
+                        "properties": { "FinalAnswer": { "type": "string" } },
+                        "required": ["FinalAnswer"],
+                        "additionalProperties": false
+                    }
+                    """),
+                jsonSchemaFormatDescription: "Math reasoning",
+                jsonSchemaIsStrict: true),
+            "JsonObject" => ChatResponseFormat.CreateJsonObjectFormat(),
+            _ => ChatResponseFormat.CreateTextFormat(),
+        };
+
+        var originalSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };
+        var roundTrippedSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(JsonSerializer.Serialize(originalSettings))!;
+
+        // Act
+        JsonElement expectedResponseFormat = await this.GetRequestResponseFormatAsync(originalSettings);
+        JsonElement actualResponseFormat = await this.GetRequestResponseFormatAsync(roundTrippedSettings);
+
+        // Assert
+        Assert.True(
+            JsonElement.DeepEquals(expectedResponseFormat, actualResponseFormat),
+            $"Expected {expectedResponseFormat.GetRawText()} but got {actualResponseFormat.GetRawText()}");
+    }
+
+    [Theory]
+    [InlineData("Type", false, true)]
+    [InlineData("Type", true, true)]
+    [InlineData("ChatResponseFormat", false, true)]
+    [InlineData("JsonElement", false, true)]
+    [InlineData("NonStrictChatResponseFormat", false, false)]
+    public async Task ItPreservesResponseFormatStrictnessThroughChatClientAdapterAsync(string responseFormatKind, bool withExtraBody, bool expectedStrict)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Date")]);
+
+        var openAIClient = new OpenAIClient(new ApiKeyCredential("NOKEY"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(this._httpClient) });
+        var sut = Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(openAIClient.GetChatClient("gpt-4o")).AsChatCompletionService();
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        const string Schema = """{"type":"object","properties":{"FinalAnswer":{"type":"string"}},"required":["FinalAnswer"],"additionalProperties":false}""";
+        object responseFormat = responseFormatKind switch
+        {
+            "Type" => typeof(MathReasoning),
+            "ChatResponseFormat" => ChatResponseFormat.CreateJsonSchemaFormat(nameof(MathReasoning), BinaryData.FromString(Schema), jsonSchemaIsStrict: true),
+            "JsonElement" => JsonElement.Parse("""{"type":"json_schema","json_schema":{"name":"MathReasoning","strict":true,"schema":""" + Schema + "}}"),
+            _ => ChatResponseFormat.CreateJsonSchemaFormat(nameof(MathReasoning), BinaryData.FromString(Schema)),
+        };
+
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = responseFormat,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            ExtraBody = withExtraBody ? new Dictionary<string, object?> { ["enable_thinking"] = false } : null,
+        };
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings, kernel);
+
+        // Assert
+        var request = JsonElement.Parse(this._messageHandlerStub.RequestContent!);
+        var jsonSchema = request.GetProperty("response_format").GetProperty("json_schema");
+        Assert.Equal(nameof(MathReasoning), jsonSchema.GetProperty("name").GetString());
+        Assert.Equal(expectedStrict, jsonSchema.TryGetProperty("strict", out JsonElement strict) && strict.ValueKind == JsonValueKind.True);
+
+        // Strictness belongs to the response format only and must not leak to unrelated function tools.
+        var function = request.GetProperty("tools")[0].GetProperty("function");
+        Assert.False(function.TryGetProperty("strict", out JsonElement toolStrict) && toolStrict.ValueKind == JsonValueKind.True);
+
+        if (withExtraBody)
+        {
+            Assert.False(request.GetProperty("enable_thinking").GetBoolean());
+        }
+    }
+
     [Fact]
     public async Task GetChatMessageContentReturnsRefusal()
     {
@@ -1892,6 +1987,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
         this._multiMessageHandlerStub.Dispose();
+    }
+
+    private async Task<JsonElement> GetRequestResponseFormatAsync(OpenAIPromptExecutionSettings executionSettings)
+    {
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest, executionSettings);
+
+        return JsonElement.Parse(this._messageHandlerStub.RequestContent!).GetProperty("response_format");
     }
 
     private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
