@@ -523,6 +523,26 @@ def filter_collection(vector_store):
 @pytest.mark.parametrize(
     "expression, expected_sql, expected_params",
     [
+        ("x.id in []", "FALSE", []),
+        ("x.id not in []", "TRUE", []),
+        ("x.tenant in []", "FALSE", []),
+        ("None not in []", "TRUE", []),
+        ("1 in []", "FALSE", []),
+        ("not (x.id in [])", "NOT (FALSE)", []),
+        ("x.id == 1 or x.tenant in []", '("id" = %s OR FALSE)', [1]),
+        ("x.id not in [] and x.id == 2", '(TRUE AND "id" = %s)', [2]),
+        ("x.id == 1 and 2 in [] and x.id == 3", '("id" = %s AND FALSE AND "id" = %s)', [1, 3]),
+    ],
+)
+def test_empty_membership_filter(filter_collection, expression, expected_sql, expected_params):
+    clause, params = filter_collection._build_filter(f"lambda x: {expression}")
+    assert clause.as_string() == expected_sql
+    assert params == expected_params
+
+
+@pytest.mark.parametrize(
+    "expression, expected_sql, expected_params",
+    [
         ("x.id == 1", '"id" = %s', [1]),
         ("x.id != 1", '"id" <> %s', [1]),
         ("x.id > 1", '"id" > %s', [1]),
@@ -648,11 +668,10 @@ def test_filter_identifier_quoting(filter_collection):
     "expression, error",
     [
         ("x.unknown == 1", VectorStoreOperationException),
+        ("x.unknown in []", VectorStoreOperationException),
         ("x.unknown == None", VectorStoreOperationException),
         ("None != x.unknown", VectorStoreOperationException),
         ("unknown == 1", VectorStoreOperationException),
-        ("x.id in []", VectorStoreOperationException),
-        ("x.id not in []", VectorStoreOperationException),
         ("x.id == b'bytes'", VectorStoreOperationException),
         ("x.id == 1j", VectorStoreOperationException),
         ("None == b'bytes'", VectorStoreOperationException),
