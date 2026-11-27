@@ -287,6 +287,54 @@ def test_cmc_to_dict_keys():
             },
         ),
         (
+            {
+                "role": "assistant",
+                "items": [
+                    TextContent(text="Let me check the weather."),
+                    FunctionCallContent(id="test", name="func_name", arguments="args"),
+                ],
+            },
+            {
+                "role": "assistant",
+                "content": "Let me check the weather.",
+                "tool_calls": [
+                    {"id": "test", "type": "function", "function": {"name": "func_name", "arguments": "args"}}
+                ],
+            },
+        ),
+        (
+            {
+                "role": "assistant",
+                "items": [
+                    TextContent(text="First."),
+                    TextContent(text="Second."),
+                    FunctionCallContent(id="test", name="func_name", arguments="args"),
+                ],
+            },
+            {
+                "role": "assistant",
+                "content": "First.\nSecond.",
+                "tool_calls": [
+                    {"id": "test", "type": "function", "function": {"name": "func_name", "arguments": "args"}}
+                ],
+            },
+        ),
+        (
+            {
+                "role": "assistant",
+                "items": [
+                    TextContent(text="  "),
+                    FunctionCallContent(id="test", name="func_name", arguments="args"),
+                ],
+            },
+            {
+                "role": "assistant",
+                "tool_calls": [
+                    {"id": "test", "type": "function", "function": {"name": "func_name", "arguments": "args"}}
+                ],
+            },
+        ),
+        (
             {"role": "tool", "items": [FunctionResultContent(id="test", name="func_name", result="result")]},
             {"role": "tool", "tool_call_id": "test", "content": "result"},
         ),
@@ -386,6 +434,9 @@ def test_cmc_to_dict_keys():
         "user_with_name",
         "user_item",
         "function_call",
+        "function_call_with_text",
+        "function_call_with_multiple_text",
+        "function_call_with_whitespace_text",
         "function_result",
         "multiple_items",
         "multiple_items_serialize",
