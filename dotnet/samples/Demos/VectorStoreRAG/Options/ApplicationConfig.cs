@@ -17,6 +17,7 @@ internal sealed class ApplicationConfig
     private readonly AzureAISearchConfig _azureAISearchConfig = new();
     private readonly CosmosConfig _azureDocumentDBConfig = new();
     private readonly CosmosConfig _cosmosNoSqlConfig = new();
+    private readonly MilvusConfig _milvusConfig = new();
     private readonly QdrantConfig _qdrantConfig = new();
     private readonly RedisConfig _redisConfig = new();
     private readonly WeaviateConfig _weaviateConfig = new();
@@ -49,6 +50,9 @@ internal sealed class ApplicationConfig
             .GetRequiredSection($"VectorStores:{CosmosConfig.NoSqlConfigSectionName}")
             .Bind(this._cosmosNoSqlConfig);
         configurationManager
+            .GetRequiredSection($"VectorStores:{MilvusConfig.ConfigSectionName}")
+            .Bind(this._milvusConfig);
+        configurationManager
             .GetRequiredSection($"VectorStores:{QdrantConfig.ConfigSectionName}")
             .Bind(this._qdrantConfig);
         configurationManager
@@ -74,6 +78,8 @@ internal sealed class ApplicationConfig
     public CosmosConfig AzureDocumentDBConfig => this._azureDocumentDBConfig;
 
     public CosmosConfig CosmosNoSqlConfig => this._cosmosNoSqlConfig;
+
+    public MilvusConfig MilvusConfig => this._milvusConfig;
 
     public QdrantConfig QdrantConfig => this._qdrantConfig;
 
