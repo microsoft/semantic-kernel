@@ -1001,6 +1001,54 @@ def test_add_function_from_prompt_different_values(kernel: Kernel):
     assert len(func.parameters) == 2
 
 
+@pytest.mark.parametrize("existing_plugin", [False, True])
+@pytest.mark.parametrize("as_kernel_function", [False, True])
+async def test_add_function_name_overrides_name(kernel: Kernel, existing_plugin: bool, as_kernel_function: bool):
+    if existing_plugin:
+        kernel.add_plugin(KernelPlugin(name="tools"))
+
+    @kernel_function(name="get_weather")
+    def get_weather(city: str) -> str:
+        return f"sunny in {city}"
+
+    function = KernelFunction.from_method(get_weather, "other") if as_kernel_function else get_weather
+
+    added = kernel.add_function(plugin_name="tools", function=function, function_name="weather")
+
+    assert added.name == "weather"
+    assert list(kernel.plugins["tools"].functions) == ["weather"]
+    assert [m.fully_qualified_name for m in kernel.get_full_list_of_function_metadata()] == ["tools-weather"]
+    assert kernel.get_function("tools", "weather").name == "weather"
+    assert kernel.get_function_from_fully_qualified_function_name("tools-weather").name == "weather"
+    if as_kernel_function:
+        # the function the caller passed in is not renamed
+        assert function.name == "get_weather"
+        assert function.plugin_name == "other"
+
+    chat_history = ChatHistory()
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(id="1", name="tools-weather", arguments='{"city": "Oslo"}'),
+        chat_history=chat_history,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    assert chat_history.messages[-1].items[0].result == "sunny in Oslo"
+
+
+def test_add_function_without_function_name_keeps_function_name(kernel: Kernel):
+    @kernel_function(name="get_weather")
+    def get_weather(city: str) -> str:
+        return f"sunny in {city}"
+
+    assert kernel.add_function(plugin_name="tools", function=get_weather).name == "get_weather"
+    assert kernel.add_function(plugin_name="more_tools", function=get_weather, function_name="get_weather").name == (
+        "get_weather"
+    )
+    assert [m.fully_qualified_name for m in kernel.get_full_list_of_function_metadata()] == [
+        "tools-get_weather",
+        "more_tools-get_weather",
+    ]
+
+
 def test_add_functions(kernel: Kernel):
     @kernel_function(name="func1")
     def func1(arg1: str) -> str:
