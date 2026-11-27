@@ -198,8 +198,8 @@ def test_hash_function_call_content():
 
 def test_equal_sets_have_equal_hashes():
     """Set iteration order must not affect function-result hashes."""
-    first = FunctionResultContent(id="call", name="lookup", result=set([0, 8]))
-    second = FunctionResultContent(id="call", name="lookup", result=set([8, 0]))
+    first = FunctionResultContent(id="call", name="lookup", result={0, 8})
+    second = FunctionResultContent(id="call", name="lookup", result={8, 0})
     assert first == second
     assert hash(first) == hash(second)
     assert second in {first}
@@ -215,8 +215,8 @@ def test_set_and_frozenset_have_equal_hashes():
 
 def test_nested_equal_sets_have_equal_hashes():
     """Sets nested in function results retain unordered equality."""
-    first = FunctionResultContent(id="call", name="lookup", result={"values": [set([0, 8])]})
-    second = FunctionResultContent(id="call", name="lookup", result={"values": [set([8, 0])]})
+    first = FunctionResultContent(id="call", name="lookup", result={"values": [{0, 8}]})
+    second = FunctionResultContent(id="call", name="lookup", result={"values": [{8, 0}]})
     assert first == second
     assert hash(first) == hash(second)
 

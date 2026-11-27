@@ -258,11 +258,11 @@ async def test_invoke_deduplicates_equal_set_results(chat_history_channel):
     channel.add_user_message("Look up the values")
     stored = ChatMessageContent(
         role=AuthorRole.TOOL,
-        items=[FunctionResultContent(id="call", name="lookup", result=set([0, 8]))],
+        items=[FunctionResultContent(id="call", name="lookup", result={0, 8})],
     )
     returned = ChatMessageContent(
         role=AuthorRole.TOOL,
-        items=[FunctionResultContent(id="call", name="lookup", result=set([8, 0]))],
+        items=[FunctionResultContent(id="call", name="lookup", result={8, 0})],
     )
     assert stored == returned
 
