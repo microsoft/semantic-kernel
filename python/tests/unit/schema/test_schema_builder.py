@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 from unittest.mock import Mock
@@ -249,6 +250,59 @@ def test_build_variadic_tuple():
 def test_build_optional_variadic_tuple():
     schema = KernelJsonSchemaBuilder.build(Optional[tuple[str, ...]])
     assert schema == {"type": ["array", "null"], "items": {"type": "string"}}
+
+
+def test_build_sequence():
+    schema = KernelJsonSchemaBuilder.build(Sequence[int], "items")
+    assert schema == {"type": "array", "items": {"type": "integer"}, "description": "items"}
+
+
+def test_build_mutable_sequence():
+    schema = KernelJsonSchemaBuilder.build(MutableSequence[str])
+    assert schema == {"type": "array", "items": {"type": "string"}}
+
+
+def test_build_mapping():
+    schema = KernelJsonSchemaBuilder.build(Mapping[str, int], "counts")
+    assert schema == {
+        "type": "object",
+        "additionalProperties": {"type": "integer"},
+        "description": "counts",
+    }
+
+
+def test_build_mutable_mapping():
+    schema = KernelJsonSchemaBuilder.build(MutableMapping[str, float])
+    assert schema == {
+        "type": "object",
+        "additionalProperties": {"type": "number"},
+    }
+
+
+def test_build_optional_sequence():
+    schema = KernelJsonSchemaBuilder.build(Optional[Sequence[int]])
+    assert schema == {"type": ["array", "null"], "items": {"type": "integer"}}
+
+
+def test_build_optional_mapping():
+    schema = KernelJsonSchemaBuilder.build(Optional[Mapping[str, str]])
+    assert schema == {"type": ["object", "null"], "additionalProperties": {"type": "string"}}
+
+
+def test_build_sequence_and_mapping_with_structured_output():
+    seq_schema = KernelJsonSchemaBuilder.build(Sequence[str], description="a list of names", structured_output=True)
+    assert seq_schema == {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "a list of names",
+    }
+
+    map_schema = KernelJsonSchemaBuilder.build(Mapping[str, int], description="lookup table", structured_output=True)
+    assert map_schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "description": "lookup table",
+    }
 
 
 def test_build_union():
