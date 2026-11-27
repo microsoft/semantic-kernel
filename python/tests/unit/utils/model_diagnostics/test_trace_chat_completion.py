@@ -77,6 +77,26 @@ pytestmark = pytest.mark.parametrize(
             ],
             id="test_chat_message_content_no_finish_reason",
         ),
+        pytest.param(
+            PromptExecutionSettings(),
+            [
+                ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    ai_model_id="ai_model_id",
+                    content="First",
+                    metadata={"id": "test_id"},
+                    finish_reason=FinishReason.STOP,
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    ai_model_id="ai_model_id",
+                    content="Second",
+                    metadata={"id": "test_id"},
+                    finish_reason=FinishReason.LENGTH,
+                ),
+            ],
+            id="test_multiple_completions_with_different_finish_reasons",
+        ),
     ],
 )
 
@@ -146,11 +166,15 @@ async def test_trace_chat_completion(
         # Not all connectors return the same metadata
         if mock_response[0].metadata.get("id") is not None:
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.RESPONSE_ID, mock_response[0].metadata["id"])
-        if any(completion.finish_reason is not None for completion in mock_response):
-            mock_span.set_attribute.assert_any_call(
-                gen_ai_attributes.FINISH_REASON,
-                ",".join([str(completion.finish_reason) for completion in mock_response]),
-            )
+        finish_reasons = [
+            completion.finish_reason.value for completion in mock_response if completion.finish_reason is not None
+        ]
+        if finish_reasons:
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.FINISH_REASON, ",".join(finish_reasons))
+        else:
+            assert gen_ai_attributes.FINISH_REASON not in [
+                args[0] for args, _ in mock_span.set_attribute.call_args_list
+            ]
 
         mock_logger.info.assert_any_call(
             json.dumps({"message": results[0].to_dict(), "finish_reason": results[0].finish_reason}),
