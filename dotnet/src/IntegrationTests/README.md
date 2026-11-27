@@ -55,10 +55,6 @@ dotnet user-secrets set "OpenAIEmbeddings:ServiceId" "text-embedding-ada-002"
 dotnet user-secrets set "OpenAIEmbeddings:ModelId" "text-embedding-ada-002"
 dotnet user-secrets set "OpenAIEmbeddings:ApiKey" "..."
 
-dotnet user-secrets set "AzureAIInference:ServiceId" "azure-ai-inference"
-dotnet user-secrets set "AzureAIInference:ApiKey" "..."
-dotnet user-secrets set "AzureAIInference:Endpoint" "https://contoso.models.ai.azure.com/"
-
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"

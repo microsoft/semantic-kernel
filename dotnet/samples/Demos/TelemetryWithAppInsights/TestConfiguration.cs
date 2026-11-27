@@ -22,8 +22,6 @@ public sealed class TestConfiguration
 
     public static AzureOpenAIConfig? AzureOpenAI => LoadSection<AzureOpenAIConfig>();
 
-    public static AzureAIInferenceConfig? AzureAIInference => LoadSection<AzureAIInferenceConfig>();
-
     public static ApplicationInsightsConfig ApplicationInsights => LoadRequiredSection<ApplicationInsightsConfig>();
 
     public static GoogleAIConfig? GoogleAI => LoadSection<GoogleAIConfig>();
@@ -96,13 +94,6 @@ public sealed class TestConfiguration
     {
         public string ApiKey { get; set; }
         public string ChatModelId { get; set; }
-    }
-
-    public class AzureAIInferenceConfig
-    {
-        public Uri Endpoint { get; set; }
-        public string ApiKey { get; set; }
-        public string ModelId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
