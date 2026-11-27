@@ -97,4 +97,4 @@ class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     dimensions: Annotated[int | None, Field(gt=0)] = None
     encoding_format: Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None = None
     input_type: Literal["text", "query", "document"] | None = None
-    extra_parameters: dict[str, str] | None = None
+    extra_parameters: dict[str, Any] | None = None
