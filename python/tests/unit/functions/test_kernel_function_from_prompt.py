@@ -230,6 +230,33 @@ async def test_invoke_text(openai_unit_test_env):
             assert str(result) == "test"
 
 
+async def test_invoke_text_prompt_is_unescaped_for_streaming_and_non_streaming(openai_unit_test_env):
+    kernel = Kernel()
+    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt="Q: {{$q}}",
+        prompt_execution_settings=PromptExecutionSettings(service_id="test"),
+    )
+    arguments = KernelArguments(q="Is 3 < 5 & 5 > 3?")
+
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_text_contents",
+    ) as mock:
+        mock.return_value = [TextContent(text="yes", metadata={})]
+        await function.invoke(kernel=kernel, arguments=arguments)
+        assert mock.call_args.kwargs["prompt"] == "Q: Is 3 < 5 & 5 > 3?"
+
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_streaming_text_contents",
+    ) as mock:
+        mock.return_value = [TextContent(text="yes", metadata={})]
+        async for _ in function.invoke_stream(kernel=kernel, arguments=arguments):
+            pass
+        assert mock.call_args.kwargs["prompt"] == "Q: Is 3 < 5 & 5 > 3?"
+
+
 async def test_invoke_exception_text(openai_unit_test_env):
     kernel = Kernel()
     kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
