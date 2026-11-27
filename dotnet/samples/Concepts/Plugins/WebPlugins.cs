@@ -25,7 +25,7 @@ public sealed class WebPlugins(ITestOutputHelper output) : BaseTest(output)
 
             var webFileDownload = new WebFileDownloadPlugin(this.LoggerFactory)
             {
-                AllowedDomains = ["raw.githubusercontent.com"],
+                AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
                 AllowedFolders = [folderPath]
             };
 

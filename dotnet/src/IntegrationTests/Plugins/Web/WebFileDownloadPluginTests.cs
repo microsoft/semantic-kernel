@@ -29,7 +29,7 @@ public sealed class WebFileDownloadPluginTests : BaseIntegrationTest
 
             var webFileDownload = new WebFileDownloadPlugin()
             {
-                AllowedDomains = ["raw.githubusercontent.com"],
+                AllowedOrigins = [new Uri("https://raw.githubusercontent.com")],
                 AllowedFolders = [folderPath]
             };
 
