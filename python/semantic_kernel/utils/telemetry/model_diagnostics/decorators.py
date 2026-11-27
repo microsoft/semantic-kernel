@@ -358,7 +358,7 @@ def _get_completion_span(
         }
         for attribute_name, attribute_key in attribute_name_map.items():
             attribute = execution_settings.extension_data.get(attribute_name)
-            if attribute:
+            if attribute is not None:
                 span.set_attribute(attribute_key, attribute)
 
     return span
@@ -421,9 +421,9 @@ def _set_completion_response(
     # Set usage attributes
     usage = first_completion.metadata.get("usage", None)
     if isinstance(usage, CompletionUsage):
-        if usage.prompt_tokens:
+        if usage.prompt_tokens is not None:
             current_span.set_attribute(gen_ai_attributes.INPUT_TOKENS, usage.prompt_tokens)
-        if usage.completion_tokens:
+        if usage.completion_tokens is not None:
             current_span.set_attribute(gen_ai_attributes.OUTPUT_TOKENS, usage.completion_tokens)
 
     # Set the completion event

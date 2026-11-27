@@ -7,6 +7,7 @@ import pytest
 from opentelemetry.trace import StatusCode
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -77,6 +78,45 @@ pytestmark = pytest.mark.parametrize(
             ],
             id="test_chat_message_content_no_finish_reason",
         ),
+        pytest.param(
+            PromptExecutionSettings(
+                extension_data={
+                    "max_tokens": 0,
+                    "temperature": 0.0,
+                    "top_p": 0.0,
+                    "seed": 0,
+                }
+            ),
+            [
+                ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    ai_model_id="ai_model_id",
+                    content="Test content",
+                    metadata={
+                        "id": "test_id",
+                        "usage": CompletionUsage(prompt_tokens=0, completion_tokens=0),
+                    },
+                    finish_reason=FinishReason.STOP,
+                )
+            ],
+            id="test_zero_valued_settings_and_usage",
+        ),
+        pytest.param(
+            PromptExecutionSettings(),
+            [
+                ChatMessageContent(
+                    role=AuthorRole.ASSISTANT,
+                    ai_model_id="ai_model_id",
+                    content="Test content",
+                    metadata={
+                        "id": "test_id",
+                        "usage": CompletionUsage(prompt_tokens=0, completion_tokens=7),
+                    },
+                    finish_reason=FinishReason.STOP,
+                )
+            ],
+            id="test_zero_prompt_tokens_and_nonzero_completion_tokens",
+        ),
     ],
 )
 
@@ -127,6 +167,8 @@ async def test_trace_chat_completion(
             )
         if execution_settings.extension_data.get("top_p") is not None:
             mock_span.set_attribute.assert_any_call(gen_ai_attributes.TOP_P, execution_settings.extension_data["top_p"])
+        if execution_settings.extension_data.get("seed") is not None:
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.SEED, execution_settings.extension_data["seed"])
 
         mock_logger.info.assert_has_calls(
             [
@@ -151,6 +193,11 @@ async def test_trace_chat_completion(
                 gen_ai_attributes.FINISH_REASON,
                 ",".join([str(completion.finish_reason) for completion in mock_response]),
             )
+
+        usage = mock_response[0].metadata.get("usage")
+        if usage is not None:
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.INPUT_TOKENS, usage.prompt_tokens)
+            mock_span.set_attribute.assert_any_call(gen_ai_attributes.OUTPUT_TOKENS, usage.completion_tokens)
 
         mock_logger.info.assert_any_call(
             json.dumps({"message": results[0].to_dict(), "finish_reason": results[0].finish_reason}),
