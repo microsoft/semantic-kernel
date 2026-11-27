@@ -132,3 +132,17 @@ async def test_embedding_pes(mock_create, nvidia_unit_test_env) -> None:
         encoding_format="float",
         extra_body={"input_type": "query", "truncate": "NONE"},
     )
+
+
+@pytest.mark.parametrize("raw", [False, True])
+@pytest.mark.parametrize("batch_size", [None, 1])
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_empty_embedding_batch(mock_create, nvidia_unit_test_env, raw, batch_size):
+    service = NvidiaTextEmbedding()
+    result = await (
+        service.generate_raw_embeddings([], batch_size=batch_size)
+        if raw
+        else service.generate_embeddings([], batch_size=batch_size)
+    )
+    assert (result if raw else result.tolist()) == []
+    mock_create.assert_not_awaited()

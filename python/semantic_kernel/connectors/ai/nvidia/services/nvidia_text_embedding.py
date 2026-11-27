@@ -134,7 +134,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
         raw_embeddings = []
         tasks = []
 
-        batch_size = batch_size or len(texts)
+        batch_size = batch_size or len(texts) or 1
         for i in range(0, len(texts), batch_size):
             batch = texts[i : i + batch_size]
             batch_settings = copy.deepcopy(settings)
