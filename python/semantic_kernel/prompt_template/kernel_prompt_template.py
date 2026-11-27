@@ -116,14 +116,16 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks: list[str] = []
-        arguments = self._get_trusted_arguments(arguments or KernelArguments())
+        arguments = arguments or KernelArguments()
+        trusted_arguments = self._get_trusted_arguments(arguments)
         allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
         for block in blocks:
             if isinstance(block, TextRenderer):
-                rendered_blocks.append(block.render(kernel, arguments))
+                rendered_blocks.append(block.render(kernel, trusted_arguments))
                 continue
             if isinstance(block, CodeRenderer):
                 try:
+                    # Functions get the original argument values, their output is encoded below.
                     rendered = await block.render_code(kernel, arguments)
                 except Exception as exc:
                     logger.error(f"Error rendering code block: {exc}")

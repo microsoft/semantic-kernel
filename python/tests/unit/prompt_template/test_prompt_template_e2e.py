@@ -103,6 +103,29 @@ async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
     assert result == "== 123 ok =="
 
 
+async def test_it_passes_unencoded_variables_to_functions(kernel: Kernel):
+    received: list[str] = []
+
+    @kernel_function(name="echo")
+    def echo(input: str, suffix: str = "") -> str:
+        received.append(input + suffix)
+        return input + suffix
+
+    kernel.add_function("my", echo)
+    template = "<message role='user'>{{my.echo $call}} {{my.echo input=$call suffix=$tail}}</message>"
+    arguments = KernelArguments(call="Tom & Jerry <3", tail=" & co")
+
+    result = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel, arguments)
+
+    # The function sees the original values and its output is encoded exactly once.
+    assert received == ["Tom & Jerry <3", "Tom & Jerry <3 & co"]
+    assert result == "<message role='user'>Tom &amp; Jerry &lt;3 Tom &amp; Jerry &lt;3 &amp; co</message>"
+    chat_history = ChatHistory.from_rendered_prompt(result)
+    assert chat_history.messages[0].content == "Tom & Jerry <3 Tom & Jerry <3 & co"
+
+
 async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
     # Arrange
     template = "== {{my.check123 '234'}} =="
