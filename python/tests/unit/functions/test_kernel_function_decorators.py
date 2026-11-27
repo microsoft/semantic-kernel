@@ -269,6 +269,15 @@ def test_kernel_function_no_typing():
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
+def test_kernel_function_skips_variadic_parameters():
+    @kernel_function
+    def func_variadic(input: str, *args, **kwargs):
+        return input
+
+    parameters = func_variadic.__kernel_function_parameters__
+    assert [param["name"] for param in parameters] == ["input"]
+
+
 def test_kernel_function_param_none_default():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_none_default")
