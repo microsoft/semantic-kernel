@@ -4,7 +4,16 @@ from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark, raises
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import Datatype, Distance, FieldCondition, Filter, MatchValue, VectorParams
+from qdrant_client.models import (
+    Datatype,
+    DatetimeRange,
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    Range,
+    VectorParams,
+)
 
 from semantic_kernel.connectors.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.vector import DistanceFunction, VectorStoreField
@@ -337,6 +346,28 @@ async def test_search_filter(collection, mock_search):
         limit=3,
         offset=0,
     )
+
+
+@mark.parametrize(
+    "expression, expected",
+    [
+        (lambda x: x.content > "2024-06-01", FieldCondition(key="content", range=DatetimeRange(gt="2024-06-01"))),
+        (lambda x: x.content >= "2024-06-01", FieldCondition(key="content", range=DatetimeRange(gte="2024-06-01"))),
+        (lambda x: x.content < "2024-06-01", FieldCondition(key="content", range=DatetimeRange(lt="2024-06-01"))),
+        (lambda x: x.content <= "2024-06-01", FieldCondition(key="content", range=DatetimeRange(lte="2024-06-01"))),
+        (lambda x: x.content > 5, FieldCondition(key="content", range=Range(gt=5))),
+        (lambda x: x.content <= 2.5, FieldCondition(key="content", range=Range(lte=2.5))),
+    ],
+    ids=["gt-date", "gte-date", "lt-date", "lte-date", "gt-int", "lte-float"],
+)
+def test_lambda_parser_range(collection, expression, expected):
+    # Strings are ISO-8601 dates and go to DatetimeRange; numbers keep the numeric Range.
+    assert collection._build_filter(expression) == expected
+
+
+def test_lambda_parser_range_not_a_date(collection):
+    with raises(VectorStoreOperationException, match="ISO-8601"):
+        collection._build_filter(lambda x: x.content > "not a date")
 
 
 async def test_search_fail(collection):
