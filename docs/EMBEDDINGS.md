@@ -34,7 +34,7 @@ file formats and provide different features. This type of memory is useful in
 many applications, including question-answering systems, natural language understanding,
 and knowledge graphs.
 
-Software developers can use pre-trained embedding model, or train their one with their
+Software developers can use pre-trained embedding model, or train their own with their
 own custom datasets. Pre-trained embedding models have been trained on large amounts
 of data and can be used out-of-the-box for many applications. Custom embedding models
 may be necessary when working with specialized vocabularies or domain-specific language.
