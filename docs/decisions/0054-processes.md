@@ -175,7 +175,7 @@ var responseStep = process.AddStepFromType<ChatBotResponseStep>();
 
 ```
 
-The two steps steps created above have been added to our new `ChatBot` process and the `UserInputStep` has been declared as the entry point. This means that any events received by the process will be forwarded to this step. Now we need to define the flow of our process by describing which actions are triggered by events from our steps.
+The two steps created above have been added to our new `ChatBot` process and the `UserInputStep` has been declared as the entry point. This means that any events received by the process will be forwarded to this step. Now we need to define the flow of our process by describing which actions are triggered by events from our steps.
 
 ```csharp
 
