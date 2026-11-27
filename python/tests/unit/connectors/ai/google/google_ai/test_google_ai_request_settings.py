@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.ai.google.google_ai import (
     GoogleAIChatPromptExecutionSettings,
     GoogleAIEmbeddingPromptExecutionSettings,
@@ -131,3 +134,19 @@ def test_default_google_ai_embedding_prompt_execution_settings():
     settings = GoogleAIEmbeddingPromptExecutionSettings()
 
     assert settings.output_dimensionality is None
+
+
+@pytest.mark.parametrize("output_dimensionality", [128, 768, 1536, 3072])
+def test_google_ai_embedding_prompt_execution_settings_output_dimensionality(output_dimensionality: int):
+    # gemini-embedding-001 and gemini-embedding-2 support output dimensions from 128 to 3072.
+    settings = GoogleAIEmbeddingPromptExecutionSettings(output_dimensionality=output_dimensionality)
+
+    assert settings.prepare_settings_dict()["output_dimensionality"] == output_dimensionality
+
+
+@pytest.mark.parametrize("output_dimensionality", [0, -1])
+def test_google_ai_embedding_prompt_execution_settings_rejects_non_positive_output_dimensionality(
+    output_dimensionality: int,
+):
+    with pytest.raises(ValidationError):
+        GoogleAIEmbeddingPromptExecutionSettings(output_dimensionality=output_dimensionality)
