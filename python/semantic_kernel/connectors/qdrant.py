@@ -393,8 +393,12 @@ class QdrantCollection(
                         # NOT IN: left not in right
                         return Filter(must_not=[FieldCondition(key=left, match=MatchAny(any=right))])
                     case ast.Eq():
+                        if right is None:
+                            return FieldCondition(key=left, is_null=True)
                         return FieldCondition(key=left, match=MatchValue(value=right))
                     case ast.NotEq():
+                        if right is None:
+                            return Filter(must_not=[FieldCondition(key=left, is_null=True)])
                         return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
                     case ast.Gt():
                         return FieldCondition(key=left, range=Range(gt=right))
