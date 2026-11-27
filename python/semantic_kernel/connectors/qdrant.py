@@ -5,12 +5,14 @@ import logging
 import sys
 from collections.abc import MutableMapping, Sequence
 from copy import deepcopy
+from datetime import date, datetime
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pydantic import HttpUrl, SecretStr, ValidationError, model_validator
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from qdrant_client.models import (
     Datatype,
+    DatetimeRange,
     Distance,
     FieldCondition,
     Filter,
@@ -366,6 +368,23 @@ class QdrantCollection(
     def _get_score_from_result(self, result: ScoredPoint) -> float:
         return result.score
 
+    @staticmethod
+    def _range_for(value: Any, bound: str) -> dict[str, Any]:
+        """Build the `range` argument of a FieldCondition for a comparison.
+
+        Numbers use Qdrant's numeric `Range`; strings (ISO-8601 dates) and date/datetime
+        values use `DatetimeRange`, since `Range` only accepts numbers.
+        """
+        if isinstance(value, (str, date, datetime)):
+            try:
+                return {"range": DatetimeRange(**{bound: value})}
+            except ValidationError as exc:
+                raise VectorStoreOperationException(
+                    f"Cannot compare a field with {value!r} in a Qdrant filter: only numbers and "
+                    "ISO-8601 date or datetime strings support <, <=, > and >=."
+                ) from exc
+        return {"range": Range(**{bound: value})}
+
     @override
     def _lambda_parser(self, node: ast.AST) -> Any:
         # Qdrant filter translation: output a qdrant_client.models.Filter or FieldCondition tree
@@ -397,13 +416,13 @@ class QdrantCollection(
                     case ast.NotEq():
                         return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
                     case ast.Gt():
-                        return FieldCondition(key=left, range=Range(gt=right))
+                        return FieldCondition(key=left, **self._range_for(right, "gt"))
                     case ast.GtE():
-                        return FieldCondition(key=left, range=Range(gte=right))
+                        return FieldCondition(key=left, **self._range_for(right, "gte"))
                     case ast.Lt():
-                        return FieldCondition(key=left, range=Range(lt=right))
+                        return FieldCondition(key=left, **self._range_for(right, "lt"))
                     case ast.LtE():
-                        return FieldCondition(key=left, range=Range(lte=right))
+                        return FieldCondition(key=left, **self._range_for(right, "lte"))
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
                 op = node.op  # type: ignore
