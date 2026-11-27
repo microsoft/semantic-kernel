@@ -508,6 +508,10 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
             )
             # resets start_idx to the latest length of agent_chat_history.
             start_idx = len(agent_chat_history)
+            if new_messages:
+                # The text streamed so far is already part of the drained tool call message,
+                # so only the text streamed after it belongs to the final response.
+                response_builder.clear()
 
             if on_intermediate_message:
                 for message in new_messages:
