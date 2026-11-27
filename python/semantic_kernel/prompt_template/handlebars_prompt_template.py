@@ -4,8 +4,16 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
+
+try:
+    from pybars import Compiler, PybarsError
+except ImportError:
+    Compiler = None
+
+    class PybarsError(Exception):  # type: ignore
+        """Placeholder for PybarsError when pybars4 is not installed."""
+
 
 from semantic_kernel.exceptions import HandlebarsTemplateRenderException, HandlebarsTemplateSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -52,6 +60,11 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
 
     def model_post_init(self, __context: Any) -> None:
         """Post init model."""
+        if Compiler is None:
+            raise ImportError(
+                "pybars4 is not installed. Please install it with `pip install semantic-kernel[handlebars]` "
+                "to use Handlebars prompt templates."
+            )
         if not self.prompt_template_config.template:
             self._template_compiler = None
             return
@@ -77,6 +90,11 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         Returns:
             The prompt template ready to be used for an AI request
         """
+        if Compiler is None:
+            raise ImportError(
+                "pybars4 is not installed. Please install it with `pip install semantic-kernel[handlebars]` "
+                "to use Handlebars prompt templates."
+            )
         if not self._template_compiler:
             return ""
         if arguments is None:

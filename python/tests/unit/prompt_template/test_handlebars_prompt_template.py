@@ -47,6 +47,31 @@ def test_init_fail():
         )
 
 
+def test_init_without_pybars(monkeypatch):
+    import semantic_kernel.prompt_template.handlebars_prompt_template as hpt
+
+    monkeypatch.setattr(hpt, "Compiler", None)
+    with pytest.raises(ImportError, match="pybars4 is not installed"):
+        HandlebarsPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template="{{input}}", template_format="handlebars"
+            )
+        )
+
+
+async def test_render_without_pybars(monkeypatch, kernel: Kernel):
+    import semantic_kernel.prompt_template.handlebars_prompt_template as hpt
+
+    template = HandlebarsPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template="{{input}}", template_format="handlebars"
+        )
+    )
+    monkeypatch.setattr(hpt, "Compiler", None)
+    with pytest.raises(ImportError, match="pybars4 is not installed"):
+        await template.render(kernel, KernelArguments(input="world"))
+
+
 def test_init_template_validation_fail():
     with pytest.raises(ValueError):
         HandlebarsPromptTemplate(
