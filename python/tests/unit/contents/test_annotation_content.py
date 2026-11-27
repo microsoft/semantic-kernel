@@ -24,6 +24,14 @@ test_cases = [
         ),
         id="citation_type_and_url",
     ),
+    pytest.param(
+        AnnotationContent(
+            type=CitationType.CONTAINER_FILE_CITATION.value,
+            container_id="c-1",
+            filename="report.pdf",
+        ),
+        id="container_file_citation_fields",
+    ),
 ]
 
 
@@ -143,18 +151,12 @@ def test_to_dict_call(annotation):
     assert annotation.to_dict() == expected_dict
 
 
-def test_element_roundtrip_through_serialized_xml():
-    """Citation types must survive serialize -> parse, not just memory (#14590)."""
+@pytest.mark.parametrize("annotation", test_cases)
+def test_element_roundtrip_through_serialized_xml(annotation):
+    """All fields must survive serialize -> parse, not just memory (#14590)."""
     from xml.etree.ElementTree import fromstring, tostring
 
-    annotation = AnnotationContent(
-        file_id="file-1",
-        quote="q",
-        start_index=4,
-        end_index=7,
-        type=CitationType.FILE_CITATION.value,
-    )
     element = annotation.to_element()
-    assert element.get("type") == "file_citation"
+    assert element.get("type") == (annotation.citation_type.value if annotation.citation_type else None)
     reparsed = AnnotationContent.from_element(fromstring(tostring(element)))
     assert reparsed == annotation
