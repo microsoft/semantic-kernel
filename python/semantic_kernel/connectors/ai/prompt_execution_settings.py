@@ -57,7 +57,7 @@ class PromptExecutionSettings(KernelBaseModel):
             kwargs (Any): Additional keyword arguments,
                 these are attempted to parse into the keys of the specific prompt execution settings.
         """
-        extension_data = kwargs.pop("extension_data", {})
+        extension_data = kwargs.pop("extension_data", {}).copy()
         function_choice_behavior = kwargs.pop("function_choice_behavior", None)
         extension_data.update(kwargs)
         super().__init__(
