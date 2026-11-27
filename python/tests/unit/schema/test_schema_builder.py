@@ -418,6 +418,34 @@ def test_enum_schema_without_description():
     assert schema == expected_schema
 
 
+@pytest.mark.parametrize(
+    "values, expected_type",
+    [
+        (["a", "b"], "string"),
+        ([1, 2], "integer"),
+        ([1.5, 2.5], "number"),
+        ([False, True], "boolean"),
+        ([None], "null"),
+        ([None, "a"], ["string", "null"]),
+        (["a", None], ["string", "null"]),
+        ([1, None], ["integer", "null"]),
+        ([1, "a"], ["integer", "string"]),
+        (["a", 1], ["integer", "string"]),
+        ([False, 2, 1.5, "a", None], ["boolean", "integer", "number", "string", "null"]),
+    ],
+)
+@pytest.mark.parametrize("description", [None, "Available choices"])
+def test_enum_schema_includes_all_value_types(values, expected_type, description):
+    enum_type = Enum("Choices", {f"OPTION_{index}": value for index, value in enumerate(values)})
+
+    schema = KernelJsonSchemaBuilder.build(enum_type, description)
+
+    expected_schema = {"type": expected_type, "enum": values}
+    if description:
+        expected_schema["description"] = description
+    assert schema == expected_schema
+
+
 def test_handle_complex_type():
     schema = KernelJsonSchemaBuilder.handle_complex_type(str, "Description")
     expected_schema = {"type": "string", "description": "Description"}
