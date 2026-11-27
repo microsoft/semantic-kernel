@@ -22,14 +22,15 @@ For each project that needs to be migrated, you need to do the following:
   solution or you could not find the project, notify user and continue with other projects).
 - Identify the specific Semantic Kernel agent types being used:
   - `ChatCompletionAgent` → `ChatClientAgent`
-  - `OpenAIAssistantAgent` → `assistantsClient.AsAIAgent()` (via OpenAI Assistants client extension)
-  - `AzureAIAgent` → `persistentAgentsClient.AsAIAgent()` (via Azure AI Foundry client extension)
+  - `OpenAIAssistantAgent` → Microsoft Foundry Prompt Agent: `aiProjectClient.AgentAdministrationClient.CreateAgentVersionAsync(...)`, then `aiProjectClient.AsAIAgent(agentVersion)` (the OpenAI Assistants API was shut down on August 26, 2026)
+  - `AzureAIAgent` → Microsoft Foundry Prompt Agent for server-side agent definitions (`aiProjectClient.AsAIAgent(agentVersion)`), or `aiProjectClient.AsAIAgent(model, instructions)` when no server-side definition is needed
   - `OpenAIResponseAgent` → `responsesClient.AsAIAgent()` (via OpenAI Responses client extension)
   - `A2AAgent` → `AIAgent` (via A2A card resolver)
-  - `BedrockAgent` → Custom implementation required (not supported)
+  - `CopilotStudioAgent` → `Microsoft.Agents.AI.CopilotStudio.CopilotStudioAgent`
+  - `BedrockAgent` → No direct hosted Bedrock Agent adapter; model-only usage can use `AmazonBedrockRuntimeClient.AsIChatClient()`
 - Determine if agents are being created new or retrieved from hosted services:
   - **New agents**: Use `AsAIAgent()` methods
-  - **Existing hosted agents**: Use `GetAIAgent(agentId)` methods for OpenAI Assistants and Azure AI Foundry
+  - **Existing Foundry Prompt Agents**: Retrieve the agent record by name and pass it to `aiProjectClient.AsAIAgent(agentRecord)`. Agents created with the classic Persistent Agents service (`AzureAIAgent` and `PersistentAgentsClient` ids) and OpenAI assistants cannot be loaded this way; recreate them as Prompt Agents.
 </agent_type_identification>
 
 - Determine the AI provider being used (OpenAI, Azure OpenAI, Azure AI Foundry, etc.)
@@ -55,7 +56,9 @@ below in wrong order or skip any of them):
 - Add the appropriate Agent Framework package references based on the provider being used:
   - `Microsoft.Agents.AI.Abstractions` (always required)
   - `Microsoft.Agents.AI.OpenAI` (for OpenAI and Azure OpenAI providers)
-  - For unsupported providers (Bedrock, CopilotStudio), note in the report that custom implementation is required
+  - `Microsoft.Agents.AI.Foundry` (for Microsoft Foundry providers)
+  - `Microsoft.Agents.AI.CopilotStudio` (for Copilot Studio)
+  - For hosted Bedrock Agent usage, note in the report that custom implementation is required
 - If projects use Central Package Management, update the `Directory.Packages.props` file to remove the Semantic Kernel agent package versions in addition to
   removing package reference from projects.
   When adding the Agent Framework PackageReferences, add them to affected project files without a version and add PackageVersion elements to the
@@ -92,7 +95,7 @@ below in wrong order or skip any of them):
      - all code files that were changed (mention what was changed in the file, if it was not changed, just mention that the file was not changed)
      - provider-specific migration patterns used (OpenAI, Azure OpenAI, Azure AI Foundry, A2A, ONNX, etc.)
      - all cases where you could not convert the code because of unsupported features and you were unable to find a workaround
-     - unsupported providers that require custom implementation (Bedrock, CopilotStudio)
+     - hosted Bedrock Agent features that require custom implementation
      - breaking glass pattern migrations (InnerContent → RawRepresentation) and any CodeInterpreter or advanced tool usage
      - all behavioral changes that have to be verified at runtime
      - provider-specific configuration changes that may affect behavior
@@ -142,15 +145,16 @@ Replace these Semantic Kernel agent classes with their Agent Framework equivalen
 |----------------------|----------------------------|-------------------|
 | `IChatCompletionService` | `IChatClient` | Convert to `IChatClient` using `chatService.AsChatClient()` extensions |
 | `ChatCompletionAgent` | `ChatClientAgent` | Remove `Kernel` parameter, add `IChatClient` parameter |
-| `OpenAIAssistantAgent` | `AIAgent` (via extension) | **New**: `OpenAIClient.GetAssistantClient().AsAIAgent()` <br> **Existing**: `OpenAIClient.GetAssistantClient().GetAIAgent(assistantId)` |
-| `AzureAIAgent` | `AIAgent` (via extension) | **New**: `PersistentAgentsClient.AsAIAgent()` <br> **Existing**: `PersistentAgentsClient.GetAIAgent(agentId)` |
+| `OpenAIAssistantAgent` | `FoundryAgent` (Microsoft Foundry Prompt Agent) | The OpenAI Assistants API is shut down. Recreate the assistant with `AIProjectClient.AgentAdministrationClient.CreateAgentVersionAsync()` and a `DeclarativeAgentDefinition`, then call `AIProjectClient.AsAIAgent(agentVersion)` |
+| `AzureAIAgent` | `FoundryAgent` (Microsoft Foundry Prompt Agent) or `ChatClientAgent` | **Server-side definition**: `CreateAgentVersionAsync()`, then `AIProjectClient.AsAIAgent(agentVersion)` <br> **Existing Prompt Agent**: retrieve `ProjectsAgentRecord`, then call `AIProjectClient.AsAIAgent(agentRecord)` <br> **No server-side definition**: `AIProjectClient.AsAIAgent(model, instructions)` |
 | `OpenAIResponseAgent` | `AIAgent` (via extension) | Replace with `OpenAIClient.GetResponsesClient().AsAIAgent()` |
 | `A2AAgent` | `AIAgent` (via extension) | Replace with `A2ACardResolver.GetAIAgentAsync()` |
-| `BedrockAgent` | Not supported | Custom implementation required |
+| `CopilotStudioAgent` | `Microsoft.Agents.AI.CopilotStudio.CopilotStudioAgent` | Construct `CopilotClient` directly (the SK `CreateClient` helper is removed); replace `AgentThread` with `AgentSession` |
+| `BedrockAgent` | No direct hosted-agent equivalent | Use a custom adapter for hosted Bedrock Agents; model-only calls can use `AmazonBedrockRuntimeClient.AsIChatClient()` with `ChatClientAgent` |
 
 **Important distinction:**
-- **AsAIAgent()**: Use when creating new agents in the hosted service
-- **GetAIAgent(agentId)**: Use when retrieving existing agents from the hosted service
+- **AsAIAgent()**: Adapt a provider client or an existing provider record to the common `AIAgent` abstraction
+- **Existing Foundry Prompt Agents**: Retrieve the provider record first, then pass that record to `AIProjectClient.AsAIAgent(...)`
 </agent_type_identification>
 
 <api_changes>
@@ -161,8 +165,8 @@ Replace these method calls:
 | `agent.InvokeAsync(message, thread, options)` | `agent.RunAsync(message, session, options)` | Same parameters, different return type |
 | `agent.InvokeStreamingAsync(message, thread, options)` | `agent.RunStreamingAsync(message, session, options)` | Same parameters, different return type |
 | `new ChatHistoryAgentThread()` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
-| `new OpenAIAssistantAgentThread(client)` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
-| `new AzureAIAgentThread(client)` | `await agent.CreateSessionAsync()` | Returns `AgentSession` |
+| `new OpenAIAssistantAgentThread(client)` | `await promptAgent.CreateConversationSessionAsync()` | After migrating to a Foundry Prompt Agent; returns `ChatClientAgentSession` backed by a server-side conversation |
+| `new AzureAIAgentThread(client)` | `await promptAgent.CreateConversationSessionAsync()` or `await agent.CreateSessionAsync()` | Use the conversation session when the conversation must be stored in the Foundry project |
 | `thread.DeleteAsync()` | Provider-specific cleanup | Use provider client directly |
 
 Return type changes:
@@ -341,6 +345,10 @@ AgentThread thread = new AzureAIAgentThread(azureClient);
 ```csharp
 // Use this single pattern for all agent types:
 AgentSession session = await agent.CreateSessionAsync();
+
+// Foundry Prompt Agents (the replacement for OpenAIAssistantAgent and server-side AzureAIAgent definitions)
+// can also create a conversation that is stored in the Foundry project:
+ChatClientAgentSession conversationSession = await promptAgent.CreateConversationSessionAsync();
 ```
 
 **Required changes:**
@@ -564,13 +572,13 @@ await thread.DeleteAsync(); // For hosted threads
 For every thread created if there's intent to cleanup, the caller should track all the created threads for the provider that support hosted threads for cleanup purposes.
 
 ```csharp
-// For OpenAI Assistants (when cleanup is needed):
-var assistantClient = new OpenAIClient(apiKey).GetAssistantClient();
-await assistantClient.DeleteThreadAsync(session.ConversationId);
+// For Microsoft Foundry Prompt Agents (when cleanup is needed):
+await projectClient.GetProjectOpenAIClient()
+    .GetProjectConversationsClient()
+    .DeleteConversationAsync(conversationSession.ConversationId);
 
-// For Azure AI Foundry (when cleanup is needed):
-var persistentClient = new PersistentAgentsClient(endpoint, credential);
-await persistentClient.Threads.DeleteThreadAsync(session.ConversationId);
+// Deletes the Prompt Agent and all of its versions.
+await projectClient.AgentAdministrationClient.DeleteAgentAsync(agentName);
 
 // No thread and agent cleanup is needed for non-hosted agent providers like 
 // - Azure OpenAI Chat Completion
@@ -583,7 +591,7 @@ await persistentClient.Threads.DeleteThreadAsync(session.ConversationId);
 1. Remove `thread.DeleteAsync()` calls
 2. Use provider-specific client for cleanup when required
 3. Access thread ID via `session.ConversationId` property
-4. Only implement cleanup for providers that require it (Assistants, Azure AI Foundry)
+4. Only implement cleanup when the target provider stores conversation state and exposes a deletion API
 </api_changes>
 
 ### Provider-Specific Creation Patterns
@@ -598,19 +606,9 @@ AIAgent agent = new OpenAIClient(apiKey)
     .AsAIAgent(instructions: instructions);
 ```
 
-**OpenAI Assistants (New):**
-```csharp
-AIAgent agent = new OpenAIClient(apiKey)
-    .GetAssistantClient()
-    .AsAIAgent(modelId, instructions: instructions);
-```
+**OpenAI Assistants:**
 
-**OpenAI Assistants (Existing):**
-```csharp
-AIAgent agent = new OpenAIClient(apiKey)
-    .GetAssistantClient()
-    .GetAIAgent(assistantId);
-```
+The OpenAI Assistants API was shut down on August 26, 2026. Recreate assistants as Microsoft Foundry Prompt Agents by using the **Azure AI Foundry Prompt Agent (New)** pattern below.
 
 **Azure OpenAI:**
 ```csharp
@@ -619,16 +617,30 @@ AIAgent agent = new AzureOpenAIClient(endpoint, credential)
     .AsAIAgent(instructions: instructions);
 ```
 
-**Azure AI Foundry (New):**
+**Azure AI Foundry (No server-side agent definition):**
 ```csharp
-AIAgent agent = new PersistentAgentsClient(endpoint, credential)
-    .AsAIAgent(model: deploymentName, instructions: instructions);
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), credential);
+AIAgent agent = projectClient.AsAIAgent(
+    model: deploymentName,
+    instructions: instructions);
 ```
 
-**Azure AI Foundry (Existing):**
+**Azure AI Foundry Prompt Agent (New):**
 ```csharp
-AIAgent agent = await new PersistentAgentsClient(endpoint, credential)
-    .GetAIAgentAsync(agentId);
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), credential);
+ProjectsAgentVersion agentVersion = await projectClient.AgentAdministrationClient.CreateAgentVersionAsync(
+    agentName,
+    new ProjectsAgentVersionCreationOptions(
+        new DeclarativeAgentDefinition(model: deploymentName) { Instructions = instructions }));
+FoundryAgent agent = projectClient.AsAIAgent(agentVersion);
+```
+
+**Azure AI Foundry Prompt Agent (Existing):**
+```csharp
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), credential);
+ProjectsAgentRecord agentRecord =
+    await projectClient.AgentAdministrationClient.GetAgentAsync(agentName);
+AIAgent agent = projectClient.AsAIAgent(agentRecord);
 ```
 
 **A2A:**
@@ -1053,8 +1065,11 @@ AIAgent agent = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential(
 
 **Add Agent Framework Packages:**
 ```xml
-<PackageReference Include="Microsoft.Agents.AI.OpenAI" />
+<PackageReference Include="Microsoft.Agents.AI.Foundry" />
+<PackageReference Include="Azure.Identity" />
 ```
+
+The OpenAI Assistants API was shut down on August 26, 2026. Recreate each assistant as a Microsoft Foundry Prompt Agent: a versioned agent definition stored in a Foundry project.
 </configuration_changes>
 
 <api_changes>
@@ -1077,33 +1092,44 @@ AgentThread thread = new OpenAIAssistantAgentThread(assistantClient);
 ```
 
 **With this Agent Framework pattern:**
-
-**Creating a new assistant:**
 ```csharp
+using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
+using Azure.Identity;
 using Microsoft.Agents.AI;
-using OpenAI;
+using Microsoft.Agents.AI.Foundry;
 
-AIAgent agent = new OpenAIClient(apiKey)
-    .GetAssistantClient()
-    .AsAIAgent(modelId, instructions: "You are a helpful assistant");
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), new AzureCliCredential());
 
-AgentSession session = await agent.CreateSessionAsync();
+// Create the server-side Prompt Agent that replaces the assistant.
+ProjectsAgentVersion agentVersion = await projectClient.AgentAdministrationClient.CreateAgentVersionAsync(
+    agentName,
+    new ProjectsAgentVersionCreationOptions(
+        new DeclarativeAgentDefinition(model: deploymentName)
+        {
+            Instructions = "You are a helpful assistant",
+        }));
 
-// Cleanup when needed
-await assistantClient.DeleteThreadAsync(session.ConversationId);
+FoundryAgent agent = projectClient.AsAIAgent(agentVersion);
+
+// Replaces the assistant thread with a conversation stored in the Foundry project.
+ChatClientAgentSession session = await agent.CreateConversationSessionAsync();
+
+AgentResponse response = await agent.RunAsync(userInput, session);
+
+// Cleanup when needed.
+await projectClient.GetProjectOpenAIClient()
+    .GetProjectConversationsClient()
+    .DeleteConversationAsync(session.ConversationId);
+await projectClient.AgentAdministrationClient.DeleteAgentAsync(agentName);
 ```
 
-**Retrieving an existing assistant:**
-```csharp
-using Microsoft.Agents.AI;
-using OpenAI;
+**Migration requirements:**
 
-AIAgent agent = new OpenAIClient(apiKey)
-    .GetAssistantClient()
-    .GetAIAgent(assistantId); // Use existing assistant ID
-
-AgentSession session = await agent.CreateSessionAsync();
-```
+1. Replace the Assistants client and assistant ids with a Foundry project client and Prompt Agent names.
+2. Preserve the assistant instructions and tools in the `DeclarativeAgentDefinition`.
+3. Replace `OpenAIAssistantAgentThread` with `CreateConversationSessionAsync()`, or with `CreateSessionAsync()` when the conversation does not need to be stored in the Foundry project.
+4. Report any Assistants-only features without a Foundry Prompt Agent equivalent, and any data stored only in Assistants threads, as manual follow-up work.
 </api_changes>
 
 ### 4. Azure AI Foundry (AzureAIAgent) Migration
@@ -1117,7 +1143,7 @@ AgentSession session = await agent.CreateSessionAsync();
 
 **Add Agent Framework Packages:**
 ```xml
-<PackageReference Include="Microsoft.Agents.AI.AzureAI" />
+<PackageReference Include="Microsoft.Agents.AI.Foundry" />
 <PackageReference Include="Azure.Identity" />
 ```
 </configuration_changes>
@@ -1156,33 +1182,59 @@ AgentThread thread = new AzureAIAgentThread(client);
 
 **With these Agent Framework patterns:**
 
-**Creating a new agent:**
+**Creating a server-side Prompt Agent (replaces Pattern 2):**
+```csharp
+using Azure.AI.Projects;
+using Azure.AI.Projects.Agents;
+using Azure.Identity;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Foundry;
+
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), new AzureCliCredential());
+
+ProjectsAgentVersion agentVersion = await projectClient.AgentAdministrationClient.CreateAgentVersionAsync(
+    agentName,
+    new ProjectsAgentVersionCreationOptions(
+        new DeclarativeAgentDefinition(model: deploymentName)
+        {
+            Instructions = "You are a helpful assistant",
+        }));
+
+FoundryAgent agent = projectClient.AsAIAgent(agentVersion);
+
+// Replaces AzureAIAgentThread with a conversation stored in the Foundry project.
+ChatClientAgentSession session = await agent.CreateConversationSessionAsync();
+```
+
+The classic Persistent Agents service used by `AzureAIAgent` rejects the `top_p` parameter it sends to GPT-5.6 models. Keep `gpt-5.4-mini` or another supported model while both versions run side by side.
+
+**Creating an agent without a server-side definition:**
 ```csharp
 using Microsoft.Agents.AI;
-using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Identity;
 
-var client = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), new AzureCliCredential());
 
 // Create a new AIAgent using Agent Framework
-AIAgent agent = client.AsAIAgent(
+AIAgent agent = projectClient.AsAIAgent(
     model: deploymentName,
-    instructions: "You are a helpful assistant",
-    tools: [/* List of specialized Azure.AI.Agents.Persistent.ToolDefinition types */]);
+    instructions: "You are a helpful assistant");
 
 AgentSession session = await agent.CreateSessionAsync();
 ```
 
-**Retrieving an existing agent:**
+**Retrieving an existing Prompt Agent:**
 ```csharp
 using Microsoft.Agents.AI;
-using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Identity;
 
-var client = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+var projectClient = new AIProjectClient(new Uri(projectEndpoint), new AzureCliCredential());
 
-// Retrieve an existing AIAgent using its ID
-AIAgent agent = await client.GetAIAgentAsync(agentId);
+ProjectsAgentRecord agentRecord =
+    await projectClient.AgentAdministrationClient.GetAgentAsync(agentName);
+AIAgent agent = projectClient.AsAIAgent(agentRecord);
 
 AgentSession session = await agent.CreateSessionAsync();
 ```
@@ -1403,7 +1455,50 @@ AIAgent agent = await agentCardResolver.GetAIAgentAsync();
 ```
 </api_changes>
 
-### 9. Unsupported Providers (Require Custom Implementation)
+### 9. Copilot Studio and Bedrock Migration
+
+<configuration_changes>
+#### CopilotStudioAgent Migration
+
+**Remove Semantic Kernel Packages:**
+```xml
+<PackageReference Include="Microsoft.SemanticKernel.Agents.CopilotStudio" />
+```
+
+**Add Agent Framework Packages:**
+```xml
+<PackageReference Include="Microsoft.Agents.AI.CopilotStudio" />
+```
+</configuration_changes>
+
+<api_changes>
+Agent Framework does not include Semantic Kernel's `CopilotStudioAgent.CreateClient(...)`, `CopilotStudioConnectionSettings`, or token handler helpers. Replace that helper with a direct `Microsoft.Agents.CopilotStudio.Client.CopilotClient` construction before removing the Semantic Kernel package:
+
+```csharp
+using Microsoft.Agents.CopilotStudio.Client;
+
+CopilotClient copilotClient = new(
+    connectionSettings,       // Microsoft.Agents.CopilotStudio.Client.ConnectionSettings
+    httpClientFactory,
+    tokenProviderFunction,    // Func<string, Task<string>> returning an access token for the request URL
+    logger,
+    "mcs");
+```
+
+Then replace the Semantic Kernel agent and thread types:
+
+```csharp
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.CopilotStudio;
+
+AIAgent agent = new CopilotStudioAgent(copilotClient);
+AgentSession session = await agent.CreateSessionAsync();
+
+AgentResponse response = await agent.RunAsync(userInput, session);
+```
+
+To continue an existing Semantic Kernel `CopilotStudioAgentThread`, pass its conversation ID to `CopilotStudioAgent.CreateSessionAsync(conversationId)`.
+</api_changes>
 
 <behavioral_changes>
 #### BedrockAgent Migration
@@ -1442,15 +1537,19 @@ For providers like AWS Bedrock that have an `IChatClient` implementation availab
 _Those agents will be purely backed by the AI chat models behavior and will not store any state in the server._
 
 ```csharp
+using Amazon;
+using Amazon.BedrockRuntime;
 using Microsoft.Agents.AI;
 
-services.TryAddAWSService<IAmazonBedrockRuntime>();
-var serviceProvider = services.BuildServiceProvider();
-IAmazonBedrockRuntime runtime = serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
+var bedrockRuntime = new AmazonBedrockRuntimeClient(
+    RegionEndpoint.GetBySystemName(awsRegion));
+IChatClient chatClient = bedrockRuntime.AsIChatClient(modelId);
 
-using var bedrockChatClient = runtime.AsIChatClient();
-AIAgent agent = new ChatClientAgent(bedrockChatClient, instructions: "You are a helpful assistant");
+AIAgent agent = chatClient.AsAIAgent(
+    instructions: "You are a helpful assistant");
 ```
+
+This model-only path requires the `AWS.Bedrock.MEAI` package and does not preserve hosted Bedrock Agent tools, knowledge bases, traces, or server-side state.
 </behavioral_changes>
 
 ### Unsupported Features that need workarounds

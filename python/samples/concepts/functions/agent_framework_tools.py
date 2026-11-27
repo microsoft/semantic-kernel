@@ -2,7 +2,7 @@
 
 import asyncio
 
-from agent_framework.openai import OpenAIResponsesClient
+from agent_framework.openai import OpenAIChatClient
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
@@ -16,14 +16,14 @@ that uses a prompt template with plugin functions. The tool is then used by an A
 Framework Agent to answer a question about the current time and date.
 
 
-This sample requires manually installing the `agent-framework-core` package.
+This sample requires manually installing the `agent-framework-openai` package.
 
 ```bash
-pip install agent-framework-core --pre
+pip install agent-framework-openai
 ```
 or with uv:
 ```bash
-uv pip install agent-framework-core --prerelease=allow
+uv pip install agent-framework-openai
 ```
 """
 
@@ -56,15 +56,14 @@ async def main():
     function = KernelFunctionFromPrompt(
         description="Determine the kind of day based on the current time and date.",
         plugin_name="TimePlugin",
-        prompt_execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
+        # Current reasoning models reject max_tokens; max_completion_tokens also budgets the reasoning tokens.
+        prompt_execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_completion_tokens=2000),
         function_name="kind_of_day",
         prompt_template=prompt_template,
     ).as_agent_framework_tool(kernel=kernel)
 
     print("--- Prompt Function Result ---")
-    response = await (
-        OpenAIResponsesClient(model_id="gpt-5-nano").create_agent(tools=function).run("What kind of day is it?")
-    )
+    response = await OpenAIChatClient(model="gpt-5.6-luna").as_agent(tools=function).run("What kind of day is it?")
     print(response.text)
 
 

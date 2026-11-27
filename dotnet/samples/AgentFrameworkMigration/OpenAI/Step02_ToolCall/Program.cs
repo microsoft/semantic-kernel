@@ -9,7 +9,7 @@ using OpenAI;
 using OpenAI.Chat;
 
 var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set.");
-var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o";
+var model = System.Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.6-sol";
 var userInput = "What is the weather like in Amsterdam?";
 
 Console.WriteLine($"User Input: {userInput}");

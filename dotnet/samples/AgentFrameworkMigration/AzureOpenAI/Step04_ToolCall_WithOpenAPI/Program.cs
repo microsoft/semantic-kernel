@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using OpenAI.Chat;
 
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-4o-mini";
+var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "gpt-5.6-terra";
 
 await SKAgent();
 await AFAgent();
@@ -36,7 +36,7 @@ async Task SKAgent()
     };
 
     // Run the agent with the OpenAPI function tools.
-    await foreach (var result in agent.InvokeAsync("Please list the names, colors and descriptions of all the labels available in the microsoft/agent-framework repository on github."))
+    await foreach (var result in agent.InvokeAsync("Please list the names, colors and descriptions of all the labels available in the microsoft/semantic-kernel repository on github."))
     {
         Console.WriteLine(result.Message);
     }
@@ -62,5 +62,5 @@ async Task AFAgent()
         .AsAIAgent(instructions: "You are a helpful assistant", tools: tools);
 
     // Run the agent with the OpenAPI function tools.
-    Console.WriteLine(await agent.RunAsync("Please list the names, colors and descriptions of all the labels available in the microsoft/agent-framework repository on github."));
+    Console.WriteLine(await agent.RunAsync("Please list the names, colors and descriptions of all the labels available in the microsoft/semantic-kernel repository on github."));
 }

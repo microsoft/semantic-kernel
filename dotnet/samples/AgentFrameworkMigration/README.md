@@ -67,15 +67,28 @@ AzureAIAgent agent = new(definition, azureAgentClient);
 Agent creation in Agent Framework is made simpler with extensions provided by all main providers.
 
 ```csharp
-AIAgent openAIAgent = chatClient.CreateAIAgent(instructions: ParrotInstructions);
-AIAgent azureFoundryAgent = await persistentAgentsClient.CreateAIAgentAsync(instructions: ParrotInstructions);
-AIAgent openAIAssistantAgent = await assistantClient.CreateAIAgentAsync(instructions: ParrotInstructions);
+AIAgent openAIAgent = chatClient.AsAIAgent(instructions: ParrotInstructions);
+AIAgent azureFoundryAgent = aiProjectClient.AsAIAgent(
+    model: deploymentName,
+    instructions: ParrotInstructions);
 ```
 
-Additionally for hosted agent providers you can also use the `GetAIAgent` to retrieve an agent from an existing hosted agent.
+When the agent definition must live in the service, as it did for `AzureAIAgent` and the shut-down OpenAI Assistants API, create a Microsoft Foundry Prompt Agent. A Prompt Agent is a versioned agent definition stored in the Foundry project.
 
 ```csharp
-AIAgent azureFoundryAgent = await persistentAgentsClient.GetAIAgentAsync(agentId);
+ProjectsAgentVersion agentVersion = await aiProjectClient.AgentAdministrationClient.CreateAgentVersionAsync(
+    agentName,
+    new ProjectsAgentVersionCreationOptions(
+        new DeclarativeAgentDefinition(model: deploymentName) { Instructions = ParrotInstructions }));
+FoundryAgent promptAgent = aiProjectClient.AsAIAgent(agentVersion);
+```
+
+For an existing Prompt Agent, retrieve its record by name and adapt that record to `AIAgent`.
+
+```csharp
+ProjectsAgentRecord agentRecord =
+    await aiProjectClient.AgentAdministrationClient.GetAgentAsync(agentName);
+AIAgent azureFoundryAgent = aiProjectClient.AsAIAgent(agentRecord);
 ```
 
 ### 3. Agent Thread Creation
@@ -86,29 +99,30 @@ The caller has to know the thread type and create it manually.
 
 ```csharp
 // Create a thread for the agent conversation.
-AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient);
 AgentThread thread = new AzureAIAgentThread(this.Client);
 AgentThread thread = new OpenAIResponseAgentThread(this.Client);
 ```
 
 #### Agent Framework
 
-The agent is responsible for creating the thread.
+The agent is responsible for creating the session.
 
 ```csharp
-// New
-AgentThread thread = agent.GetNewThread();
+AgentSession session = await agent.CreateSessionAsync();
+
+// A Foundry Prompt Agent can also create a server-side conversation.
+ChatClientAgentSession conversationSession = await promptAgent.CreateConversationSessionAsync();
 ```
 
-### 4. Hosted Agent Thread Cleanup
+### 4. Hosted Agent Session Cleanup
 
-This case applies exclusively to a few AI providers that still provide hosted threads.
+This case applies exclusively to providers that store conversation state remotely.
 
 #### Semantic Kernel
 
-Threads have a `self` deletion method
+Threads have a `self` deletion method.
 
-i.e: OpenAI Assistants Provider
+Azure AI Foundry Provider (`AzureAIAgentThread`):
 ```csharp
 await thread.DeleteAsync();
 ```
@@ -116,16 +130,23 @@ await thread.DeleteAsync();
 #### Agent Framework 
 
 > [!NOTE]
-> OpenAI Responses introduced a new conversation model that simplifies how conversations are handled. This simplifies hosted thread management compared to the now deprecated OpenAI Assistants model. For more information see the [OpenAI Assistants migration guide](https://platform.openai.com/docs/assistants/migration).
+> The OpenAI Assistants API was shut down on August 26, 2026. Migrate Assistants-based agents to Microsoft Foundry Prompt Agents or to OpenAI Responses agents.
 
-Agent Framework doesn't have a thread deletion API in the `AgentThread` type as not all providers support hosted threads or thread deletion and this will become more common as more providers shift to responses based architectures.
+Agent Framework doesn't have a session deletion API on `AgentSession` because not all providers support hosted conversation state or deletion.
 
-If you require thread deletion and the provider allows this, the caller **should** keep track of the created threads and delete them later when necessary via the provider's sdk.
+If deletion is required and the provider supports it, keep track of the created sessions and delete their remote conversation state through the provider SDK.
 
-i.e: OpenAI Assistants Provider
+Microsoft Foundry Prompt Agent:
 ```csharp
-await assistantClient.DeleteThreadAsync(thread.ConversationId);
+await aiProjectClient.GetProjectOpenAIClient()
+    .GetProjectConversationsClient()
+    .DeleteConversationAsync(conversationSession.ConversationId);
+
+// Deletes the Prompt Agent and all of its versions.
+await aiProjectClient.AgentAdministrationClient.DeleteAgentAsync(agentName);
 ```
+
+See [AzureAIFoundry/Step05_PromptAgent](./AzureAIFoundry/Step05_PromptAgent/) for the complete lifecycle.
 
 ### 5. Tool Registration
 
@@ -152,7 +173,7 @@ ChatCompletionAgent agent = new() { Kernel = kernel, ... };
 In agent framework in a single call you can register tools directly in the agent creation process.
 
 ```csharp
-AIAgent agent = chatClient.CreateAIAgent(tools: [AIFunctionFactory.Create(GetWeather)]);
+AIAgent agent = chatClient.AsAIAgent(tools: [AIFunctionFactory.Create(GetWeather)]);
 ```
 
 ### 6. Agent Non-Streaming Invocation
@@ -172,13 +193,13 @@ await foreach (AgentResponseItem<ChatMessageContent> result in agent.InvokeAsync
 
 #### Agent Framework
 
-The Non-Streaming returns a single `AgentRunResponse` with the agent response that can contain multiple messages.
-The text result of the run is available in `AgentRunResponse.Text` or `AgentRunResponse.ToString()`.
-All messages created as part of the response is returned in the `AgentRunResponse.Messages` list.
+The Non-Streaming returns a single `AgentResponse` that can contain multiple messages.
+The text result of the run is available in `AgentResponse.Text` or `AgentResponse.ToString()`.
+All messages created as part of the response are returned in the `AgentResponse.Messages` list.
 This may include tool call messages, function results, reasoning updates and final results.
 
 ```csharp
-AgentRunResponse agentResponse = await agent.RunAsync(userInput, thread);
+AgentResponse agentResponse = await agent.RunAsync(userInput, session);
 ```
 
 ### 7. Agent Streaming Invocation
@@ -196,12 +217,12 @@ await foreach (StreamingChatMessageContent update in agent.InvokeStreamingAsync(
 
 #### Agent Framework
 
-Similar streaming API pattern with the key difference being that it returns `AgentRunResponseUpdate` objects including more agent related information per update.
+The streaming API returns `AgentResponseUpdate` objects that include agent information with each update.
 
-All updates produced by any service underlying the AIAgent is returned. The textual result of the agent is available by concatenating the `AgentRunResponse.Text` values.
+All updates produced by the service underlying the `AIAgent` are returned. The textual result is available by concatenating the `AgentResponseUpdate.Text` values.
 
 ```csharp
-await foreach (AgentRunResponseUpdate update in agent.RunStreamingAsync(userInput, thread))
+await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(userInput, session))
 {
     Console.Write(update); // Update is ToString() friendly
 }
@@ -276,21 +297,20 @@ serviceContainer.AddKeyedSingleton<SemanticKernel.Agents.Agent>(
 Semantic kernel provides specific agent classes for various services, e.g.
 
 - `ChatCompletionAgent` for use with chat-completion-based inference services.
-- `OpenAIAssistantAgent` for use with the OpenAI Assistants service.
 - `AzureAIAgent` for use with the Azure AI Foundry Agents service.
 
 #### Agent Framework
 
-The agent framework supports all the abovementioned services via a single agent type, `ChatClientAgent`.
+Agent Framework uses `AIAgent` as the common abstraction across providers.
 
-`ChatClientAgent` can be used to build agents using any underlying service that provides an SDK implementing the `Microsoft.Extensions.AI.IChatClient` interface.
+`ChatClientAgent` builds agents for services that expose the `Microsoft.Extensions.AI.IChatClient` interface. Other providers expose adapters that also return `AIAgent`.
 
 #### Agent Framework
 
 The Agent framework provides the `AIAgent` type as the base abstraction class.
 
 ```csharp
-services.AddKeyedSingleton<AIAgent>(() => client.CreateAIAgent(...));
+services.AddKeyedSingleton<AIAgent>(() => client.AsAIAgent(...));
 ```
 
 ## Migration Samples
@@ -314,9 +334,8 @@ You will be prompted for any required environment variables if they are not alre
 Before you begin, ensure you have the following:
 
 - [.NET 10.0 SDK or later](https://dotnet.microsoft.com/download)
-- For Azure AI Foundry samples: Azure OpenAI service endpoint and deployment configured
+- For Azure AI Foundry samples: Foundry project endpoint and model deployment configured
 - For OpenAI samples: OpenAI API key
-- For OpenAI Assistants samples: OpenAI API key with Assistant API access
 
 ### Environment Variables
 
@@ -325,18 +344,22 @@ Set the appropriate environment variables based on the sample type you want to r
 **For Azure AI Foundry projects:**
 ```powershell
 $env:AZURE_FOUNDRY_PROJECT_ENDPOINT = "https://<your-project>-resource.services.ai.azure.com/api/projects/<your-project>"
+$env:AZURE_FOUNDRY_PROJECT_DEPLOYMENT_NAME = "gpt-5.4-mini" # Optional, defaults to gpt-5.4-mini
 ```
 
-**For OpenAI and OpenAI Assistants projects:**
+**For OpenAI projects:**
 ```powershell
 $env:OPENAI_API_KEY = "sk-..."
+$env:OPENAI_MODEL = "gpt-5.6-sol" # Optional, defaults to gpt-5.6-sol
 ```
 
-**For Azure OpenAI and Azure OpenAI Assistants projects:**
+**For Azure OpenAI projects:**
 ```powershell
 $env:AZURE_OPENAI_ENDPOINT = "https://<your-project>.cognitiveservices.azure.com/"
-$env:AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-4o" # Optional, defaults to gpt-4o
+$env:AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.6-sol" # Optional, defaults to gpt-5.6-sol
 ```
+
+The reasoning-model, agent orchestration, and OpenAPI tool-call samples default to `gpt-5.6-terra`. The Azure AI Foundry samples default to `gpt-5.4-mini`, because the classic Foundry Agents service used by the Semantic Kernel `AzureAIAgent` rejects the `top_p` parameter it sends to GPT-5.6 models. If you use a different model, confirm it isn't deprecated in the [OpenAI deprecations](https://developers.openai.com/api/docs/deprecations) list or the [Microsoft Foundry model retirement schedule](https://learn.microsoft.com/azure/foundry/openai/concepts/model-retirement-schedule).
 
 **Optional debug mode:**
 ```powershell
@@ -351,12 +374,10 @@ The migration samples are organized into different categories, each demonstratin
 
 |Category|Description|
 |---|---|
-|[AzureAIFoundry](./AzureAIFoundry/)|Azure OpenAI service integration samples|
+|[AzureAIFoundry](./AzureAIFoundry/)|Microsoft Foundry project integration samples, including a Prompt Agent lifecycle migration in Step05|
 |[AzureOpenAI](./AzureOpenAI/)|Direct Azure OpenAI API integration samples|
-|[AzureOpenAIAssistants](./AzureOpenAIAssistants/)|Azure OpenAI Assistants API integration samples|
 |[AzureOpenAIResponses](./AzureOpenAIResponses/)|Azure OpenAI Responses API integration samples|
 |[OpenAI](./OpenAI/)|Direct OpenAI API integration samples|
-|[OpenAIAssistants](./OpenAIAssistants/)|OpenAI Assistants API integration samples|
 |[OpenAIResponses](./OpenAIResponses/)|OpenAI Responses API integration samples|
 |[AgentOrchestrations](./AgentOrchestrations/)|Agent orchestration patterns including concurrent, sequential, and handoff workflows|
 
@@ -369,12 +390,12 @@ To run any migration sample, navigate to the desired sample directory:
 cd "AzureAIFoundry\Step01_Basics"
 dotnet run
 
-# Azure OpenAI Examples
-cd "AzureOpenAI\Step01_Basics"
+# Azure AI Foundry Prompt Agent (replaces OpenAI Assistants and server-side AzureAIAgent definitions)
+cd "AzureAIFoundry\Step05_PromptAgent"
 dotnet run
 
-# Azure OpenAI Assistants Examples
-cd "AzureOpenAIAssistants\Step01_Basics"
+# Azure OpenAI Examples
+cd "AzureOpenAI\Step01_Basics"
 dotnet run
 
 # Azure OpenAI Responses Examples
@@ -383,10 +404,6 @@ dotnet run
 
 # OpenAI Examples
 cd "OpenAI\Step01_Basics"
-dotnet run
-
-# OpenAI Assistants Examples
-cd "OpenAIAssistants\Step01_Basics"
 dotnet run
 
 # OpenAI Responses Examples

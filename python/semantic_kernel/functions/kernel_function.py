@@ -431,7 +431,7 @@ class KernelFunction(KernelBaseModel):
             kernel: The kernel to use, if None, a kernel is created.
 
         Returns:
-            AIFunction: The agent framework tool.
+            FunctionTool: The agent framework tool.
         """
         import json
 
@@ -440,11 +440,12 @@ class KernelFunction(KernelBaseModel):
         from semantic_kernel.kernel import Kernel
 
         try:
-            from agent_framework import AIFunction
+            # Agent Framework renamed AIFunction to FunctionTool before 1.0, so only FunctionTool is supported.
+            from agent_framework import FunctionTool
 
         except ImportError as e:
             raise ImportError(
-                "agent_framework is not installed. Please install it with 'pip install agent-framework-core'"
+                "agent_framework 1.0 or later is required. Please install it with 'pip install agent-framework-core'"
             ) from e
 
         if not kernel:
@@ -482,9 +483,9 @@ class KernelFunction(KernelBaseModel):
                 return json.dumps(result.value)
             return "The function did not return a result."
 
-        return AIFunction(
+        return FunctionTool(
             name=name,
-            description=description,
+            description=description or "",
             input_model=input_model,
             func=wrapper,
         )
