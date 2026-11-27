@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a chat completion service using Vertex AI Gemini API.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];

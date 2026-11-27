@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure GoogleAI connector.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with your VectorStore instead.")]
 public static class GoogleAIMemoryBuilderExtensions
 {
     /// <summary>
@@ -23,7 +24,7 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated memory builder.</returns>
-    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with your VectorStore instead.")]
     public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,

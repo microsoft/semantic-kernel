@@ -1,39 +1,33 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using xRetry;
 
 namespace Memory;
 
-// The following example shows how to use Semantic Kernel with Google AI and Google's Vertex AI for embedding generation,
+// The following example shows how to use Semantic Kernel with Google.GenAI and Microsoft.Extensions.AI for embedding generation,
 // including the ability to specify custom dimensions.
 public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// This test demonstrates how to use the Google Vertex AI embedding generation service with default dimensions.
+    /// This test demonstrates how to use the Google Vertex AI embedding generator with default dimensions.
     /// </summary>
-    /// <remarks>
-    /// Currently custom dimensions are not supported for Vertex AI.
-    /// </remarks>
-    [RetryFact(typeof(HttpOperationException))]
+    [RetryFact]
     public async Task GenerateEmbeddingWithDefaultDimensionsUsingVertexAI()
     {
-        string? bearerToken = null;
-
         Assert.NotNull(TestConfiguration.VertexAI.EmbeddingModelId);
-        Assert.NotNull(TestConfiguration.VertexAI.ClientId);
-        Assert.NotNull(TestConfiguration.VertexAI.ClientSecret);
         Assert.NotNull(TestConfiguration.VertexAI.Location);
         Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
 
+        // The Google SDK discovers application default credentials and refreshes tokens automatically.
+        using var googleClient = new Google.GenAI.Client(
+            vertexAI: true,
+            project: TestConfiguration.VertexAI.ProjectId,
+            location: TestConfiguration.VertexAI.Location);
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddVertexAIEmbeddingGenerator(
-                modelId: TestConfiguration.VertexAI.EmbeddingModelId!,
-                bearerTokenProvider: GetBearerToken,
-                location: TestConfiguration.VertexAI.Location,
-                projectId: TestConfiguration.VertexAI.ProjectId);
+        kernelBuilder.Services.AddEmbeddingGenerator(googleClient.AsIEmbeddingGenerator(TestConfiguration.VertexAI.EmbeddingModelId!));
         Kernel kernel = kernelBuilder.Build();
 
         var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
@@ -43,42 +37,17 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
             ["Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your codebase."]);
 
         Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Vector.Length}' dimensions (default) for the provided text");
-
-        // Uses Google.Apis.Auth.OAuth2 to get the bearer token
-        async ValueTask<string> GetBearerToken()
-        {
-            if (!string.IsNullOrEmpty(bearerToken))
-            {
-                return bearerToken;
-            }
-
-            var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                new ClientSecrets
-                {
-                    ClientId = TestConfiguration.VertexAI.ClientId,
-                    ClientSecret = TestConfiguration.VertexAI.ClientSecret
-                },
-                ["https://www.googleapis.com/auth/cloud-platform"],
-                "user",
-                CancellationToken.None);
-
-            var userCredential = await credential.WaitAsync(CancellationToken.None);
-            bearerToken = userCredential.Token.AccessToken;
-
-            return bearerToken;
-        }
     }
 
-    [RetryFact(typeof(HttpOperationException))]
+    [RetryFact]
     public async Task GenerateEmbeddingWithDefaultDimensionsUsingGoogleAI()
     {
         Assert.NotNull(TestConfiguration.GoogleAI.EmbeddingModelId);
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
 
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIEmbeddingGenerator(
-                modelId: TestConfiguration.GoogleAI.EmbeddingModelId!,
-                apiKey: TestConfiguration.GoogleAI.ApiKey);
+        kernelBuilder.Services.AddEmbeddingGenerator(googleClient.AsIEmbeddingGenerator(TestConfiguration.GoogleAI.EmbeddingModelId!));
         Kernel kernel = kernelBuilder.Build();
 
         var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
@@ -90,7 +59,7 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
         Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Vector.Length}' dimensions (default) for the provided text");
     }
 
-    [RetryFact(typeof(HttpOperationException))]
+    [RetryFact]
     public async Task GenerateEmbeddingWithCustomDimensionsUsingGoogleAI()
     {
         Assert.NotNull(TestConfiguration.GoogleAI.EmbeddingModelId);
@@ -99,11 +68,10 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
         // Specify custom dimensions for the embeddings
         const int CustomDimensions = 512;
 
+        using var googleClient = new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey);
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIEmbeddingGenerator(
-                modelId: TestConfiguration.GoogleAI.EmbeddingModelId!,
-                apiKey: TestConfiguration.GoogleAI.ApiKey,
-                dimensions: CustomDimensions);
+        kernelBuilder.Services.AddEmbeddingGenerator(
+            googleClient.AsIEmbeddingGenerator(TestConfiguration.GoogleAI.EmbeddingModelId!, defaultModelDimensions: CustomDimensions));
         Kernel kernel = kernelBuilder.Build();
 
         var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,7 +17,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
-using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -58,6 +59,7 @@ public sealed class Program
         using var meterProvider = Sdk.CreateMeterProviderBuilder()
             .SetResourceBuilder(resourceBuilder)
             .AddMeter("Microsoft.SemanticKernel*")
+            .AddMeter("Telemetry.Example")
             .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
             .Build();
 
@@ -382,10 +384,15 @@ public sealed class Program
 
         if (TestConfiguration.GoogleAI is not null)
         {
-            builder.AddGoogleAIGeminiChatCompletion(
-                modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
-                apiKey: TestConfiguration.GoogleAI.ApiKey,
-                serviceId: GoogleAIGeminiServiceKey);
+            builder.Services
+                .AddKeyedChatClient(
+                    GoogleAIGeminiServiceKey,
+                    new Google.GenAI.Client(apiKey: TestConfiguration.GoogleAI.ApiKey)
+                        .AsIChatClient(TestConfiguration.GoogleAI.Gemini.ModelId))
+                .UseOpenTelemetry(
+                    loggerFactory: loggerFactory,
+                    sourceName: "Telemetry.Example",
+                    configure: c => c.EnableSensitiveData = true);
         }
 
         if (TestConfiguration.HuggingFace is not null)
@@ -458,11 +465,26 @@ public sealed class Program
         TestConfiguration.Initialize(configRoot);
     }
 
-    private sealed class AIServiceSelector : IAIServiceSelector
+    private sealed class AIServiceSelector : IAIServiceSelector, IChatClientSelector
     {
         public bool TrySelectAIService<T>(
             Kernel kernel, KernelFunction function, KernelArguments arguments,
             [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+        {
+            return TrySelect(kernel, out service, out serviceSettings);
+        }
+
+        public bool TrySelectChatClient<T>(
+            Kernel kernel, KernelFunction function, KernelArguments arguments,
+            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
+        {
+            return TrySelect(kernel, out service, out serviceSettings);
+        }
+
+        private static bool TrySelect<T>(
+            Kernel kernel,
+            [NotNullWhen(true)] out T? service,
+            out PromptExecutionSettings? serviceSettings) where T : class
         {
             var targetServiceKey = kernel.Data.TryGetValue("TargetService", out object? value) ? value : null;
             if (targetServiceKey is not null)
@@ -478,12 +500,10 @@ public sealed class Program
                             Temperature = 0,
                             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                         },
-                        GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
+                        GoogleAIGeminiServiceKey => new PromptExecutionSettings()
                         {
-                            Temperature = 0,
-                            // Not show casing the AutoInvokeKernelFunctions behavior for Gemini due the following issue:
-                            // https://github.com/microsoft/semantic-kernel/issues/6282
-                            // ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+                            // Keep automatic function calling disabled as in the original example: https://github.com/microsoft/semantic-kernel/issues/6282
+                            ExtensionData = new Dictionary<string, object> { ["temperature"] = 0 }
                         },
                         HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings()
                         {

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// GeminiThinkingConfig class
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public class GeminiThinkingConfig
 {
     /// <summary>The thinking budget parameter gives the model guidance on how many thinking tokens it can use for its thinking process.</summary>

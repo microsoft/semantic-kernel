@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
+[Obsolete("Tests the obsolete Google connector package.")]
 public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
 {
     [RetryTheory]

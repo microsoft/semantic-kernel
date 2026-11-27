@@ -62,7 +62,7 @@ dotnet user-secrets set "AzureOpenAI:ChatModelId" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
-dotnet user-secrets set "GoogleAI:Gemini:ModelId" "..."
+dotnet user-secrets set "GoogleAI:Gemini:ModelId" "gemini-3.5-flash-lite"
 dotnet user-secrets set "GoogleAI:ApiKey" "..."
 
 dotnet user-secrets set "HuggingFace:ModelId" "..."

@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure VertexAI connector.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with your VectorStore instead.")]
 public static class VertexAIMemoryBuilderExtensions
 {
     /// <summary>
@@ -30,7 +31,7 @@ public static class VertexAIMemoryBuilderExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
-    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with your VectorStore instead.")]
     public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
@@ -68,7 +69,7 @@ public static class VertexAIMemoryBuilderExtensions
     /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
-    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with your VectorStore instead.")]
     public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,

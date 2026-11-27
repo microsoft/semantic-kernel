@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for adding VertexAI generation services to the application.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public static class VertexAIKernelBuilderExtensions
 {
     /// <summary>
@@ -35,6 +36,7 @@ public static class VertexAIKernelBuilderExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -75,6 +77,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -121,7 +124,7 @@ public static class VertexAIKernelBuilderExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
-    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -165,7 +168,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -214,6 +217,7 @@ public static class VertexAIKernelBuilderExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGenerator(
         this IKernelBuilder builder,
         string modelId,
@@ -249,6 +253,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGenerator(
         this IKernelBuilder builder,
         string modelId,

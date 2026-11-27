@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -7,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.Google.Core;
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
 /// <summary>Represents a behavior for Gemini tool calls.</summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public abstract class GeminiToolCallBehavior
 {
     // NOTE: Right now, the only tools that are available are for function calling. In the future,

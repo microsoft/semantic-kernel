@@ -16,6 +16,52 @@ Example for `ChatCompletion/OpenAI_ChatCompletion.cs` file, targeting the `ChatP
 dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCompletion.OpenAI_ChatCompletion.ChatPromptAsync"
 ```
 
+## Google chat completion migration
+
+The `Microsoft.SemanticKernel.Connectors.Google` package is obsolete. Use the
+`Google.GenAI` SDK directly with `Microsoft.Extensions.AI` (`IChatClient` and
+`IEmbeddingGenerator`) instead.
+
+The Google and Vertex AI samples default to `gemini-3.5-flash-lite` for chat
+and `gemini-embedding-001` for embeddings. Set `GoogleAI:Gemini:ModelId`,
+`VertexAI:Gemini:ModelId`, `GoogleAI:EmbeddingModelId`, or
+`VertexAI:EmbeddingModelId` to use another model (such as `gemini-4-neon` on a
+paid account). Vertex AI uses Google application default credentials (including
+automatic token refresh) and requires a supported project and location.
+
+The Google SDK can automatically continue long responses with additional billed
+requests. Set `GenerateContentConfig.AutomaticContinuation` to `false` through
+`ChatOptions.RawRepresentationFactory` to disable this behavior.
+
+When using `Kernel`, pass the `Google.GenAI` `IChatClient` directly to the
+kernel builder (chain `.UseKernelFunctionInvocation()` when calling Kernel
+plugins), and resolve `IChatClient` directly from the kernel or invoke prompts:
+
+```csharp
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+
+using var googleClient = new Google.GenAI.Client(apiKey: apiKey);
+IKernelBuilder builder = Kernel.CreateBuilder();
+builder.Services
+    .AddChatClient(googleClient.AsIChatClient(modelId))
+    .UseKernelFunctionInvocation();
+Kernel kernel = builder.Build();
+
+var chatClient = kernel.GetRequiredService<IChatClient>();
+var reply = await chatClient.GetResponseAsync("Hello!");
+```
+
+When calling `IChatCompletionService` outside `Kernel`, convert the
+`IChatClient` with `.AsChatCompletionService()`. For embeddings, register
+`googleClient.AsIEmbeddingGenerator(modelId)` via
+`builder.Services.AddEmbeddingGenerator(...)` or use it directly.
+Use `PromptExecutionSettings.FunctionChoiceBehavior` for function calling,
+`response_format` in `PromptExecutionSettings.ExtensionData` for a JSON schema,
+and `ChatResponse.Usage` for token counts. The thinking sample shows how to pass
+Google SDK options with `ChatOptions.RawRepresentationFactory`.
+
 ## Table of Contents
 
 ### Agents - Different ways of using [`Agents`](./Agents/README.md)

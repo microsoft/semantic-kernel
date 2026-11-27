@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for adding GoogleAI generation services to the application.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use the Google.GenAI SDK directly with Microsoft.Extensions.AI (IChatClient and IEmbeddingGenerator) instead.")]
 public static class GoogleAIServiceCollectionExtensions
 {
     /// <summary>
@@ -24,6 +25,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static IServiceCollection AddGoogleAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -55,7 +57,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="serviceId">Optional service ID.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated service collection.</returns>
-    [Obsolete("Use AddGoogleAIEmbeddingGenerator instead.")]
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
     public static IServiceCollection AddGoogleAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

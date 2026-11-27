@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents the metadata associated with a Gemini response.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
 {
     internal GeminiMetadata() : base(new Dictionary<string, object?>()) { }

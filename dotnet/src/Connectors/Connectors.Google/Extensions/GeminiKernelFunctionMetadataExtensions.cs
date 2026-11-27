@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.Google;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the Gemini connector.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public static class GeminiKernelFunctionMetadataExtensions
 {
     /// <summary>
@@ -15,6 +17,7 @@ public static class GeminiKernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
     /// <returns>An <see cref="GeminiFunction"/> object.</returns>
+    [Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
     public static GeminiFunction ToGeminiFunction(this KernelFunctionMetadata metadata)
     {
         IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;

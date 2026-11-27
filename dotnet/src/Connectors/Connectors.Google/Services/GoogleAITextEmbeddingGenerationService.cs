@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a service for generating text embeddings using the Google AI Gemini API.
 /// </summary>
-[Obsolete("Use GoogleAIEmbeddingGenerator instead.")]
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIEmbeddingGenerator() with Microsoft.Extensions.AI.IEmbeddingGenerator instead.")]
 public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];

@@ -8,7 +8,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050</NoWarn>
+    <!-- Suppress CS0618 because this test project exercises the deprecated Connectors.Google package. -->
+    <NoWarn>$(NoWarn);CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050,CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

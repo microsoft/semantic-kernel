@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a safety setting for the Gemini prompt.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiSafetySetting
 {
     /// <summary>
@@ -49,6 +50,7 @@ public sealed class GeminiSafetySetting
 /// <summary>
 /// Represents a safety category in the Gemini system.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 [JsonConverter(typeof(GeminiSafetyCategoryConverter))]
 public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
 {
@@ -155,6 +157,7 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
 /// <summary>
 /// Represents a safety threshold for Gemini.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 [JsonConverter(typeof(GeminiSafetyThresholdConverter))]
 public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
 {

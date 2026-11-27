@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// <summary>
 /// Represents a Gemini function tool call with deserialized function name and arguments.
 /// </summary>
+[Obsolete("The Microsoft.SemanticKernel.Connectors.Google package is obsolete. Use Google.GenAI.Client.AsIChatClient() with Microsoft.Extensions.AI.IChatClient instead.")]
 public sealed class GeminiFunctionToolCall
 {
     private string? _fullyQualifiedFunctionName;
