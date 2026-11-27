@@ -10,6 +10,9 @@ from semantic_kernel.connectors.ai.onnx.utils import (
 )
 from semantic_kernel.contents import AudioContent, AuthorRole, ChatHistory, ImageContent, TextContent
 
+IMAGE_URL = "http://example.com/image.png"
+AUDIO_URL = "http://example.com/audio.mp3"
+
 
 def test_phi3v_template_with_text_and_image():
     history = ChatHistory(
@@ -17,7 +20,7 @@ def test_phi3v_template_with_text_and_image():
             {"role": AuthorRole.SYSTEM, "content": "System message"},
             {
                 "role": AuthorRole.USER,
-                "items": [TextContent(text="User text message"), ImageContent(url="http://example.com/image.png")],
+                "items": [TextContent(text="User text message"), ImageContent(url=IMAGE_URL)],
             },
             {"role": AuthorRole.ASSISTANT, "content": "Assistant message"},
         ]
@@ -25,11 +28,82 @@ def test_phi3v_template_with_text_and_image():
 
     expected_output = (
         "<|system|>\nSystem message<|end|>\n"
-        "<|user|>\nUser text message<|end|>\n"
-        "<|image_1|>\n"
+        "<|user|>\n<|image_1|>\nUser text message<|end|>\n"
         "<|assistant|>\nAssistant message<|end|>\n"
         "<|assistant|>\n"
     )
+
+    assert phi3v_template(history) == expected_output
+
+
+def test_phi3v_template_with_image_and_text():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [ImageContent(url=IMAGE_URL), TextContent(text="Describe this image.")],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|image_1|>\nDescribe this image.<|end|>\n<|assistant|>\n"
+
+    assert phi3v_template(history) == expected_output
+
+
+def test_phi3v_template_with_multiple_images():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [
+                    ImageContent(url=IMAGE_URL),
+                    ImageContent(url=IMAGE_URL),
+                    TextContent(text="Compare these images."),
+                ],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|image_1|>\n<|image_2|>\nCompare these images.<|end|>\n<|assistant|>\n"
+
+    assert phi3v_template(history) == expected_output
+
+
+def test_phi3v_template_numbers_images_across_turns():
+    history = ChatHistory(
+        messages=[
+            {"role": AuthorRole.USER, "items": [ImageContent(url=IMAGE_URL), TextContent(text="First")]},
+            {"role": AuthorRole.ASSISTANT, "content": "Answer"},
+            {"role": AuthorRole.USER, "items": [TextContent(text="Second"), ImageContent(url=IMAGE_URL)]},
+            {"role": AuthorRole.ASSISTANT, "content": "Answer"},
+            {"role": AuthorRole.USER, "items": [TextContent(text="Third")]},
+        ]
+    )
+
+    expected_output = (
+        "<|user|>\n<|image_1|>\nFirst<|end|>\n"
+        "<|assistant|>\nAnswer<|end|>\n"
+        "<|user|>\n<|image_2|>\nSecond<|end|>\n"
+        "<|assistant|>\nAnswer<|end|>\n"
+        "<|user|>\nThird<|end|>\n"
+        "<|assistant|>\n"
+    )
+
+    assert phi3v_template(history) == expected_output
+
+
+def test_phi3v_template_merges_text_items_into_one_user_turn():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [TextContent(text="Line one"), ImageContent(url=IMAGE_URL), TextContent(text="Line two")],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|image_1|>\nLine one\nLine two<|end|>\n<|assistant|>\n"
 
     assert phi3v_template(history) == expected_output
 
@@ -42,8 +116,8 @@ def test_phi4mm_template_with_text_and_image():
                 "role": AuthorRole.USER,
                 "items": [
                     TextContent(text="User text message"),
-                    ImageContent(url="http://example.com/image.png"),
-                    AudioContent(url="http://example.com/audio.mp3"),
+                    ImageContent(url=IMAGE_URL),
+                    AudioContent(url=AUDIO_URL),
                 ],
             },
             {"role": AuthorRole.ASSISTANT, "content": "Assistant message"},
@@ -52,12 +126,89 @@ def test_phi4mm_template_with_text_and_image():
 
     expected_output = (
         "<|system|>\nSystem message<|end|>\n"
-        "<|user|>\nUser text message<|end|>\n"
-        "<|image_1|>\n"
-        "<|audio_1|>\n"
+        "<|user|>\n<|image_1|>\n<|audio_1|>\nUser text message<|end|>\n"
         "<|assistant|>\nAssistant message<|end|>\n"
         "<|assistant|>\n"
     )
+
+    assert phi4mm_template(history) == expected_output
+
+
+def test_phi4mm_template_with_image_and_text():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [ImageContent(url=IMAGE_URL), TextContent(text="Describe this image.")],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|image_1|>\nDescribe this image.<|end|>\n<|assistant|>\n"
+
+    assert phi4mm_template(history) == expected_output
+
+
+def test_phi4mm_template_with_multiple_images():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [
+                    TextContent(text="Summarize the content of the images."),
+                    ImageContent(url=IMAGE_URL),
+                    ImageContent(url=IMAGE_URL),
+                    ImageContent(url=IMAGE_URL),
+                ],
+            },
+        ]
+    )
+
+    expected_output = (
+        "<|user|>\n<|image_1|>\n<|image_2|>\n<|image_3|>\nSummarize the content of the images.<|end|>\n<|assistant|>\n"
+    )
+
+    assert phi4mm_template(history) == expected_output
+
+
+def test_phi4mm_template_with_text_and_audio():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [TextContent(text="Transcribe the audio clip into text."), AudioContent(url=AUDIO_URL)],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|audio_1|>\nTranscribe the audio clip into text.<|end|>\n<|assistant|>\n"
+
+    assert phi4mm_template(history) == expected_output
+
+
+def test_phi4mm_template_with_audio_only():
+    history = ChatHistory(messages=[{"role": AuthorRole.USER, "items": [AudioContent(url=AUDIO_URL)]}])
+
+    expected_output = "<|user|>\n<|audio_1|>\n<|end|>\n<|assistant|>\n"
+
+    assert phi4mm_template(history) == expected_output
+
+
+def test_phi4mm_template_puts_images_before_audio():
+    history = ChatHistory(
+        messages=[
+            {
+                "role": AuthorRole.USER,
+                "items": [
+                    AudioContent(url=AUDIO_URL),
+                    ImageContent(url=IMAGE_URL),
+                    ImageContent(url=IMAGE_URL),
+                ],
+            },
+        ]
+    )
+
+    expected_output = "<|user|>\n<|image_1|>\n<|image_2|>\n<|audio_1|>\n<|end|>\n<|assistant|>\n"
 
     assert phi4mm_template(history) == expected_output
 
