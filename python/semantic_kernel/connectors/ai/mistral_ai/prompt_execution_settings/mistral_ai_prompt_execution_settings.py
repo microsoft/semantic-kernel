@@ -36,9 +36,9 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     top_p: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     random_seed: int | None = None
-    presence_penalty: Annotated[float | None, Field(gt=0)] = None
-    frequency_penalty: Annotated[float | None, Field(gt=0)] = None
-    n: Annotated[int | None, Field(gt=1)] = None
+    presence_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
+    frequency_penalty: Annotated[float | None, Field(ge=-2.0, le=2.0)] = None
+    n: Annotated[int | None, Field(ge=1)] = None
     retries: utils.RetryConfig | None = None
     server_url: str | None = None
     timeout_ms: int | None = None

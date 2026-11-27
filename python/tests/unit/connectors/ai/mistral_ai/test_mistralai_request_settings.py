@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import pytest
+from pydantic import ValidationError
+
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -138,3 +141,40 @@ def test_prepare_settings_dict_keeps_explicit_random_seed():
     options = settings.prepare_settings_dict()
     assert "seed" not in options
     assert options["random_seed"] == 7
+
+
+@pytest.mark.parametrize("penalty_name", ["presence_penalty", "frequency_penalty"])
+@pytest.mark.parametrize("value", [-2.0, -0.5, 0.0, 0.5, 2.0])
+def test_penalties_accept_values_in_mistral_range(penalty_name: str, value: float):
+    # The Mistral API accepts presence_penalty and frequency_penalty in [-2, 2], 0 means no penalty.
+    settings = MistralAIChatPromptExecutionSettings(**{penalty_name: value})
+    assert settings.prepare_settings_dict()[penalty_name] == value
+
+
+@pytest.mark.parametrize("penalty_name", ["presence_penalty", "frequency_penalty"])
+@pytest.mark.parametrize("value", [-2.1, 2.1])
+def test_penalties_reject_values_outside_mistral_range(penalty_name: str, value: float):
+    with pytest.raises(ValidationError):
+        MistralAIChatPromptExecutionSettings(**{penalty_name: value})
+
+
+@pytest.mark.parametrize("n", [1, 2])
+def test_n_accepts_positive_values(n: int):
+    settings = MistralAIChatPromptExecutionSettings(n=n)
+    assert settings.prepare_settings_dict()["n"] == n
+
+
+def test_n_rejects_zero():
+    with pytest.raises(ValidationError):
+        MistralAIChatPromptExecutionSettings(n=0)
+
+
+def test_from_prompt_execution_settings_with_zero_penalties():
+    settings = PromptExecutionSettings(
+        service_id="test_service",
+        extension_data={"max_tokens": 256, "presence_penalty": 0, "frequency_penalty": 0, "n": 1},
+    )
+    chat_settings = MistralAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    assert chat_settings.presence_penalty == 0
+    assert chat_settings.frequency_penalty == 0
+    assert chat_settings.n == 1
