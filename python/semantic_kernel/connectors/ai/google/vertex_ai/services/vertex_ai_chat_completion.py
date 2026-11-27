@@ -22,6 +22,7 @@ from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     format_assistant_message,
     format_tool_message,
     format_user_message,
+    get_completion_token_count,
     update_settings_from_function_choice_configuration,
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
@@ -355,7 +356,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             "prompt_feedback": response.prompt_feedback,
             "usage": CompletionUsage(
                 prompt_tokens=response.usage_metadata.prompt_token_count,
-                completion_tokens=response.usage_metadata.candidates_token_count,
+                completion_tokens=get_completion_token_count(response.usage_metadata),
             ),
         }
 
