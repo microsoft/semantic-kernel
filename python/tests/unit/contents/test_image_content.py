@@ -58,3 +58,22 @@ def test_element_roundtrip(image):
 @pytest.mark.parametrize("image", test_cases)
 def test_to_dict(image):
     assert image.to_dict() == {"type": "image_url", "image_url": {"url": str(image)}}
+
+
+def test_image_content_raw_bytes_without_data_format():
+    """Test ImageContent with raw non-UTF8 binary bytes doesn't raise UnicodeDecodeError."""
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+    raw_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+    image = ImageContent(data=raw_png, mime_type="image/png")
+    assert image.data_uri == "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="
+    assert str(image) == "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="
+
+    # Element and prompt conversion
+    element = image.to_element()
+    assert element.text == "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="
+
+    msg = ChatMessageContent(role="user", items=[image])
+    prompt = msg.to_prompt()
+    assert "<image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==</image>" in prompt
+

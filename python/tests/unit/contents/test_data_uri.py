@@ -310,3 +310,28 @@ def test_array():
 def test__data_str(data_bytes, data_str, data_array, data_format, expected_output):
     data_uri = DataUri(data_bytes=data_bytes, data_str=data_str, data_array=data_array, data_format=data_format)
     assert data_uri._data_str() == expected_output
+
+
+def test_data_uri_raw_binary_bytes_auto_detects_base64():
+    raw_binary = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+    data_uri = DataUri(data_bytes=raw_binary, mime_type="image/png")
+    assert data_uri.data_format == "base64"
+    assert data_uri._data_str() == "iVBORw0KGgoAAAANSUhEUg=="
+    assert data_uri.to_string() == "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="
+
+
+def test_data_uri_raw_binary_array_auto_detects_base64():
+    raw_arr = np.array([137, 80, 78, 71], dtype=np.uint8)
+    data_uri = DataUri(data_array=raw_arr, mime_type="image/png")
+    assert data_uri.data_format == "base64"
+    assert data_uri.to_string().startswith("data:image/png;base64,")
+
+
+def test_data_uri_update_data_with_binary_bytes_auto_detects_base64():
+    data_uri = DataUri(data_bytes=b"plain text", mime_type="text/plain")
+    assert data_uri.data_format is None
+    # Update with binary bytes
+    data_uri.update_data(b"\xff\xfb\x90\x44")
+    assert data_uri.data_format == "base64"
+    assert data_uri.to_string().startswith("data:text/plain;base64,")
+

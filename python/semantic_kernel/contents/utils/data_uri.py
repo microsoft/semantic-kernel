@@ -69,8 +69,18 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         args: dict[str, Any] = {}
         if data_bytes is not None:
             args["data_bytes"] = data_bytes
+            if data_format is None:
+                try:
+                    data_bytes.decode("utf-8")
+                except UnicodeDecodeError:
+                    data_format = "base64"
         if data_array is not None:
             args["data_array"] = data_array
+            if data_format is None:
+                try:
+                    data_array.tobytes().decode("utf-8")
+                except UnicodeDecodeError:
+                    data_format = "base64"
 
         if mime_type is not None:
             args["mime_type"] = mime_type
@@ -96,6 +106,11 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         match value:
             case ndarray():
                 self.data_array = value
+                if self.data_format is None:
+                    try:
+                        value.tobytes().decode("utf-8")
+                    except UnicodeDecodeError:
+                        self.data_format = "base64"
             case str():
                 if self.data_format and self.data_format.lower() == "base64":
                     self.data_bytes = base64.b64decode(value, validate=True)
@@ -103,6 +118,11 @@ class DataUri(KernelBaseModel, validate_assignment=True):
                     self.data_bytes = value.encode("utf-8")
             case _:
                 self.data_bytes = value
+                if self.data_format is None:
+                    try:
+                        value.decode("utf-8")
+                    except UnicodeDecodeError:
+                        self.data_format = "base64"
 
     @field_validator("parameters", mode="before")
     def _validate_parameters(cls, value: list[str] | dict[str, str] | None) -> dict[str, str]:
@@ -157,8 +177,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             parameters = f";{parameters}" if parameters else ""
         else:
             parameters = ""
+        data_str = self._data_str()
         data_format = f"{self.data_format}" if self.data_format else ""
-        return f"data:{self.mime_type or ''}{parameters};{data_format},{self._data_str()}"
+        return f"data:{self.mime_type or ''}{parameters};{data_format},{data_str}"
 
     def __eq__(self, value: object) -> bool:
         """Check if the data uri is equal to another."""
@@ -171,9 +192,17 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if self.data_array is not None:
             if self.data_format and self.data_format.lower() == "base64":
                 return base64.b64encode(self.data_array.tobytes()).decode("utf-8")
-            return self.data_array.tobytes().decode("utf-8")
+            try:
+                return self.data_array.tobytes().decode("utf-8")
+            except UnicodeDecodeError:
+                self.data_format = "base64"
+                return base64.b64encode(self.data_array.tobytes()).decode("utf-8")
         if self.data_bytes is not None:
             if self.data_format and self.data_format.lower() == "base64":
                 return base64.b64encode(self.data_bytes).decode("utf-8")
-            return self.data_bytes.decode("utf-8")
+            try:
+                return self.data_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                self.data_format = "base64"
+                return base64.b64encode(self.data_bytes).decode("utf-8")
         return ""

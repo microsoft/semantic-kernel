@@ -269,3 +269,27 @@ def test_write_to_file_overwrite_false_new_file():
         temp_file_path = Path(temp_dir) / "new_file.txt"
         binary.write_to_file(temp_file_path, overwrite=False)
         assert temp_file_path.read_bytes() == test_data
+
+
+def test_binary_content_raw_bytes_without_data_format():
+    """Test BinaryContent with raw non-UTF8 bytes doesn't raise UnicodeDecodeError."""
+    raw_bytes = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+    content = BinaryContent(data=raw_bytes, mime_type="application/octet-stream")
+    assert content.data_uri == "data:application/octet-stream;base64,iVBORw0KGgoAAAANSUhEUg=="
+    assert content.data_string == "iVBORw0KGgoAAAANSUhEUg=="
+    assert str(content) == "data:application/octet-stream;base64,iVBORw0KGgoAAAANSUhEUg=="
+    element = content.to_element()
+    assert element.text == "data:application/octet-stream;base64,iVBORw0KGgoAAAANSUhEUg=="
+
+
+def test_audio_content_raw_bytes_without_data_format():
+    """Test AudioContent with raw non-UTF8 bytes doesn't raise UnicodeDecodeError."""
+    from semantic_kernel.contents.audio_content import AudioContent
+
+    raw_audio = b"ID3\x03\x00\x00\x00\x00\x00\xff\xfb"
+    audio = AudioContent(data=raw_audio, mime_type="audio/mp3")
+    assert audio.data_uri.startswith("data:audio/mp3;base64,")
+    assert str(audio).startswith("data:audio/mp3;base64,")
+    element = audio.to_element()
+    assert element.text.startswith("data:audio/mp3;base64,")
+
