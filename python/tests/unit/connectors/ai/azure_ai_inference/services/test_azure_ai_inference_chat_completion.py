@@ -182,7 +182,7 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
         max_tokens=settings.max_tokens,
         presence_penalty=settings.presence_penalty,
         seed=settings.seed,
-        stop=settings.stop,
+        stop=[settings.stop],
         temperature=settings.temperature,
         top_p=settings.top_p,
     )
@@ -485,7 +485,7 @@ async def test_azure_ai_inference_chat_streaming_completion_with_standard_parame
         max_tokens=settings.max_tokens,
         presence_penalty=settings.presence_penalty,
         seed=settings.seed,
-        stop=settings.stop,
+        stop=[settings.stop],
         temperature=settings.temperature,
         top_p=settings.top_p,
     )
