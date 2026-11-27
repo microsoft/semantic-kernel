@@ -150,6 +150,32 @@ def test_chat_history_prompt_round_trip_keeps_empty_tool_result():
     assert parsed.messages[0].to_dict() == {"role": "tool", "content": "", "tool_call_id": "call_1"}
 
 
+def test_element_round_trip_keeps_call_id():
+    frc = FunctionResultContent(id="id1", call_id="call1", function_name="f", result="ok")
+    restored = FunctionResultContent.from_element(XML(tostring(frc.to_element(), encoding="unicode")))
+    assert restored.id == "id1"
+    assert restored.call_id == "call1"
+    assert restored.result == "ok"
+
+
+def test_element_round_trip_leaves_call_id_unset():
+    frc = FunctionResultContent(id="id1", function_name="f", result="ok")
+    element = frc.to_element()
+    assert element.get("call_id") is None
+    restored = FunctionResultContent.from_element(element)
+    assert restored.call_id is None
+
+
+def test_chat_history_prompt_round_trip_keeps_tool_call_id():
+    history = ChatHistory()
+    history.add_tool_message("ok", tool_call_id="call1", function_name="f")
+    parsed = ChatHistory.from_rendered_prompt(history.to_prompt())
+    tool_result = parsed.messages[0].items[0]
+    assert isinstance(tool_result, FunctionResultContent)
+    assert tool_result.id == "call1"
+    assert tool_result.call_id == "call1"
+
+
 def test_serialize():
     class CustomResultClass:
         def __init__(self, result):
