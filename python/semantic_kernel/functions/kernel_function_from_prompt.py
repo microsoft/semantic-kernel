@@ -256,7 +256,7 @@ through prompt_template_config or in the prompt_template."
             )
         elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             value = prompt_render_result.ai_service.get_streaming_text_contents(
-                prompt=prompt_render_result.rendered_prompt, settings=prompt_render_result.execution_settings
+                prompt=unescape(prompt_render_result.rendered_prompt), settings=prompt_render_result.execution_settings
             )
         else:
             raise FunctionExecutionException(
