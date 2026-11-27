@@ -957,7 +957,8 @@ class PostgresCollection(
                         case ast.Eq():
                             return sql.SQL("{} = {}").format(left, right)
                         case ast.NotEq():
-                            return sql.SQL("{} <> {}").format(left, right)
+                            # NULL-safe, so rows with a NULL field match like in the other connectors.
+                            return sql.SQL("{} IS DISTINCT FROM {}").format(left, right)
                         case ast.Gt():
                             return sql.SQL("{} > {}").format(left, right)
                         case ast.GtE():
@@ -977,7 +978,8 @@ class PostgresCollection(
                 case ast.UnaryOp():
                     match node.op:
                         case ast.Not():
-                            return sql.SQL("NOT ({})").format(parse(node.operand))
+                            # IS NOT TRUE keeps rows where the operand is NULL (SQL UNKNOWN), as NOT drops them.
+                            return sql.SQL("({}) IS NOT TRUE").format(parse(node.operand))
                         case ast.UAdd() | ast.USub() | ast.Invert():
                             raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
                 case ast.Attribute() | ast.Name():
