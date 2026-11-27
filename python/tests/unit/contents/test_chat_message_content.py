@@ -433,3 +433,14 @@ def test_cmc_with_unhashable_types_can_hash():
 
     for message in user_messages:
         assert hash(message) is not None
+
+
+def test_to_dict_empty_tool_message():
+    # A tool message can carry no result items (e.g. an empty rendered
+    # response). to_dict() used to index items[0] and raise IndexError.
+    message = ChatMessageContent(role=AuthorRole.TOOL, content="")
+    assert not message.items
+
+    result = message.to_dict()
+    assert result["role"] == "tool"
+    assert result["tool_call_id"] == ""
