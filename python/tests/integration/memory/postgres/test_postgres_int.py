@@ -319,6 +319,26 @@ async def test_search(vector_store: PostgresStore):
             await simple_collection.delete([r.id for r in records])
 
 
+async def test_upsert_and_search_integer_vectors(
+    vector_store: PostgresStore, definition: VectorStoreCollectionDefinition
+):
+    collection = vector_store.get_collection(
+        collection_name=f"test_collection_{uuid.uuid4().hex[:8]}", record_type=dict, definition=definition
+    )
+    await collection.ensure_collection_exists()
+    try:
+        await collection.upsert([
+            {"id": "other", "content": "other", "vector": [0, 1, 0, 0, 0]},
+            {"id": "match", "content": "match", "vector": [1, 0, 0, 0, 0]},
+        ])
+        results = await collection.search(vector=[1, 0, 0, 0, 0], include_vectors=True)
+        records = [result.record async for result in results.results]
+        assert [record["id"] for record in records] == ["match", "other"]
+        assert records[0]["vector"] == [1.0, 0.0, 0.0, 0.0, 0.0]
+    finally:
+        await collection.ensure_collection_deleted()
+
+
 @vectorstoremodel
 class FilteredDataModel(BaseModel):
     id: Annotated[int, VectorStoreField("key")]

@@ -335,8 +335,8 @@ async def test_ensure_collection_exists_rejects_unsupported_types_before_executi
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.upsert([
-        SimpleDataModel(id=1, data=[1.0, 2.0, 3.0]),
-        SimpleDataModel(id=2, data=[4.0, 5.0, 6.0]),
+        SimpleDataModel(id=1, data=[1, 2, 3]),
+        SimpleDataModel(id=2, data=[4, 5.0, 6]),
         SimpleDataModel(id=3, data=[5.0, 6.0, 1.0]),
     ])
 
@@ -355,6 +355,7 @@ async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) ->
     assert values[0] == (1, [1.0, 2.0, 3.0])
     assert values[1] == (2, [4.0, 5.0, 6.0])
     assert values[2] == (3, [5.0, 6.0, 1.0])
+    assert all(isinstance(coordinate, float) for _, vector in values for coordinate in vector)
 
 
 async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:

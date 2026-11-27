@@ -241,13 +241,15 @@ def _convert_dict_to_row(
         A tuple representing the record.
     """
 
-    def _convert(v: Any | None) -> Any | None:
-        if isinstance(v, dict):
+    def _convert(value: Any, field: VectorStoreField) -> Any:
+        if field.field_type == FieldTypes.VECTOR and isinstance(value, list):
+            return [float(coordinate) for coordinate in value]
+        if isinstance(value, dict):
             # psycopg requires serializing dicts as strings.
-            return json.dumps(v)
-        return v
+            return json.dumps(value)
+        return value
 
-    return tuple(_convert(record.get(field.storage_name or field.name)) for field in fields)
+    return tuple(_convert(record.get(field.storage_name or field.name), field) for field in fields)
 
 
 # region: Settings
