@@ -3,6 +3,8 @@
 from typing import TypeVar
 from unittest.mock import patch
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.process_types import get_generic_state_type
 
 
@@ -72,3 +74,34 @@ def test_get_generic_state_type_exception():
     with patch("semantic_kernel.processes.process_types.get_type_hints", side_effect=Exception("Mocked exception")):
         result = get_generic_state_type(ConcreteKernelProcessStep)
         assert result is None
+
+
+class PydanticState(KernelBaseModel):
+    value: int = 0
+
+
+class ParametrizedKernelProcessStep(KernelProcessStep[PydanticState]):
+    pass
+
+
+class InheritedParametrizedKernelProcessStep(ParametrizedKernelProcessStep):
+    pass
+
+
+class UnparametrizedKernelProcessStep(KernelProcessStep):
+    pass
+
+
+def test_get_generic_state_type_parametrized_step():
+    result = get_generic_state_type(ParametrizedKernelProcessStep)
+    assert result is PydanticState
+
+
+def test_get_generic_state_type_inherited_parametrized_step():
+    result = get_generic_state_type(InheritedParametrizedKernelProcessStep)
+    assert result is PydanticState
+
+
+def test_get_generic_state_type_unparametrized_step():
+    result = get_generic_state_type(UnparametrizedKernelProcessStep)
+    assert result is None
