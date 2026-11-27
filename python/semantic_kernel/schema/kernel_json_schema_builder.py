@@ -1,13 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 import sys
 import types
+from contextvars import ContextVar
 from enum import Enum
-from typing import Any, ClassVar, Literal, Union, get_args, get_origin, get_type_hints
+from functools import reduce
+from operator import or_
+from typing import Annotated, Any, ClassVar, ForwardRef, Literal, Union, get_args, get_origin, get_type_hints
 
 from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger = logging.getLogger(__name__)
+
+# The models whose schema is being built further up the call stack.
+_models_in_progress: ContextVar[tuple[Any, ...]] = ContextVar("_models_in_progress", default=())
 
 TYPE_MAPPING = {
     int: "integer",
@@ -79,6 +88,11 @@ class KernelJsonSchemaBuilder:
         """
         # TODO (moonbox3): add support for handling forward references, which is not currently tested
         # https://github.com/microsoft/semantic-kernel/issues/6464
+        in_progress = _models_in_progress.get()
+        if any(model is seen for seen in in_progress):
+            # A resolved reference back to a model being built has no finite inline schema; use the placeholder.
+            return cls.build_from_type_name("object", description)
+
         properties = {}
         required = []
 
@@ -93,6 +107,7 @@ class KernelJsonSchemaBuilder:
                 # excludes them from model fields and serialized instances,
                 # so they must not become (required) schema properties.
                 continue
+            field_type = cls.resolve_forward_refs(field_type, model_module_globals)
             field_description = None
             if hasattr(model, "model_fields") and field_name in model.model_fields:
                 field_info = model.model_fields[field_name]
@@ -111,7 +126,11 @@ class KernelJsonSchemaBuilder:
                                 break
             if not cls._is_optional(field_type):
                 required.append(field_name)
-            properties[field_name] = cls.build(field_type, field_description, structured_output)
+            token = _models_in_progress.set((*in_progress, model))
+            try:
+                properties[field_name] = cls.build(field_type, field_description, structured_output)
+            finally:
+                _models_in_progress.reset(token)
 
         schema = {"type": "object", "properties": properties}
         if required:
@@ -122,6 +141,126 @@ class KernelJsonSchemaBuilder:
             schema["description"] = description
 
         return schema
+
+    @classmethod
+    def resolve_forward_refs(cls, annotation: Any, globalns: dict[str, Any]) -> Any:
+        """Resolves forward references that annotation evaluation leaves behind.
+
+        Kernel function parameters come from ``signature(func, eval_str=True)``, which evaluates an
+        annotation that *is* a string and nothing below it, on every Python version. ``list["Inner"]``
+        keeps its string, and unwrapping ``Optional["Inner"]`` or ``Annotated["Inner", ...]`` leaves a bare
+        ``ForwardRef``. Unresolved, these fall through to the ``{"type": "object"}`` placeholder.
+
+        Model fields come from ``get_type_hints``. On Python 3.10 it evaluates ``ForwardRef`` objects but
+        not a bare ``str`` in a PEP 585 alias's ``__args__``, because ``list.__class_getitem__`` stores
+        ``"Inner"`` verbatim. Python 3.11 made it wrap those strings itself (gh-85542), so on 3.11+ model
+        field hints arrive fully resolved and come back from here unchanged.
+
+        Args:
+            annotation: The annotation to resolve.
+            globalns: The namespace of the module owning the annotation.
+
+        Returns:
+            Any: The annotation, rebuilt with resolvable references replaced by their types. An alias
+                that cannot be rebuilt is returned unchanged and a warning is logged.
+        """
+        if isinstance(annotation, (str, ForwardRef)):
+            return cls._resolve_forward_ref_arg(annotation, globalns)
+        origin = get_origin(annotation)
+        args = get_args(annotation)
+        if origin is None or not args:
+            return annotation
+        if origin is Literal:
+            # Literal members are values, not names; a Literal["Inner"] must stay a string.
+            return annotation
+        if origin is Annotated:
+            # Only the annotated type is a type; the metadata that follows it is left alone.
+            return Annotated[(cls._resolve_forward_ref_arg(args[0], globalns), *args[1:])]
+
+        resolved_args = tuple(cls._resolve_forward_ref_arg(arg, globalns) for arg in args)
+        if resolved_args == args:
+            return annotation
+
+        try:
+            return cls._rebuild_alias(origin, resolved_args)
+        except TypeError as ex:
+            # A failure here must not stop a function from being decorated, so keep the original alias and its
+            # placeholder schema, but say so: a reference that did resolve has just been thrown away.
+            logger.warning(f"Could not rebuild {annotation!r} with its forward references resolved: {ex}")
+            return annotation
+
+    @staticmethod
+    def _rebuild_alias(origin: Any, args: tuple[Any, ...]) -> Any:
+        """Rebuilds a generic alias from its origin and resolved arguments.
+
+        Args:
+            origin: The origin of the alias, as returned by ``get_origin``.
+            args: The resolved arguments of the alias.
+
+        Returns:
+            Any: The rebuilt alias.
+
+        Raises:
+            TypeError: If the origin cannot be parameterized with these arguments.
+        """
+        if origin is types.UnionType:
+            # Before Python 3.14 this is the origin of PEP 604 unions only and it is not subscriptable. From 3.14
+            # it is also typing.Union, and joining the arguments is still correct for both spellings.
+            return reduce(or_, args)
+        # Special forms such as ClassVar and Final accept a single type, not a one element tuple.
+        return origin[args[0] if len(args) == 1 else args]
+
+    @classmethod
+    def _resolve_forward_ref_arg(cls, arg: Any, globalns: dict[str, Any]) -> Any:
+        """Resolves a single generic argument, recursing into nested generic aliases.
+
+        Args:
+            arg: The generic argument to resolve.
+            globalns: The namespace to resolve the reference against.
+
+        Returns:
+            Any: The resolved type, or the argument unchanged when it cannot be resolved.
+        """
+        if isinstance(arg, str):
+            return cls._lookup_type(arg, globalns, default=arg)
+        if isinstance(arg, ForwardRef):
+            return cls._lookup_type(arg.__forward_arg__, globalns, default=arg)
+        if isinstance(arg, list):
+            # Callable keeps its parameter types in a nested list.
+            return [cls._resolve_forward_ref_arg(item, globalns) for item in arg]
+        return cls.resolve_forward_refs(arg, globalns)
+
+    @staticmethod
+    def _lookup_type(name: str, globalns: dict[str, Any], default: Any) -> Any:
+        """Looks a name up in the namespace, substituting it only when it names a usable type.
+
+        A forward reference that happens to share its name with a module, a function or a plain
+        value must not be rebuilt around that object: a module reaches ``build_model_schema`` and
+        fails on ``__module__``, and a function or value would produce a misleading schema. The same
+        goes for a class whose own type hints do not evaluate, for example hints on names imported only
+        under ``TYPE_CHECKING``: ``build_model_schema`` would raise at function registration. Keeping
+        the original reference lets the existing placeholder fallback apply instead.
+
+        Args:
+            name: The referenced name.
+            globalns: The namespace to look it up in.
+            default: What to return when the name is missing or does not name a usable type.
+
+        Returns:
+            Any: The class or typing construct the name refers to, or ``default``.
+        """
+        value = globalns.get(name, default)
+        if get_origin(value) is not None:
+            return value
+        if not isinstance(value, type):
+            return default
+        try:
+            get_type_hints(value, globalns=vars(sys.modules[value.__module__]), localns={})
+        except Exception as ex:
+            # Evaluating annotation strings can raise anything.
+            logger.warning(f"Keeping forward reference {name!r} unresolved, its type hints do not evaluate: {ex}")
+            return default
+        return value
 
     @classmethod
     def _is_optional(cls, field_type: Any) -> bool:
