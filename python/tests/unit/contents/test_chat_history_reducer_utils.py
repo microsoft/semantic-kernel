@@ -230,3 +230,299 @@ def test_locate_safe_reduction_index_tool_role_without_function_result_content()
             f"Tool result at index 2 was kept but tool call at index 1 was dropped. "
             f"Kept indices: {kept_indices}, reduction index: {idx}"
         )
+
+
+def _assert_every_call_has_later_result(messages: list[ChatMessageContent]) -> None:
+    """Assert that every FunctionCallContent in messages has a matching FunctionResultContent later in messages."""
+    for idx, msg in enumerate(messages):
+        later_result_ids = {
+            item.id
+            for later_msg in messages[idx + 1 :]
+            for item in later_msg.items
+            if isinstance(item, FunctionResultContent) and item.id is not None
+        }
+        for item in msg.items:
+            if isinstance(item, FunctionCallContent):
+                assert item.id is not None and item.id in later_result_ids, (
+                    f"FunctionCallContent(id={item.id!r}) at index {idx} has no matching FunctionResultContent later"
+                )
+
+
+def test_extract_range_parallel_tool_calls_filter_partial_result():
+    """Regression test for #14485: filtering out only one of several parallel tool results
+    must keep the kept pair and strip only the excluded FunctionCallContent on a copy.
+    """
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    # Filter out only the Tokyo result (e.g. moderation or specific error filter)
+    filter_func = lambda m: m is msg_tokyo_result  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert len(extracted) == 4
+    assert extracted[0] is msg_user
+    assert extracted[1] is not msg_assistant
+    assert extracted[1].role == AuthorRole.ASSISTANT
+    assert [item.id for item in extracted[1].items] == ["call_paris"]
+    assert [item.id for item in msg_assistant.items] == ["call_paris", "call_tokyo"]
+    assert extracted[2] is msg_paris_result
+    assert msg_tokyo_result not in extracted, "Filtered Tokyo tool result must be excluded"
+    assert extracted[3] is msg_done
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_parallel_tool_calls_preserves_chronological_order():
+    """Regression test: parallel tool call results must preserve their natural chronological order."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+
+    assert extracted == [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_parallel_tool_calls_filter_call_message_drops_all_results():
+    """Regression test: filtering the call message drops all of its paired parallel results."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    filter_func = lambda m: m is msg_assistant  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert msg_assistant not in extracted
+    assert msg_paris_result not in extracted
+    assert msg_tokyo_result not in extracted
+    assert extracted == [msg_user, msg_done]
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_parallel_tool_calls_filter_all_results_drops_call_message():
+    """Regression test: filtering all parallel results drops the call message to preserve pairs."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result, msg_done]
+
+    filter_func = lambda m: m in (msg_paris_result, msg_tokyo_result)  # noqa: E731
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert msg_assistant not in extracted
+    assert msg_paris_result not in extracted
+    assert msg_tokyo_result not in extracted
+    assert extracted == [msg_user, msg_done]
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_multiple_results_in_single_message():
+    """Regression test: when a single TOOL message holds multiple FunctionResultContent items,
+    extract_range preserves them without duplicate entries.
+    """
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_tool_multi = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[
+            FunctionResultContent(id="call_paris", name="get_weather", result="15C"),
+            FunctionResultContent(id="call_tokyo", name="get_weather", result="22C"),
+        ],
+    )
+    msg_done = ChatMessageContent(role=AuthorRole.ASSISTANT, content="done")
+    history = [msg_user, msg_assistant, msg_tool_multi, msg_done]
+
+    extracted = extract_range(history, start=0, end=len(history), preserve_pairs=True)
+
+    assert extracted == [msg_user, msg_assistant, msg_tool_multi, msg_done]
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_parallel_tool_calls_filter_partial_preserves_non_call_items_and_metadata():
+    """When stripping filtered calls from an assistant message copy, non-call items and metadata stay intact."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        content="Checking both cities.",
+        name="weather_bot",
+        metadata={"trace": "abc"},
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result]
+
+    def filter_func(m: ChatMessageContent) -> bool:
+        return m is msg_tokyo_result
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert len(extracted) == 3
+    copied_assistant = extracted[1]
+    assert copied_assistant is not msg_assistant
+    assert copied_assistant.content == "Checking both cities."
+    assert copied_assistant.name == "weather_bot"
+    assert copied_assistant.metadata == {"trace": "abc"}
+    kept_call_ids = [item.id for item in copied_assistant.items if isinstance(item, FunctionCallContent)]
+    assert kept_call_ids == ["call_paris"]
+    orig_call_ids = [item.id for item in msg_assistant.items if isinstance(item, FunctionCallContent)]
+    assert orig_call_ids == ["call_paris", "call_tokyo"]
+    assert extracted[2] is msg_paris_result
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_multiple_results_in_single_message_with_sibling_filtered():
+    """Filtering one tool result message keeps all kept calls from a multi-result sibling message once."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+            FunctionCallContent(id="call_oslo", name="get_weather", arguments='{"city":"Oslo"}'),
+        ],
+    )
+    msg_tool_multi = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[
+            FunctionResultContent(id="call_paris", name="get_weather", result="15C"),
+            FunctionResultContent(id="call_tokyo", name="get_weather", result="22C"),
+        ],
+    )
+    msg_oslo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_oslo", name="get_weather", result="10C")],
+    )
+    history = [msg_user, msg_assistant, msg_tool_multi, msg_oslo_result]
+
+    def filter_func(m: ChatMessageContent) -> bool:
+        return m is msg_oslo_result
+
+    extracted = extract_range(history, start=0, end=len(history), filter_func=filter_func, preserve_pairs=True)
+
+    assert len(extracted) == 3
+    assert [item.id for item in extracted[1].items] == ["call_paris", "call_tokyo"]
+    assert extracted[2] is msg_tool_multi
+    _assert_every_call_has_later_result(extracted)
+
+
+def test_extract_range_parallel_tool_calls_with_results_past_end():
+    """Calls whose results are filtered or past end must not leave unresponded FunctionCallContent items."""
+    msg_user = ChatMessageContent(role=AuthorRole.USER, content="weather?")
+    msg_assistant = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[
+            FunctionCallContent(id="call_paris", name="get_weather", arguments='{"city":"Paris"}'),
+            FunctionCallContent(id="call_tokyo", name="get_weather", arguments='{"city":"Tokyo"}'),
+        ],
+    )
+    msg_paris_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_paris", name="get_weather", result="15C")],
+    )
+    msg_tokyo_result = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="call_tokyo", name="get_weather", result="22C")],
+    )
+    history = [msg_user, msg_assistant, msg_paris_result, msg_tokyo_result]
+
+    def filter_paris(m: ChatMessageContent) -> bool:
+        return m is msg_paris_result
+
+    # Every in-range result filtered while call_tokyo result lies past end: drop the call message.
+    extracted_all_in_range_filtered = extract_range(
+        history, start=0, end=3, filter_func=filter_paris, preserve_pairs=True
+    )
+    assert extracted_all_in_range_filtered == [msg_user]
+    _assert_every_call_has_later_result(extracted_all_in_range_filtered)
+
+    # Partial slice ending before call_tokyo result: strip call_tokyo on copy, keep call_paris pair.
+    extracted_partial_slice = extract_range(history, start=0, end=3, preserve_pairs=True)
+    assert len(extracted_partial_slice) == 3
+    assert extracted_partial_slice[0] is msg_user
+    assert [item.id for item in extracted_partial_slice[1].items] == ["call_paris"]
+    assert extracted_partial_slice[2] is msg_paris_result
+    _assert_every_call_has_later_result(extracted_partial_slice)
+
+    # Slice ending before all results: drop the call message.
+    extracted_no_results_in_slice = extract_range(history, start=0, end=2, preserve_pairs=True)
+    assert extracted_no_results_in_slice == [msg_user]
+    _assert_every_call_has_later_result(extracted_no_results_in_slice)

@@ -205,14 +205,13 @@ def extract_range(
     sliced = list(range(start, end))
 
     # If we need to preserve call->result pairs, gather them
-    pair_map = {}
+    call_to_results: dict[int, list[int]] = {}
+    result_to_call: dict[int, int] = {}
     if preserve_pairs:
         pairs = get_call_result_pairs(history)
-        # store in a dict for quick membership checking
-        # call_idx -> result_idx, and also result_idx -> call_idx
         for cidx, ridx in pairs:
-            pair_map[cidx] = ridx
-            pair_map[ridx] = cidx
+            call_to_results.setdefault(cidx, []).append(ridx)
+            result_to_call[ridx] = cidx
 
     extracted: list[ChatMessageContent] = []
     i = 0
@@ -220,53 +219,56 @@ def extract_range(
         idx = sliced[i]
         msg = history[idx]
 
-        # If filter_func excludes it, skip it
-        if filter_func and filter_func(msg):
-            i += 1
-            continue
-
         # skipping system/developer message
         if msg.role in (AuthorRole.DEVELOPER, AuthorRole.SYSTEM):
             i += 1
             continue
 
-        # If preserve_pairs is on, and there's a paired index, skip or include them both
-        if preserve_pairs and idx in pair_map:
-            paired_idx = pair_map[idx]
-            # If the pair is within [start, end), we must keep or skip them together
-            if start <= paired_idx < end:
-                # Check if the pair or itself fails filter_func
-                if filter_func and (filter_func(history[paired_idx]) or filter_func(msg)):
-                    # skip both
-                    i += 1
-                    # Also skip the paired index if it's in our current slice
-                    if paired_idx in sliced:
-                        # remove it from the slice so we don't process it again
-                        sliced.remove(paired_idx)
-                    continue
-                # keep both
-                extracted.append(msg)
-                if paired_idx > idx:
-                    # We'll skip the pair in the normal iteration by removing from slice
-                    # but add it to extracted right now
-                    extracted.append(history[paired_idx])
-                    if paired_idx in sliced:
-                        sliced.remove(paired_idx)
-                else:
-                    # if paired_idx < idx, it might appear later, so skip for now
-                    # but we may have already processed it if i was the 2nd item
-                    # either way, do not add duplicates
-                    pass
+        if preserve_pairs and idx in call_to_results:
+            results = call_to_results[idx]
+            if filter_func and filter_func(msg):
+                for r in set(results):
+                    if start <= r < end and r > idx and r in sliced:
+                        sliced.remove(r)
                 i += 1
                 continue
-            # If the paired_idx is outside [start, end), there's no conflict
-            # so we can just do normal logic
-            extracted.append(msg)
+
+            kept_in_range: list[int] = []
+            for r in results:
+                if not (start <= r < end):
+                    continue
+                if filter_func and filter_func(history[r]):
+                    if r > idx and r in sliced:
+                        sliced.remove(r)
+                elif r > idx:
+                    kept_in_range.append(r)
+
+            if not kept_in_range:
+                i += 1
+                continue
+
+            unique_kept = sorted(set(kept_in_range))
+            extracted.append(_filter_call_message_items(msg, [history[r] for r in unique_kept]))
+            for r in unique_kept:
+                extracted.append(history[r])
+                if r in sliced:
+                    sliced.remove(r)
             i += 1
-        else:
-            # keep it if filter_func not triggered
-            extracted.append(msg)
+            continue
+
+        if preserve_pairs and idx in result_to_call:
+            cidx = result_to_call[idx]
+            if start <= cidx < end and filter_func and filter_func(history[cidx]):
+                i += 1
+                continue
+
+        # Normal message (not a call, or a result whose paired call is outside [start, end))
+        if filter_func and filter_func(msg):
             i += 1
+            continue
+
+        extracted.append(msg)
+        i += 1
 
     return extracted
 
@@ -282,3 +284,27 @@ def contains_function_call_or_result(msg: ChatMessageContent) -> bool:
     if msg.role == AuthorRole.TOOL:
         return True
     return any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in msg.items)
+
+
+def _filter_call_message_items(
+    call_msg: ChatMessageContent,
+    kept_results: list[ChatMessageContent],
+) -> ChatMessageContent:
+    """Keep only FunctionCallContent items in call_msg whose ID matches a kept result.
+
+    Non-call items are preserved, and a shallow copy with the updated items list
+    is returned when any FunctionCallContent is stripped so the original history
+    message is never mutated.
+    """
+    kept_result_ids = {
+        item.id
+        for res_msg in kept_results
+        for item in res_msg.items
+        if isinstance(item, FunctionResultContent) and item.id is not None
+    }
+    filtered_items = [
+        item for item in call_msg.items if not isinstance(item, FunctionCallContent) or item.id in kept_result_ids
+    ]
+    if len(filtered_items) == len(call_msg.items):
+        return call_msg
+    return call_msg.model_copy(update={"items": filtered_items})
