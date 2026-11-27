@@ -57,6 +57,8 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         else:
             if not isinstance(settings, OpenAIEmbeddingPromptExecutionSettings):
                 settings = self.get_prompt_execution_settings_from_settings(settings)
+            else:
+                settings = settings.model_copy(deep=True)
         assert isinstance(settings, OpenAIEmbeddingPromptExecutionSettings)  # nosec
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id

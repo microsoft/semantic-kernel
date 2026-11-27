@@ -14,6 +14,19 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 
 
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_embedding_overrides_do_not_replace_shared_settings(mock_create, openai_unit_test_env) -> None:
+    settings = OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)
+    original_settings = settings.model_dump()
+    service = OpenAITextEmbedding(ai_model_id="test_model_id")
+
+    await service.generate_raw_embeddings(["first document"], settings=settings, dimensions=2)
+    await service.generate_raw_embeddings(["second document"], settings=settings)
+
+    assert [call.kwargs["dimensions"] for call in mock_create.await_args_list] == [2, 1536]
+    assert settings.model_dump() == original_settings
+
+
 def test_init(openai_unit_test_env):
     openai_text_embedding = OpenAITextEmbedding()
 
