@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -383,6 +385,8 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     #region Private Methods
 
     private readonly ILogger _logger;
+    private const string ClientNameHeader = "X-Client-Name";
+    private const string ClientName = "semantic-kernel";
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Uri? _uri = null;
@@ -394,6 +398,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     private const string DefaultUri = "https://api.tavily.com/search";
+
+    /// <summary>
+    /// The maximum value of the Tavily <c>max_results</c> request parameter. The accepted
+    /// <c>Top</c> range is unchanged; only the outgoing request window is capped.
+    /// </summary>
+    private const int MaxResultsLimit = 20;
 
     private const string Topic = "topic";
     private const string TimeRange = "time_range";
@@ -422,7 +432,13 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        return JsonSerializer.Deserialize<TavilySearchResponse>(json);
+        TavilySearchResponse? searchResponse = JsonSerializer.Deserialize<TavilySearchResponse>(json);
+        if (skip > 0 && searchResponse?.Results is not null)
+        {
+            searchResponse.Results = [.. searchResponse.Results.Skip(skip).Take(top)];
+        }
+
+        return searchResponse;
     }
 
     /// <summary>
@@ -453,6 +469,12 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         }
 
+        // Identify this connector to Tavily unless the caller already set the header on their HttpClient.
+        if (!this._httpClient.DefaultRequestHeaders.Contains(ClientNameHeader))
+        {
+            httpRequestMessage.Headers.Add(ClientNameHeader, ClientName);
+        }
+
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
@@ -474,7 +496,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -502,7 +524,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -537,7 +559,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -571,7 +593,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if ((this._searchOptions?.IncludeImages ?? false) && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -676,7 +698,9 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
         string? topic = null;
         string? timeRange = null;
         int? days = null;
-        int? maxResults = top - skip;
+        // Tavily has no offset parameter, so skipped results are requested and then dropped client-side.
+        // The window is limited by max_results, so top + skip beyond MaxResultsLimit returns fewer than top results.
+        int? maxResults = (int)Math.Min((long)top + Math.Max(skip, 0), MaxResultsLimit);
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 
@@ -718,7 +742,7 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             timeRange,
             days,
 #pragma warning disable CA1308 // Lower is preferred over uppercase
-            this._searchOptions?.SearchDepth?.ToString()?.ToLowerInvariant(),
+            this._searchOptions?.SearchDepth is { } searchDepth ? ToApiSearchDepth(searchDepth) : null,
 #pragma warning restore CA1308
             this._searchOptions?.ChunksPerSource,
             this._searchOptions?.IncludeImages,
@@ -727,8 +751,34 @@ public sealed class TavilyTextSearch : ITextSearch, ITextSearch<TavilyWebPage>
             this._searchOptions?.IncludeRawContent,
             maxResults,
             includeDomains,
-            excludeDomains);
+            excludeDomains,
+            this._searchOptions?.Country,
+            FormatDate(this._searchOptions?.StartDate),
+            FormatDate(this._searchOptions?.EndDate),
+            this._searchOptions?.SafeSearch,
+            includeDomains is { Count: > 0 } ? ToApiIncludeDomainsMode(this._searchOptions?.IncludeDomainsMode) : null,
+            this._searchOptions?.Language,
+            this._searchOptions?.FilterByLanguage,
+            this._searchOptions?.ExactMatch,
+            this._searchOptions?.AutoParameters);
     }
+
+    private static string? FormatDate(DateTime? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string? ToApiIncludeDomainsMode(TavilyIncludeDomainsMode? mode) => mode switch
+    {
+        TavilyIncludeDomainsMode.Restrict => "restrict",
+        TavilyIncludeDomainsMode.Prefer => "prefer",
+        _ => null,
+    };
+
+    private static string ToApiSearchDepth(TavilySearchDepth searchDepth) => searchDepth switch
+    {
+        TavilySearchDepth.UltraFast => "ultra-fast",
+#pragma warning disable CA1308 // Lower is preferred over uppercase
+        _ => searchDepth.ToString().ToLowerInvariant(),
+#pragma warning restore CA1308
+    };
 
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
