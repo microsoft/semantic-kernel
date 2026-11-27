@@ -349,6 +349,29 @@ async def test_multiple_callable_filters_are_combined_with_and(collection):
     assert list(results) == ["1"]
 
 
+@mark.parametrize(
+    "filter_str, expected",
+    [
+        ("lambda x: x.vector[0] > -1", ["1"]),
+        ("lambda x: x.vector[0] == -2.5", ["2"]),
+        ("lambda x: -3 < x.vector[0] < -2", ["2"]),
+    ],
+)
+async def test_string_filter_with_negative_literal(collection, filter_str, expected):
+    # Python parses -1 as UnaryOp(USub, Constant(1)), which the allowlist rejects unless it is folded (#14571).
+    await collection.upsert([
+        {"id": "1", "vector": [1, 2, 3, 4, 5]},
+        {"id": "2", "vector": [-2.5, 4, 3, 2, 1]},
+    ])
+    results = collection._get_filtered_records(type("opt", (), {"filter": filter_str})())
+    assert list(results) == expected
+
+
+async def test_string_filter_still_rejects_unary_minus_on_a_field(collection):
+    with raises(VectorStoreOperationException, match="'USub' is not allowed"):
+        collection._get_filtered_records(type("opt", (), {"filter": "lambda x: -x.vector[0] > 1"})())
+
+
 async def test_invalid_filter_not_lambda(collection):
     with raises(VectorStoreOperationException, match="must be a lambda expression"):
         collection._get_filtered_records(type("opt", (), {"filter": "x.id == '1'"})())
