@@ -957,7 +957,77 @@ async def test_scmc_run_out_of_auto_invoke_loop(
     ]
     # call count is the default number of auto_invoke attempts, plus the final completion
     # when there has not been a answer.
-    mock_create.call_count == 6
+    assert mock_create.call_count == 6
+    # the final completion is requested without tools
+    assert "tools" not in mock_create.call_args.kwargs
+
+
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_scmc_required_function_choice_streams_final_answer(
+    mock_create: MagicMock,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+):
+    kernel.add_function("test", kernel_function(lambda key: "test", name="test"))
+    tool_call_chunk = ChatCompletionChunk(
+        id="test_id",
+        choices=[
+            ChunkChoice(
+                index=0,
+                finish_reason="tool_calls",
+                delta=ChunkChoiceDelta(
+                    role="assistant",
+                    tool_calls=[
+                        {
+                            "index": 0,
+                            "id": "test id",
+                            "function": {"name": "test-test", "arguments": '{"key": "value"}'},
+                            "type": "function",
+                        }
+                    ],
+                ),
+            )
+        ],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    answer_chunk = ChatCompletionChunk(
+        id="test_id",
+        choices=[
+            ChunkChoice(index=0, delta=ChunkChoiceDelta(content="answer", role="assistant"), finish_reason="stop")
+        ],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    tool_call_stream = MagicMock(spec=AsyncStream)
+    tool_call_stream.__aiter__.return_value = [tool_call_chunk]
+    answer_stream = MagicMock(spec=AsyncStream)
+    answer_stream.__aiter__.return_value = [answer_chunk]
+    mock_create.side_effect = [tool_call_stream, answer_stream]
+    chat_history.add_user_message("hello world")
+    settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Required()
+    )
+
+    openai_chat_completion = OpenAIChatCompletion()
+    text = "".join([
+        str(msg[0])
+        async for msg in openai_chat_completion.get_streaming_chat_message_contents(
+            chat_history=chat_history,
+            settings=settings,
+            kernel=kernel,
+            arguments=KernelArguments(),
+        )
+        if msg[0].role == "assistant"
+    ])
+
+    # Required() allows one auto invoke attempt, after which the answer must still be streamed.
+    assert mock_create.call_count == 2
+    assert "tools" not in mock_create.call_args.kwargs
+    assert text == "answer"
 
 
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)

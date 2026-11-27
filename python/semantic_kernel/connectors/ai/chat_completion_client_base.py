@@ -316,6 +316,13 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
                 if any(result.terminate for result in results if result is not None):
                     break
+            else:
+                # Do a final call, without function calling when the max has been reached.
+                self._reset_function_choice_settings(settings)
+                async for streaming_chat_message_contents in self._inner_get_streaming_chat_message_contents(
+                    chat_history, settings, settings.function_choice_behavior.maximum_auto_invoke_attempts
+                ):
+                    yield streaming_chat_message_contents
 
     async def get_streaming_chat_message_content(
         self,
