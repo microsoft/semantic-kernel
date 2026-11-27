@@ -55,7 +55,8 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     ):
         """Initialize the data uri.
 
-        Make sure to set the data_format to base64 so that it can be decoded properly.
+        Raw data given as bytes or an array defaults to the base64 format, because the data
+        URI cannot hold arbitrary bytes as text. A string without a data_format is kept as text.
 
         Args:
             data_bytes: The data as bytes.
@@ -78,6 +79,8 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             args["parameters"] = parameters
         if data_format is not None:
             args["data_format"] = data_format
+        elif data_bytes is not None or data_array is not None:
+            args["data_format"] = "base64"
 
         if data_str is not None and not data_bytes:
             if data_format and data_format.lower() == "base64":
@@ -96,6 +99,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         match value:
             case ndarray():
                 self.data_array = value
+                self.data_format = self.data_format or "base64"
             case str():
                 if self.data_format and self.data_format.lower() == "base64":
                     self.data_bytes = base64.b64decode(value, validate=True)
@@ -103,6 +107,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
                     self.data_bytes = value.encode("utf-8")
             case _:
                 self.data_bytes = value
+                self.data_format = self.data_format or "base64"
 
     @field_validator("parameters", mode="before")
     def _validate_parameters(cls, value: list[str] | dict[str, str] | None) -> dict[str, str]:
