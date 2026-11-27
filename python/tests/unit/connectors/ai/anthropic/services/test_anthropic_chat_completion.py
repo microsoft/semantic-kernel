@@ -704,3 +704,24 @@ def test_stop_reason_maps_to_finish_reason(anthropic_unit_test_env, stop_reason,
 
     assert content.finish_reason == finish_reason
     assert streaming_content.finish_reason == finish_reason
+
+
+def test_empty_tool_input_streams_as_written_arguments(anthropic_unit_test_env) -> None:
+    """A tool whose input is a complete `{}` must not look like a call that never wrote arguments.
+
+    The connector used to report `{}` as no arguments at all, which made a cut-off reply look like a tool
+    call that never started and got it refused.
+    """
+    from anthropic.types import RawContentBlockStopEvent, ToolUseBlock
+
+    chat_completion = AnthropicChatCompletion()
+    event = RawContentBlockStopEvent(
+        index=1,
+        type="content_block_stop",
+        content_block=ToolUseBlock(id="call_1", input={}, name="set_mode", type="tool_use"),
+    )
+
+    streaming_content = chat_completion._create_streaming_chat_message_content(event)
+
+    calls = [item for item in streaming_content.items if isinstance(item, FunctionCallContent)]
+    assert [call.arguments for call in calls] == ["{}"]
