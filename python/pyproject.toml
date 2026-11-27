@@ -124,7 +124,7 @@ oracledb = [
     "oracledb >= 3.4.1"
 ]
 pandas = [
-    "pandas ~= 2.2"
+    "pandas >= 2.2,< 4.0"
 ]
 pinecone = [
     "pinecone[asyncio, grpc] ~= 7.0; sys_platform == 'darwin' or sys_platform == 'linux'",
