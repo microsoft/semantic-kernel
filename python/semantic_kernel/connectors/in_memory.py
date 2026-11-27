@@ -319,18 +319,26 @@ class _SafeFilterEvaluator:
 
     def _compare(self, operator_node: ast.AST, left: Any, right: Any) -> bool:
         """Evaluate a comparison operator."""
+        value_ops = (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+        if isinstance(operator_node, value_ops) and isinstance(left, bool) != isinstance(right, bool):
+            # bool subclasses int; keep True/False distinct from 1/0, as the other connectors do.
+            return isinstance(operator_node, ast.NotEq)
         if isinstance(operator_node, ast.Eq):
             return left == right
         if isinstance(operator_node, ast.NotEq):
             return left != right
-        if isinstance(operator_node, ast.Lt):
-            return left < right
-        if isinstance(operator_node, ast.LtE):
-            return left <= right
-        if isinstance(operator_node, ast.Gt):
-            return left > right
-        if isinstance(operator_node, ast.GtE):
-            return left >= right
+        try:
+            if isinstance(operator_node, ast.Lt):
+                return left < right
+            if isinstance(operator_node, ast.LtE):
+                return left <= right
+            if isinstance(operator_node, ast.Gt):
+                return left > right
+            if isinstance(operator_node, ast.GtE):
+                return left >= right
+        except TypeError:
+            # Values that can't be ordered against each other don't match, as in the other connectors.
+            return False
         if isinstance(operator_node, ast.In):
             return left in right
         if isinstance(operator_node, ast.NotIn):
