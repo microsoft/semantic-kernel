@@ -36,6 +36,7 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -736,6 +737,58 @@ async def test_invoke_function_call_keeps_host_supplied_hidden_parameter(kernel:
     )
 
     assert chat_history.messages[-1].items[0].result == "visible:host-value"
+
+
+def _echo_with_hidden_required_scope(calls: list[tuple[str, str]]) -> KernelFunction:
+    """Build a native function with one visible and one required hidden parameter."""
+
+    @kernel_function(name="echo")
+    def echo(value: str, scope: str) -> str:
+        calls.append((value, scope))
+        return f"{value}:{scope}"
+
+    return KernelFunctionFromMethod(
+        method=echo,
+        plugin_name="test",
+        parameters=[
+            KernelParameterMetadata(name="value", type_="str", is_required=True),
+            KernelParameterMetadata(name="scope", type_="str", is_required=True, include_in_function_choices=False),
+        ],
+    )
+
+
+async def test_invoke_function_call_uses_host_value_for_required_hidden_parameter(kernel: Kernel):
+    """A required parameter hidden from the model is satisfied by the invoke level arguments."""
+    calls: list[tuple[str, str]] = []
+    kernel.add_function(plugin_name="test", function=_echo_with_hidden_required_scope(calls))
+    chat_history = ChatHistory()
+
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": "visible"}),
+        chat_history=chat_history,
+        arguments=KernelArguments(scope="host-value"),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert calls == [("visible", "host-value")]
+    assert chat_history.messages[-1].items[0].result == "visible:host-value"
+
+
+async def test_invoke_function_call_still_requires_an_unsupplied_hidden_parameter(kernel: Kernel):
+    """Without an invoke level value, a required hidden parameter is still reported as missing."""
+    calls: list[tuple[str, str]] = []
+    kernel.add_function(plugin_name="test", function=_echo_with_hidden_required_scope(calls))
+    chat_history = ChatHistory()
+
+    await kernel.invoke_function_call(
+        function_call=FunctionCallContent(name="test-echo", arguments={"value": "visible"}),
+        chat_history=chat_history,
+        arguments=KernelArguments(),
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+
+    assert calls == []
+    assert chat_history.messages[-1].items[0].result.startswith("Missing required argument(s): ['scope'].")
 
 
 async def test_invoke_function_call_with_filters_blocks_unallowed_function(kernel: Kernel):
