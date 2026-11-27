@@ -120,7 +120,7 @@ public sealed class AuthorRoleConverterTests
     }
 
     [Fact]
-    public void WriteWhenRoleIsToolReturnsFunction()
+    public void WriteWhenRoleIsToolReturnsUser()
     {
         // Arrange
         var converter = new AuthorRoleConverter();
@@ -131,7 +131,7 @@ public sealed class AuthorRoleConverterTests
         converter.Write(writer, AuthorRole.Tool, JsonSerializerOptions.Default);
 
         // Assert
-        Assert.Equal("\"function\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+        Assert.Equal("\"user\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
     }
 
     [Fact]

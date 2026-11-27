@@ -147,7 +147,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
-        Assert.Equal(AuthorRole.Tool, content.Role);
+        Assert.Equal(AuthorRole.User, content.Role);
         var functionResponse = content.Parts![0].FunctionResponse;
         Assert.NotNull(functionResponse);
         Assert.Equal(toolCallResponse.FullyQualifiedName, functionResponse.FunctionName);
@@ -426,8 +426,9 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         Assert.NotNull(request);
 
         // Find the content that represents the batched tool responses
-        var toolResponseContent = request.Contents.FirstOrDefault(c => c.Role == AuthorRole.Tool);
+        var toolResponseContent = request.Contents.FirstOrDefault(c => c.Parts!.Any(p => p.FunctionResponse != null));
         Assert.NotNull(toolResponseContent);
+        Assert.Equal(AuthorRole.User, toolResponseContent.Role);
         Assert.NotNull(toolResponseContent.Parts);
 
         // Verify that all function responses are included as separate parts in the single message
@@ -701,6 +702,48 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var secondRequestContent = handlerStub.GetRequestContentAsString(1);
         Assert.NotNull(secondRequestContent);
         Assert.Contains("test-thought-signature-abc123", secondRequestContent);
+
+        using var requestJson = JsonDocument.Parse(secondRequestContent);
+        var contents = requestJson.RootElement.GetProperty("contents");
+        Assert.Equal("model", contents[3].GetProperty("role").GetString());
+        Assert.Equal("test-thought-signature-abc123", contents[3].GetProperty("parts")[0].GetProperty("thoughtSignature").GetString());
+        Assert.Equal("user", contents[4].GetProperty("role").GetString());
+        Assert.Equal(this._timePluginNow.FullyQualifiedName, contents[4].GetProperty("parts")[0].GetProperty("functionResponse").GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public async Task AutoInvokeSerializesSuccessiveToolResponsesWithUserRoleAsync()
+    {
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+
+        using var httpClient = new HttpClient(handlerStub, false);
+        var client = this.CreateChatCompletionClient(httpClient: httpClient);
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        var responses = await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
+
+        Assert.NotEmpty(Assert.Single(responses).Content!);
+        Assert.Equal(2, chatHistory.Count(m => m.Role == AuthorRole.Tool));
+        for (var requestIndex = 1; requestIndex <= 2; requestIndex++)
+        {
+            var requestContent = handlerStub.GetRequestContentAsString(requestIndex);
+            Assert.NotNull(requestContent);
+            using var requestJson = JsonDocument.Parse(requestContent);
+            var contents = requestJson.RootElement.GetProperty("contents").EnumerateArray().ToArray();
+            var toolResponses = contents.Where(c => c.GetProperty("parts").EnumerateArray()
+                .Any(p => p.TryGetProperty("functionResponse", out _))).ToArray();
+
+            Assert.Equal(requestIndex, toolResponses.Length);
+            Assert.All(toolResponses, content => Assert.Equal("user", content.GetProperty("role").GetString()));
+            Assert.All(contents, content => Assert.Contains(content.GetProperty("role").GetString(), new[] { "user", "model" }));
+        }
     }
 
     private static ChatHistory CreateSampleChatHistory()
