@@ -79,6 +79,16 @@ def kernel_function_parameter_type_to_bedrock_function_parameter_type(schema_dat
             "Type is required to convert the kernel function parameter type to bedrock function parameter type."
         )
 
+    if isinstance(type_, list):
+        concrete_types = {item for item in type_ if item != "null"}
+        if len(concrete_types) == 1:
+            type_ = next(iter(concrete_types))
+        else:
+            raise ValueError(
+                f"Union type {type_} cannot be represented as a Bedrock function parameter type. "
+                f"Allowed types are {BEDROCK_FUNCTION_ALLOWED_PARAMETER_TYPES}."
+            )
+
     if type_ not in BEDROCK_FUNCTION_ALLOWED_PARAMETER_TYPES:
         raise ValueError(
             f"Type {type_} is not allowed in bedrock function parameter type. "

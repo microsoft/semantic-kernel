@@ -77,6 +77,18 @@ def test_kernel_function_parameter_type_to_bedrock_function_parameter_type_inval
         kernel_function_parameter_type_to_bedrock_function_parameter_type(schema_data)
 
 
+def test_kernel_function_parameter_type_allows_nullable_single_type():
+    assert (
+        kernel_function_parameter_type_to_bedrock_function_parameter_type({"type": ["string", "null"]})
+        == "string"
+    )
+
+
+def test_kernel_function_parameter_type_rejects_mixed_union_cleanly():
+    with pytest.raises(ValueError, match="Union type.*cannot be represented"):
+        kernel_function_parameter_type_to_bedrock_function_parameter_type({"type": ["integer", "string", "null"]})
+
+
 def test_parse_return_control_payload():
     # Test the parsing of return control payload to function call contents
     return_control_payload = {

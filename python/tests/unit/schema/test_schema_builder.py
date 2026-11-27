@@ -9,6 +9,7 @@ import pytest
 from pydantic import Field
 
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+from semantic_kernel.exceptions.function_exceptions import FunctionInvalidParameterConfiguration
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
@@ -40,6 +41,20 @@ class EnumTest(Enum):
     OPTION_A = "OptionA"
     OPTION_B = "OptionB"
     OPTION_C = "OptionC"
+
+
+class MixedEnumTest(Enum):
+    AUTO = None
+    FAST = "fast"
+    COUNT = 2
+
+
+class NoneEnumTest(Enum):
+    ONLY = None
+
+
+class EmptyEnumTest(Enum):
+    pass
 
 
 class MockModel:
@@ -416,6 +431,27 @@ def test_enum_schema_without_description():
     schema = KernelJsonSchemaBuilder.build(EnumTest)
     expected_schema = {"type": "string", "enum": ["OptionA", "OptionB", "OptionC"]}
     assert schema == expected_schema
+
+
+def test_enum_schema_infers_all_member_types():
+    schema = KernelJsonSchemaBuilder.build(MixedEnumTest)
+    assert schema == {
+        "type": ["integer", "string", "null"],
+        "enum": [None, "fast", 2],
+    }
+
+
+def test_enum_schema_with_only_none_member():
+    schema = KernelJsonSchemaBuilder.build(NoneEnumTest)
+    assert schema == {"type": "null", "enum": [None]}
+
+
+def test_empty_enum_raises_configuration_error():
+    with pytest.raises(
+        FunctionInvalidParameterConfiguration,
+        match="must define at least one member",
+    ):
+        KernelJsonSchemaBuilder.build(EmptyEnumTest)
 
 
 def test_handle_complex_type():
