@@ -392,6 +392,49 @@ async def test_invoke_stream_emits_tool_call_then_result_then_text(kernel_with_a
     assert yielded_text[0].name == agent.name
 
 
+async def test_invoke_stream_does_not_repeat_tool_call_text_in_thread(kernel: Kernel):
+    from typing import ClassVar
+
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
+    class WeatherPlugin:
+        @kernel_function
+        def get_weather(self, city: str) -> str:
+            return "sunny"
+
+    class FakeStreamingChat(ChatCompletionClientBase):
+        SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
+
+        async def _inner_get_streaming_chat_message_contents(self, chat_history, settings, function_invoke_attempt=0):
+            if chat_history.messages[-1].role != AuthorRole.TOOL:
+                yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, content="Let me check. ")]
+                yield [
+                    StreamingChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        choice_index=0,
+                        items=[
+                            FunctionCallContent(
+                                id="call_1", index=0, name="Weather-get_weather", arguments='{"city": "Paris"}'
+                            )
+                        ],
+                    )
+                ]
+            else:
+                yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, content="It is sunny.")]
+
+    kernel.add_service(FakeStreamingChat(ai_model_id="fake"))
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent", plugins={"Weather": WeatherPlugin()})
+    thread = ChatHistoryAgentThread()
+
+    async for _ in agent.invoke_stream(messages="Weather in Paris?", thread=thread):
+        pass
+
+    messages = [m async for m in thread.get_messages()]
+    assert [m.role for m in messages] == [AuthorRole.USER, AuthorRole.ASSISTANT, AuthorRole.TOOL, AuthorRole.ASSISTANT]
+    assert messages[1].content == "Let me check. "
+    assert messages[-1].content == "It is sunny."
+
+
 async def test_invoke_stream_tool_call_added(
     kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase],
     mock_streaming_chat_completion_response,
