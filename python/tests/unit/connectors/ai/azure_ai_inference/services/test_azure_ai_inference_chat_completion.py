@@ -141,6 +141,7 @@ async def test_azure_ai_inference_chat_completion(
     assert len(responses) == 1
     assert responses[0].role == "assistant"
     assert responses[0].content == "Hello"
+    assert responses[0].ai_model_id == model_id
 
 
 @pytest.mark.parametrize(
