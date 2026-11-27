@@ -10,6 +10,16 @@ from semantic_kernel.exceptions.function_exceptions import FunctionExecutionExce
 
 DnsResolver = Callable[[str], Awaitable[Sequence[str | ipaddress.IPv4Address | ipaddress.IPv6Address]]]
 
+_AZURE_WIRESERVER = ipaddress.IPv4Address("168.63.129.16")
+
+# RFC 6052 only puts the embedded IPv4 address in the last four bytes for a /96, which is the only
+# length the well-known prefix allows. The RFC 8215 local-use prefix has a translator-specific length,
+# so its embedded address cannot be read from the address itself (the shorter lengths put a suffix in
+# those bytes, and decoding that reads 0.0.0.0 out of an ordinary target). It is blocked as a whole
+# instead of decoded at a guessed length.
+_NAT64_WELL_KNOWN_NETWORK = ipaddress.IPv6Network("64:ff9b::/96")
+_NAT64_LOCAL_USE_NETWORK = ipaddress.IPv6Network("64:ff9b:1::/48")
+
 
 def try_categorize_non_public_address(
     address: str | ipaddress.IPv4Address | ipaddress.IPv6Address,
@@ -132,8 +142,27 @@ def _try_classify_ipv4(address: ipaddress.IPv4Address) -> tuple[bool, str]:
         return True, "multicast"
     if b0 >= 240:
         return True, "reserved"
+    if address == _AZURE_WIRESERVER:
+        # Publicly routable, so no range check above reaches it, yet it is the Azure host agent's
+        # credential endpoint and is reachable from every Azure VM.
+        return True, "cloud metadata (Azure WireServer)"
 
     return False, ""
+
+
+def _embedded_ipv4(address: ipaddress.IPv6Address) -> ipaddress.IPv4Address | None:
+    """Return the IPv4 address a NAT64, 6to4 or Teredo IPv6 address carries, if it is one of those forms.
+
+    `sixtofour` and `teredo` return None outside their own prefixes, and Teredo's client address is
+    stored with its bits inverted (RFC 4380), which the standard library undoes.
+    """
+    if address in _NAT64_WELL_KNOWN_NETWORK:
+        return ipaddress.IPv4Address(address.packed[12:])
+    if address.sixtofour is not None:
+        return address.sixtofour
+    if address.teredo is not None:
+        return address.teredo[1]
+    return None
 
 
 def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
@@ -151,5 +180,15 @@ def _try_classify_ipv6(address: ipaddress.IPv6Address) -> tuple[bool, str]:
         return True, "multicast"
     if address in ipaddress.ip_network("2001:db8::/32"):
         return True, "reserved"
+    if address in _NAT64_LOCAL_USE_NETWORK:
+        return True, "NAT64 local-use prefix"
+
+    # NAT64, 6to4 and Teredo carry an IPv4 target inside an IPv6 address that looks public, so
+    # classify the IPv4 it names.
+    embedded = _embedded_ipv4(address)
+    if embedded is not None:
+        blocked, category = _try_classify_ipv4(embedded)
+        if blocked:
+            return True, f"{category} (embedded in IPv6)"
 
     return False, ""
