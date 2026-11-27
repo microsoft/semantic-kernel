@@ -39,6 +39,7 @@ class KernelPlugin(KernelBaseModel):
     This class behaves mostly like a dictionary, with functions as values and their names as keys.
     When you add a function, through `.set` or `__setitem__`, the function is copied, the metadata is deep-copied
     and the name of the plugin is set in the metadata and added to the dict of functions.
+    The key the function is added under becomes the name of the function in the metadata of the copy.
     This is done in the same way as a normal dict, so a existing key will be overwritten.
 
     Attributes:
@@ -113,7 +114,7 @@ class KernelPlugin(KernelBaseModel):
             value (KernelFunction): The function to set.
 
         """
-        self.functions[key] = KernelPlugin._parse_or_copy(value, self.name)
+        self.functions[key] = KernelPlugin._parse_or_copy(value, self.name, function_name=key)
 
     def set(self, key: str, value: KERNEL_FUNCTION_TYPE) -> None:
         """Set a function in the plugin.
@@ -430,7 +431,7 @@ class KernelPlugin(KernelBaseModel):
             return {}
         if isinstance(functions, dict):
             return {
-                name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name, function_name=name)
                 for name, function in functions.items()
             }
         if isinstance(functions, KernelPlugin):
@@ -459,12 +460,22 @@ class KernelPlugin(KernelBaseModel):
         raise ValueError(f"Invalid type for supplied functions: {functions} (type: {type(functions)})")
 
     @staticmethod
-    def _parse_or_copy(function: KERNEL_FUNCTION_TYPE, plugin_name: str) -> "KernelFunction":
-        """Handle the function and return a KernelFunction instance."""
+    def _parse_or_copy(
+        function: KERNEL_FUNCTION_TYPE, plugin_name: str, function_name: str | None = None
+    ) -> "KernelFunction":
+        """Handle the function and return a KernelFunction instance.
+
+        If function_name is given, the returned function is named function_name, so that the key it is stored under,
+        its metadata and the name offered to a model all agree. The function that was passed in is never changed.
+        """
         if isinstance(function, KernelFunction):
-            return function.function_copy(plugin_name=plugin_name)
-        if callable(function):
-            return KernelFunctionFromMethod(method=function, plugin_name=plugin_name)
-        raise ValueError(f"Invalid type for function: {function} (type: {type(function)})")
+            result = function.function_copy(plugin_name=plugin_name)
+        elif callable(function):
+            result = KernelFunctionFromMethod(method=function, plugin_name=plugin_name)
+        else:
+            raise ValueError(f"Invalid type for function: {function} (type: {type(function)})")
+        if function_name is not None and result.metadata.name != function_name:
+            result.metadata.name = function_name
+        return result
 
     # endregion
