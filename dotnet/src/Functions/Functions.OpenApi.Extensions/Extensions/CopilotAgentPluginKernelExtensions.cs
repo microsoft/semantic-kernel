@@ -125,6 +125,7 @@ public static class CopilotAgentPluginKernelExtensions
                     httpClient,
                     authCallback: null,
                     pluginParameters?.UserAgent,
+                    pluginParameters?.ServerUrlValidationOptions,
                     cancellationToken).ConfigureAwait(false) :
                 DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
                     logger);
@@ -197,7 +198,8 @@ public static class CopilotAgentPluginKernelExtensions
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? true,
-                headersFactory: CopilotAgentPluginHeadersFactory);
+                headersFactory: CopilotAgentPluginHeadersFactory,
+                serverUrlValidationOptions: openApiFunctionExecutionParameters?.ServerUrlValidationOptions);
 
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
             var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);

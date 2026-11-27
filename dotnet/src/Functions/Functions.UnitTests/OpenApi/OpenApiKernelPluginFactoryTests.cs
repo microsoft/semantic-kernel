@@ -45,7 +45,8 @@ public sealed class OpenApiKernelPluginFactoryTests
                 AllowedBaseUrls =
                 [
                     new Uri("https://my-key-vault.vault.azure.net"),
-                    new Uri("https://server-override.com")
+                    new Uri("https://server-override.com"),
+                    new Uri("http://localhost:3001/openapi.json")
                 ]
             }
         };
@@ -92,6 +93,10 @@ public sealed class OpenApiKernelPluginFactoryTests
     {
         // Arrange
         await using var server = new RedirectLoopbackServer();
+        this._executionParameters.ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [server.BaseUri]
+        };
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() =>
@@ -102,6 +107,94 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         // Assert
         Assert.False(server.RedirectTargetContacted);
+    }
+
+    [Fact]
+    public async Task ItRejectsUnsupportedDocumentUrisBeforeInvokingCallbacksAsync()
+    {
+        using var handler = new HttpMessageHandlerStub();
+        using var httpClient = new HttpClient(handler);
+        var callbackInvoked = false;
+        var parameters = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = httpClient,
+            AuthCallback = (_, _) =>
+            {
+                callbackInvoked = true;
+                throw new InvalidOperationException("The callback should not be invoked.");
+            }
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            OpenApiKernelPluginFactory.CreateFromOpenApiAsync("testPlugin", new Uri("urn:example:document"), parameters));
+
+        Assert.False(callbackInvoked, "Document URI validation must run before the callback.");
+        Assert.Null(handler.RequestUri);
+        Assert.Contains("scheme 'urn' is not allowed", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ItDoesNotSendArgumentsForParametersRemovedByParameterFilterAsync()
+    {
+        // Arrange
+        using var handler = new HttpMessageHandlerStub();
+        using var httpClient = new HttpClient(handler);
+
+        var operation = new RestApiOperation(
+            id: "createItem",
+            servers: [new RestApiServer("https://api.example.com/")],
+            path: "items",
+            method: HttpMethod.Post,
+            description: "parameter filter test",
+            parameters:
+            [
+                new RestApiParameter("kept", "string", isRequired: false, expand: false, RestApiParameterLocation.Query),
+                new RestApiParameter("removed", "string", isRequired: false, expand: false, RestApiParameterLocation.Query),
+                new RestApiParameter("removed-header", "string", isRequired: false, expand: false, RestApiParameterLocation.Header),
+            ],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: new RestApiPayload(
+                "application/json",
+                [
+                    new RestApiPayloadProperty("title", "string", isRequired: false, properties: []),
+                    new RestApiPayloadProperty("removedProperty", "string", isRequired: false, properties: []),
+                ]));
+        var specification = new RestApiSpecification(new RestApiInfo(), null, [operation]);
+        var executionParameters = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = httpClient,
+            EnableDynamicPayload = true,
+            ParameterFilter = context => context.Parameter.Name.StartsWith("removed", StringComparison.Ordinal) ? null : context.Parameter,
+            ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+            {
+                AllowedBaseUrls = [new Uri("https://api.example.com/")]
+            }
+        };
+        var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("testPlugin", specification, executionParameters);
+        var arguments = new KernelArguments
+        {
+            ["kept"] = "kept-value",
+            ["removed"] = "removed-value",
+            ["removed-header"] = "removed-value",
+            ["removed_header"] = "removed-value",
+            ["title"] = "title-value",
+            ["removedProperty"] = "removed-value",
+        };
+
+        // Act
+        await new Kernel().InvokeAsync(plugin["createItem"], arguments);
+
+        // Assert
+        Assert.NotNull(handler.RequestUri);
+        Assert.Equal("?kept=kept-value", handler.RequestUri.Query);
+        Assert.NotNull(handler.RequestHeaders);
+        Assert.False(handler.RequestHeaders.Contains("removed-header"));
+        Assert.NotNull(handler.RequestContent);
+        var payload = JsonNode.Parse(Encoding.UTF8.GetString(handler.RequestContent));
+        Assert.NotNull(payload);
+        Assert.Equal("title-value", payload["title"]?.GetValue<string>());
+        Assert.Null(payload["removedProperty"]);
     }
 
     [Fact]

@@ -53,7 +53,8 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
                 AllowedBaseUrls =
                 [
                     new Uri("https://my-key-vault.vault.azure.net"),
-                    new Uri("https://server-override.com")
+                    new Uri("https://server-override.com"),
+                    new Uri("http://localhost:3001/openapi.json")
                 ]
             }
         };

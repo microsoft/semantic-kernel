@@ -19,9 +19,10 @@ internal static class DocumentLoader
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback,
         string? userAgent,
+        RestApiOperationServerUrlValidationOptions? serverUrlValidationOptions,
         CancellationToken cancellationToken)
     {
-        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -31,10 +32,11 @@ internal static class DocumentLoader
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback,
         string? userAgent,
+        RestApiOperationServerUrlValidationOptions? serverUrlValidationOptions,
         CancellationToken cancellationToken)
     {
         //disposing the response disposes the stream
-        var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
         var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         return new HttpResponseStream(stream, response);
     }
@@ -45,10 +47,21 @@ internal static class DocumentLoader
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback,
         string? userAgent,
+        RestApiOperationServerUrlValidationOptions? serverUrlValidationOptions,
         CancellationToken cancellationToken)
     {
+        // The document is fetched under the same URL policy as the operations it describes.
+        var validatedAddresses = await ServerUrlValidator.ValidateAsync(uri, serverUrlValidationOptions, cancellationToken).ConfigureAwait(false);
+
         using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
         request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? HttpHeaderConstant.Values.UserAgent));
+
+#if NET
+        if (validatedAddresses is { Length: > 0 })
+        {
+            request.Options.Set(OpenApiHttpClientProvider.ValidatedAddressesKey, validatedAddresses);
+        }
+#endif
 
         if (authCallback is not null)
         {
