@@ -37,23 +37,26 @@ class FunctionResult(KernelBaseModel):
 
     def __str__(self) -> str:
         """Get the string representation of the result."""
-        if self.value:
-            try:
-                if isinstance(self.value, list):
-                    return (
-                        str(self.value[0])
-                        if isinstance(self.value[0], KernelContent)
-                        else ",".join(map(str, self.value))
-                    )
-                if isinstance(self.value, dict):
-                    # TODO (eavanvalkenburg): remove this once function result doesn't include input args
-                    # This is so an integration test can pass.
-                    return str(list(self.value.values())[-1])
-                return str(self.value)
-            except Exception as e:
-                raise FunctionResultError(f"Failed to convert value to string: {e}") from e
-        else:
+        if self.value is None:
             return ""
+        try:
+            if isinstance(self.value, list):
+                if not self.value:
+                    return ""
+                return (
+                    str(self.value[0])
+                    if isinstance(self.value[0], KernelContent)
+                    else ",".join(map(str, self.value))
+                )
+            if isinstance(self.value, dict):
+                if not self.value:
+                    return ""
+                # TODO (eavanvalkenburg): remove this once function result doesn't include input args
+                # This is so an integration test can pass.
+                return str(list(self.value.values())[-1])
+            return str(self.value)
+        except Exception as e:
+            raise FunctionResultError(f"Failed to convert value to string: {e}") from e
 
     def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
