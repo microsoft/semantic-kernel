@@ -94,6 +94,35 @@ def test_auto_function_choice_behavior_from_dict_with_different_filters_and_func
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
+@pytest.mark.parametrize(
+    ("data", "expected_attempts"),
+    [
+        ({"type": "auto"}, DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS),
+        ({"type": "required"}, 1),
+        ({"type": "none"}, 0),
+        ({"type": "auto", "auto_invoke": False}, 0),
+        ({"type": "auto", "auto_invoke": True}, DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS),
+        ({"type": "auto", "maximum_auto_invoke_attempts": 3}, 3),
+    ],
+)
+def test_from_dict_defaults_auto_invoke_consistently(data: dict, expected_attempts: int):
+    """from_dict defaults should match from_string and the classmethods.
+
+    `{"type": "auto"}` must behave like `from_string("auto")` and `Auto()`, and
+    `{"type": "required"}` like `Required()`; an explicit `auto_invoke` key still wins.
+    """
+    behavior = FunctionChoiceBehavior.from_dict(dict(data))
+    assert behavior.maximum_auto_invoke_attempts == expected_attempts
+    assert behavior.auto_invoke_kernel_functions is (expected_attempts > 0)
+
+
+def test_from_dict_matches_from_string_for_auto():
+    assert (
+        FunctionChoiceBehavior.from_dict({"type": "auto"}).maximum_auto_invoke_attempts
+        == FunctionChoiceBehavior.from_string("auto").maximum_auto_invoke_attempts
+    )
+
+
 def test_function_choice_behavior_get_set(function_choice_behavior: FunctionChoiceBehavior):
     function_choice_behavior.enable_kernel_functions = False
     assert function_choice_behavior.enable_kernel_functions is False
