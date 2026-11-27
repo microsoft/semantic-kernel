@@ -450,3 +450,24 @@ def test_scmc_with_unhashable_types_can_hash():
 
     for message in user_messages:
         assert hash(message) is not None
+
+
+def test_scmc_merge_does_not_duplicate_to_multiple_matching_items():
+    """Regression test for issue #14786: incoming chunk should only merge into the first matching item."""
+    from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+
+    # Message with two items of the same type
+    item1 = StreamingTextContent(choice_index=0, text="First ")
+    item2 = StreamingTextContent(choice_index=0, text="Second ")
+    msg = StreamingChatMessageContent(choice_index=0, role=AuthorRole.ASSISTANT, items=[item1, item2])
+
+    # Incoming chunk with one item of the same type
+    chunk_item = StreamingTextContent(choice_index=0, text="part")
+    chunk = StreamingChatMessageContent(choice_index=0, role=AuthorRole.ASSISTANT, items=[chunk_item])
+
+    combined = msg + chunk
+
+    # chunk_item should merge into item1 only, not into both item1 and item2
+    assert len(combined.items) == 2
+    assert combined.items[0].text == "First part"
+    assert combined.items[1].text == "Second "
