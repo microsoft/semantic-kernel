@@ -661,7 +661,9 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
                         storage_name = field.storage_name or field.name
                         if storage_name in rec:
                             dtype = DATATYPE_MAP_VECTOR[field.type_ or "default"]
-                            rec[field.name] = buffer_to_array(rec[storage_name], dtype)
+                            # Decode in place: the data model step reads the storage name key.
+                            rec[storage_name] = buffer_to_array(rec[storage_name], dtype)
+                            rec[field.name] = rec[storage_name]
                         else:
                             rec[field.name] = None
             results.append(rec)
@@ -675,12 +677,14 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
 
         """
         for field in self.definition.fields:
+            # The index attributes and the stored fields use the storage name.
+            storage_name = field.storage_name or field.name
             match field.field_type:
                 case "vector":
                     if include_vectors:
-                        query.return_field(field.name, decode_field=False)
+                        query.return_field(storage_name, decode_field=False)
                 case _:
-                    query.return_field(field.name)
+                    query.return_field(storage_name)
         return query
 
 
@@ -791,12 +795,14 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
     def _add_return_fields(self, query: TQuery, include_vectors: bool) -> TQuery:
         """Add the return fields to the query."""
         for field in self.definition.fields:
+            # The index attributes and the stored fields use the storage name.
+            storage_name = field.storage_name or field.name
             match field.field_type:
                 case FieldTypes.VECTOR:
                     if include_vectors:
-                        query.return_field(field.name)
+                        query.return_field(storage_name)
                 case _:
-                    query.return_field(field.name)
+                    query.return_field(storage_name)
         return query
 
 

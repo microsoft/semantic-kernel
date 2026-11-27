@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import numpy as np
@@ -13,6 +14,7 @@ from semantic_kernel.connectors.redis import (
     RedisJsonCollection,
     RedisStore,
 )
+from semantic_kernel.data.vector import VectorSearchOptions, VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 BASE_PATH = "redis.asyncio.client.Redis"
@@ -368,3 +370,77 @@ def test_hash_deserialization_handles_omitted_vector(collection_hash):
     records = collection_hash._deserialize_store_models_to_dicts([{"id": "id1", "content": "content"}])
 
     assert records[0]["vector"] is None
+
+
+@fixture
+def aliased_definition():
+    return VectorStoreCollectionDefinition(
+        fields=[
+            VectorStoreField("key", name="id", type="str"),
+            VectorStoreField("data", name="content", type="str", storage_name="doc_content", is_indexed=True),
+            VectorStoreField("vector", name="vector", dimensions=3, type="float", storage_name="doc_vector"),
+        ]
+    )
+
+
+@fixture
+def aliased_collection(request, redis_unit_test_env, aliased_definition):
+    return request.param(
+        record_type=dict,
+        collection_name="test",
+        definition=aliased_definition,
+        env_file_path="test.env",
+    )
+
+
+@mark.parametrize("aliased_collection", [RedisHashsetCollection, RedisJsonCollection], indirect=True)
+@mark.parametrize("include_vectors", [True, False])
+def test_search_returns_storage_names(aliased_collection, include_vectors):
+    query = aliased_collection._construct_vector_query(
+        [1.0, 2.0, 3.0], VectorSearchOptions(include_vectors=include_vectors)
+    )
+
+    expected = {"vector_distance", "id", "doc_content"} | ({"doc_vector"} if include_vectors else set())
+    assert set(query._return_fields) == expected
+
+
+@mark.parametrize("aliased_collection", [RedisHashsetCollection], indirect=True)
+async def test_hash_search_returns_aliased_fields(aliased_collection):
+    stored = {
+        "doc_content": "hello",
+        "doc_vector": np.array([1.0, 2.0, 3.0], dtype=np.float32).tobytes(),
+        "vector_distance": "0.25",
+    }
+    returned: list[str] = []
+
+    async def fake_search(query, query_params=None):
+        # Like RediSearch, return only the attributes named in RETURN.
+        args = query.get_args()
+        start = args.index("RETURN")
+        returned.extend(args[start + 2 : start + 2 + args[start + 1]])
+        doc = {"id": "key1"} | {name: stored[name] for name in returned if name in stored}
+        return SimpleNamespace(docs=[SimpleNamespace(**doc)], total=1)
+
+    async def fake_process(results, query, collection_name, redis_database, collection_type):
+        return [dict(doc.__dict__) for doc in results.docs]
+
+    with (
+        patch(f"{BASE_PATH_FT}.search", new=AsyncMock(side_effect=fake_search)),
+        patch.object(redis_module, "_process_search_results", new=fake_process),
+    ):
+        results = await aliased_collection.search(vector=[1.0, 2.0, 3.0], top=3, include_vectors=True)
+        records = [result.record async for result in results.results]
+
+    assert returned == ["vector_distance", "id", "doc_content", "doc_vector"]
+    assert records == [{"id": "key1", "content": "hello", "vector": [1.0, 2.0, 3.0]}]
+
+
+@mark.parametrize("aliased_collection", [RedisHashsetCollection], indirect=True)
+def test_hash_deserialization_decodes_aliased_vector(aliased_collection):
+    vector = np.array([1.0, 2.0, 3.0], dtype=np.float32).tobytes()
+    store_record = {"id": "key1", "doc_content": "hello", "doc_vector": vector}
+
+    records = aliased_collection._deserialize_store_models_to_dicts([store_record])
+    record = aliased_collection._deserialize_dict_to_data_model(records[0], include_vectors=True)
+
+    assert record == {"id": "key1", "content": "hello", "vector": [1.0, 2.0, 3.0]}
