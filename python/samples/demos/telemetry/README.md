@@ -70,7 +70,7 @@ Please refer to here on how to analyze metrics in [Azure Monitor](https://learn.
 
 > Make sure you have the dashboard running to receive telemetry data.
 
-Once the the sample finishes running, navigate to http://localhost:18888 in a web browser to see the telemetry data. Follow the instructions [here](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/explore) to authenticate to the dashboard and start exploring!
+Once the sample finishes running, navigate to http://localhost:18888 in a web browser to see the telemetry data. Follow the instructions [here](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/explore) to authenticate to the dashboard and start exploring!
 
 ## Console output
 

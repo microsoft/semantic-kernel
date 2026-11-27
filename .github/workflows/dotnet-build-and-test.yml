@@ -140,7 +140,8 @@ jobs:
 
   dotnet-integration-tests:
     needs: paths-filter
-    if: (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && needs.paths-filter.outputs.dotnetChanges == 'true'
+    # Integration tests are switched off while Azure login is broken; most of them need it. Remove `false &&` to re-enable.
+    if: false && (github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)) && needs.paths-filter.outputs.dotnetChanges == 'true'
     runs-on: ubuntu-latest
     environment: "integration"
     permissions:
