@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import Any
 
 from openai.types import CompletionUsage as OpenAICompletionUsage
 from openai.types.completion_usage import CompletionTokensDetails, PromptTokensDetails
@@ -29,8 +30,10 @@ class CompletionUsage(KernelBaseModel):
             else None,
         )
 
-    def __add__(self, other: "CompletionUsage") -> "CompletionUsage":
+    def __add__(self, other: Any) -> "CompletionUsage":
         """Combine two CompletionUsage instances by summing their token counts."""
+        if not isinstance(other, CompletionUsage):
+            return NotImplemented
 
         def _merge_details(cls, a, b):
             """Merge two details objects by summing their fields."""
