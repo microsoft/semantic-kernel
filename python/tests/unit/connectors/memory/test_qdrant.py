@@ -4,7 +4,16 @@ from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark, raises
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import Datatype, Distance, FieldCondition, Filter, MatchValue, VectorParams
+from qdrant_client.models import (
+    Datatype,
+    Distance,
+    FieldCondition,
+    Filter,
+    IsNullCondition,
+    MatchValue,
+    PayloadField,
+    VectorParams,
+)
 
 from semantic_kernel.connectors.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.vector import DistanceFunction, VectorStoreField
@@ -333,6 +342,48 @@ async def test_search_filter(collection, mock_search):
         query=[1.0, 2.0, 3.0],
         using="vector",
         query_filter=Filter(must=[FieldCondition(key="id", match=MatchValue(value="id1"))]),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
+
+
+async def test_search_filter_is_null(collection, mock_search):
+    results = await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        include_vectors=False,
+        filter=lambda x: x.id == None,  # noqa: E711
+    )
+    async for _ in results.results:
+        break
+
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query=[1.0, 2.0, 3.0],
+        using="vector",
+        query_filter=Filter(must=[IsNullCondition(is_null=PayloadField(key="id"))]),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
+
+
+async def test_search_filter_is_not_null(collection, mock_search):
+    results = await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        include_vectors=False,
+        filter=lambda x: x.id != None,  # noqa: E711
+    )
+    async for _ in results.results:
+        break
+
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query=[1.0, 2.0, 3.0],
+        using="vector",
+        query_filter=Filter(must_not=[IsNullCondition(is_null=PayloadField(key="id"))]),
         with_vectors=False,
         limit=3,
         offset=0,
