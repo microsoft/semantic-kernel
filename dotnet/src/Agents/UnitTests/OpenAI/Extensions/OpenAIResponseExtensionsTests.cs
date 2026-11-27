@@ -154,6 +154,41 @@ public class OpenAIResponseExtensionsTests
     }
 
     /// <summary>
+    /// Verify that a function call without arguments, as some OpenAI compatible servers return for a function without parameters, is not reported as invalid JSON.
+    /// </summary>
+    [Fact]
+    public void VerifyToFunctionCallContentWithEmptyArguments()
+    {
+        // Arrange
+        FunctionCallResponseItem responseItem = FunctionCallResponseItem.CreateFunctionCallItem("callId", "functionName", new BinaryData(string.Empty));
+
+        // Act
+        FunctionCallContent content = responseItem.ToFunctionCallContent();
+
+        // Assert
+        Assert.Null(content.Exception);
+        Assert.Null(content.Arguments);
+    }
+
+    /// <summary>
+    /// Verify that a function call without arguments is not reported as invalid JSON when converted to a <see cref="ChatMessageContentItemCollection"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyToChatMessageContentItemCollectionWithEmptyFunctionCallArguments()
+    {
+        // Arrange
+        FunctionCallResponseItem responseItem = FunctionCallResponseItem.CreateFunctionCallItem("callId", "functionName", new BinaryData(string.Empty));
+
+        // Act
+        ChatMessageContentItemCollection collection = responseItem.ToChatMessageContentItemCollection();
+
+        // Assert
+        FunctionCallContent content = Assert.IsType<FunctionCallContent>(Assert.Single(collection));
+        Assert.Null(content.Exception);
+        Assert.Null(content.Arguments);
+    }
+
+    /// <summary>
     /// Verify that ReasoningResponseItem with SummaryParts generates ReasoningContent correctly.
     /// </summary>
     [Fact]
