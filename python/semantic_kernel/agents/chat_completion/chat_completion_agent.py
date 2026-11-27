@@ -454,6 +454,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
 
         # If the user hasn't provided a function choice behavior, use the agent's default.
         if settings.function_choice_behavior is None:
+            settings = settings.model_copy()
             settings.function_choice_behavior = self.function_choice_behavior
 
         agent_chat_history = await self._prepare_agent_chat_history(
@@ -551,6 +552,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
 
         # If the user hasn't provided a function choice behavior, use the agent's default.
         if settings.function_choice_behavior is None:
+            settings = settings.model_copy()
             settings.function_choice_behavior = self.function_choice_behavior
 
         agent_chat_history = await self._prepare_agent_chat_history(
