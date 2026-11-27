@@ -259,6 +259,24 @@ async def test_delete(collection):
     assert collection.inner_storage == {}
 
 
+async def test_delete_existing_and_missing_key_raises(collection):
+    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await collection.upsert(record)
+    with raises(VectorStoreOperationException, match="missingid"):
+        await collection.delete(["testid", "missingid"])
+    assert collection.inner_storage == {}
+
+
+async def test_delete_only_existing_keys_succeeds(collection):
+    records = [
+        {"id": "first", "content": "first content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]},
+        {"id": "second", "content": "second content", "vector": [0.5, 0.4, 0.3, 0.2, 0.1]},
+    ]
+    await collection.upsert(records)
+    await collection.delete(["first", "second"])
+    assert collection.inner_storage == {}
+
+
 async def test_collection_exists(collection):
     assert await collection.collection_exists() is True
 

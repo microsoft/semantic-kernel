@@ -624,8 +624,11 @@ class InMemoryCollection(
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
+        missing_keys = [key for key in keys if key not in self.inner_storage]
         for key in keys:
             self.inner_storage.pop(key, None)
+        if missing_keys:
+            raise VectorStoreOperationException(f"Keys not found in collection: {missing_keys}")
 
     @override
     async def _inner_get(
