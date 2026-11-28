@@ -63,6 +63,7 @@ TKey = TypeVar("TKey", bound=str | int)
 
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Distance]] = {
     DistanceFunction.COSINE_SIMILARITY: Distance.COSINE,
+    DistanceFunction.COSINE_DISTANCE: Distance.COSINE,
     DistanceFunction.DOT_PROD: Distance.DOT,
     DistanceFunction.EUCLIDEAN_DISTANCE: Distance.EUCLID,
     DistanceFunction.MANHATTAN: Distance.MANHATTAN,
@@ -303,6 +304,15 @@ class QdrantCollection(
                 **kwargs,
             )
             results = points.points
+            # Qdrant's Distance.COSINE returns cosine similarity (1 = identical, -1 = opposite),
+            # whereas SK's DEFAULT and COSINE_DISTANCE use cosine distance (0 = identical, 2 = opposite).
+            if vector_field.distance_function in (DistanceFunction.DEFAULT, DistanceFunction.COSINE_DISTANCE):
+                results = [
+                    point.model_copy(update={"score": 1.0 - point.score})
+                    if getattr(point, "score", None) is not None and hasattr(point, "model_copy")
+                    else point
+                    for point in results
+                ]
         else:
             # Hybrid search: vector + keywords (RRF fusion)
             # 1. Get keywords and text field
