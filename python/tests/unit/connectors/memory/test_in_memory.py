@@ -307,6 +307,27 @@ async def test_vectorized_search_similar(collection, distance_function):
         idx += 1
 
 
+@mark.parametrize(
+    "distance_function",
+    [DistanceFunction.COSINE_DISTANCE, DistanceFunction.COSINE_SIMILARITY, DistanceFunction.DEFAULT],
+)
+async def test_vectorized_search_skips_zero_vector_for_cosine(collection, distance_function):
+    for field in collection.definition.fields:
+        if field.name == "vector":
+            field.distance_function = distance_function
+    zero = {"id": "zero", "content": "test content", "vector": [0.0, 0.0, 0.0, 0.0, 0.0]}
+    match = {"id": "match", "content": "test content", "vector": [1.0, 0.0, 0.0, 0.0, 0.0]}
+    other = {"id": "other", "content": "test content", "vector": [0.0, 1.0, 0.0, 0.0, 0.0]}
+    await collection.upsert([zero, match, other])
+    results = await collection.search(
+        vector=[1.0, 0.0, 0.0, 0.0, 0.0],
+        vector_property_name="vector",
+        include_total_count=True,
+    )
+    assert results.total_count == 2
+    assert [res.record["id"] async for res in results.results] == ["match", "other"]
+
+
 async def test_valid_lambda_filter(collection):
     record1 = {"id": "1", "vector": [1, 2, 3, 4, 5]}
     record2 = {"id": "2", "vector": [5, 4, 3, 2, 1]}

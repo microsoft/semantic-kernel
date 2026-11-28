@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import ast
+import math
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar, cast
@@ -718,12 +719,17 @@ class InMemoryCollection(
 
         for key, record in self._get_filtered_records(options).items():
             if vector and field is not None:
-                return_records[key] = self._calculate_vector_similarity(
+                score = self._calculate_vector_similarity(
                     vector,
                     record[field.storage_name or field.name],
                     distance_func,
                     invert_score=field.distance_function == DistanceFunction.COSINE_SIMILARITY,
                 )
+                # A zero vector has no direction, so cosine returns NaN for it. NaN scores
+                # cannot be ordered and would break the sort below, so skip those records.
+                if math.isnan(score):
+                    continue
+                return_records[key] = score
         if field.distance_function == DistanceFunction.DEFAULT:
             reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[DistanceFunction.COSINE_DISTANCE]
         else:
